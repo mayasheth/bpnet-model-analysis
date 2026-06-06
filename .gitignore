@@ -1,0 +1,78 @@
+# Large data files - genomic
+*.bw
+*.bigWig
+*.bam
+*.bai
+*.fa
+*.fasta
+*.fai
+*.bed
+*.bed.gz
+*.bed.bgz
+*.bed.bgz.tbi
+*.narrowPeak
+*.gz
+*.bgz
+
+# Large data files - model outputs
+*.h5
+*.hdf5
+*.npy
+*.npz
+*.pt
+*.torch
+
+# Large FiNeMo outputs
+**/finemo/**/hits.tsv
+**/finemo/**/hits_unique.tsv
+**/finemo/**/hits_renamed.tsv
+**/finemo/**/peaks_qc.tsv
+**/finemo/**/seqlets.tsv
+**/finemo/**/contribution_regions.npz
+**/finemo/**/motif_occurrences.tsv
+**/finemo_peaks/**/hits.tsv
+**/finemo_peaks/**/hits_unique.tsv
+**/finemo_peaks/**/hits_renamed.tsv
+**/finemo_peaks/**/peaks_qc.tsv
+**/finemo_peaks/**/seqlets.tsv
+
+# Large reference files
+reference/*.narrowPeak
+reference/*.gc.bed
+
+# Model weights and training outputs
+**/models/
+**/models_h5/
+
+# SHAP outputs (large NPZ/H5)
+**/shap/
+**/shap_peaks/
+**/tangermeme_all_chr/
+**/tangermeme_DNase/
+
+# Prediction outputs
+**/predictions_cv/
+**/predictions_mean/
+**/predictions/
+
+# MoDISCo HDF5 scores
+**/modisco/**/*.h5
+**/modisco_peaks/**/*.h5
+
+# Motif spacing large files
+**/motif_spacing/**/background_encoded.npy
+
+# pixi environment
+.pixi/
+
+# SLURM logs
+slurm_logs/
+**/log/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Misc
+.htaccess

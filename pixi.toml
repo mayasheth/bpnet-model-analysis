@@ -1,0 +1,137 @@
+[project]
+channels = ["dnachun", "conda-forge", "bioconda", "pytorch", "nvidia", "nodefaults"]
+name = "chrombpnet-env"
+platforms = ["linux-64"]
+version = "0.1.0"
+
+[system-requirements]
+linux = "3.10"
+libc = "2.17"
+
+[activation]
+env = { PYTHONNOUSERSITE = "1", CONDA_OVERRIDE_CUDA = "12.0" }
+
+# Default environment: all tools including SHAP (CPU TF, numpy pinned for shap compat)
+[dependencies]
+python="3.9.*"
+numpy="1.23.4"
+pip="24.0"
+setuptools="69.5.1"
+cudatoolkit="11.8.0"
+cudnn="8.1.0.*"
+cairo="1.16.0"
+pango="*"
+samtools="1.13"
+bedtools="2.30.0"
+ucsc-bedgraphtobigwig = ">=472,<473"
+pybigwig = ">=0.3.18,<0.4"
+meme="5.5.2"
+seaborn = ">=0.13.2,<0.14"
+ucsc-bigwigtobedgraph = ">=469,<470"
+ucsc-bigwiginfo = ">=469,<470"
+pytorch = ">=2.0.0,<3"
+numexpr = "==2.8.4"
+captum = ">=0.7.0,<0.8"
+ucsc-bigwigmerge = ">=469,<470"
+pyfaidx = ">=0.9.0.3,<0.10"
+pybedtools = ">=0.10.0,<0.11"
+pysam = ">=0.22.1,<0.23"
+tensorflow = ">=2.11.0,<3"
+logomaker = ">=0.8.6,<0.9"
+pandas = ">=2.0.0,<3"
+tqdm = ">=4.65.0,<5"
+scipy = ">=1.10.0,<2"
+
+[pypi-dependencies]
+deeplift = "*"
+shap = { git = "https://github.com/kundajelab/shap.git" }
+
+# ISM feature: lean GPU environment for run_ism.py (avoids numpy/shap/TF conflicts)
+# TF >=2.14 on PyPI (Linux) bundles its own CUDA runtime via nvidia-* packages.
+[feature.ism.activation]
+env = { CONDA_OVERRIDE_CUDA = "12.0" }
+
+[feature.ism.system-requirements]
+linux = "3.10"
+libc = "2.17"
+cuda = "12.0"
+
+[feature.ism.dependencies]
+python = "3.9.*"
+numpy = ">=1.24,<2"
+tensorflow-gpu = "2.17.*"
+pandas = ">=2.0.0,<3"
+pysam = ">=0.22.1,<0.23"
+matplotlib = ">=3.7"
+logomaker = ">=0.8.6,<0.9"
+tqdm = ">=4.65.0,<5"
+scipy = ">=1.10.0,<2"
+h5py = ">=3.0"
+pip = ">=24"
+pyfaidx = ">=0.9.0.3,<0.10"
+
+[feature.ism.pypi-dependencies]
+deeplift = "*"
+shap = { git = "https://github.com/kundajelab/shap.git" }
+
+# variant-scoring feature: like ism but with packages needed by variant-scorer
+[feature.variant-scoring.system-requirements]
+linux = "3.10"
+libc = "2.17"
+cuda = "12.0"
+
+[feature.variant-scoring.dependencies]
+python = "3.9.*"
+numpy = ">=1.24,<2"
+tensorflow-gpu = "2.17.*"
+pandas = ">=2.0.0,<3"
+pysam = ">=0.22.1,<0.23"
+pybedtools = ">=0.10.0,<0.11"
+pyfaidx = ">=0.9.0.3,<0.10"
+tqdm = ">=4.65.0,<5"
+scipy = ">=1.10.0,<2"
+h5py = ">=3.0"
+pip = ">=24"
+
+[feature.variant-scoring.pypi-dependencies]
+deeplift = "*"
+tensorflow-probability = ">=0.24.0,<0.25"
+tf-keras = ">=2.17,<2.18"
+
+# multimodal feature: PyTorch-only env for sequence + accessibility BPNet
+[feature.multimodal.activation]
+env = { CONDA_OVERRIDE_CUDA = "12.0" }
+
+[feature.multimodal.system-requirements]
+linux = "3.10"
+libc = { family = "glibc", version = "2.17" }
+cuda = "12.0"
+
+[feature.multimodal.dependencies]
+python = "3.9.*"
+numpy = ">=1.24,<2"
+pybigwig = ">=0.3.18,<0.4"
+pyfaidx = ">=0.9.0.3,<0.10"
+pandas = ">=2.0.0,<3"
+h5py = ">=3.0"
+tqdm = ">=4.65.0,<5"
+scipy = ">=1.10.0,<2"
+bedtools = ">=2.30.0"
+samtools = ">=1.13"
+ucsc-bedgraphtobigwig = ">=472,<473"
+python-igraph = ">=0.10"
+leidenalg = ">=0.10"
+pysam = ">=0.22.1,<0.23"
+xz = "*"
+pip = ">=24"
+
+[feature.multimodal.pypi-dependencies]
+# CUDA-enabled torch via the PyTorch CUDA 11.8 wheel index (avoids conda channel priority issues)
+torch = { version = ">=2.0.0,<3", index = "https://download.pytorch.org/whl/cu118" }
+captum = ">=0.7.0,<0.8"
+bpnet-lite = { path = "/oak/stanford/groups/engreitz/Users/sheth/bpnet-lite", editable = true }
+
+[environments]
+ism = { features = ["ism"], no-default-feature = true }
+variant-scoring = { features = ["variant-scoring"], no-default-feature = true }
+multimodal = { features = ["multimodal"], no-default-feature = true }
