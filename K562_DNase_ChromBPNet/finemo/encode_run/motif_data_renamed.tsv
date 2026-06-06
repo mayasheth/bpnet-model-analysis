@@ -1,0 +1,79 @@
+motif_id	motif_name	motif_name_orig	strand	motif_start	motif_end	motif_scale	lambda
+0	GATA	pos_patterns.pattern_0	+	7	23	0.1591845595	0.7
+1	GATA	pos_patterns.pattern_0	-	7	23	0.1591845595	0.7
+2	CTCF	pos_patterns.pattern_1	+	8	22	0.2043593217	0.7
+3	CTCF	pos_patterns.pattern_1	-	8	22	0.2043593217	0.7
+4	KLF	pos_patterns.pattern_2	+	10	21	0.09801020538	0.7
+5	KLF	pos_patterns.pattern_2	-	9	20	0.09801020538	0.7
+6	MAF, NFE2	pos_patterns.pattern_3	+	10	20	0.1478171337	0.7
+7	MAF, NFE2	pos_patterns.pattern_3	-	10	20	0.1478171337	0.7
+8	ETS	pos_patterns.pattern_4	+	9	17	0.1100627169	0.7
+9	ETS	pos_patterns.pattern_4	-	13	21	0.1100627169	0.7
+10	NF-1	pos_patterns.pattern_5	+	8	23	0.1200609424	0.7
+11	NF-1	pos_patterns.pattern_5	-	7	22	0.1200609424	0.7
+12	CCAAT-box	pos_patterns.pattern_6	+	6	22	0.1019040834	0.7
+13	CCAAT-box	pos_patterns.pattern_6	-	8	24	0.1019040834	0.7
+14	NRF1	pos_patterns.pattern_7	+	12	23	0.1446959639	0.7
+15	NRF1	pos_patterns.pattern_7	-	7	18	0.1446959639	0.7
+16	FOS::JUN	pos_patterns.pattern_8	+	7	16	0.1049308894	0.7
+17	FOS::JUN	pos_patterns.pattern_8	-	14	23	0.1049308894	0.7
+18	ETS	pos_patterns.pattern_9	+	10	20	0.09436442492	0.7
+19	ETS	pos_patterns.pattern_9	-	10	20	0.09436442492	0.7
+20	STAT	pos_patterns.pattern_10	+	8	23	0.1046060911	0.7
+21	STAT	pos_patterns.pattern_10	-	7	22	0.1046060911	0.7
+22	MAF, NFE2	pos_patterns.pattern_11	+	9	20	0.124496889	0.7
+23	MAF, NFE2	pos_patterns.pattern_11	-	10	21	0.124496889	0.7
+24	ZNF76, ZNF143	pos_patterns.pattern_12	+	4	30	0.1366617109	0.7
+25	ZNF76, ZNF143	pos_patterns.pattern_12	-	0	26	0.1366617109	0.7
+26	G-box	pos_patterns.pattern_13	+	6	28	0.09506632142	0.7
+27	G-box	pos_patterns.pattern_13	-	2	24	0.09506632142	0.7
+28	GC-repeats	pos_patterns.pattern_14	+	5	30	0.07197378442	0.7
+29	GC-repeats	pos_patterns.pattern_14	-	0	25	0.07197378442	0.7
+30	YY1	pos_patterns.pattern_15	+	12	24	0.1007590867	0.7
+31	YY1	pos_patterns.pattern_15	-	6	18	0.1007590867	0.7
+32	REST	pos_patterns.pattern_16	+	5	25	0.1233012208	0.7
+33	REST	pos_patterns.pattern_16	-	5	25	0.1233012208	0.7
+34	ZBTB33	pos_patterns.pattern_17	+	8	18	0.1419910833	0.7
+35	ZBTB33	pos_patterns.pattern_17	-	12	22	0.1419910833	0.7
+36	RFX	pos_patterns.pattern_18	+	8	27	0.07287789495	0.7
+37	RFX	pos_patterns.pattern_18	-	3	22	0.07287789495	0.7
+38	JUN, ATF2	pos_patterns.pattern_19	+	1	19	0.07531242615	0.7
+39	JUN, ATF2	pos_patterns.pattern_19	-	11	29	0.07531242615	0.7
+40	pattern_20	pos_patterns.pattern_20	+	2	21	0.2121645609	0.7
+41	pattern_20	pos_patterns.pattern_20	-	9	28	0.2121645609	0.7
+42	ZNF76, ZNF143	pos_patterns.pattern_21	+	10	30	0.08731884187	0.7
+43	ZNF76, ZNF143	pos_patterns.pattern_21	-	0	20	0.08731884187	0.7
+44	CTCF	pos_patterns.pattern_22	+	9	24	0.1364010163	0.7
+45	CTCF	pos_patterns.pattern_22	-	6	21	0.1364010163	0.7
+46	KLF+GATA	pos_patterns.pattern_23	+	0	21	0.1138161238	0.7
+47	KLF+GATA	pos_patterns.pattern_23	-	9	30	0.1138161238	0.7
+48	CARE	pos_patterns.pattern_24	+	7	21	0.0816382919	0.7
+49	CARE	pos_patterns.pattern_24	-	9	23	0.0816382919	0.7
+50	ZFP42	pos_patterns.pattern_25	+	8	25	0.09050072292	0.7
+51	ZFP42	pos_patterns.pattern_25	-	5	22	0.09050072292	0.7
+52	FOS::JUN	pos_patterns.pattern_26	+	0	21	0.160647757	0.7
+53	FOS::JUN	pos_patterns.pattern_26	-	9	30	0.160647757	0.7
+54	ETS	pos_patterns.pattern_27	+	4	18	0.1198667121	0.7
+55	ETS	pos_patterns.pattern_27	-	12	26	0.1198667121	0.7
+56	FOS::JUN	pos_patterns.pattern_28	+	10	29	0.1266514289	0.7
+57	FOS::JUN	pos_patterns.pattern_28	-	1	20	0.1266514289	0.7
+58	RFX	pos_patterns.pattern_29	+	1	28	0.07171703351	0.7
+59	RFX	pos_patterns.pattern_29	-	2	29	0.07171703351	0.7
+60	CTCF	pos_patterns.pattern_30	+	0	23	0.1171553691	0.7
+61	CTCF	pos_patterns.pattern_30	-	7	30	0.1171553691	0.7
+62	ZNF76, ZNF143	pos_patterns.pattern_31	+	1	30	0.1098723801	0.7
+63	ZNF76, ZNF143	pos_patterns.pattern_31	-	0	29	0.1098723801	0.7
+64	STAT	pos_patterns.pattern_32	+	0	26	0.08671495207	0.7
+65	STAT	pos_patterns.pattern_32	-	4	30	0.08671495207	0.7
+66	GATA	pos_patterns.pattern_33	+	5	22	0.100472997	0.7
+67	GATA	pos_patterns.pattern_33	-	8	25	0.100472997	0.7
+68	GC-rich	pos_patterns.pattern_34	+	9	27	0.1198646599	0.7
+69	GC-rich	pos_patterns.pattern_34	-	3	21	0.1198646599	0.7
+70	FOS::JUN	pos_patterns.pattern_35	+	6	20	0.0831203042	0.7
+71	FOS::JUN	pos_patterns.pattern_35	-	10	24	0.0831203042	0.7
+72	CCAAT-box	pos_patterns.pattern_36	+	9	28	0.1015205243	0.7
+73	CCAAT-box	pos_patterns.pattern_36	-	2	21	0.1015205243	0.7
+74	GATA	pos_patterns.pattern_37	+	7	23	0.1352702539	0.7
+75	GATA	pos_patterns.pattern_37	-	7	23	0.1352702539	0.7
+76	NRF1	pos_patterns.pattern_38	+	5	26	0.1394349258	0.7
+77	NRF1	pos_patterns.pattern_38	-	4	25	0.1394349258	0.7

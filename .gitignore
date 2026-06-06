@@ -106,3 +106,6 @@ FIMO/2025_1112_test/cisml.xml
 FIMO/elements_v1/analysis_v1/fimo_to_annotation_mapping.tsv
 FIMO/elements_v1/analysis_v1/plot4*.png
 FIMO/elements_v1/analysis_v1/plot6.1*.png
+
+# Also exclude .hd5 (alternate HDF5 extension)
+*.hd5

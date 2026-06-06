@@ -1,0 +1,39 @@
+pos_patterns.pattern_0	GATA
+pos_patterns.pattern_1	CTCF
+pos_patterns.pattern_2	KLF
+pos_patterns.pattern_3	MAF, NFE2
+pos_patterns.pattern_4	ETS
+pos_patterns.pattern_5	NF-1
+pos_patterns.pattern_6	CCAAT-box
+pos_patterns.pattern_7	NRF1
+pos_patterns.pattern_8	FOS::JUN
+pos_patterns.pattern_9	ETS
+pos_patterns.pattern_10	STAT
+pos_patterns.pattern_11	MAF, NFE2
+pos_patterns.pattern_12	ZNF76, ZNF143
+pos_patterns.pattern_13	G-box
+pos_patterns.pattern_14	GC-repeats
+pos_patterns.pattern_15	YY1
+pos_patterns.pattern_16	REST
+pos_patterns.pattern_17	ZBTB33
+pos_patterns.pattern_18	RFX
+pos_patterns.pattern_19	JUN, ATF2
+pos_patterns.pattern_20	pattern_20
+pos_patterns.pattern_21	ZNF76, ZNF143
+pos_patterns.pattern_22	CTCF
+pos_patterns.pattern_23	KLF+GATA
+pos_patterns.pattern_24	CARE
+pos_patterns.pattern_25	ZFP42
+pos_patterns.pattern_26	FOS::JUN
+pos_patterns.pattern_27	ETS
+pos_patterns.pattern_28	FOS::JUN
+pos_patterns.pattern_29	RFX
+pos_patterns.pattern_30	CTCF
+pos_patterns.pattern_31	ZNF76, ZNF143
+pos_patterns.pattern_32	STAT
+pos_patterns.pattern_33	GATA
+pos_patterns.pattern_34	GC-rich
+pos_patterns.pattern_35	FOS::JUN
+pos_patterns.pattern_36	CCAAT-box
+pos_patterns.pattern_37	GATA
+pos_patterns.pattern_38	NRF1
