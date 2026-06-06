@@ -109,3 +109,9 @@ FIMO/elements_v1/analysis_v1/plot6.1*.png
 
 # Also exclude .hd5 (alternate HDF5 extension)
 *.hd5
+
+# Finemo large PDFs (>1MB)
+**/finemo/**/counts_per_peak.pdf
+
+# Primary model data dir (bed index files)
+2025_0517_official_EP300_K562_model/data/
