@@ -48,9 +48,9 @@ def parse_args():
                    help="Dir with fold{0-4}/<h5-name> (all 150k elements per fold; optional)")
     p.add_argument("--h5-name", default="ENCSR000EGE_split000_predictions.h5",
                    help="H5 filename inside each fold dir (default: ENCSR000EGE_split000_predictions.h5)")
-    p.add_argument("--peaks", required=True,
-                   help="narrowPeak file to compute peak overlap against "
-                        "(e.g. reference/ENCSR000EGE_peaks_inliers.narrowPeak)")
+    p.add_argument("--peaks",
+                   help="narrowPeak file to compute peak overlap against. "
+                        "Not required when --from-tsv is set.")
     p.add_argument("--overlap-col", default="EP300_peak_overlap",
                    help="Name for the peak overlap indicator column in output (default: EP300_peak_overlap)")
     p.add_argument("--cv-output-dir",
@@ -59,6 +59,11 @@ def parse_args():
     p.add_argument("--mean-output-dir",
                    help="Output dir for mean tables/plots "
                         "(default: <mean-pred-dir>/all_folds)")
+    p.add_argument("--from-tsv", action="store_true",
+                   help="Skip h5 loading; read existing cv_predictions.tsv.gz and "
+                        "mean_predictions.tsv.gz from the output dirs and regenerate plots only.")
+    p.add_argument("--max-counts", type=float, default=10,
+                   help="Upper axis limit for scatter plots (default: 10)")
     return p.parse_args()
 
 
@@ -106,13 +111,14 @@ def compute_peak_overlap(coords_df, peaks_df):
 
 
 def plot_scatter(df, x_col, y_col, ax, color="#792374",
-                 xlabel="Observed log counts", ylabel="Predicted log counts", title=""):
+                 xlabel="Observed log counts", ylabel="Predicted log counts", title="",
+                 max_counts=10):
     x, y = df[x_col].values, df[y_col].values
     ok = np.isfinite(x) & np.isfinite(y)
     x, y = x[ok], y[ok]
     cmap = mcolors.LinearSegmentedColormap.from_list("d", ["#ffffff", color])
     sns.kdeplot(x=x, y=y, ax=ax, cmap=cmap, fill=True)
-    lo, hi = 0, max(x.max(), y.max(), 20)
+    lo, hi = 0, max_counts
     ax.plot([lo, hi], [lo, hi], color="black", ls=(0, (5, 5)), lw=1.2, label="y = x")
     m, b = np.polyfit(x, y, 1)
     ax.plot([lo, hi], [m * lo + b, m * hi + b], color=color, lw=1.5, label="fit")
@@ -140,51 +146,16 @@ def acc_row(df, x_col, y_col, label):
             "mse": round(float(np.mean((y - x) ** 2)), 4)}
 
 
-def main():
-    args = parse_args()
-    cv_out = args.cv_output_dir or os.path.join(args.cv_pred_dir, "all_folds")
-    os.makedirs(cv_out, exist_ok=True)
-
-    peaks_df = load_peaks(args.peaks)
-    oc = args.overlap_col
-    acc_rows = []
-
-    # ── CV predictions ────────────────────────────────────────────────────────
-    print("Building CV predictions table...")
-    fold_dfs = []
-    for fold in range(5):
-        path = os.path.join(args.cv_pred_dir, f"fold{fold}", args.h5_name)
-        if not os.path.exists(path):
-            print(f"  WARNING: {path} not found, skipping"); continue
-        try:
-            chroms, starts, ends, true_lc, pred_lc = load_h5(path)
-        except OSError as e:
-            print(f"  WARNING: fold {fold} h5 unreadable ({e}), skipping"); continue
-        df = pd.DataFrame({
-            "chrom": chroms, "start": starts, "end": ends,
-            "true_logcounts": stranded_to_total(true_lc),
-            "pred_logcounts": stranded_to_total(pred_lc),
-            "fold": fold,
-        })
-        df[oc] = compute_peak_overlap(df, peaks_df)
-        fold_dfs.append(df)
-        print(f"  Fold {fold}: {len(df)} regions  (p300+ = {df[oc].sum()})")
-
-    cv_df = pd.concat(fold_dfs, ignore_index=True)
-    cv_df.to_csv(os.path.join(cv_out, "cv_predictions.tsv.gz"),
-                 sep="\t", index=False, compression="gzip")
-    print(f"Saved cv_predictions.tsv.gz ({len(cv_df)} total regions)")
-
-    # plots
+def make_cv_plots(cv_df, oc, cv_out, mc):
     peaks_cv    = cv_df[cv_df[oc] == 1]
     nonpeaks_cv = cv_df[cv_df[oc] == 0]
     fig, axes = plt.subplots(1, 3, figsize=(15, 5))
     plot_scatter(cv_df,       "true_logcounts", "pred_logcounts", axes[0], color="#006eae",
-                 title=f"CV — all elements (n={len(cv_df):,})")
+                 title=f"CV — all elements (n={len(cv_df):,})", max_counts=mc)
     plot_scatter(peaks_cv,    "true_logcounts", "pred_logcounts", axes[1], color="#006eae",
-                 title=f"CV — p300+ (n={len(peaks_cv):,})")
+                 title=f"CV — p300+ (n={len(peaks_cv):,})", max_counts=mc)
     plot_scatter(nonpeaks_cv, "true_logcounts", "pred_logcounts", axes[2], color="#006eae",
-                 title=f"CV — p300- (n={len(nonpeaks_cv):,})")
+                 title=f"CV — p300- (n={len(nonpeaks_cv):,})", max_counts=mc)
     sns.despine(trim=True); plt.tight_layout()
     plt.savefig(os.path.join(cv_out, "cv_predictions.pdf")); plt.close()
 
@@ -195,75 +166,137 @@ def main():
     for ax, i in zip(axes, present_folds):
         sub = cv_df[cv_df["fold"] == i]
         plot_scatter(sub, "true_logcounts", "pred_logcounts", ax, color="#006eae",
-                     title=f"CV fold {i} (n={len(sub):,})")
+                     title=f"CV fold {i} (n={len(sub):,})", max_counts=mc)
     sns.despine(trim=True); plt.tight_layout()
     plt.savefig(os.path.join(cv_out, "cv_predictions_by_fold.pdf")); plt.close()
 
-    acc_rows += [
+    rows = [
         acc_row(cv_df,       "true_logcounts", "pred_logcounts", "CV — all elements"),
         acc_row(peaks_cv,    "true_logcounts", "pred_logcounts", "CV — p300+"),
         acc_row(nonpeaks_cv, "true_logcounts", "pred_logcounts", "CV — p300-"),
     ]
     for i in present_folds:
         sub = cv_df[cv_df["fold"] == i]
-        acc_rows.append(acc_row(sub, "true_logcounts", "pred_logcounts", f"CV — fold {i}"))
+        rows.append(acc_row(sub, "true_logcounts", "pred_logcounts", f"CV — fold {i}"))
+    return rows
 
-    # ── Mean predictions (optional) ───────────────────────────────────────────
-    if args.mean_pred_dir:
-        mean_out = args.mean_output_dir or os.path.join(args.mean_pred_dir, "all_folds")
-        os.makedirs(mean_out, exist_ok=True)
-        print("Building mean predictions table...")
 
-        # Load each fold, sort by (chrom, start) to align across folds before averaging.
-        # The 5 mean h5 files may have elements in different orders depending on how
-        # bpnet-predict processed the loci file.
-        fold_dfs_mean = {}
+def make_mean_plots(mean_df, oc, mean_out, mc):
+    peaks_m    = mean_df[mean_df[oc] == 1]
+    nonpeaks_m = mean_df[mean_df[oc] == 0]
+    fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+    plot_scatter(mean_df,    "true_logcounts", "mean_pred_logcounts", axes[0],
+                 title=f"Mean predictions — all elements (n={len(mean_df):,})", max_counts=mc)
+    plot_scatter(peaks_m,    "true_logcounts", "mean_pred_logcounts", axes[1],
+                 title=f"Mean predictions — p300+ (n={len(peaks_m):,})", max_counts=mc)
+    plot_scatter(nonpeaks_m, "true_logcounts", "mean_pred_logcounts", axes[2],
+                 title=f"Mean predictions — p300- (n={len(nonpeaks_m):,})", max_counts=mc)
+    sns.despine(trim=True); plt.tight_layout()
+    plt.savefig(os.path.join(mean_out, "mean_predictions.pdf")); plt.close()
+
+    return [
+        acc_row(mean_df,    "true_logcounts", "mean_pred_logcounts", "mean — all elements"),
+        acc_row(peaks_m,    "true_logcounts", "mean_pred_logcounts", "mean — p300+"),
+        acc_row(nonpeaks_m, "true_logcounts", "mean_pred_logcounts", "mean — p300-"),
+    ]
+
+
+def main():
+    args = parse_args()
+    cv_out = args.cv_output_dir or os.path.join(args.cv_pred_dir, "all_folds")
+    os.makedirs(cv_out, exist_ok=True)
+    oc = args.overlap_col
+    mc = args.max_counts
+    acc_rows = []
+
+    if args.from_tsv:
+        # ── Fast replot mode: read existing TSVs, skip h5 loading ─────────────
+        cv_tsv = os.path.join(cv_out, "cv_predictions.tsv.gz")
+        if not os.path.exists(cv_tsv):
+            raise FileNotFoundError(f"--from-tsv set but {cv_tsv} not found")
+        print(f"Reading {cv_tsv}")
+        cv_df = pd.read_csv(cv_tsv, sep="\t")
+        acc_rows += make_cv_plots(cv_df, oc, cv_out, mc)
+
+        if args.mean_pred_dir:
+            mean_out = args.mean_output_dir or os.path.join(args.mean_pred_dir, "all_folds")
+            os.makedirs(mean_out, exist_ok=True)
+            mean_tsv = os.path.join(mean_out, "mean_predictions.tsv.gz")
+            if not os.path.exists(mean_tsv):
+                raise FileNotFoundError(f"--from-tsv set but {mean_tsv} not found")
+            print(f"Reading {mean_tsv}")
+            mean_df = pd.read_csv(mean_tsv, sep="\t")
+            acc_rows += make_mean_plots(mean_df, oc, mean_out, mc)
+    else:
+        # ── Full mode: load from h5 files ─────────────────────────────────────
+        if not args.peaks:
+            raise ValueError("--peaks is required unless --from-tsv is set")
+        peaks_df = load_peaks(args.peaks)
+
+        print("Building CV predictions table...")
+        fold_dfs = []
         for fold in range(5):
-            path = os.path.join(args.mean_pred_dir, f"fold{fold}", args.h5_name)
+            path = os.path.join(args.cv_pred_dir, f"fold{fold}", args.h5_name)
             if not os.path.exists(path):
-                print(f"  WARNING: {path} not found"); continue
+                print(f"  WARNING: {path} not found, skipping"); continue
             try:
                 chroms, starts, ends, true_lc, pred_lc = load_h5(path)
             except OSError as e:
                 print(f"  WARNING: fold {fold} h5 unreadable ({e}), skipping"); continue
-            df_f = pd.DataFrame({
+            df = pd.DataFrame({
                 "chrom": chroms, "start": starts, "end": ends,
                 "true_logcounts": stranded_to_total(true_lc),
-                "pred": stranded_to_total(pred_lc),
-            }).sort_values(["chrom", "start"]).reset_index(drop=True)
-            fold_dfs_mean[fold] = df_f
-            print(f"  Fold {fold}: {len(df_f)} regions")
+                "pred_logcounts": stranded_to_total(pred_lc),
+                "fold": fold,
+            })
+            df[oc] = compute_peak_overlap(df, peaks_df)
+            fold_dfs.append(df)
+            print(f"  Fold {fold}: {len(df)} regions  (p300+ = {df[oc].sum()})")
 
-        present_mean_folds = sorted(fold_dfs_mean)
-        ref_df = fold_dfs_mean[present_mean_folds[0]]
-        mean_df = ref_df[["chrom", "start", "end", "true_logcounts"]].copy()
-        for i, fold in enumerate(present_mean_folds):
-            mean_df[f"pred_fold{fold}"] = fold_dfs_mean[fold]["pred"].values
-        pred_cols = [f"pred_fold{f}" for f in present_mean_folds]
-        mean_df["mean_pred_logcounts"] = mean_df[pred_cols].mean(axis=1)
-        mean_df[oc] = compute_peak_overlap(mean_df, peaks_df)
+        cv_df = pd.concat(fold_dfs, ignore_index=True)
+        cv_df.to_csv(os.path.join(cv_out, "cv_predictions.tsv.gz"),
+                     sep="\t", index=False, compression="gzip")
+        print(f"Saved cv_predictions.tsv.gz ({len(cv_df)} total regions)")
+        acc_rows += make_cv_plots(cv_df, oc, cv_out, mc)
 
-        mean_df.to_csv(os.path.join(mean_out, "mean_predictions.tsv.gz"),
-                       sep="\t", index=False, compression="gzip")
-        print(f"Saved mean_predictions.tsv.gz ({len(mean_df)} regions)")
+        if args.mean_pred_dir:
+            mean_out = args.mean_output_dir or os.path.join(args.mean_pred_dir, "all_folds")
+            os.makedirs(mean_out, exist_ok=True)
+            print("Building mean predictions table...")
 
-        peaks_m    = mean_df[mean_df[oc] == 1]
-        nonpeaks_m = mean_df[mean_df[oc] == 0]
-        fig, axes = plt.subplots(1, 3, figsize=(15, 5))
-        plot_scatter(mean_df,   "true_logcounts", "mean_pred_logcounts", axes[0],
-                     title=f"Mean predictions — all elements (n={len(mean_df):,})")
-        plot_scatter(peaks_m,   "true_logcounts", "mean_pred_logcounts", axes[1],
-                     title=f"Mean predictions — p300+ (n={len(peaks_m):,})")
-        plot_scatter(nonpeaks_m,"true_logcounts", "mean_pred_logcounts", axes[2],
-                     title=f"Mean predictions — p300- (n={len(nonpeaks_m):,})")
-        sns.despine(trim=True); plt.tight_layout()
-        plt.savefig(os.path.join(mean_out, "mean_predictions.pdf")); plt.close()
+            # Load each fold, sort by (chrom, start) to align across folds before averaging.
+            # The 5 mean h5 files may have elements in different orders depending on how
+            # bpnet-predict processed the loci file.
+            fold_dfs_mean = {}
+            for fold in range(5):
+                path = os.path.join(args.mean_pred_dir, f"fold{fold}", args.h5_name)
+                if not os.path.exists(path):
+                    print(f"  WARNING: {path} not found"); continue
+                try:
+                    chroms, starts, ends, true_lc, pred_lc = load_h5(path)
+                except OSError as e:
+                    print(f"  WARNING: fold {fold} h5 unreadable ({e}), skipping"); continue
+                df_f = pd.DataFrame({
+                    "chrom": chroms, "start": starts, "end": ends,
+                    "true_logcounts": stranded_to_total(true_lc),
+                    "pred": stranded_to_total(pred_lc),
+                }).sort_values(["chrom", "start"]).reset_index(drop=True)
+                fold_dfs_mean[fold] = df_f
+                print(f"  Fold {fold}: {len(df_f)} regions")
 
-        acc_rows += [
-            acc_row(mean_df,    "true_logcounts", "mean_pred_logcounts", "mean — all elements"),
-            acc_row(peaks_m,    "true_logcounts", "mean_pred_logcounts", "mean — p300+"),
-            acc_row(nonpeaks_m, "true_logcounts", "mean_pred_logcounts", "mean — p300-"),
-        ]
+            present_mean_folds = sorted(fold_dfs_mean)
+            ref_df = fold_dfs_mean[present_mean_folds[0]]
+            mean_df = ref_df[["chrom", "start", "end", "true_logcounts"]].copy()
+            for fold in present_mean_folds:
+                mean_df[f"pred_fold{fold}"] = fold_dfs_mean[fold]["pred"].values
+            pred_cols = [f"pred_fold{f}" for f in present_mean_folds]
+            mean_df["mean_pred_logcounts"] = mean_df[pred_cols].mean(axis=1)
+            mean_df[oc] = compute_peak_overlap(mean_df, peaks_df)
+
+            mean_df.to_csv(os.path.join(mean_out, "mean_predictions.tsv.gz"),
+                           sep="\t", index=False, compression="gzip")
+            print(f"Saved mean_predictions.tsv.gz ({len(mean_df)} regions)")
+            acc_rows += make_mean_plots(mean_df, oc, mean_out, mc)
 
     # ── Accuracy table ────────────────────────────────────────────────────────
     acc_df = pd.DataFrame(acc_rows)

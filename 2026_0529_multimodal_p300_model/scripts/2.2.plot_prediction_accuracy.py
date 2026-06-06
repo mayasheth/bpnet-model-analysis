@@ -27,11 +27,14 @@ def parse_args():
     p = argparse.ArgumentParser()
     p.add_argument("--predictions-dir", required=True,
                    help="Directory containing mean_predictions.tsv.gz and cv_predictions.tsv.gz")
+    p.add_argument("--max-counts", type=float, default=10,
+                   help="Upper axis limit for scatter plots (default: 10)")
     return p.parse_args()
 
 
 def plot_scatter(df, x_col, y_col, ax, color="#792374",
-                 xlabel="Observed log counts", ylabel="Predicted log counts", title=""):
+                 xlabel="Observed log counts", ylabel="Predicted log counts", title="",
+                 max_counts=10):
     x = df[x_col].values
     y = df[y_col].values
     finite = np.isfinite(x) & np.isfinite(y)
@@ -41,7 +44,7 @@ def plot_scatter(df, x_col, y_col, ax, color="#792374",
     sns.kdeplot(x=x, y=y, ax=ax, cmap=cmap, fill=True)
 
     lo = 0
-    hi = max(x.max(), y.max(), 20)
+    hi = max_counts
     ax.plot([lo, hi], [lo, hi], color="black", linestyle=(0, (5, 5)), lw=1.2, label="y = x")
     m, b = np.polyfit(x, y, 1)
     ax.plot([lo, hi], [m * lo + b, m * hi + b], color=color, lw=1.5, label="fit")
@@ -80,6 +83,7 @@ def accuracy_row(df, x_col, y_col, label):
 
 def main():
     args = parse_args()
+    mc = args.max_counts
 
     mean_path = os.path.join(args.predictions_dir, "mean_predictions.tsv.gz")
     cv_path = os.path.join(args.predictions_dir, "cv_predictions.tsv.gz")
@@ -89,37 +93,54 @@ def main():
 
     peaks_only = mean_df["EP300_peak_overlap"] == 1
     non_peaks = mean_df["EP300_peak_overlap"] == 0
+    cv_peaks = cv_df["EP300_peak_overlap"] == 1
+    cv_non_peaks = cv_df["EP300_peak_overlap"] == 0
 
     # ── Mean predictions plot ─────────────────────────────────────────────
     fig, axes = plt.subplots(1, 3, figsize=(15, 5))
     plot_scatter(mean_df, "true_logcounts", "mean_pred_logcounts", axes[0],
-                 title=f"Mean predictions — all elements (n={len(mean_df):,})")
+                 title=f"Mean predictions — all elements (n={len(mean_df):,})", max_counts=mc)
     plot_scatter(mean_df[peaks_only], "true_logcounts", "mean_pred_logcounts", axes[1],
-                 title=f"Mean predictions — p300+ (n={peaks_only.sum():,})")
+                 title=f"Mean predictions — p300+ (n={peaks_only.sum():,})", max_counts=mc)
     plot_scatter(mean_df[non_peaks], "true_logcounts", "mean_pred_logcounts", axes[2],
-                 title=f"Mean predictions — p300− (n={non_peaks.sum():,})")
+                 title=f"Mean predictions — p300− (n={non_peaks.sum():,})", max_counts=mc)
 
     sns.despine(trim=True)
     plt.tight_layout()
     plt.savefig(os.path.join(args.predictions_dir, "mean_predictions.pdf"))
     plt.close()
 
-    # ── CV predictions plot ───────────────────────────────────────────────
-    folds = sorted(cv_df["fold"].unique())
-    fig, axes = plt.subplots(1, len(folds) + 1, figsize=(5 * (len(folds) + 1), 5))
-
+    # ── CV predictions plot (all / p300+ / p300-) ─────────────────────────
+    fig, axes = plt.subplots(1, 3, figsize=(15, 5))
     plot_scatter(cv_df, "true_logcounts", "pred_logcounts", axes[0],
                  color="#006eae",
-                 title=f"CV predictions — all folds (n={len(cv_df):,})")
-    for i, fold in enumerate(folds):
-        sub = cv_df[cv_df["fold"] == fold]
-        plot_scatter(sub, "true_logcounts", "pred_logcounts", axes[i + 1],
-                     color="#006eae",
-                     title=f"CV fold {fold} (n={len(sub):,})")
+                 title=f"CV predictions — all elements (n={len(cv_df):,})", max_counts=mc)
+    plot_scatter(cv_df[cv_peaks], "true_logcounts", "pred_logcounts", axes[1],
+                 color="#006eae",
+                 title=f"CV predictions — p300+ (n={cv_peaks.sum():,})", max_counts=mc)
+    plot_scatter(cv_df[cv_non_peaks], "true_logcounts", "pred_logcounts", axes[2],
+                 color="#006eae",
+                 title=f"CV predictions — p300− (n={cv_non_peaks.sum():,})", max_counts=mc)
 
     sns.despine(trim=True)
     plt.tight_layout()
     plt.savefig(os.path.join(args.predictions_dir, "cv_predictions.pdf"))
+    plt.close()
+
+    # ── CV per-fold plot ───────────────────────────────────────────────────
+    folds = sorted(cv_df["fold"].unique())
+    fig, axes = plt.subplots(1, len(folds), figsize=(5 * len(folds), 5))
+    if len(folds) == 1:
+        axes = [axes]
+    for ax, fold in zip(axes, folds):
+        sub = cv_df[cv_df["fold"] == fold]
+        plot_scatter(sub, "true_logcounts", "pred_logcounts", ax,
+                     color="#006eae",
+                     title=f"CV fold {fold} (n={len(sub):,})", max_counts=mc)
+
+    sns.despine(trim=True)
+    plt.tight_layout()
+    plt.savefig(os.path.join(args.predictions_dir, "cv_predictions_by_fold.pdf"))
     plt.close()
 
     # ── Accuracy table ────────────────────────────────────────────────────
