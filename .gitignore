@@ -95,3 +95,14 @@ __pycache__/
 # Temp sort files from BigWig generation
 **/data/tmp_bw_*/
 **/data/*.bw
+
+# Large FIMO hit tables
+FIMO/elements_v1/*.tsv
+FIMO/elements_v1/analysis_v1/motif_pairs_all.tsv
+FIMO/2025_1112_test/fimo.tsv
+FIMO/2025_1112_test/fimo.gff
+FIMO/2025_1112_test/cisml.xml
+
+FIMO/elements_v1/analysis_v1/fimo_to_annotation_mapping.tsv
+FIMO/elements_v1/analysis_v1/plot4*.png
+FIMO/elements_v1/analysis_v1/plot6.1*.png
