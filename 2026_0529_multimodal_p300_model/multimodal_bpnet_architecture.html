@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MultiModalBPNet architecture</title>
+<style>
+  :root {
+    --stone-light: #f6f2ee;
+    --stone-mid: #e0dcca;
+    --stone-dark: #5e5948;
+    --grey-light: #e5e5e9;
+    --grey-mid: #96a0b3;
+    --grey-dark: #1c2a43;
+    --blue: #006eae;
+    --blue-light: #c5e5fb;
+    --blue-mid: #5496ce;
+    --red: #c5373d;
+    --red-light: #f6ceca;
+    --teal: #0096a0;
+    --teal-light: #cae5ee;
+    --green: #5eb342;
+    --green-light: #d7e5c5;
+    --purple: #792374;
+    --purple-light: #e9d3ea;
+    --orange: #e96a00;
+    --orange-light: #fbdcbc;
+    --yellow-light: #ffeec1;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #1c2a43;
+    background: #fff;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px 32px 80px;
+  }
+
+  h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; color: var(--grey-dark); }
+  h2 { font-size: 16px; font-weight: 700; margin: 36px 0 12px; color: var(--grey-dark); border-bottom: 2px solid var(--stone-mid); padding-bottom: 4px; }
+  h3 { font-size: 14px; font-weight: 700; margin: 20px 0 8px; color: var(--grey-dark); }
+
+  p { margin-bottom: 10px; }
+  code { font-family: "SF Mono", "Fira Code", monospace; font-size: 12px; background: var(--stone-light); padding: 1px 4px; border-radius: 3px; }
+  pre {
+    font-family: "SF Mono", "Fira Code", monospace;
+    font-size: 12px;
+    background: var(--stone-light);
+    border-left: 3px solid var(--stone-dark);
+    padding: 12px 16px;
+    border-radius: 0 4px 4px 0;
+    overflow-x: auto;
+    margin: 10px 0 16px;
+    line-height: 1.5;
+  }
+
+  .subtitle { color: var(--grey-mid); font-size: 13px; margin-bottom: 28px; }
+
+  /* Architecture diagram */
+  .arch-diagram {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    margin: 24px 0 32px;
+    font-size: 12px;
+  }
+
+  .arch-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .arch-row.inputs { gap: 32px; margin-bottom: 0; }
+
+  .block {
+    padding: 8px 14px;
+    border-radius: 5px;
+    text-align: center;
+    font-weight: 600;
+    min-width: 130px;
+    line-height: 1.3;
+  }
+  .block small { display: block; font-weight: 400; font-size: 11px; margin-top: 2px; }
+
+  .block.input-seq  { background: var(--blue-light);   border: 1.5px solid var(--blue);   color: var(--grey-dark); }
+  .block.input-acc  { background: var(--teal-light);   border: 1.5px solid var(--teal);   color: var(--grey-dark); }
+  .block.conv-seq   { background: var(--blue-mid);     border: 1.5px solid var(--blue);   color: #fff; }
+  .block.conv-acc   { background: var(--teal);         border: 1.5px solid #006064;       color: #fff; }
+  .block.merge      { background: var(--purple-light); border: 1.5px solid var(--purple); color: var(--grey-dark); font-size: 13px; min-width: 200px; }
+  .block.residual   { background: var(--stone-light);  border: 1.5px solid var(--stone-dark); color: var(--grey-dark); min-width: 200px; }
+  .block.head-prof  { background: var(--orange-light); border: 1.5px solid var(--orange); color: var(--grey-dark); }
+  .block.head-cnt   { background: var(--green-light);  border: 1.5px solid var(--green);  color: var(--grey-dark); }
+  .block.output-prof { background: var(--orange);      color: #fff; border: none; }
+  .block.output-cnt  { background: var(--green);       color: #fff; border: none; }
+
+  .arrow-v {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--grey-mid);
+    font-size: 18px;
+    line-height: 1;
+    margin: 2px 0;
+  }
+  .arrow-v .label { font-size: 10px; color: var(--grey-mid); font-family: "SF Mono", monospace; }
+
+  .arrow-h { color: var(--grey-mid); font-size: 18px; }
+
+  .two-col {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    align-items: flex-start;
+    width: 100%;
+  }
+  .col { display: flex; flex-direction: column; align-items: center; gap: 0; }
+
+  .vline {
+    width: 2px;
+    background: var(--grey-light);
+    height: 14px;
+    margin: 0 auto;
+  }
+
+  .hline {
+    height: 2px;
+    background: var(--grey-light);
+    flex: 1;
+    max-width: 60px;
+    align-self: center;
+  }
+
+  .split-merge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    width: 100%;
+    position: relative;
+  }
+  .split-merge .left { display: flex; flex-direction: column; align-items: center; }
+  .split-merge .right { display: flex; flex-direction: column; align-items: center; }
+  .split-merge .center { display: flex; flex-direction: column; align-items: center; }
+
+  /* Tables */
+  table { border-collapse: collapse; width: 100%; margin: 12px 0 20px; font-size: 13px; }
+  th { background: var(--grey-dark); color: #fff; padding: 7px 10px; text-align: left; font-weight: 600; }
+  td { padding: 6px 10px; border-bottom: 1px solid var(--stone-mid); vertical-align: top; }
+  tr:nth-child(even) td { background: var(--stone-light); }
+  td:first-child { font-family: "SF Mono", monospace; font-size: 12px; white-space: nowrap; }
+  td.note { color: #555; font-style: italic; }
+
+  /* Callout boxes */
+  .callout {
+    border-radius: 5px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    border-left: 4px solid;
+  }
+  .callout.info    { background: var(--blue-light);   border-color: var(--blue);   }
+  .callout.design  { background: var(--purple-light); border-color: var(--purple); }
+  .callout.tune    { background: var(--yellow-light); border-color: #ca9b23;       }
+  .callout.warning { background: var(--red-light);    border-color: var(--red);    }
+  .callout strong  { display: block; margin-bottom: 4px; }
+
+  .section { margin-bottom: 8px; }
+
+  /* Dimension annotations */
+  .dim { color: var(--blue); font-family: "SF Mono", monospace; font-size: 12px; }
+
+  hr { border: none; border-top: 1px solid var(--stone-mid); margin: 32px 0; }
+</style>
+</head>
+<body>
+
+<h1>MultiModalBPNet architecture</h1>
+<p class="subtitle">
+  A BPNet variant that jointly uses DNA sequence and base-pair-resolution chromatin accessibility
+  to predict stranded p300 ChIP-seq signal. Defined in <code>scripts/multimodal_bpnet.py</code>;
+  trained via <code>scripts/train_multimodal_bpnet.py</code>.
+</p>
+
+<!-- ─── OVERVIEW DIAGRAM ─────────────────────────────────────────── -->
+<h2>Architecture overview</h2>
+
+<div class="arch-diagram">
+
+  <!-- Inputs -->
+  <div class="arch-row inputs">
+    <div class="col">
+      <div class="block input-seq">DNA sequence<small>(N, 4, 2114)</small></div>
+    </div>
+    <div class="col">
+      <div class="block input-acc">Accessibility<small>(N, 1, 2114)</small></div>
+    </div>
+  </div>
+
+  <!-- Separate initial convolutions -->
+  <div class="arch-row" style="margin-top:0;">
+    <div class="col">
+      <div class="vline"></div>
+      <div class="block conv-seq">Conv1d 4→64<small>kernel=21, ReLU</small></div>
+    </div>
+    <div style="width:64px;"></div>
+    <div class="col">
+      <div class="vline"></div>
+      <div class="block conv-acc">Conv1d 1→8<small>kernel=21, ReLU</small></div>
+    </div>
+  </div>
+
+  <!-- Merge -->
+  <div class="arch-row" style="margin-top:0;">
+    <div class="col">
+      <div class="vline"></div>
+    </div>
+    <div style="width:64px; height:2px; background:var(--grey-light); align-self:flex-end; margin-bottom:14px;"></div>
+    <div class="col">
+      <div class="vline"></div>
+    </div>
+  </div>
+
+  <div class="arch-row">
+    <div class="block merge">Concatenate along channels<small>(N, 72, 2114) &nbsp;[64 + 8]</small></div>
+  </div>
+
+  <!-- Residual stack -->
+  <div class="vline" style="height:10px;"></div>
+  <div class="block residual">Dilated residual Conv1d ×8<small>dilation = 2, 4, 8, 16, 32, 64, 128, 256</small></div>
+  <div class="vline" style="height:10px;"></div>
+  <div class="block residual" style="border-style:dashed;">(N, 72, 2114) throughout</div>
+  <div class="vline" style="height:10px;"></div>
+
+  <!-- Two heads -->
+  <div class="arch-row" style="gap:40px;">
+    <div class="col">
+      <div class="block head-prof">Profile conv<small>Conv1d 72→2, kernel=75</small></div>
+      <div class="vline"></div>
+      <div style="font-size:11px; color:var(--grey-mid); font-family:monospace;">trim 557 bp each side</div>
+      <div class="vline"></div>
+      <div class="block output-prof">Profile logits<small>(N, 2, 1000)</small></div>
+    </div>
+    <div class="col">
+      <div class="block head-cnt">Global mean pool<br>→ Linear 72→1</div>
+      <div class="vline"></div>
+      <div class="block output-cnt">Log counts<small>(N, 1)</small></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="callout design">
+  <strong>Why "middle fusion"?</strong>
+  The two modalities each get their own initial convolution before being merged,
+  rather than concatenating the raw inputs (early fusion) or combining only at
+  the output (late fusion). This lets each branch learn modality-specific
+  low-level features while sharing representational capacity in the deeper layers
+  where sequence and accessibility context interact.
+</div>
+
+<hr>
+
+<!-- ─── INPUT ENCODING ────────────────────────────────────────────── -->
+<h2>Input encoding</h2>
+
+<h3>Channel 0–3: DNA sequence</h3>
+<p>
+  One-hot encoding over {A, C, G, T}. N bases and lowercase are encoded as all-zero vectors.
+  The input window is <strong>2114 bp</strong> centered on each peak summit (or region midpoint
+  for negatives). The extra 2 × 557 bp beyond the 1000 bp output window is consumed by
+  the trimming from dilated convolutions.
+</p>
+
+<h3>Channel 4: chromatin accessibility</h3>
+<p>
+  Raw accessibility values (ATAC Tn5 cut counts or DNase cut counts at 1 bp resolution)
+  are transformed before input: <strong>log1p → z-score</strong> (subtract mean, divide by
+  standard deviation). Mean and standard deviation are computed from training peaks only
+  and reused for validation and negatives to prevent data leakage.
+</p>
+<pre>acc_normalized = (log1p(clip(acc, 0)) - mean) / std</pre>
+
+<div class="callout tune">
+  <strong>Tuning the accessibility input</strong>
+  The current normalization is simple and has no learnable parameters. Alternatives worth
+  exploring: (1) bias correction of the accessibility signal to account for
+  Tn5/DNase sequence preference before training; (2) learned normalization
+  (e.g., a BatchNorm or LayerNorm on the accessibility channel); (3) using
+  a smoothed accessibility signal (e.g., Gaussian-smoothed at ~50 bp) rather
+  than raw 1 bp cuts, which may reduce noise.
+</div>
+
+<h3>Reverse complement augmentation</h3>
+<p>During training, each example is randomly reverse-complemented with probability 0.5:</p>
+<table>
+  <tr><th>Signal</th><th>Transformation</th><th>Reason</th></tr>
+  <tr>
+    <td>DNA (ch 0–3)</td>
+    <td>Flip channel order (T↔A, G↔C) AND reverse positions</td>
+    <td>Standard DNA reverse complement</td>
+  </tr>
+  <tr>
+    <td>Accessibility (ch 4)</td>
+    <td>Reverse positions only</td>
+    <td>Accessibility is unstranded; no channel flip needed</td>
+  </tr>
+  <tr>
+    <td>Signal target (ch 0–1)</td>
+    <td>Swap plus/minus channels AND reverse positions</td>
+    <td>Plus strand becomes minus strand under RC</td>
+  </tr>
+</table>
+
+<hr>
+
+<!-- ─── MODEL LAYERS ─────────────────────────────────────────────── -->
+<h2>Layer-by-layer description</h2>
+
+<h3>Initial convolutions (separate per modality)</h3>
+<table>
+  <tr><th>Parameter</th><th>Default</th><th>Notes / tuning</th></tr>
+  <tr>
+    <td>n_filters</td><td>64</td>
+    <td>Filters for the sequence branch initial conv. Standard BPNet uses 64. Increasing (e.g. 128, 256) adds capacity but slows training. Decreasing reduces overfitting on small datasets.</td>
+  </tr>
+  <tr>
+    <td>n_acc_filters</td><td>8</td>
+    <td>Filters for the accessibility branch initial conv. Kept small (8 = 12.5% of sequence capacity) to reflect that accessibility is a 1D scalar signal rather than a 4-letter alphabet. Tuning: increase to 16–32 if you suspect the accessibility branch is a bottleneck; decrease to 4 if overfitting.</td>
+  </tr>
+  <tr>
+    <td>kernel_size</td><td>21</td>
+    <td>Same for both branches. Captures ±10 bp local context in the initial projection. Not exposed as an argument; change in <code>multimodal_bpnet.py</code> if needed.</td>
+  </tr>
+</table>
+
+<p>
+  After each initial convolution, a ReLU activation is applied. No batch normalization
+  is used (consistent with standard BPNet; BN can interfere with the MNLL profile loss).
+</p>
+
+<h3>Concatenation (middle fusion)</h3>
+<p>
+  The two branches are concatenated along the channel dimension:
+  <span class="dim">(N, 64, L) cat (N, 8, L) → (N, 72, L)</span>.
+  All subsequent layers operate on this merged representation. The channel imbalance
+  (64 vs 8) implicitly weights sequence more heavily than accessibility — intentional,
+  since sequence is the primary signal.
+</p>
+
+<h3>Dilated residual stack</h3>
+<table>
+  <tr><th>Parameter</th><th>Default</th><th>Notes / tuning</th></tr>
+  <tr>
+    <td>n_layers</td><td>8</td>
+    <td>Number of dilated Conv1d layers. Dilations are 2<sup>1</sup>…2<sup>8</sup> = 2, 4, 8, 16, 32, 64, 128, 256. Receptive field = 47 + 2×(2+4+8+16+32+64+128+256) = 47 + 1020 = 1067 bp. Matches standard BPNet. Increasing to 10 layers extends to 4139 bp receptive field but adds memory cost.</td>
+  </tr>
+  <tr>
+    <td>kernel_size</td><td>3</td>
+    <td>Fixed for residual convolutions. Each layer's actual receptive field contribution is (3−1)×dilation. Not exposed as argument.</td>
+  </tr>
+</table>
+<p>
+  Each residual layer computes: <code>X = X + ReLU(Conv1d(X, dilation=2^i))</code>.
+  The channel count stays constant at <span class="dim">n_filters + n_acc_filters = 72</span>
+  throughout the stack.
+</p>
+
+<div class="callout info">
+  <strong>Trimming</strong>
+  Because dilated convolutions expand the receptive field, the edges of the output
+  are less well-predicted. BPNet trims both ends of the sequence before reading
+  profile predictions. Trimming = 47 + sum(2<sup>1</sup>…2<sup>8</sup>) = <strong>557 bp</strong>
+  per side. With an input of 2114 bp, the output profile is 2114 − 2×557 = <strong>1000 bp</strong>,
+  matching the target window.
+</div>
+
+<h3>Profile head</h3>
+<p>
+  A final Conv1d with kernel size 75 (padding 37) maps from
+  <span class="dim">(N, 72, 2114)</span> to <span class="dim">(N, 2, 2114)</span>,
+  then the trimmed region <span class="dim">(N, 2, 1000)</span> is returned as logits.
+  The two output channels correspond to the plus and minus strand ChIP-seq profiles.
+  A softmax is applied implicitly during the MNLL loss (not in the forward pass).
+</p>
+
+<div class="callout tune">
+  <strong>Profile head kernel size (75 bp)</strong>
+  This large kernel integrates information across ±37 bp and captures the
+  typical ~150 bp nucleosome-free region shape. If modeling a different assay
+  with sharper or broader footprints, this should be adjusted. Smaller values
+  (e.g. 25) produce sharper predictions; larger (e.g. 151) smooth them more.
+</div>
+
+<h3>Counts head</h3>
+<p>
+  The merged representation is mean-pooled across the output window
+  (positions 557–1557, i.e. the 1000 bp center ± 37 bp buffer on each side),
+  then passed through a single linear layer to predict log total counts:
+  <span class="dim">(N, 72) → (N, 1)</span>. This is used to predict the scalar
+  total ChIP-seq signal at each region.
+</p>
+
+<hr>
+
+<!-- ─── LOSS FUNCTION ─────────────────────────────────────────────── -->
+<h2>Loss function</h2>
+
+<p>
+  The model is trained with a two-term mixed loss, following BPNet convention:
+</p>
+<pre>
+loss = MNLL(profile_logits, signal_counts)    # profile shape
+     + count_loss_weight × log1pMSE(log_counts_pred, log_counts_true)  # total counts
+</pre>
+
+<table>
+  <tr><th>Term</th><th>Function</th><th>What it learns</th></tr>
+  <tr>
+    <td>Profile loss</td>
+    <td>Multinomial negative log-likelihood (MNLL)</td>
+    <td>Shape of the ChIP-seq profile — where reads pile up within the window, independent of total count</td>
+  </tr>
+  <tr>
+    <td>Counts loss</td>
+    <td>MSE on log1p-transformed total counts</td>
+    <td>Total signal magnitude — whether the region is a strong or weak peak</td>
+  </tr>
+</table>
+
+<table>
+  <tr><th>Parameter</th><th>Default</th><th>Notes / tuning</th></tr>
+  <tr>
+    <td>count_loss_weight</td><td>1.0</td>
+    <td>Relative weight of the counts term. Increasing (e.g. 2–5) pushes the model to prioritize count prediction at the possible expense of profile shape. Decreasing (e.g. 0.1–0.5) prioritizes shape. Standard BPNet uses 1.0. For accessibility models (ChromBPNet), lower values are sometimes used because profile shape is more informative than total counts.</td>
+  </tr>
+</table>
+
+<div class="callout design">
+  <strong>Why MNLL for the profile?</strong>
+  ChIP-seq read counts at each position follow a multinomial distribution given a fixed
+  total read count. MNLL loss treats the profile logits as unnormalized log-probabilities
+  of a multinomial, making it a principled probabilistic loss for count data with variable
+  depth across regions. This is preferable to MSE on profiles because it is scale-invariant
+  (the shape, not the absolute level, is what matters for profile loss).
+</div>
+
+<hr>
+
+<!-- ─── TRAINING PROCEDURE ────────────────────────────────────────── -->
+<h2>Training procedure</h2>
+
+<h3>Data sampling</h3>
+<p>
+  Each epoch iterates over peaks, with negatives (GC-matched genomic regions)
+  randomly interspersed.
+</p>
+<table>
+  <tr><th>Parameter</th><th>Default</th><th>Notes / tuning</th></tr>
+  <tr>
+    <td>negative_ratio</td><td>0.1</td>
+    <td>Fraction of each batch that is negatives (≈9.1% of samples). Higher values increase the model's specificity (fewer false positives on non-peak regions) at the cost of slower convergence on positives. Standard range: 0.05–0.2.</td>
+  </tr>
+  <tr>
+    <td>max_jitter</td><td>50 bp</td>
+    <td>Peak examples are randomly shifted by ±50 bp around the summit during training. This augmentation exposes the model to varied centering offsets and improves positional robustness. Not applied to negatives. Set to 0 to disable.</td>
+  </tr>
+</table>
+
+<div class="callout info">
+  <strong>Negative sampling strategy</strong>
+  Negatives are GC-matched regions drawn from <code>genomewide_gc_stride_1000_flank_size_1057.gc.bed</code>.
+  GC-matching prevents the model from simply learning GC content as a proxy for p300 binding.
+  Each epoch, negatives are sampled uniformly at random; peaks are shuffled and cycled so that
+  all peaks are seen once per epoch before repeating.
+</div>
+
+<h3>Optimizer and scheduler</h3>
+<table>
+  <tr><th>Parameter</th><th>Default</th><th>Notes / tuning</th></tr>
+  <tr>
+    <td>Optimizer</td><td>Adam</td>
+    <td>Standard choice. AdamW (with weight decay 1e-4) can improve regularization.</td>
+  </tr>
+  <tr>
+    <td>lr</td><td>1e-3</td>
+    <td>Initial learning rate. Reduce if training is unstable (loss spikes). Standard BPNet uses 4e-3; 1e-3 is more conservative and appropriate for the larger merged input.</td>
+  </tr>
+  <tr>
+    <td>Scheduler</td><td>ReduceLROnPlateau</td>
+    <td>Halves the learning rate when validation loss plateaus.</td>
+  </tr>
+  <tr>
+    <td>Scheduler patience</td><td>5 epochs</td>
+    <td>How many epochs without improvement before reducing LR. Increase to 10 for noisier training curves.</td>
+  </tr>
+  <tr>
+    <td>Scheduler factor</td><td>0.5</td>
+    <td>LR is multiplied by this value on plateau. 0.5 = halving.</td>
+  </tr>
+  <tr>
+    <td>Gradient clipping</td><td>norm = 1.0</td>
+    <td>Applied every step. Prevents gradient explosions in the dilated stack. Increasing to 5.0 may allow faster convergence; decreasing to 0.5 adds stability.</td>
+  </tr>
+  <tr>
+    <td>early_stopping</td><td>10 epochs</td>
+    <td>Training stops if validation loss does not improve for this many consecutive epochs. Increase (e.g. 20) if you want more patience, especially with LR scheduling.</td>
+  </tr>
+  <tr>
+    <td>max_epochs</td><td>100</td>
+    <td>Hard upper limit. In practice, early stopping typically triggers first.</td>
+  </tr>
+  <tr>
+    <td>batch_size</td><td>64</td>
+    <td>Increase to 128–256 if GPU memory allows; larger batches stabilize MNLL loss estimates. Decrease if OOM errors occur.</td>
+  </tr>
+</table>
+
+<h3>Cross-validation strategy</h3>
+<p>
+  5-fold cross-validation using chromosome-based splits (fold JSONs in
+  <code>reference/fold{0–4}.json</code>). Each fold holds out 2–3 chromosomes for
+  validation and trains on the remaining chromosomes. The model is saved only when
+  validation loss improves.
+</p>
+<div class="callout warning">
+  <strong>Known limitation: train/test leakage</strong>
+  Chromosome-based splits do not account for sequence similarity across chromosomes.
+  Regions with similar sequence on different chromosomes can effectively leak between
+  train and test sets. A sequence-similarity-aware splitting strategy (e.g., hashFrag)
+  would give a less optimistic performance estimate.
+</div>
+
+<hr>
+
+<!-- ─── MODEL SELECTION ───────────────────────────────────────────── -->
+<h2>Model selection and outputs</h2>
+
+<p>
+  At each epoch, if the combined validation loss (profile MNLL + count MSE) improves,
+  the full model object is serialized to <code>multimodal_bpnet.torch</code>
+  (PyTorch save). The final-epoch model is additionally saved as
+  <code>multimodal_bpnet.final.torch</code>. Prefer the <code>.torch</code> (best) file
+  for inference. Accessibility normalization statistics (mean, std) are saved to
+  <code>acc_normalization_stats.json</code> and must be reused for inference.
+</p>
+
+<p>Validation metrics logged per epoch:</p>
+<table>
+  <tr><th>Metric</th><th>Description</th></tr>
+  <tr><td>Training MNLL</td><td>Profile shape loss on training batches</td></tr>
+  <tr><td>Training count MSE</td><td>Count regression loss on training batches</td></tr>
+  <tr><td>Validation MNLL</td><td>Profile shape loss on held-out chromosomes</td></tr>
+  <tr><td>Validation profile Pearson</td><td>Pearson correlation of predicted vs. observed profiles (Gaussian-smoothed, σ=7, width=81 bp)</td></tr>
+  <tr><td>Validation count Pearson</td><td>Pearson correlation of predicted vs. observed log counts</td></tr>
+  <tr><td>Validation count MSE</td><td>Count regression loss on held-out chromosomes</td></tr>
+</table>
+
+<hr>
+
+<!-- ─── PARAMETER COUNT ───────────────────────────────────────────── -->
+<h2>Parameter count (default settings)</h2>
+
+<table>
+  <tr><th>Component</th><th>Shape</th><th>Parameters</th></tr>
+  <tr><td>seq_conv</td><td>Conv1d(4, 64, 21)</td><td>4 × 64 × 21 + 64 = 5,440</td></tr>
+  <tr><td>acc_conv</td><td>Conv1d(1, 8, 21)</td><td>1 × 8 × 21 + 8 = 176</td></tr>
+  <tr><td>rconvs ×8</td><td>Conv1d(72, 72, 3) each</td><td>8 × (72 × 72 × 3 + 72) = 124,992</td></tr>
+  <tr><td>fconv</td><td>Conv1d(72, 2, 75)</td><td>72 × 2 × 75 + 2 = 10,802</td></tr>
+  <tr><td>linear</td><td>Linear(72, 1)</td><td>72 + 1 = 73</td></tr>
+  <tr><td><strong>Total</strong></td><td></td><td><strong>~141,483</strong></td></tr>
+</table>
+
+<p>
+  This is substantially smaller than many deep learning models, which reduces the risk
+  of overfitting on the ~28,000 training peaks. If you observe underfitting (training
+  and validation loss both high), increase <code>n_filters</code> or <code>n_layers</code>.
+</p>
+
+<hr>
+
+<!-- ─── COMPARISON TO STANDARD BPNET ────────────────────────────── -->
+<h2>Comparison to standard BPNet</h2>
+
+<table>
+  <tr><th>Property</th><th>Standard BPNet (TFAtlas)</th><th>MultiModalBPNet</th></tr>
+  <tr><td>Input channels</td><td>4 (DNA only)</td><td>5 (DNA + accessibility)</td></tr>
+  <tr><td>Input window</td><td>2114 bp</td><td>2114 bp</td></tr>
+  <tr><td>n_outputs</td><td>2 (stranded)</td><td>2 (stranded)</td></tr>
+  <tr><td>n_filters</td><td>64</td><td>64 (seq) + 8 (acc)</td></tr>
+  <tr><td>n_layers</td><td>8</td><td>8</td></tr>
+  <tr><td>Dilated receptive field</td><td>1067 bp</td><td>1067 bp</td></tr>
+  <tr><td>Output window</td><td>1000 bp</td><td>1000 bp</td></tr>
+  <tr><td>Loss</td><td>MNLL + log1pMSE</td><td>MNLL + log1pMSE</td></tr>
+  <tr><td>Framework</td><td>TensorFlow / bpnet</td><td>PyTorch / bpnet-lite</td></tr>
+  <tr><td>Training negatives</td><td>GC-matched genomic regions</td><td>GC-matched genomic regions</td></tr>
+</table>
+
+<div class="callout design">
+  <strong>Key design question</strong>
+  The model tests whether providing base-pair-resolution accessibility as an explicit
+  input improves p300 prediction beyond what sequence alone can achieve. If the
+  multimodal model significantly outperforms the sequence-only model (especially on
+  regions that are accessible but not p300-bound, or p300-bound but in unusual
+  chromatin contexts), it suggests that chromatin state contains predictive information
+  not encoded in the DNA sequence itself.
+</div>
+
+<hr>
+
+<p style="color:var(--grey-mid); font-size:12px;">
+  Generated from <code>scripts/multimodal_bpnet.py</code> and
+  <code>scripts/train_multimodal_bpnet.py</code> &mdash;
+  EP300_BPNet / 2026_0529_multimodal_p300_model
+</p>
+
+</body>
+</html>

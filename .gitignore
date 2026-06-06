@@ -91,3 +91,7 @@ __pycache__/
 
 # Exception: small reference motif files
 !reference/*.npz
+
+# Temp sort files from BigWig generation
+**/data/tmp_bw_*/
+**/data/*.bw

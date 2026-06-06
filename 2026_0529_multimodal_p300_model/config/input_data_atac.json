@@ -1,0 +1,9 @@
+{
+    "signal_plus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2025_0703_retrain_p300_model/data/ENCSR000EGE_plus.bigWig",
+    "signal_minus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2025_0703_retrain_p300_model/data/ENCSR000EGE_minus.bigWig",
+    "accessibility_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0529_multimodal_p300_model/data/atac.bw",
+    "accessibility_source": "ATAC-seq (K562, ENCODE): ENCFF077FBI, ENCFF128WZG, ENCFF534DCE tagAlign",
+    "peaks": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/reference/ENCSR000EGE_peaks_inliers.narrowPeak",
+    "negatives": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/reference/genomewide_gc_stride_1000_flank_size_1057.gc.bed",
+    "genome": "/oak/stanford/groups/engreitz/Users/sheth/hg38_resources/hg38.fa"
+}
