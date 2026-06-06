@@ -1,0 +1,10 @@
+pattern_tag_new	modisco_id	pattern_group	pattern_idx	flip_orientation	trim_threshold	start_new_fwd	end_new_fwd	modisco_h5_path
+GATA	p300_v2_peaks.20_5_10	pos_patterns	0	True		27	33	/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2025_0703_retrain_p300_model/modisco_peaks/max_seqlets_250k_20_5_10/counts_scores.h5
+AP1_1	p300_v2_peaks.20_5_10	pos_patterns	1	False	0.2			/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2025_0703_retrain_p300_model/modisco_peaks/max_seqlets_250k_20_5_10/counts_scores.h5
+CREB_ATF_3	p300_v2_peaks.20_5_10	pos_patterns	2	True	0.2			/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2025_0703_retrain_p300_model/modisco_peaks/max_seqlets_250k_20_5_10/counts_scores.h5
+CREB_ATF_1	p300_v2_peaks.20_5_10	pos_patterns	3	True		16	26	/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2025_0703_retrain_p300_model/modisco_peaks/max_seqlets_250k_20_5_10/counts_scores.h5
+STAT_2	p300_v2_peaks.20_5_10	pos_patterns	4	False		22	37	/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2025_0703_retrain_p300_model/modisco_peaks/max_seqlets_250k_20_5_10/counts_scores.h5
+CTCF	p300_v2_peaks.30_10_0	pos_patterns	9	False	0.2			/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2025_0703_retrain_p300_model/modisco_peaks/max_seqlets_250k_30_10_0/counts_scores.h5
+GATA_TAL1	p300_v1.20_5_10	pos_patterns	5	False		30	48	/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2025_0517_official_EP300_K562_model/modisco/max_seqlets_250k_20_5_10/counts_scores.h5
+ETS_1	p300_v2.20_5_10	pos_patterns	4	True	0.2			/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2025_0703_retrain_p300_model/modisco/max_seqlets_250k_20_5_10/counts_scores.h5
+REPEAT_G	p300_v2.20_5_10	pos_patterns	6	True	0.3			/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2025_0703_retrain_p300_model/modisco/max_seqlets_250k_20_5_10/counts_scores.h5

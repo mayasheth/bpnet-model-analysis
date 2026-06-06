@@ -76,3 +76,6 @@ __pycache__/
 
 # Misc
 .htaccess
+
+# Exception: small reference motif files
+!reference/*.npz
