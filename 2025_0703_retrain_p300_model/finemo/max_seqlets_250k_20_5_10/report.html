@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fi-NeMo Report</title>
+    <style>
+        /* Adapted from https://github.com/oxalorg/sakura/ */
+        html {
+            font-size: 62.5%;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+        }
+        
+        body {
+            font-size: 1.8rem;
+            line-height: 1.618;
+            max-width: 60em;
+            margin: auto;
+            color: #222222;
+            background-color: #ffffff;
+            padding: 13px;
+        }
+        
+        @media (max-width: 684px) {
+        body {
+            font-size: 1.53rem;
+        }
+        }
+        @media (max-width: 382px) {
+        body {
+            font-size: 1.35rem;
+        }
+        }
+        h1, h2, h3, h4, h5, h6 {
+            line-height: 1.1;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+            font-weight: 700;
+            margin-top: 3rem;
+            margin-bottom: 1.5rem;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            -ms-word-break: break-all;
+            word-break: break-word;
+        }
+        
+        h1 {
+            font-size: 2.35em;
+        }
+        
+        h2 {
+            font-size: 1.75em;
+        }
+        
+        h3 {
+            font-size: 1.25em;
+        }
+        
+        p {
+            margin-top: 0px;
+            margin-bottom: 2.5rem;
+        }
+        
+        small, sub, sup {
+            font-size: 75%;
+        }
+        
+        hr {
+            border-color: #007559;
+        }
+        
+        a {
+            text-decoration: none;
+            color: #007559;
+        }
+        a:visited {
+            color: #004232;
+        }
+        a:hover {
+            color: #006994;
+            border-bottom: 2px solid #222222;
+        }
+        
+        ul {
+            padding-left: 1.4em;
+            margin-top: 0px;
+            margin-bottom: 2.5rem;
+        }
+        
+        li {
+            margin-bottom: 0.4em;
+        }
+        
+        blockquote {
+            margin-left: 0px;
+            margin-right: 0px;
+            padding-left: 1em;
+            padding-top: 0.8em;
+            padding-bottom: 0.8em;
+            padding-right: 0.8em;
+            border-left: 5px solid #007559;
+            margin-bottom: 2.5rem;
+            background-color: #f7f7f7;
+        }
+        
+        blockquote p {
+            margin-bottom: 0;
+        }
+        
+        img, video {
+            height: auto;
+            max-width: 100%;
+            margin-top: 0px;
+            margin-bottom: 2.5rem;
+        }
+        
+        /* Pre and Code */
+        pre {
+            background-color: #f7f7f7;
+            display: block;
+            padding: 1em;
+            overflow-x: auto;
+            margin-top: 0px;
+            margin-bottom: 2.5rem;
+            font-size: 0.9em;
+        }
+        
+        code, kbd, samp {
+            font-size: 0.9em;
+            padding: 0 0.5em;
+            background-color: #f7f7f7;
+            white-space: pre-wrap;
+            }
+        
+        pre > code {
+            padding: 0;
+            background-color: transparent;
+            white-space: pre;
+            font-size: 1em;
+        }
+        
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2rem;
+            font-variant-numeric: tabular-nums;
+            text-align: justify;
+        }
+
+        td, th {
+            padding: 0.5em;
+            border-bottom: 1px solid #f1f1f1;
+        }
+
+        .num_col {
+            text-align: right;
+        }
+
+        td.num_col {
+            padding-left: 2em;
+        }
+
+        th.cwm, th.distplot {
+            padding-left: 2em;
+        }
+
+        .cwm img {
+            max-width: unset;
+            margin-bottom: 0
+        }
+
+        .distplot img {
+            margin-bottom: 0
+        }
+        
+    </style>
+</head>
+
+<body>
+<h1>Fi-NeMo hit calling report</h1>
+
+
+
+
+<h2>TF-MoDISco seqlet comparisons</h2>
+<p>
+    The following figures and statistics compare the called hits with the seqlets used by TF-MoDISco to construct each motif. 
+</p>
+
+<h3>Hit vs. seqlet counts</h3>
+<p>
+    This figure shows the number of hits called vs. the number of TF-MoDISco seqlets identified for each motif. 
+    The dashed line is the identity line. 
+    When comparing a shared set of regions, the hit counts should be mostly greater than the corresponding seqlet counts, since TF-MoDISco stringently filters seqlets and usually uses a smaller input window. 
+</p>
+<img src="hit_vs_seqlet_counts.png" width="780">
+
+
+<h3>Hit and seqlet motif comparisons</h3>
+<p>
+    For each motif, this table examines the consistency between hits and TF-MoDISco seqlets. 
+</p>
+
+<p>
+    The following statistics report the number of hits, seqlets, and their relationships: 
+</p>
+<ul>
+    <li><strong>Hits</strong>: The number of hits called by Fi-NeMo</li>
+    
+    <li><strong>Restricted Hits</strong>: The number of Fi-NeMo hits within the TF-MoDISco input regions</li>
+    
+    
+    <li><strong>Seqlets</strong>: The number of unique TF-MoDISco seqlets</li>
+    
+    
+    <li><strong>Hit/Seqlet Overlaps</strong>: The number of hits that coincide with TF-MoDISco seqlets</li>
+    <li><strong>Missed Seqlets</strong>: The number of TF-MoDISco seqlets not called as hits</li>
+    <li><strong>Additional Restricted Hits</strong>: The number of hits within the TF-MoDISco input regions that are not identified as seqlets by TF-MoDISco</li>
+    <li><strong>Seqlet Recall</strong>: The fraction of seqlets that are called as hits</li>
+    
+    <li><strong>Hit-Seqlet CWM Similarity</strong>: The cosine similarity between the hit CWM and the TF-MoDISco CWM</li>
+</ul>
+<p>
+    Note that the seqlet counts here may be lower than those shown in the tfmodisco-lite report due to double-counting in overlapping regions.
+    The seqlet counts shown here are unique while the counts in the tfmodisco-lite report are not de-duplicated.
+</p>
+
+<p>
+    Note that palindromic motifs may have lower recall due to disagreements on orientation.
+    If seqlet recall is near zero for all motifs, the <code>-W/--modisco-region-width</code> argument is likely incorrect.
+    This value is required to infer genomic coordinates of seqlets from the tfmodisco-lite output H5.
+</p>
+
+<p>
+    Motif CWMs (contribution weight matrices) are average contribution scores over a set of regions. The CWMs plotted here are:
+</p>
+<ul>
+    <li><strong>Hit CWM (FC)</strong>: The forward-strand CWM of all hits</li>
+    <li><strong>Hit CWM (RC)</strong>: The reverse-strand CWM of all hits</li>
+    <li><strong>TF-MoDISco CWM (FC/RC)</strong>: The CWM of all TF-MoDISco seqlets</li>
+    
+    <li><strong>Missed-Seqlet-Only CWM</strong>: The CWM of all TF-MoDISco seqlets that were not called as hits</li>
+    <li><strong>Additional-Restricted-Hit CWM</strong>: The CWM of all hits within the TF-MoDISco input regions that were not identified as seqlets by TF-MoDISco</li>
+    
+</ul>
+<p>
+    The plots span the full untrimmed motif, with the trimmed motif shaded.
+</p>
+<p>
+    The hit-seqlet similarity is the cosine similarity between the additional-restricted-hits CWM and the seqlet CWM. 
+    This statistic measures the similarity between hits that were missed by TF-MoDISco and the seqlets used to construct the motif.
+</p>
+
+<table class="wide_table">
+    <thead>
+        <tr>
+            <th>Motif Name</th>
+            
+            <th class="num_col">Seqlet Recall</th>
+            
+            <th class="num_col">Hit-Seqlet CWM Similarity</th>
+            <th class="num_col">Hits</th>
+            
+            <th class="num_col">Restricted Hits</th>
+            
+            
+            <th class="num_col">Seqlets</th>
+            
+            
+            <th class="num_col">Hit/Seqlet Overlaps</th>
+            <th class="num_col">Missed Seqlets</th>
+            <th class="num_col">Additional Restricted Hits</th>
+            
+            <th class="cwm">Hit CWM (FC)</th>
+            <th class="cwm">Hit CWM (RC)</th>
+            <th class="cwm">TF-MoDISco CWM (FC)</th>
+            <th class="cwm">TF-MoDISco CWM (RC)</th>
+            
+            <th class="cwm">Missed-Seqlet-Only CWM</th>
+            <th class="cwm">Additional-Restricted-Hit CWM</th>
+            
+        </tr>
+    </thead>
+    <tbody>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_0</code></td>
+            
+            <td class="num_col">0.944</td>
+            
+            <td class="num_col">1.000</td>
+            <td class="num_col">147213</td>
+            
+            <td class="num_col">122548</td>
+            
+            
+            <td class="num_col">43510</td>
+            
+            
+            <td class="num_col">41067</td>
+            <td class="num_col">2443</td>
+            <td class="num_col">81481</td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_0/hits_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_0/hits_rc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_0/modisco_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_0/modisco_rc.png" width="360"></td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_0/seqlets_only.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_0/hits_restricted_only.png" width="360"></td>
+            
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_1</code></td>
+            
+            <td class="num_col">0.969</td>
+            
+            <td class="num_col">0.999</td>
+            <td class="num_col">58218</td>
+            
+            <td class="num_col">50505</td>
+            
+            
+            <td class="num_col">17502</td>
+            
+            
+            <td class="num_col">16952</td>
+            <td class="num_col">550</td>
+            <td class="num_col">33553</td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_1/hits_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_1/hits_rc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_1/modisco_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_1/modisco_rc.png" width="360"></td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_1/seqlets_only.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_1/hits_restricted_only.png" width="360"></td>
+            
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_2</code></td>
+            
+            <td class="num_col">0.933</td>
+            
+            <td class="num_col">0.998</td>
+            <td class="num_col">15055</td>
+            
+            <td class="num_col">12291</td>
+            
+            
+            <td class="num_col">3227</td>
+            
+            
+            <td class="num_col">3010</td>
+            <td class="num_col">217</td>
+            <td class="num_col">9281</td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_2/hits_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_2/hits_rc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_2/modisco_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_2/modisco_rc.png" width="360"></td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_2/seqlets_only.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_2/hits_restricted_only.png" width="360"></td>
+            
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_3</code></td>
+            
+            <td class="num_col">0.856</td>
+            
+            <td class="num_col">0.996</td>
+            <td class="num_col">17918</td>
+            
+            <td class="num_col">16685</td>
+            
+            
+            <td class="num_col">2694</td>
+            
+            
+            <td class="num_col">2305</td>
+            <td class="num_col">389</td>
+            <td class="num_col">14380</td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_3/hits_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_3/hits_rc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_3/modisco_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_3/modisco_rc.png" width="360"></td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_3/seqlets_only.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_3/hits_restricted_only.png" width="360"></td>
+            
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_4</code></td>
+            
+            <td class="num_col">0.875</td>
+            
+            <td class="num_col">0.993</td>
+            <td class="num_col">50794</td>
+            
+            <td class="num_col">42895</td>
+            
+            
+            <td class="num_col">1718</td>
+            
+            
+            <td class="num_col">1504</td>
+            <td class="num_col">214</td>
+            <td class="num_col">41391</td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_4/hits_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_4/hits_rc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_4/modisco_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_4/modisco_rc.png" width="360"></td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_4/seqlets_only.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_4/hits_restricted_only.png" width="360"></td>
+            
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_5</code></td>
+            
+            <td class="num_col">0.718</td>
+            
+            <td class="num_col">0.983</td>
+            <td class="num_col">8075</td>
+            
+            <td class="num_col">6639</td>
+            
+            
+            <td class="num_col">1263</td>
+            
+            
+            <td class="num_col">907</td>
+            <td class="num_col">356</td>
+            <td class="num_col">5732</td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_5/hits_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_5/hits_rc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_5/modisco_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_5/modisco_rc.png" width="360"></td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_5/seqlets_only.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_5/hits_restricted_only.png" width="360"></td>
+            
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_6</code></td>
+            
+            <td class="num_col">0.274</td>
+            
+            <td class="num_col">0.976</td>
+            <td class="num_col">10526</td>
+            
+            <td class="num_col">8849</td>
+            
+            
+            <td class="num_col">1042</td>
+            
+            
+            <td class="num_col">285</td>
+            <td class="num_col">757</td>
+            <td class="num_col">8564</td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_6/hits_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_6/hits_rc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_6/modisco_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_6/modisco_rc.png" width="360"></td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_6/seqlets_only.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_6/hits_restricted_only.png" width="360"></td>
+            
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_7</code></td>
+            
+            <td class="num_col">0.004</td>
+            
+            <td class="num_col">0.886</td>
+            <td class="num_col">6</td>
+            
+            <td class="num_col">5</td>
+            
+            
+            <td class="num_col">677</td>
+            
+            
+            <td class="num_col">3</td>
+            <td class="num_col">674</td>
+            <td class="num_col">2</td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_7/hits_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_7/hits_rc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_7/modisco_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_7/modisco_rc.png" width="360"></td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_7/seqlets_only.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_7/hits_restricted_only.png" width="360"></td>
+            
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_8</code></td>
+            
+            <td class="num_col">0.713</td>
+            
+            <td class="num_col">0.991</td>
+            <td class="num_col">3574</td>
+            
+            <td class="num_col">3070</td>
+            
+            
+            <td class="num_col">593</td>
+            
+            
+            <td class="num_col">423</td>
+            <td class="num_col">170</td>
+            <td class="num_col">2647</td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_8/hits_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_8/hits_rc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_8/modisco_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_8/modisco_rc.png" width="360"></td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_8/seqlets_only.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_8/hits_restricted_only.png" width="360"></td>
+            
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_9</code></td>
+            
+            <td class="num_col">0.008</td>
+            
+            <td class="num_col">0.932</td>
+            <td class="num_col">22</td>
+            
+            <td class="num_col">18</td>
+            
+            
+            <td class="num_col">383</td>
+            
+            
+            <td class="num_col">3</td>
+            <td class="num_col">380</td>
+            <td class="num_col">15</td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_9/hits_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_9/hits_rc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_9/modisco_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_9/modisco_rc.png" width="360"></td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_9/seqlets_only.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_9/hits_restricted_only.png" width="360"></td>
+            
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_10</code></td>
+            
+            <td class="num_col">1.000</td>
+            
+            <td class="num_col">0.933</td>
+            <td class="num_col">24849</td>
+            
+            <td class="num_col">20392</td>
+            
+            
+            <td class="num_col">95</td>
+            
+            
+            <td class="num_col">95</td>
+            <td class="num_col">0</td>
+            <td class="num_col">20297</td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_10/hits_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_10/hits_rc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_10/modisco_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_10/modisco_rc.png" width="360"></td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_10/seqlets_only.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_10/hits_restricted_only.png" width="360"></td>
+            
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_11</code></td>
+            
+            <td class="num_col">0.360</td>
+            
+            <td class="num_col">0.948</td>
+            <td class="num_col">141</td>
+            
+            <td class="num_col">123</td>
+            
+            
+            <td class="num_col">75</td>
+            
+            
+            <td class="num_col">27</td>
+            <td class="num_col">48</td>
+            <td class="num_col">96</td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_11/hits_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_11/hits_rc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_11/modisco_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_11/modisco_rc.png" width="360"></td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_11/seqlets_only.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_11/hits_restricted_only.png" width="360"></td>
+            
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_12</code></td>
+            
+            <td class="num_col">0.394</td>
+            
+            <td class="num_col">0.959</td>
+            <td class="num_col">316</td>
+            
+            <td class="num_col">267</td>
+            
+            
+            <td class="num_col">71</td>
+            
+            
+            <td class="num_col">28</td>
+            <td class="num_col">43</td>
+            <td class="num_col">239</td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_12/hits_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_12/hits_rc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_12/modisco_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_12/modisco_rc.png" width="360"></td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_12/seqlets_only.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_12/hits_restricted_only.png" width="360"></td>
+            
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_13</code></td>
+            
+            <td class="num_col">0.909</td>
+            
+            <td class="num_col">0.929</td>
+            <td class="num_col">4645</td>
+            
+            <td class="num_col">4010</td>
+            
+            
+            <td class="num_col">66</td>
+            
+            
+            <td class="num_col">60</td>
+            <td class="num_col">6</td>
+            <td class="num_col">3950</td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_13/hits_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_13/hits_rc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_13/modisco_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_13/modisco_rc.png" width="360"></td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_13/seqlets_only.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_13/hits_restricted_only.png" width="360"></td>
+            
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_14</code></td>
+            
+            <td class="num_col">0.976</td>
+            
+            <td class="num_col">0.958</td>
+            <td class="num_col">3110</td>
+            
+            <td class="num_col">2607</td>
+            
+            
+            <td class="num_col">42</td>
+            
+            
+            <td class="num_col">41</td>
+            <td class="num_col">1</td>
+            <td class="num_col">2566</td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_14/hits_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_14/hits_rc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_14/modisco_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_14/modisco_rc.png" width="360"></td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_14/seqlets_only.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_14/hits_restricted_only.png" width="360"></td>
+            
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_15</code></td>
+            
+            <td class="num_col">0.805</td>
+            
+            <td class="num_col">0.967</td>
+            <td class="num_col">660</td>
+            
+            <td class="num_col">568</td>
+            
+            
+            <td class="num_col">41</td>
+            
+            
+            <td class="num_col">33</td>
+            <td class="num_col">8</td>
+            <td class="num_col">535</td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_15/hits_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_15/hits_rc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_15/modisco_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_15/modisco_rc.png" width="360"></td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_15/seqlets_only.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_15/hits_restricted_only.png" width="360"></td>
+            
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_16</code></td>
+            
+            <td class="num_col">0.971</td>
+            
+            <td class="num_col">0.940</td>
+            <td class="num_col">2067</td>
+            
+            <td class="num_col">1795</td>
+            
+            
+            <td class="num_col">35</td>
+            
+            
+            <td class="num_col">34</td>
+            <td class="num_col">1</td>
+            <td class="num_col">1761</td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_16/hits_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_16/hits_rc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_16/modisco_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_16/modisco_rc.png" width="360"></td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_16/seqlets_only.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_16/hits_restricted_only.png" width="360"></td>
+            
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_17</code></td>
+            
+            <td class="num_col">1.000</td>
+            
+            <td class="num_col">0.967</td>
+            <td class="num_col">880</td>
+            
+            <td class="num_col">747</td>
+            
+            
+            <td class="num_col">33</td>
+            
+            
+            <td class="num_col">33</td>
+            <td class="num_col">0</td>
+            <td class="num_col">714</td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_17/hits_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_17/hits_rc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_17/modisco_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_17/modisco_rc.png" width="360"></td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_17/seqlets_only.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_17/hits_restricted_only.png" width="360"></td>
+            
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_18</code></td>
+            
+            <td class="num_col">0.848</td>
+            
+            <td class="num_col">0.987</td>
+            <td class="num_col">110</td>
+            
+            <td class="num_col">95</td>
+            
+            
+            <td class="num_col">33</td>
+            
+            
+            <td class="num_col">28</td>
+            <td class="num_col">5</td>
+            <td class="num_col">67</td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_18/hits_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_18/hits_rc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_18/modisco_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_18/modisco_rc.png" width="360"></td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_18/seqlets_only.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_18/hits_restricted_only.png" width="360"></td>
+            
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_19</code></td>
+            
+            <td class="num_col">0.643</td>
+            
+            <td class="num_col">0.947</td>
+            <td class="num_col">6515</td>
+            
+            <td class="num_col">5636</td>
+            
+            
+            <td class="num_col">28</td>
+            
+            
+            <td class="num_col">18</td>
+            <td class="num_col">10</td>
+            <td class="num_col">5618</td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_19/hits_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_19/hits_rc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_19/modisco_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_19/modisco_rc.png" width="360"></td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_19/seqlets_only.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_19/hits_restricted_only.png" width="360"></td>
+            
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_20</code></td>
+            
+            <td class="num_col">0.222</td>
+            
+            <td class="num_col">0.977</td>
+            <td class="num_col">38</td>
+            
+            <td class="num_col">27</td>
+            
+            
+            <td class="num_col">27</td>
+            
+            
+            <td class="num_col">6</td>
+            <td class="num_col">21</td>
+            <td class="num_col">21</td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_20/hits_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_20/hits_rc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_20/modisco_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_20/modisco_rc.png" width="360"></td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_20/seqlets_only.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_20/hits_restricted_only.png" width="360"></td>
+            
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_21</code></td>
+            
+            <td class="num_col">0.926</td>
+            
+            <td class="num_col">0.997</td>
+            <td class="num_col">37</td>
+            
+            <td class="num_col">37</td>
+            
+            
+            <td class="num_col">27</td>
+            
+            
+            <td class="num_col">25</td>
+            <td class="num_col">2</td>
+            <td class="num_col">12</td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_21/hits_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_21/hits_rc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_21/modisco_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_21/modisco_rc.png" width="360"></td>
+            
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_21/seqlets_only.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/pos_patterns.pattern_21/hits_restricted_only.png" width="360"></td>
+            
+        </tr>
+        
+    </tbody>
+</table>
+
+<h2>Hit distributions</h2>
+<p>
+    The following figures visualize the distribution of hits across motifs and peaks. 
+</p>
+
+<h3>Overall distribution of hits per peak</h3>
+<p>
+    This plot shows the distribution of hit counts per peak for any motif.
+    The number of peaks with no hits should be near zero. 
+</p>
+<img src="total_hit_distribution.png" width="780">
+
+<h3>Per-motif distributions of hits per peak</h3>
+<p>
+    These plots show the distribution of hit counts per peak for each motif.
+</p>
+<table>
+    <thead>
+        <tr>
+            <th>Motif Name</th>
+            <th class="distplot">Hits Per Peak</th>
+        </tr>
+    </thead>
+    <tbody>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_0</code></td>
+            <td class="distplot"><img src="motif_hit_distributions/pos_patterns.pattern_0.png" width="480"></td>
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_1</code></td>
+            <td class="distplot"><img src="motif_hit_distributions/pos_patterns.pattern_1.png" width="480"></td>
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_2</code></td>
+            <td class="distplot"><img src="motif_hit_distributions/pos_patterns.pattern_2.png" width="480"></td>
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_3</code></td>
+            <td class="distplot"><img src="motif_hit_distributions/pos_patterns.pattern_3.png" width="480"></td>
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_4</code></td>
+            <td class="distplot"><img src="motif_hit_distributions/pos_patterns.pattern_4.png" width="480"></td>
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_5</code></td>
+            <td class="distplot"><img src="motif_hit_distributions/pos_patterns.pattern_5.png" width="480"></td>
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_6</code></td>
+            <td class="distplot"><img src="motif_hit_distributions/pos_patterns.pattern_6.png" width="480"></td>
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_7</code></td>
+            <td class="distplot"><img src="motif_hit_distributions/pos_patterns.pattern_7.png" width="480"></td>
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_8</code></td>
+            <td class="distplot"><img src="motif_hit_distributions/pos_patterns.pattern_8.png" width="480"></td>
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_9</code></td>
+            <td class="distplot"><img src="motif_hit_distributions/pos_patterns.pattern_9.png" width="480"></td>
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_10</code></td>
+            <td class="distplot"><img src="motif_hit_distributions/pos_patterns.pattern_10.png" width="480"></td>
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_11</code></td>
+            <td class="distplot"><img src="motif_hit_distributions/pos_patterns.pattern_11.png" width="480"></td>
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_12</code></td>
+            <td class="distplot"><img src="motif_hit_distributions/pos_patterns.pattern_12.png" width="480"></td>
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_13</code></td>
+            <td class="distplot"><img src="motif_hit_distributions/pos_patterns.pattern_13.png" width="480"></td>
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_14</code></td>
+            <td class="distplot"><img src="motif_hit_distributions/pos_patterns.pattern_14.png" width="480"></td>
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_15</code></td>
+            <td class="distplot"><img src="motif_hit_distributions/pos_patterns.pattern_15.png" width="480"></td>
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_16</code></td>
+            <td class="distplot"><img src="motif_hit_distributions/pos_patterns.pattern_16.png" width="480"></td>
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_17</code></td>
+            <td class="distplot"><img src="motif_hit_distributions/pos_patterns.pattern_17.png" width="480"></td>
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_18</code></td>
+            <td class="distplot"><img src="motif_hit_distributions/pos_patterns.pattern_18.png" width="480"></td>
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_19</code></td>
+            <td class="distplot"><img src="motif_hit_distributions/pos_patterns.pattern_19.png" width="480"></td>
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_20</code></td>
+            <td class="distplot"><img src="motif_hit_distributions/pos_patterns.pattern_20.png" width="480"></td>
+        </tr>
+        
+        <tr>
+            <td><code>pos_patterns.pattern_21</code></td>
+            <td class="distplot"><img src="motif_hit_distributions/pos_patterns.pattern_21.png" width="480"></td>
+        </tr>
+        
+    </tbody>
+</table>
+
+<h3>Motif co-occurrence</h3>
+<p>
+    This heatmap shows the co-occurrence of motifs across peaks.
+    The color intensity here represents the cosine similarity between the motifs' occurrence across peaks,
+    where occurence is defined as the presence of a hit for a motif in a peak.
+</p>
+<img src="motif_cooocurrence.png" width="780">
+
+</body>
+</html>

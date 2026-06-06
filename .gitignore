@@ -30,10 +30,12 @@
 **/finemo/**/hits.tsv
 **/finemo/**/hits_unique.tsv
 **/finemo/**/hits_renamed.tsv
+**/finemo/**/hits_renamed.q*.tsv
 **/finemo/**/peaks_qc.tsv
 **/finemo/**/seqlets.tsv
 **/finemo/**/contribution_regions.npz
 **/finemo/**/motif_occurrences.tsv
+**/finemo/**/*.with_predictions.tsv.gz
 **/finemo_peaks/**/hits.tsv
 **/finemo_peaks/**/hits_unique.tsv
 **/finemo_peaks/**/hits_renamed.tsv
@@ -56,9 +58,12 @@ reference/*.fai
 **/tangermeme_all_chr/
 **/tangermeme_DNase/
 
-# Prediction outputs
-**/predictions_cv/
-**/predictions_mean/
+# Prediction outputs - per-fold data (large H5/BW)
+**/predictions_cv/fold*/
+**/predictions_mean/fold*/
+**/predictions_cv/all_folds/*.tsv.gz
+**/predictions_mean/all_folds/*.tsv.gz
+# Multimodal predictions dir (large)
 **/predictions/
 
 # MoDISCo HDF5 scores
@@ -79,18 +84,10 @@ slurm_logs/
 __pycache__/
 *.pyc
 *.pyo
+*.log
 
 # Misc
 .htaccess
 
 # Exception: small reference motif files
 !reference/*.npz
-
-# Analysis logs
-*.log
-
-# Large finemo hits files by quartile
-**/finemo/**/hits_renamed.q*.tsv
-**/finemo/**/*.with_predictions.tsv.gz
-# Large PDFs (>1MB)
-# (excluded case by case)
