@@ -1,0 +1,29 @@
+0. Set up
+    a. Downloaded TF-MoDISCo results from Vivek for the good K562 EP300 model:
+        - wget https://mitra.stanford.edu/kundaje/oak/vir/tfatlas/modisco/release_run_1/trim20_flank5_0/meanshap/ENCSR000EGE/counts/modisco_results.h5 
+        - wget https://mitra.stanford.edu/kundaje/oak/vir/tfatlas/modisco/release_run_1/trim20_flank5_0/meanshap/ENCSR000EGE/profile/modisco_results.h5 
+        - saved to ENCSR000EGE_trim20_flank5_0/modisco_results_{counts, profile}.h5
+    b. New conda env (tfmodisco)
+        - see $OAK/Users/sheth/Reference/envs/bpnet.txt
+    c. Downloaded JASPAR non-redundant vertebrate PFMs (meme format) to `../reference/JASPAR2024_CORE_vertebrates_non-redundant_pfms_meme.txt`
+        - wget https://jaspar.elixir.no/download/data/2024/CORE/JASPAR2024_CORE_non-redundant_pfms_meme.txt
+
+1. Generate TF-MoDISCo reports
+    a. Without TOMTOM comparison (not sure if I needed to do this first?)
+        - modisco report -i ENCSR000EGE_trim20_flank5_0/modisco_results_counts.h5 -o counts_report/ -s counts_report/
+        - modisco report -i ENCSR000EGE_trim20_flank5_0/modisco_results_profile.h5 -o profile_report/ -s profile_report/
+    b. With TOMTOM comparison
+        - modisco report -i ENCSR000EGE_trim20_flank5_0/modisco_results_counts.h5 -o counts_report/ -s counts_report/ -m ../reference/JASPAR2024_CORE_vertebrates_non-redundant_pfms_meme.txt
+        - modisco report -i ENCSR000EGE_trim20_flank5_0/modisco_results_profile.h5 -o profile_report/ -s profile_report/ -m ../reference/JASPAR2024_CORE_vertebrates_non-redundant_pfms_meme.txt
+    c. From Vivek: TOMTOM is bad, usually skip this; quantify the significance by calculating the effect sizes and also running the hit caller and looking at the occurrence frequency statistics.
+
+2. Use tangermeme to analyze motifs identified by Tf-MoDISCo w.r.t. the TF motif
+    a. 
+
+X. Download ChromBPNet (in K562) TF-MoDISCo reports to compare
+    a. On ENCODE portal: https://www.encodeproject.org/annotations/ENCSR467RSV/
+    a. MoDISCo reports: https://www.encodeproject.org/files/ENCFF231MHU/@@download/ENCFF231MHU.tar.gz
+        - Downloaded to K562_ATAC_ChromBPNet/sequence_motifs 
+    b. Generate reports...
+        - modisco report -i sequence_motifs/counts/tfmodisco.raw_output.counts.ENCSR868FGK.hd5 -o sequence_motifs/counts/counts_report/ -s sequence_motifs/counts/counts_report/  -m ../reference/JASPAR2024_CORE_vertebrates_non-redundant_pfms_meme.txt
+        - modisco report -i sequence_motifs/profile/tfmodisco.raw_output.profile.ENCSR868FGK.hd5 -o sequence_motifs/profile/profile_report/ -s sequence_motifs/profile/profile_report/  -m ../reference/JASPAR2024_CORE_vertebrates_non-redundant_pfms_meme.txt
