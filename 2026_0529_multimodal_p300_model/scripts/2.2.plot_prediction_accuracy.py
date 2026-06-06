@@ -123,6 +123,9 @@ def main():
     plt.close()
 
     # ── Accuracy table ────────────────────────────────────────────────────
+    cv_peaks    = cv_df[cv_df["EP300_peak_overlap"] == 1]
+    cv_non_peaks = cv_df[cv_df["EP300_peak_overlap"] == 0]
+
     rows = [
         accuracy_row(mean_df, "true_logcounts", "mean_pred_logcounts",
                      "mean — all elements"),
@@ -132,6 +135,10 @@ def main():
                      "mean — p300−"),
         accuracy_row(cv_df, "true_logcounts", "pred_logcounts",
                      "CV — all folds"),
+        accuracy_row(cv_peaks, "true_logcounts", "pred_logcounts",
+                     "CV — p300+"),
+        accuracy_row(cv_non_peaks, "true_logcounts", "pred_logcounts",
+                     "CV — p300−"),
     ]
     for fold in folds:
         sub = cv_df[cv_df["fold"] == fold]

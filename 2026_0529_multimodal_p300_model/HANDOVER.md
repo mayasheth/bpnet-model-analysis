@@ -33,6 +33,11 @@ Architecture is defined in `scripts/multimodal_bpnet.py`. See `multimodal_bpnet_
   | mean | 25 | 525.7 | 0.264 | 0.681 | 0.225 |
 
 - [x] Prediction scripts written: `scripts/2.1.predict_multimodal.py`, `scripts/2.2.plot_prediction_accuracy.py`, `scripts/2.1.submit_predict_multimodal.sh`
+- [x] **ATAC predictions complete** (job 27879460). Outputs in `predictions/atac/`:
+  - `mean_predictions.tsv.gz`, `cv_predictions.tsv.gz`, `mean_predictions.pdf`, `cv_predictions.pdf`, `prediction_accuracy.tsv`
+  - CV Pearson r: **0.785** (all elements), **0.663** (p300+ only), 0.727 (p300−)
+  - Mean Pearson r: 0.798 (all), 0.699 (p300+), 0.739 (p300−)
+  - Compares favourably to v1 BPNet CV Pearson = 0.651 (all), 0.521 (p300+)
 
 ### Immediate next steps
 
@@ -59,7 +64,12 @@ Architecture is defined in `scripts/multimodal_bpnet.py`. See `multimodal_bpnet_
     - `RuntimeError: Invalid interval bounds!` — ATAC BigWig has different chrom sizes than FASTA. Fixed by computing min chrom size across all BigWigs + FASTA before querying.
     - `ModuleNotFoundError: No module named 'multimodal_bpnet'` — `torch.load` requires the model class to be importable; fixed by inserting `EP300_BPNet/scripts/` (not this subproject's scripts/) into sys.path.
 
-- [ ] **Check prediction results and compare to standard BPNet counts Pearson**
+- [x] **Check prediction results and compare to standard BPNet counts Pearson**
+  - Multimodal ATAC CV Pearson = 0.785 vs v1 BPNet CV Pearson = 0.651 — clear improvement
+  - `2.2.plot_prediction_accuracy.py` updated to also report CV — p300+ and CV — p300− subsets (for bar plot)
+  - p300 BigWig files (`2025_0703_retrain_p300_model/data/ENCSR000EGE_{plus,minus}.bigWig`) verified correct: these are the Vivek/TFAtlas files; peak max ~2–4 per base at 1bp resolution is expected for this ChIP-seq depth
+
+- [ ] **Run SHAP on ATAC multimodal model** — use `scripts/shap_multimodal_bpnet.py`; submit similar to v1 BPNet SHAP jobs
 
 - [ ] **Generate DNase BigWig** when ready to run DNase variant:
   ```bash
