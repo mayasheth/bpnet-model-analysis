@@ -1,0 +1,4 @@
+subset	n	pearson_r	spearman_rho
+all elements	150404	0.8762	0.8217
+p300+ elements	25691	0.7458	0.673
+p300- elements	124713	0.7955	0.735

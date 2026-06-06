@@ -94,12 +94,26 @@ SCRIPTS_DIR=$OAK/Users/sheth/EP300_BPNet/scripts
 project_dir=$OAK/Users/sheth/EP300_BPNet
 mean_pred_dir=$project_dir/2025_0517_official_EP300_K562_model/predictions_mean
 cv_pred_dir=$project_dir/2025_0517_official_EP300_K562_model/predictions_cv
+peaks=$project_dir/reference/ENCSR000EGE_peaks_inliers.narrowPeak
 overlap_col="EP300_peak_overlap"
 
+# Note: corrected metric — log1p(expm1(+strand) + expm1(-strand)) instead of
+# log1p(+strand) + log1p(-strand). Requires h5 files with coords/ group.
+# Peak overlap computed directly via interval overlap against p300 peaks (not chromatin annot join).
 python $SCRIPTS_DIR/2.3.compute_prediction_performance.py \
-  --mean_pred_dir $mean_pred_dir \
-  --cv_pred_dir $cv_pred_dir \
-  --overlap_col $overlap_col
+  --cv-pred-dir $cv_pred_dir \
+  --mean-pred-dir $mean_pred_dir \
+  --peaks $peaks \
+  --overlap-col $overlap_col
+
+# Inter-replicate correlation stratified by p300 peak overlap
+chromatin_annot=$OAK/Users/sheth/TF_analysis/2026_0603_EP300_reps/EnhancerList.chromatin_annotations.tsv
+python $SCRIPTS_DIR/compute_replicate_correlations.py \
+  --chromatin-annot $chromatin_annot \
+  --rep1-col EP300_R1.RPM \
+  --rep2-col EP300_R2.RPM \
+  --overlap-col $overlap_col \
+  --output $project_dir/2025_0517_official_EP300_K562_model/replicate_correlations.tsv
 
 
 #### SHAP ####
