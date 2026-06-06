@@ -11,8 +11,11 @@
 *.bed.bgz
 *.bed.bgz.tbi
 *.narrowPeak
-*.gz
 *.bgz
+*.fastq.gz
+*.fq.gz
+*.vcf.gz
+*.sam.gz
 
 # Large data files - model outputs
 *.h5
@@ -21,6 +24,7 @@
 *.npz
 *.pt
 *.torch
+*.pkl
 
 # Large FiNeMo outputs
 **/finemo/**/hits.tsv
@@ -39,6 +43,8 @@
 # Large reference files
 reference/*.narrowPeak
 reference/*.gc.bed
+reference/*.fa
+reference/*.fai
 
 # Model weights and training outputs
 **/models/
@@ -79,3 +85,12 @@ __pycache__/
 
 # Exception: small reference motif files
 !reference/*.npz
+
+# Analysis logs
+*.log
+
+# Large finemo hits files by quartile
+**/finemo/**/hits_renamed.q*.tsv
+**/finemo/**/*.with_predictions.tsv.gz
+# Large PDFs (>1MB)
+# (excluded case by case)

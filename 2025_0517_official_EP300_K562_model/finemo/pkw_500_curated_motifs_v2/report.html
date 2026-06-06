@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fi-NeMo Report</title>
+    <style>
+        /* Adapted from https://github.com/oxalorg/sakura/ */
+        html {
+            font-size: 62.5%;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+        }
+        
+        body {
+            font-size: 1.8rem;
+            line-height: 1.618;
+            max-width: 60em;
+            margin: auto;
+            color: #222222;
+            background-color: #ffffff;
+            padding: 13px;
+        }
+        
+        @media (max-width: 684px) {
+        body {
+            font-size: 1.53rem;
+        }
+        }
+        @media (max-width: 382px) {
+        body {
+            font-size: 1.35rem;
+        }
+        }
+        h1, h2, h3, h4, h5, h6 {
+            line-height: 1.1;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+            font-weight: 700;
+            margin-top: 3rem;
+            margin-bottom: 1.5rem;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            -ms-word-break: break-all;
+            word-break: break-word;
+        }
+        
+        h1 {
+            font-size: 2.35em;
+        }
+        
+        h2 {
+            font-size: 1.75em;
+        }
+        
+        h3 {
+            font-size: 1.25em;
+        }
+        
+        p {
+            margin-top: 0px;
+            margin-bottom: 2.5rem;
+        }
+        
+        small, sub, sup {
+            font-size: 75%;
+        }
+        
+        hr {
+            border-color: #007559;
+        }
+        
+        a {
+            text-decoration: none;
+            color: #007559;
+        }
+        a:visited {
+            color: #004232;
+        }
+        a:hover {
+            color: #006994;
+            border-bottom: 2px solid #222222;
+        }
+        
+        ul {
+            padding-left: 1.4em;
+            margin-top: 0px;
+            margin-bottom: 2.5rem;
+        }
+        
+        li {
+            margin-bottom: 0.4em;
+        }
+        
+        blockquote {
+            margin-left: 0px;
+            margin-right: 0px;
+            padding-left: 1em;
+            padding-top: 0.8em;
+            padding-bottom: 0.8em;
+            padding-right: 0.8em;
+            border-left: 5px solid #007559;
+            margin-bottom: 2.5rem;
+            background-color: #f7f7f7;
+        }
+        
+        blockquote p {
+            margin-bottom: 0;
+        }
+        
+        img, video {
+            height: auto;
+            max-width: 100%;
+            margin-top: 0px;
+            margin-bottom: 2.5rem;
+        }
+        
+        /* Pre and Code */
+        pre {
+            background-color: #f7f7f7;
+            display: block;
+            padding: 1em;
+            overflow-x: auto;
+            margin-top: 0px;
+            margin-bottom: 2.5rem;
+            font-size: 0.9em;
+        }
+        
+        code, kbd, samp {
+            font-size: 0.9em;
+            padding: 0 0.5em;
+            background-color: #f7f7f7;
+            white-space: pre-wrap;
+            }
+        
+        pre > code {
+            padding: 0;
+            background-color: transparent;
+            white-space: pre;
+            font-size: 1em;
+        }
+        
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2rem;
+            font-variant-numeric: tabular-nums;
+            text-align: justify;
+        }
+
+        td, th {
+            padding: 0.5em;
+            border-bottom: 1px solid #f1f1f1;
+        }
+
+        .num_col {
+            text-align: right;
+        }
+
+        td.num_col {
+            padding-left: 2em;
+        }
+
+        th.cwm, th.distplot {
+            padding-left: 2em;
+        }
+
+        .cwm img {
+            max-width: unset;
+            margin-bottom: 0
+        }
+
+        .distplot img {
+            margin-bottom: 0
+        }
+        
+    </style>
+</head>
+
+<body>
+<h1>Fi-NeMo hit calling report</h1>
+
+
+<blockquote>
+    Seqlet comparisons are not shown because a TF-MoDISco H5 file with seqlet data is not provided.
+</blockquote>
+
+
+
+
+<h3>Hit and seqlet motif comparisons</h3>
+<p>
+    For each motif, this table examines the consistency between hits and TF-MoDISco seqlets. 
+</p>
+
+<p>
+    The following statistics report the number of hits, seqlets, and their relationships: 
+</p>
+<ul>
+    <li><strong>Hits</strong>: The number of hits called by Fi-NeMo</li>
+    
+    
+    
+    <li><strong>Hit-Seqlet CWM Similarity</strong>: The cosine similarity between the hit CWM and the TF-MoDISco CWM</li>
+</ul>
+<p>
+    Note that the seqlet counts here may be lower than those shown in the tfmodisco-lite report due to double-counting in overlapping regions.
+    The seqlet counts shown here are unique while the counts in the tfmodisco-lite report are not de-duplicated.
+</p>
+
+<p>
+    Motif CWMs (contribution weight matrices) are average contribution scores over a set of regions. The CWMs plotted here are:
+</p>
+<ul>
+    <li><strong>Hit CWM (FC)</strong>: The forward-strand CWM of all hits</li>
+    <li><strong>Hit CWM (RC)</strong>: The reverse-strand CWM of all hits</li>
+    <li><strong>TF-MoDISco CWM (FC/RC)</strong>: The CWM of all TF-MoDISco seqlets</li>
+    
+</ul>
+<p>
+    The plots span the full untrimmed motif, with the trimmed motif shaded.
+</p>
+<p>
+    The hit-seqlet similarity is the cosine similarity between the additional-restricted-hits CWM and the seqlet CWM. 
+    This statistic measures the similarity between hits that were missed by TF-MoDISco and the seqlets used to construct the motif.
+</p>
+
+<table class="wide_table">
+    <thead>
+        <tr>
+            <th>Motif Name</th>
+            
+            <th class="num_col">Hit-Seqlet CWM Similarity</th>
+            <th class="num_col">Hits</th>
+            
+            
+            
+            <th class="cwm">Hit CWM (FC)</th>
+            <th class="cwm">Hit CWM (RC)</th>
+            <th class="cwm">TF-MoDISco CWM (FC)</th>
+            <th class="cwm">TF-MoDISco CWM (RC)</th>
+            
+        </tr>
+    </thead>
+    <tbody>
+        
+        <tr>
+            <td><code>GATA</code></td>
+            
+            <td class="num_col">0.998</td>
+            <td class="num_col">182579</td>
+            
+            
+            
+            <td class="cwm"><img src="CWMs/GATA/hits_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/GATA/hits_rc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/GATA/modisco_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/GATA/modisco_rc.png" width="360"></td>
+            
+        </tr>
+        
+        <tr>
+            <td><code>NF2L_NFE</code></td>
+            
+            <td class="num_col">0.998</td>
+            <td class="num_col">59157</td>
+            
+            
+            
+            <td class="cwm"><img src="CWMs/NF2L_NFE/hits_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/NF2L_NFE/hits_rc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/NF2L_NFE/modisco_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/NF2L_NFE/modisco_rc.png" width="360"></td>
+            
+        </tr>
+        
+        <tr>
+            <td><code>ATF_CEBP</code></td>
+            
+            <td class="num_col">0.998</td>
+            <td class="num_col">8609</td>
+            
+            
+            
+            <td class="cwm"><img src="CWMs/ATF_CEBP/hits_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/ATF_CEBP/hits_rc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/ATF_CEBP/modisco_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/ATF_CEBP/modisco_rc.png" width="360"></td>
+            
+        </tr>
+        
+        <tr>
+            <td><code>STAT</code></td>
+            
+            <td class="num_col">0.996</td>
+            <td class="num_col">19758</td>
+            
+            
+            
+            <td class="cwm"><img src="CWMs/STAT/hits_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/STAT/hits_rc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/STAT/modisco_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/STAT/modisco_rc.png" width="360"></td>
+            
+        </tr>
+        
+        <tr>
+            <td><code>REPEAT_G</code></td>
+            
+            <td class="num_col">0.987</td>
+            <td class="num_col">91079</td>
+            
+            
+            
+            <td class="cwm"><img src="CWMs/REPEAT_G/hits_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/REPEAT_G/hits_rc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/REPEAT_G/modisco_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/REPEAT_G/modisco_rc.png" width="360"></td>
+            
+        </tr>
+        
+        <tr>
+            <td><code>ELF</code></td>
+            
+            <td class="num_col">0.980</td>
+            <td class="num_col">27303</td>
+            
+            
+            
+            <td class="cwm"><img src="CWMs/ELF/hits_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/ELF/hits_rc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/ELF/modisco_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/ELF/modisco_rc.png" width="360"></td>
+            
+        </tr>
+        
+        <tr>
+            <td><code>GATA_TAL1_9BP</code></td>
+            
+            <td class="num_col">0.987</td>
+            <td class="num_col">34057</td>
+            
+            
+            
+            <td class="cwm"><img src="CWMs/GATA_TAL1_9BP/hits_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/GATA_TAL1_9BP/hits_rc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/GATA_TAL1_9BP/modisco_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/GATA_TAL1_9BP/modisco_rc.png" width="360"></td>
+            
+        </tr>
+        
+        <tr>
+            <td><code>GATA_TAL1_8BP</code></td>
+            
+            <td class="num_col">0.978</td>
+            <td class="num_col">28873</td>
+            
+            
+            
+            <td class="cwm"><img src="CWMs/GATA_TAL1_8BP/hits_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/GATA_TAL1_8BP/hits_rc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/GATA_TAL1_8BP/modisco_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/GATA_TAL1_8BP/modisco_rc.png" width="360"></td>
+            
+        </tr>
+        
+        <tr>
+            <td><code>FOS_JUN</code></td>
+            
+            <td class="num_col">nan</td>
+            <td class="num_col">0</td>
+            
+            
+            
+            <td class="cwm"><img src="CWMs/FOS_JUN/hits_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/FOS_JUN/hits_rc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/FOS_JUN/modisco_fc.png" width="360"></td>
+            <td class="cwm"><img src="CWMs/FOS_JUN/modisco_rc.png" width="360"></td>
+            
+        </tr>
+        
+    </tbody>
+</table>
+
+<h2>Hit distributions</h2>
+<p>
+    The following figures visualize the distribution of hits across motifs and peaks. 
+</p>
+
+<h3>Overall distribution of hits per peak</h3>
+<p>
+    This plot shows the distribution of hit counts per peak for any motif.
+    The number of peaks with no hits should be near zero. 
+</p>
+<img src="total_hit_distribution.png" width="780">
+
+<h3>Per-motif distributions of hits per peak</h3>
+<p>
+    These plots show the distribution of hit counts per peak for each motif.
+</p>
+<table>
+    <thead>
+        <tr>
+            <th>Motif Name</th>
+            <th class="distplot">Hits Per Peak</th>
+        </tr>
+    </thead>
+    <tbody>
+        
+        <tr>
+            <td><code>GATA</code></td>
+            <td class="distplot"><img src="motif_hit_distributions/GATA.png" width="480"></td>
+        </tr>
+        
+        <tr>
+            <td><code>NF2L_NFE</code></td>
+            <td class="distplot"><img src="motif_hit_distributions/NF2L_NFE.png" width="480"></td>
+        </tr>
+        
+        <tr>
+            <td><code>ATF_CEBP</code></td>
+            <td class="distplot"><img src="motif_hit_distributions/ATF_CEBP.png" width="480"></td>
+        </tr>
+        
+        <tr>
+            <td><code>STAT</code></td>
+            <td class="distplot"><img src="motif_hit_distributions/STAT.png" width="480"></td>
+        </tr>
+        
+        <tr>
+            <td><code>REPEAT_G</code></td>
+            <td class="distplot"><img src="motif_hit_distributions/REPEAT_G.png" width="480"></td>
+        </tr>
+        
+        <tr>
+            <td><code>ELF</code></td>
+            <td class="distplot"><img src="motif_hit_distributions/ELF.png" width="480"></td>
+        </tr>
+        
+        <tr>
+            <td><code>GATA_TAL1_9BP</code></td>
+            <td class="distplot"><img src="motif_hit_distributions/GATA_TAL1_9BP.png" width="480"></td>
+        </tr>
+        
+        <tr>
+            <td><code>GATA_TAL1_8BP</code></td>
+            <td class="distplot"><img src="motif_hit_distributions/GATA_TAL1_8BP.png" width="480"></td>
+        </tr>
+        
+        <tr>
+            <td><code>FOS_JUN</code></td>
+            <td class="distplot"><img src="motif_hit_distributions/FOS_JUN.png" width="480"></td>
+        </tr>
+        
+    </tbody>
+</table>
+
+<h3>Motif co-occurrence</h3>
+<p>
+    This heatmap shows the co-occurrence of motifs across peaks.
+    The color intensity here represents the cosine similarity between the motifs' occurrence across peaks,
+    where occurence is defined as the presence of a hit for a motif in a peak.
+</p>
+<img src="motif_cooocurrence.png" width="780">
+
+</body>
+</html>
