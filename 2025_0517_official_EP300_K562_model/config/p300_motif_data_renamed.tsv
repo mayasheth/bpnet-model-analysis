@@ -1,0 +1,35 @@
+motif_id	motif_name	motif_name_orig	strand	motif_start	motif_end	motif_scale	lambda
+0	GATA	pos_patterns.pattern_0	+	7	23	0.1871840457	0.7
+1	GATA	pos_patterns.pattern_0	-	7	23	0.1871840457	0.7
+2	MAF, NFE2	pos_patterns.pattern_1	+	10	20	0.1452944597	0.7
+3	MAF, NFE2	pos_patterns.pattern_1	-	10	20	0.1452944597	0.7
+4	CARE	pos_patterns.pattern_2	+	5	24	0.1752918603	0.7
+5	CARE	pos_patterns.pattern_2	-	6	25	0.1752918603	0.7
+6	STAT	pos_patterns.pattern_3	+	13	22	0.1054343399	0.7
+7	STAT	pos_patterns.pattern_3	-	8	17	0.1054343399	0.7
+8	poly-G (ZNF281)	pos_patterns.pattern_4	+	4	24	0.0723161476	0.7
+9	poly-G (ZNF281)	pos_patterns.pattern_4	-	6	26	0.0723161476	0.7
+10	pattern_5	pos_patterns.pattern_5	+	15	30	0.1138079121	0.7
+11	pattern_5	pos_patterns.pattern_5	-	0	15	0.1138079121	0.7
+12	poly-G (ZNF281)	pos_patterns.pattern_6	+	0	30	0.05267144363	0.7
+13	poly-G (ZNF281)	pos_patterns.pattern_6	-	0	30	0.05267144363	0.7
+14	ETS	pos_patterns.pattern_7	+	14	25	0.07344339197	0.7
+15	ETS	pos_patterns.pattern_7	-	5	16	0.07344339197	0.7
+16	GATA	pos_patterns.pattern_8	+	9	21	0.1719347608	0.7
+17	GATA	pos_patterns.pattern_8	-	9	21	0.1719347608	0.7
+18	GATA	pos_patterns.pattern_9	+	8	24	0.1593849768	0.7
+19	GATA	pos_patterns.pattern_9	-	6	22	0.1593849768	0.7
+20	FOS::JUN	pos_patterns.pattern_10	+	8	24	0.08684718397	0.7
+21	FOS::JUN	pos_patterns.pattern_10	-	6	22	0.08684718397	0.7
+22	GATA	pos_patterns.pattern_11	+	7	23	0.1094374739	0.7
+23	GATA	pos_patterns.pattern_11	-	7	23	0.1094374739	0.7
+24	pattern_5	pos_patterns.pattern_12	+	1	30	0.08462238174	0.7
+25	pattern_5	pos_patterns.pattern_12	-	0	29	0.08462238174	0.7
+26	MAF, NFE2	pos_patterns.pattern_13	+	0	20	0.1538179011	0.7
+27	MAF, NFE2	pos_patterns.pattern_13	-	10	30	0.1538179011	0.7
+28	GATA	pos_patterns.pattern_14	+	0	24	0.1322034061	0.7
+29	GATA	pos_patterns.pattern_14	-	6	30	0.1322034061	0.7
+30	GATA	pos_patterns.pattern_15	+	6	24	0.1513076172	0.7
+31	GATA	pos_patterns.pattern_15	-	6	24	0.1513076172	0.7
+32	GC-rich	pos_patterns.pattern_16	+	0	29	0.06253848721	0.7
+33	GC-rich	pos_patterns.pattern_16	-	1	30	0.06253848721	0.7
