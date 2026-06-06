@@ -38,6 +38,8 @@
 
 - [ ] ATAC ChromBPNet performance — predictions exist in `K562_ATAC_ChromBPNet/predictions/` but h5 only has predicted counts (no true counts); using manuscript Pearson r = 0.70 as placeholder in bar chart
 
+- [ ] Compute inter-replicate p300 ChIP-seq correlation for GM12878 BAM files (at `$OAK/Users/sheth/Data/ENCODE/GM12878/EP300`) — use `scripts/compute_replicate_correlations.py`; needed to establish ceiling for GM12878 transferability evaluation
+
 ## Publication figures (section 1: BPNet predicts p300 binding)
 
 Scripts: `scripts/plot_model_comparison.py` (bar chart), `scripts/2.3.compute_prediction_performance.py`
