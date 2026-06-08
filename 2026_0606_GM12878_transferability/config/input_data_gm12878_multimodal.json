@@ -1,0 +1,9 @@
+{
+    "signal_plus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0606_GM12878_transferability/data/ENCFF960OFK_plus.bw",
+    "signal_minus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0606_GM12878_transferability/data/ENCFF941MGK_minus.bw",
+    "accessibility_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0606_GM12878_transferability/data/atac.bw",
+    "accessibility_source": "ATAC-seq (GM12878, ENCODE): ENCFF981FXV, ENCFF440GRZ, ENCFF962FMH tagAlign (merged 3 reps)",
+    "peaks": "/oak/stanford/groups/engreitz/Users/sheth/Data/ENCODE/GM12878/EP300/ENCFF926AKK.bed.gz",
+    "negatives": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/reference/genomewide_gc_stride_1000_flank_size_1057.gc.bed",
+    "genome": "/oak/stanford/groups/engreitz/Users/sheth/hg38_resources/hg38.fa"
+}

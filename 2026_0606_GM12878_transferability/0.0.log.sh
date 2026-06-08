@@ -246,28 +246,20 @@ SHAP_DIR=$THIS_DIR/shap_peaks
 CONFIG=$THIS_DIR/config/input_data_gm12878_shap.json
 BPNET_DIR=$OAK/Users/sheth/bpnet-refactor/bpnet
 
-## [5.1] Submit SHAP per-fold — SUBMITTED 2026-06-07 as job array 28132251
+## [5.1] Submit SHAP per-fold — COMPLETE (all 5 folds, 24/24 chroms each) 2026-06-08
 # NOTE: per-chromosome array approach (jobs 28131714–28131722) was cancelled — overkill for 21k peaks.
 # Replaced with one SLURM job per fold looping all chromosomes internally (~2h/fold vs 25 array tasks).
 # Script: $THIS_DIR/scripts/3.1.submit_gm12878_shap.sh
-# Logs:   $THIS_DIR/log/shap_fold{N}.28132251.txt
+# chrY has 0 GM12878 p300 peaks — DONE.txt created manually; chrY removed from submit script.
+
+# First attempt: job array 28132251 (2026-06-07, 4h limit) — timed out at 6–19/24 chroms/fold
+# Second attempt: job array 28324270 (2026-06-08, 8h limit) — all folds complete
 # sbatch --array=0-4 $THIS_DIR/scripts/3.1.submit_gm12878_shap.sh
 
-## [5.2] Merge per-chromosome h5 files for each fold
-# Run after all per-chr jobs complete (check DONE.txt files exist).
-# conda activate bpnet_37 && module load cuda/11.1.1 cudnn/8.1.1.33
-# for FOLD in 0 1 2 3 4; do
-#   python $BPNET_DIR/utils/merge_shap_across_chrom.py \
-#     --input-dir $SHAP_DIR/fold${FOLD} \
-#     --h5-filename counts_scores.h5 \
-#     --output-file $SHAP_DIR/fold${FOLD}/shap_counts_merged.h5
-# done
-
-## [5.3] Compute mean SHAP across folds
-# SHAP_H5_LIST=$(printf "$SHAP_DIR/fold%d/shap_counts_merged.h5," {0..4} | sed 's/,$//') 
-# python $BPNET_DIR/utils/mean_shap_plus_peaks.py \
-#   --counts_shaps $SHAP_H5_LIST \
-#   --output_dir $SHAP_DIR/all_folds
+## [5.2+5.3] Merge per-chromosome h5s and compute mean across folds — SUBMITTED job 28394331 2026-06-08
+# Script: $THIS_DIR/scripts/5.2.submit_merge_mean_shap.sh
+# Outputs: $SHAP_DIR/fold{0-4}/shap_counts_merged.h5, $SHAP_DIR/all_folds/counts_mean_shap_scores.h5
+# sbatch $THIS_DIR/scripts/5.2.submit_merge_mean_shap.sh
 
 
 # ============================================================
@@ -297,10 +289,125 @@ MODISCO_WIDTH=400
 # ============================================================
 
 ## [7.1] Fig 2d + S2a/b — transferability bar chart and scatter plots — job 28131732 COMPLETED (8m27s)
-# Outputs: $PROJECT_DIR/figures/transferability_{bar,scatter_all,scatter_peaks}.pdf
+# Outputs: $THIS_DIR/figures/transferability_{bar,scatter_all,scatter_peaks}.pdf
+# Note: initial outputs went to $PROJECT_DIR/figures/ (wrong); fixed --output-dir default in script.
 # sbatch --partition=owners,engreitz,normal --time=0:30:00 --mem=32G \
 #   --job-name=plot_transfer \
 #   --output=$LOG_DIR/plot_transferability.%j.txt \
 #   --error=$LOG_DIR/plot_transferability.%j.txt \
 #   --wrap="module load devel pixi/0.53.0 && pixi run -e ism python \
-#     $SCRIPTS_DIR/plot_transferability.py --output-dir $PROJECT_DIR/figures"
+#     $SCRIPTS_DIR/plot_transferability.py"
+
+
+# ============================================================
+# STAGE 8: GM12878 MULTIMODAL BPNET (in-cell-type ceiling)
+# ============================================================
+# Train same architecture as K562 ATAC multimodal, but using GM12878 EP300 signal + GM12878 ATAC.
+# Purpose: in-cell-type multimodal ceiling to compare against cross-cell-type K562 transfer.
+# Config: $THIS_DIR/config/input_data_gm12878_multimodal.json
+# Script: $THIS_DIR/scripts/1.1.submit_training_gm12878_multimodal.sh
+# Output: $THIS_DIR/GM12878_multimodal_BPNet/models/atac/fold{0-4}/
+
+GM12878_MM_DIR=$THIS_DIR/GM12878_multimodal_BPNet
+GM12878_MM_CONFIG=$THIS_DIR/config/input_data_gm12878_multimodal.json
+
+## [8.1] Submit GM12878 multimodal training — SUBMITTED 2026-06-08 as job array 28359131
+# Folds 0/1/2 running, 3/4 pending; 24h time limit
+# Logs: $THIS_DIR/log/gm12878_mm_f{N}.28359131.txt
+# sbatch --array=0-4 $THIS_DIR/scripts/1.1.submit_training_gm12878_multimodal.sh
+
+## [8.2] Predict on 154k GM12878 elements (after training completes)
+# Use same predict_multimodal.py as K562 but with GM12878 signal/ATAC BigWigs
+# sbatch --partition=owners,engreitz,normal --time=8:00:00 --mem=64G \
+#   --job-name=gm12878_mm_pred \
+#   --output=$LOG_DIR/gm12878_mm_pred.%j.txt \
+#   --error=$LOG_DIR/gm12878_mm_pred.%j.txt \
+#   --wrap="module load devel pixi/0.53.0 && pixi run -e multimodal python \
+#     $PROJECT_DIR/2026_0529_multimodal_p300_model/scripts/2.1.predict_multimodal.py \
+#     --elements $GM12878_ELEMENTS \
+#     --genome $GENOME \
+#     --signal-plus-bw $EP300_PLUS \
+#     --signal-minus-bw $EP300_MINUS \
+#     --accessibility-bw $ATAC_BW \
+#     --model-dir $GM12878_MM_DIR/models/atac \
+#     --fold-json $PROJECT_DIR/reference/hg38_five_folds.json \
+#     --peaks $GM12878_PEAKS \
+#     --output-dir $THIS_DIR/predictions/gm12878_multimodal_atac \
+#     --batch-size 512 --device cpu"
+
+## [8.2] GM12878 multimodal predictions — COMPLETE job 28387044 2026-06-08
+# Output: $THIS_DIR/predictions/gm12878_multimodal_atac/{cv,mean}_predictions.tsv.gz
+# sbatch $THIS_DIR/scripts/2.1.submit_predict_gm12878_multimodal.sh
+
+## [8.3] Evaluate GM12878 multimodal predictions — SUBMITTED job 28438419 2026-06-08
+# Note: predict script outputs TSVs (not h5); use --from-tsv + --mean-output-dir
+# Output: $THIS_DIR/predictions/gm12878_multimodal_atac/prediction_accuracy.tsv
+# sbatch --partition=owners,engreitz,normal --time=0:30:00 --mem=32G \
+#   --job-name=gm12878_mm_eval \
+#   --output=$THIS_DIR/log/gm12878_mm_eval.%j.txt \
+#   --error=$THIS_DIR/log/gm12878_mm_eval.%j.txt \
+#   --wrap="module load devel pixi/0.53.0 && pixi run -e ism python \
+#     $SCRIPTS_DIR/2.3.compute_prediction_performance.py \
+#     --mean-output-dir $THIS_DIR/predictions/gm12878_multimodal_atac \
+#     --overlap-col EP300_peak_overlap \
+#     --from-tsv"
+
+# ============================================================
+# Stage 9: ATAC-only model (GM12878 in-cell-type + K562 transfer)
+# ============================================================
+
+## [9.1] GM12878 ATAC-only training — SUBMITTED job array 28443287 2026-06-08
+# Script: scripts/1.2.submit_training_gm12878_atac_only.sh
+# Logs: log/train_gm12878_atac_only.28443287_{0-4}.txt
+# Output: GM12878_ATAC_only_BPNet/models/atac_only/fold{0-4}/multimodal_bpnet.torch
+# sbatch --array=0-4 $THIS_DIR/scripts/1.2.submit_training_gm12878_atac_only.sh
+
+## [9.2] K562 ATAC-only predictions on GM12878 elements (cross-cell-type transfer) — SUBMITTED job 28443298 2026-06-08
+# Uses K562-trained ATAC-only model; predicts on 154k GM12878 elements
+# Output: predictions/k562_atac_only/
+# sbatch --partition=owners,engreitz,normal --time=8:00:00 --mem=64G \
+#   --job-name=k562_atac_gm12878 \
+#   --output=$THIS_DIR/log/predict_k562_atac_only_on_gm12878.%j.txt \
+#   --error=$THIS_DIR/log/predict_k562_atac_only_on_gm12878.%j.txt \
+#   --wrap="module load devel pixi/0.53.0 && pixi run -e multimodal python \
+#     $PROJECT_DIR/2026_0529_multimodal_p300_model/scripts/2.1.predict_multimodal.py \
+#     --mode atac \
+#     --elements $THIS_DIR/reference/GM12878_candidate_elements.narrowPeak \
+#     --signal-plus-bw $THIS_DIR/data/EP300_plus.bw \
+#     --signal-minus-bw $THIS_DIR/data/EP300_minus.bw \
+#     --accessibility-bw $THIS_DIR/data/atac.bw \
+#     --model-dir $PROJECT_DIR/2026_0529_multimodal_p300_model/models/atac_only \
+#     --fold-json $PROJECT_DIR/reference/hg38_five_folds.json \
+#     --peaks /oak/stanford/groups/engreitz/Users/sheth/Data/ENCODE/GM12878/EP300/ENCFF926AKK.bed.gz \
+#     --output-dir $THIS_DIR/predictions/k562_atac_only \
+#     --batch-size 512 --device cpu"
+
+## [9.3] Evaluate K562 ATAC-only transfer predictions — run after [9.2]
+# sbatch --partition=owners,engreitz,normal --time=0:30:00 --mem=32G \
+#   --job-name=k562_atac_gm12878_eval \
+#   --output=$THIS_DIR/log/eval_k562_atac_only.%j.txt \
+#   --error=$THIS_DIR/log/eval_k562_atac_only.%j.txt \
+#   --wrap="module load devel pixi/0.53.0 && pixi run -e ism python \
+#     $PROJECT_DIR/scripts/2.3.compute_prediction_performance.py \
+#     --mean-pred-dir $THIS_DIR/predictions/k562_atac_only \
+#     --mean-output-dir $THIS_DIR/predictions/k562_atac_only \
+#     --overlap-col EP300_peak_overlap \
+#     --from-tsv"
+
+## [9.4] GM12878 ATAC-only predictions on GM12878 elements (in-cell-type) — run after [9.1]
+# sbatch --partition=owners,engreitz,normal --time=8:00:00 --mem=64G \
+#   --job-name=gm12878_atac_pred \
+#   --output=$THIS_DIR/log/predict_gm12878_atac_only.%j.txt \
+#   --error=$THIS_DIR/log/predict_gm12878_atac_only.%j.txt \
+#   --wrap="module load devel pixi/0.53.0 && pixi run -e multimodal python \
+#     $PROJECT_DIR/2026_0529_multimodal_p300_model/scripts/2.1.predict_multimodal.py \
+#     --mode atac \
+#     --elements $THIS_DIR/reference/GM12878_candidate_elements.narrowPeak \
+#     --signal-plus-bw $THIS_DIR/data/ENCFF960OFK_plus.bw \
+#     --signal-minus-bw $THIS_DIR/data/ENCFF941MGK_minus.bw \
+#     --accessibility-bw $THIS_DIR/data/atac.bw \
+#     --model-dir $THIS_DIR/GM12878_ATAC_only_BPNet/models/atac_only \
+#     --fold-json $PROJECT_DIR/reference/hg38_five_folds.json \
+#     --peaks /oak/stanford/groups/engreitz/Users/sheth/Data/ENCODE/GM12878/EP300/ENCFF926AKK.bed.gz \
+#     --output-dir $THIS_DIR/predictions/gm12878_atac_only \
+#     --batch-size 512 --device cpu"

@@ -8,6 +8,22 @@
   - [ ] Run SHAP on ATAC multimodal model
   - [ ] Train DNase variant (BigWig not yet generated)
   - [x] Cross-cell-type transferability test (GM12878) — eval complete (jobs 28116257/346/354)
+  - [x] **GM12878 multimodal BPNet training** — all 5 folds complete 2026-06-08 (job 28359131); models at `2026_0606_GM12878_transferability/GM12878_multimodal_BPNet/models/atac/fold{0-4}/`
+  - [x] **GM12878 multimodal predictions + eval** — complete 2026-06-08; Pearson = 0.821 (all), 0.760 (p300+)
+  - [ ] Add GM12878 in-cell-type multimodal result to Fig 2d bar chart (`scripts/plot_transferability.py`)
+
+- [ ] **ATAC-only BPNet** — 1-channel base-pair resolution ATAC profile input (no DNA sequence)
+  - Architecture: `--mode atac` flag added to `scripts/multimodal_bpnet.py` + `train_multimodal_bpnet.py`; uses 64 filters (fair comparison to seq-only and multimodal)
+  - [x] **K562 ATAC-only training** — complete 2026-06-08 (job 28413076); models at `2026_0529_multimodal_p300_model/models/atac_only/fold{0-4}/`
+  - [ ] K562 ATAC-only predictions on K562 elements (CV + mean) — job 28442190 submitted 2026-06-08; output to `2026_0529_multimodal_p300_model/predictions/atac_only/`
+  - [ ] K562 ATAC-only predictions on GM12878 elements (transferability) — job 28443298 submitted 2026-06-08; output to `2026_0606_GM12878_transferability/predictions/k562_atac_only/`
+  - [ ] GM12878 ATAC-only training — job array 28443287 submitted 2026-06-08; script: `2026_0606_GM12878_transferability/scripts/1.2.submit_training_gm12878_atac_only.sh`; output to `GM12878_ATAC_only_BPNet/models/atac_only/fold{0-4}/`
+  - [ ] GM12878 ATAC-only predictions on GM12878 elements — run after training (28443287) completes; command in `2026_0606_GM12878_transferability/0.0.log.sh` stage 9.4
+
+- [ ] **ATAC vs p300 correlation** — job 28409190 submitted 2026-06-08
+  - Script: `scripts/compute_atac_p300_correlation.py`
+  - Output: `2026_0529_multimodal_p300_model/predictions/atac/atac_p300_correlation.tsv`
+  - Log: `log/atac_p300_corr.28409190.txt`
 
 ## Evaluation
 
@@ -42,15 +58,10 @@
   | K562 multimodal ATAC BPNet | **0.793** | **0.628** |
   | Inter-replicate ceiling | 0.881 | 0.835 |
 
-- [ ] GATA1 BPNet performance — resubmitted 2026-06-08 (jobs 28329432 / 28329433):
-  - **Root cause:** multiprocessing generator deadlock in `bpnet-refactor/bpnet/generators/generators.py`
-    - `_stealer` called `mpq.get()` with no timeout → hung forever when worker process died
-    - **Fixed 2026-06-08:** `_proc_target` now puts `None` sentinel on exception; `_stealer` handles sentinel; `gen()` raises `RuntimeError` — fails fast instead of hanging
-    - Mean predictions: chrM excluded (`chrM:15952-16568` 2114bp window exceeds BigWig size)
-    - CV fold 2: unknown trigger in chr4/11/12/15/Y; generator fix will now surface exact error
-  - CV fold 2: job 28329432; mean predictions folds 0–4: job array 28329433
-  - After completion: run `mean_predictions.py` then `2.3.compute_prediction_performance.py --h5-name model_split000_predictions.h5`
-  - See `K562_GATA1_BPNet/HANDOVER.md` for full details
+- [x] GATA1 BPNet performance — complete 2026-06-08
+  - CV Pearson = **0.597** (all), **0.544** (GATA1+); Mean Pearson = **0.612** (all), **0.620** (GATA1+)
+  - Results: `K562_GATA1_BPNet/predictions_cv/all_folds/prediction_accuracy.tsv`
+- [x] Regenerate `figures/model_comparison.pdf` — complete 2026-06-08 with all 5 models (p300 v1, multimodal ATAC, ATAC ChromBPNet, GATA1, inter-replicate ceiling)
 
 - [ ] ATAC ChromBPNet performance — predictions exist in `K562_ATAC_ChromBPNet/predictions/` but h5 only has predicted counts (no true counts); using manuscript Pearson r = 0.70 as placeholder in bar chart
 
@@ -83,6 +94,15 @@ Scripts: `scripts/plot_transferability.py`, data in `2026_0606_GM12878_transfera
 
 ## GM12878 SHAP and MoDISCo
 
-- [ ] **SHAP on GM12878 BPNet (peaks)** — job array 28324270 (folds 0–4, 8h limit); logs: `2026_0606_GM12878_transferability/log/shap_fold{N}.28324270.txt`
-  - Previous job 28132251 timed out at 4h; resubmitted with 8h limit; DONE.txt guard skips completed chroms
-  - After completion: merge per-chr h5s, average across folds, run MoDISCo — all commands in `2026_0606_GM12878_transferability/0.0.log.sh` stages 5–6
+- [x] **SHAP on GM12878 BPNet (peaks)** — all 5 folds complete (job 28324270); chrY skipped (0 peaks)
+- [ ] **SHAP merge + mean** — job 28394331 submitted 2026-06-08; outputs to `shap_peaks/all_folds/counts_mean_shap_scores.h5`
+  - After completion: run MoDISCo:
+    ```bash
+    cd 2026_0606_GM12878_transferability
+    sbatch ../scripts/4.1.submit_counts_modisco.sh \
+      modisco/max_seqlets_250k_30_10_0 \
+      shap_peaks/all_folds/counts_mean_shap_scores.h5 \
+      250000 30 10 0 \
+      ../reference/MotifCompendium-Database-Human.meme.txt \
+      400
+    ```

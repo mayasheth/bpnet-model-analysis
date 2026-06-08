@@ -2,26 +2,28 @@
 """
 Train a MultiModalBPNet model on p300 ChIP-seq peaks + GC-matched negatives.
 
-The model takes a 5-channel input (4-channel one-hot DNA + 1-channel accessibility
-signal) and predicts base-resolution ChIP-seq signal shape and total counts on
-both strands (n_outputs=2), matching the standard BPNet convention.
+Supports three input modes via --mode:
+  multimodal  5-channel input: one-hot DNA (4ch) + accessibility profile (1ch)
+  sequence    4-channel input: one-hot DNA only  (equivalent to standard BPNet)
+  atac        1-channel input: base-pair accessibility profile only
 
 Accessibility is log1p-normalized and standardized using the mean and standard
 deviation computed from training peaks. Pass --acc-mean / --acc-std to reuse
 pre-computed statistics (required when running multiple folds for consistency).
+--genome is not required in atac mode.
 
 Usage:
     pixi run -e multimodal python scripts/train_multimodal_bpnet.py \\
+        --mode [multimodal|sequence|atac] \\
         --peaks reference/ENCSR000EGE_peaks_inliers.narrowPeak \\
         --negatives reference/genomewide_gc_stride_1000_flank_size_1057.gc.bed \\
-        --genome /path/to/hg38.fa \\
+        --genome /path/to/hg38.fa \\        # not required for --mode atac
         --signal-plus-bw /path/to/chip_plus.bw \\
         --signal-minus-bw /path/to/chip_minus.bw \\
         --accessibility-bw /path/to/atac.bw \\
-        --fold reference/fold0.json \\
+        --fold reference/hg38_five_folds.json \\
         --fold-key 0 \\
-        --output-dir 2025_XXXX_multimodal_p300_model/models/atac/fold0 \\
-        [--acc-mean FLOAT --acc-std FLOAT]
+        --output-dir models/atac/fold0
 """
 
 import argparse
@@ -44,10 +46,15 @@ NARROWPEAK_COLS = ["chr", "start", "end", "name", "score", "strand",
 
 def parse_args():
     p = argparse.ArgumentParser()
+    p.add_argument("--mode", default="multimodal",
+                   choices=["multimodal", "sequence", "atac"],
+                   help="Input mode: multimodal (DNA+ATAC), sequence (DNA only), "
+                        "or atac (ATAC profile only). Default: multimodal")
     p.add_argument("--peaks", required=True, help="narrowPeak of training peaks")
     p.add_argument("--negatives", required=True,
                    help="BED of GC-matched negative regions (col 1-3 used)")
-    p.add_argument("--genome", required=True, help="Reference genome FASTA")
+    p.add_argument("--genome", default=None,
+                   help="Reference genome FASTA (not required for --mode atac)")
     p.add_argument("--signal-plus-bw", required=True,
                    help="ChIP-seq signal BigWig, plus strand (target)")
     p.add_argument("--signal-minus-bw", required=True,
@@ -108,10 +115,13 @@ def extract_windows(regions_df, genome_fa, signal_plus_bw, signal_minus_bw,
                     is_peak=True):
     """Extract sequence, signal, and accessibility windows around each region center.
 
+    genome_fa may be None for atac mode (seq extraction is skipped; seqs returned
+    as empty array).
+
     Returns
     -------
-    seqs:    np.ndarray, (N, 4, in_window + 2*max_jitter)
-    signals: np.ndarray, (N, 2, out_window + 2*max_jitter)  -- plus, minus strands
+    seqs:    np.ndarray, (N, 4, in_window + 2*max_jitter)  — zeros if genome_fa is None
+    signals: np.ndarray, (N, 2, out_window + 2*max_jitter)
     accs:    np.ndarray, (N, 1, in_window + 2*max_jitter)
     valid:   bool array
     """
@@ -119,10 +129,12 @@ def extract_windows(regions_df, genome_fa, signal_plus_bw, signal_minus_bw,
     half_in = (in_window + 2 * jitter) // 2
     half_out = (out_window + 2 * jitter) // 2
 
-    genome = pyfaidx.Fasta(genome_fa)
+    use_seq = genome_fa is not None
+    genome = pyfaidx.Fasta(genome_fa) if use_seq else None
     plus_bw = pyBigWig.open(signal_plus_bw)
     minus_bw = pyBigWig.open(signal_minus_bw)
     acc_bw = pyBigWig.open(accessibility_bw)
+    acc_chrom_sizes = dict(acc_bw.chroms())
 
     seqs, signals, accs = [], [], []
     valid = np.zeros(len(regions_df), dtype=bool)
@@ -140,13 +152,18 @@ def extract_windows(regions_df, genome_fa, signal_plus_bw, signal_minus_bw,
         s_out = center - half_out
         e_out = center + half_out
 
-        chrom_len = len(genome[chrom])
+        # Bounds check against genome or BigWig chrom sizes
+        if use_seq:
+            chrom_len = len(genome[chrom])
+        else:
+            chrom_len = acc_chrom_sizes.get(chrom, 0)
         if s_in < 0 or e_in > chrom_len or s_out < 0 or e_out > chrom_len:
             continue
 
-        seq_str = str(genome[chrom][s_in:e_in])
-        if len(seq_str) != in_window + 2 * jitter:
-            continue
+        if use_seq:
+            seq_str = str(genome[chrom][s_in:e_in])
+            if len(seq_str) != in_window + 2 * jitter:
+                continue
 
         sig_plus = plus_bw.values(chrom, s_out, e_out, numpy=True)
         sig_minus = minus_bw.values(chrom, s_out, e_out, numpy=True)
@@ -161,23 +178,29 @@ def extract_windows(regions_df, genome_fa, signal_plus_bw, signal_minus_bw,
             continue
         acc = np.nan_to_num(acc, nan=0.0).astype(np.float32)
 
-        seqs.append(one_hot_encode(seq_str))
-        signals.append(np.stack([sig_plus, sig_minus], axis=0))  # (2, out_window)
+        if use_seq:
+            seqs.append(one_hot_encode(seq_str))
+        signals.append(np.stack([sig_plus, sig_minus], axis=0))
         accs.append(acc[np.newaxis, :])
         valid[idx] = True
 
-    genome.close()
+    if use_seq:
+        genome.close()
     plus_bw.close()
     minus_bw.close()
     acc_bw.close()
 
-    if len(seqs) == 0:
-        return (np.zeros((0, 4, in_window + 2*jitter), dtype=np.float32),
-                np.zeros((0, 2, out_window + 2*jitter), dtype=np.float32),
-                np.zeros((0, 1, in_window + 2*jitter), dtype=np.float32),
+    n = len(accs)
+    L_in = in_window + 2 * jitter
+    L_out = out_window + 2 * jitter
+    if n == 0:
+        return (np.zeros((0, 4, L_in), dtype=np.float32),
+                np.zeros((0, 2, L_out), dtype=np.float32),
+                np.zeros((0, 1, L_in), dtype=np.float32),
                 valid)
 
-    return (np.stack(seqs), np.stack(signals), np.stack(accs), valid)
+    seqs_arr = np.stack(seqs) if use_seq else np.zeros((n, 4, L_in), dtype=np.float32)
+    return (seqs_arr, np.stack(signals), np.stack(accs), valid)
 
 
 def normalize_accessibility(acc, mean=None, std=None):
@@ -193,17 +216,23 @@ def normalize_accessibility(acc, mean=None, std=None):
 
 
 class MultiModalPeakNegativeSampler(torch.utils.data.Dataset):
-    """Dataset yielding 5-channel (seq + accessibility) inputs.
+    """Dataset yielding model inputs shaped according to mode.
 
-    Handles reverse complement augmentation correctly:
-    - Sequence channels 0-3: flip both channel dimension and position dimension
-    - Accessibility channel 4: flip position dimension only
+    mode='multimodal': Xi shape (5, L) — cat([seq, acc])
+    mode='sequence':   Xi shape (4, L) — seq only
+    mode='atac':       Xi shape (1, L) — acc only
+
+    Reverse complement augmentation:
+    - Sequence channels: flip both channel and position dims
+    - Accessibility channel: flip position dim only
+    - Signal (target): swap plus/minus and flip positions
     """
 
     def __init__(self, peak_seqs, peak_accs, peak_signals,
                  neg_seqs, neg_accs, neg_signals,
                  negative_ratio=0.1, in_window=2114, out_window=1000,
-                 max_jitter=0, reverse_complement=False, random_state=None):
+                 max_jitter=0, reverse_complement=False, random_state=None,
+                 mode='multimodal'):
         self.peak_seqs = peak_seqs
         self.peak_accs = peak_accs
         self.peak_signals = peak_signals
@@ -220,6 +249,7 @@ class MultiModalPeakNegativeSampler(torch.utils.data.Dataset):
         self.out_window = out_window
         self.max_jitter = max_jitter
         self.reverse_complement = reverse_complement
+        self.mode = mode
 
         self.rng = np.random.RandomState(random_state)
         self.n_peaks_seen = 0
@@ -250,19 +280,25 @@ class MultiModalPeakNegativeSampler(torch.utils.data.Dataset):
         yi = torch.from_numpy(signals[i][:, jitter:jitter + self.out_window])
 
         if self.reverse_complement and self.rng.randint(2) == 1:
-            # DNA: reverse complement (flip channels AND positions)
             Xi_seq = torch.flip(Xi_seq, [0, 1])
-            # Accessibility: reverse positions only (unstranded)
             Xi_acc = torch.flip(Xi_acc, [1])
-            # Signal: swap plus/minus channels AND reverse positions
             yi = torch.flip(yi, [0, 1])
 
-        Xi = torch.cat([Xi_seq, Xi_acc], dim=0)  # (5, in_window)
+        if self.mode == 'multimodal':
+            Xi = torch.cat([Xi_seq, Xi_acc], dim=0)  # (5, in_window)
+        elif self.mode == 'sequence':
+            Xi = Xi_seq                               # (4, in_window)
+        elif self.mode == 'atac':
+            Xi = Xi_acc                               # (1, in_window)
+
         return Xi, yi, label
 
 
 def main():
     args = parse_args()
+
+    if args.mode != 'atac' and args.genome is None:
+        raise ValueError("--genome is required for --mode sequence and --mode multimodal")
 
     with open(args.fold) as f:
         fold_data = json.load(f)[str(args.fold_key)]
@@ -285,27 +321,29 @@ def main():
         train_negs = train_negs.sample(max_negs, random_state=42).reset_index(drop=True)
     print(f"  Train negatives: {len(train_negs)} (subsampled to {max_negs} max)")
 
+    genome = args.genome  # None for atac mode — extract_windows handles this
+
     print("Extracting training peak windows...")
     tr_seqs, tr_sigs, tr_accs, _ = extract_windows(
-        train_peaks, args.genome, args.signal_plus_bw, args.signal_minus_bw,
+        train_peaks, genome, args.signal_plus_bw, args.signal_minus_bw,
         args.accessibility_bw, args.in_window, args.out_window, args.max_jitter,
         is_peak=True
     )
-    print(f"  Extracted {len(tr_seqs)} training peaks")
+    print(f"  Extracted {len(tr_accs)} training peaks")
 
     print("Extracting training negative windows...")
     neg_seqs, neg_sigs, neg_accs, _ = extract_windows(
-        train_negs, args.genome, args.signal_plus_bw, args.signal_minus_bw,
+        train_negs, genome, args.signal_plus_bw, args.signal_minus_bw,
         args.accessibility_bw, args.in_window, args.out_window, 0, is_peak=False
     )
-    print(f"  Extracted {len(neg_seqs)} training negatives")
+    print(f"  Extracted {len(neg_accs)} training negatives")
 
     print("Extracting validation peak windows...")
     val_seqs, val_sigs, val_accs, _ = extract_windows(
-        val_peaks, args.genome, args.signal_plus_bw, args.signal_minus_bw,
+        val_peaks, genome, args.signal_plus_bw, args.signal_minus_bw,
         args.accessibility_bw, args.in_window, args.out_window, 0, is_peak=True
     )
-    print(f"  Extracted {len(val_seqs)} validation peaks")
+    print(f"  Extracted {len(val_accs)} validation peaks")
 
     # Normalize accessibility
     tr_accs, acc_mean, acc_std = normalize_accessibility(
@@ -328,18 +366,22 @@ def main():
         out_window=args.out_window,
         max_jitter=args.max_jitter,
         reverse_complement=True,
-        random_state=42
+        random_state=42,
+        mode=args.mode
     )
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=args.batch_size,
         num_workers=0, pin_memory=True
     )
 
-    # Validation tensors
-    X_valid = torch.cat([
-        torch.from_numpy(val_seqs),
-        torch.from_numpy(val_accs)
-    ], dim=1)  # (N, 5, in_window)
+    # Validation tensors — shape depends on mode
+    if args.mode == 'multimodal':
+        X_valid = torch.cat([torch.from_numpy(val_seqs),
+                             torch.from_numpy(val_accs)], dim=1)  # (N, 5, L)
+    elif args.mode == 'sequence':
+        X_valid = torch.from_numpy(val_seqs)   # (N, 4, L)
+    elif args.mode == 'atac':
+        X_valid = torch.from_numpy(val_accs)   # (N, 1, L)
     y_valid = torch.from_numpy(val_sigs)
 
     # Model
@@ -348,6 +390,7 @@ def main():
         n_acc_filters=args.n_acc_filters,
         n_layers=args.n_layers,
         n_outputs=2,
+        mode=args.mode,
         count_loss_weight=args.count_loss_weight,
         name=model_prefix,
         verbose=True

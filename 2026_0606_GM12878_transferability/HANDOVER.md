@@ -33,20 +33,35 @@ Key finding: the K562-trained multimodal model substantially outperforms the GM1
 ## Current status (as of 2026-06-08)
 
 ### In progress
-- [ ] **SHAP on GM12878 BPNet** — job array 28324270 (folds 0–4); 8h time limit
-  - Script: `scripts/3.1.submit_gm12878_shap.sh`; logs: `log/shap_fold{0-4}.28324270.txt`
-  - Output: `shap_peaks/fold{0-4}/{chr}/counts_scores.h5 + DONE.txt`
-  - DONE.txt guard: already-completed chromosomes are skipped on resubmission
-  - Previous attempt 28132251 timed out at 4h (6–19/24 chroms done per fold); limit raised to 8h
-  - After completion: run merge (step 5.2) then mean (step 5.3) then MoDISCo (step 6.1) — see `0.0.log.sh`
+- [ ] **SHAP merge + mean** — job 28394331 submitted 2026-06-08
+  - Script: `scripts/5.2.submit_merge_mean_shap.sh`; log: `log/merge_mean_shap.28394331.txt`
+  - Step 1: merge per-chrom h5s per fold → `shap_peaks/fold{0-4}/shap_counts_merged.h5`
+  - Step 2: mean across folds → `shap_peaks/all_folds/counts_mean_shap_scores.h5`
+  - After completion: run MoDISCo (step 6.1):
+    ```bash
+    cd 2026_0606_GM12878_transferability
+    sbatch ../scripts/4.1.submit_counts_modisco.sh \
+      modisco/max_seqlets_250k_30_10_0 \
+      shap_peaks/all_folds/counts_mean_shap_scores.h5 \
+      250000 30 10 0 \
+      ../reference/MotifCompendium-Database-Human.meme.txt \
+      400
+    ```
+
+- [ ] **MoDISCo on GM12878 mean SHAP** — job 28441249 submitted 2026-06-08
+  - Output: `modisco/max_seqlets_250k_30_10_0/`; log: `slurm_logs/modisco.28441249.txt`
 
 ### Completed
+- [x] **GM12878 multimodal predictions + eval** — complete 2026-06-08
+  - Output: `predictions/gm12878_multimodal_atac/{cv,mean}_predictions.tsv.gz`, `prediction_accuracy.tsv`
+  - **Results: Pearson = 0.821 (all), 0.760 (p300+), 0.781 (p300−)** — in-cell-type multimodal ceiling
+  - Eval command: `pixi run -e ism python ../scripts/2.3.compute_prediction_performance.py --mean-pred-dir predictions/gm12878_multimodal_atac --mean-output-dir predictions/gm12878_multimodal_atac --overlap-col EP300_peak_overlap --from-tsv`
+- [x] **SHAP on GM12878 BPNet (per-fold)** — all 5 folds complete (24/24 chroms each); job 28324270
+  - chrY has 0 peaks — `DONE.txt` created manually; chrY removed from `3.1.submit_gm12878_shap.sh`
 - [x] **Transferability plots** — script: `scripts/plot_transferability.py`; outputs in `figures/`:
   - `figures/transferability_bar.pdf` (Fig 2d) — 4 bar groups: GM12878 BPNet ceiling, K562 BPNet v1, K562 multimodal ATAC, GM12878 inter-replicate ceiling; dual bars (all / p300+ elements)
   - `figures/transferability_scatter_all.pdf` (S2a)
   - `figures/transferability_scatter_peaks.pdf` (S2b)
-
-### Completed
 - [x] GM12878 candidate elements narrowPeak — `reference/GM12878_candidate_elements.narrowPeak`
   - 154,224 regions (500 bp windows), derived from H3K27ac megamap candidate regions
 - [x] GM12878 EP300 BAM files filtered and sorted (`$OAK/Users/sheth/Data/ENCODE/GM12878/EP300/`)
@@ -63,6 +78,11 @@ Key finding: the K562-trained multimodal model substantially outperforms the GM1
 - [x] K562 v1 BPNet predictions on GM12878 elements — job 28041042; `predictions/k562_bpnet_v1/mean/fold{0-4}/`
 - [x] K562 multimodal ATAC BPNet predictions on GM12878 elements — job 28041421; `predictions/k562_multimodal_atac/`
 - [x] Evaluate all 3 models — jobs 28116257/346/354; `predictions/*/mean/all_folds/prediction_accuracy.tsv`
+- [x] **GM12878 multimodal BPNet training** — job array 28359131; all 5 folds complete 2026-06-08
+  - ~6 min/fold on GPU (parallel); val count Pearson fold 4 = 0.81 at epoch 29
+  - Models: `GM12878_multimodal_BPNet/models/atac/fold{0-4}/multimodal_bpnet.torch` (~572 KB each)
+  - Signal: ENCODE BigWigs (ENCFF960OFK/941MGK); ATAC: `data/atac.bw`; peaks: ENCFF926AKK (21,068)
+  - Architecture: same as K562 ATAC multimodal (64 filters, 8 layers, middle fusion)
 
 ### Next steps (after SHAP completes)
 1. Merge per-chr h5 per fold: `merge_shap_across_chrom.py` (step 5.2 in `0.0.log.sh`)
@@ -85,6 +105,9 @@ Key finding: the K562-trained multimodal model substantially outperforms the GM1
 | `shap_peaks/` | SHAP output directory (in progress) |
 | `modisco/` | MoDISCo output directory (pending) |
 | `scripts/3.1.submit_gm12878_shap.sh` | Single-fold SHAP script (loops all chroms internally) |
+| `scripts/1.1.submit_training_gm12878_multimodal.sh` | GM12878 multimodal training script |
+| `config/input_data_gm12878_multimodal.json` | Input config for GM12878 multimodal training |
+| `GM12878_multimodal_BPNet/models/atac/fold{0-4}/` | GM12878 multimodal models (in progress) |
 | `$OAK/Users/sheth/Data/ENCODE/GM12878/EP300/ENCFF926AKK.bed.gz` | GM12878 p300 peaks (21,068) |
 | `GM12878_replicate_correlations.tsv` | Inter-replicate p300 Pearson/Spearman |
 

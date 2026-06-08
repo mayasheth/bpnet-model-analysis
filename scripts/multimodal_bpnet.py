@@ -1,18 +1,17 @@
 """
-MultiModalBPNet: BPNet variant taking DNA sequence + base-pair accessibility as input.
+MultiModalBPNet: BPNet variant supporting three input modes.
 
-Input: (N, 5, L) tensor
-    Channels 0-3: one-hot DNA sequence
-    Channel 4:    accessibility signal (ATAC or DNase, log1p-normalized)
+Modes:
+  'multimodal'  Input (N, 5, L): channels 0-3 one-hot DNA, channel 4 accessibility.
+                Middle fusion: seq (4→n_filters) + acc (1→n_acc_filters) → concat →
+                dilated stack (n_filters+n_acc_filters channels).
+  'sequence'    Input (N, 4, L): one-hot DNA only.
+                seq (4→n_filters) → dilated stack (n_filters channels).
+  'atac'        Input (N, 1, L): base-pair accessibility profile only.
+                acc (1→n_filters) → dilated stack (n_filters channels).
+                Uses n_filters (not n_acc_filters) for fair capacity comparison.
 
-Middle fusion architecture:
-    seq (4ch) → Conv1d → (N, n_filters, L)
-                                             → cat → (N, n_filters+n_acc_filters, L)
-    acc (1ch) → Conv1d → (N, n_acc_filters, L)
-                                             → dilated residual layers
-                                             → profile head + counts head
-
-DeepLIFT/SHAP attributions on the single 5-channel input give:
+DeepLIFT/SHAP attributions on the multimodal input give:
     attr[:, :4, :] = sequence importance
     attr[:, 4:, :]  = accessibility importance
 """
@@ -57,24 +56,34 @@ class MultiModalBPNet(torch.nn.Module):
     """
 
     def __init__(self, n_filters=64, n_acc_filters=8, n_layers=8, n_outputs=2,
-                 count_loss_weight=1, profile_output_bias=True,
+                 mode='multimodal', count_loss_weight=1, profile_output_bias=True,
                  count_output_bias=True, name=None, trimming=None, verbose=True):
         super().__init__()
+        assert mode in ('multimodal', 'sequence', 'atac'), \
+            f"mode must be 'multimodal', 'sequence', or 'atac', got '{mode}'"
+        self.mode = mode
         self.n_filters = n_filters
         self.n_acc_filters = n_acc_filters
         self.n_layers = n_layers
         self.n_outputs = n_outputs
         self.count_loss_weight = count_loss_weight
-        self.name = name or f"multimodal_bpnet.{n_filters}.{n_acc_filters}.{n_layers}"
+        self.name = name or f"multimodal_bpnet.{mode}.{n_filters}.{n_layers}"
         self.trimming = trimming or 47 + sum(2**i for i in range(1, n_layers + 1))
 
-        n_merged = n_filters + n_acc_filters
-
-        # Separate initial convolutions for each modality
-        self.seq_conv = torch.nn.Conv1d(4, n_filters, kernel_size=21, padding=10)
-        self.seq_relu = torch.nn.ReLU()
-        self.acc_conv = torch.nn.Conv1d(1, n_acc_filters, kernel_size=21, padding=10)
-        self.acc_relu = torch.nn.ReLU()
+        if mode == 'multimodal':
+            n_merged = n_filters + n_acc_filters
+            self.seq_conv = torch.nn.Conv1d(4, n_filters, kernel_size=21, padding=10)
+            self.seq_relu = torch.nn.ReLU()
+            self.acc_conv = torch.nn.Conv1d(1, n_acc_filters, kernel_size=21, padding=10)
+            self.acc_relu = torch.nn.ReLU()
+        elif mode == 'sequence':
+            n_merged = n_filters
+            self.seq_conv = torch.nn.Conv1d(4, n_filters, kernel_size=21, padding=10)
+            self.seq_relu = torch.nn.ReLU()
+        elif mode == 'atac':
+            n_merged = n_filters
+            self.acc_conv = torch.nn.Conv1d(1, n_filters, kernel_size=21, padding=10)
+            self.acc_relu = torch.nn.ReLU()
 
         # Dilated residual layers on merged representation
         self.rconvs = torch.nn.ModuleList([
@@ -106,8 +115,11 @@ class MultiModalBPNet(torch.nn.Module):
 
         Parameters
         ----------
-        X: torch.Tensor, shape (N, 5, L)
-            Channels 0-3: one-hot sequence; channel 4: accessibility signal.
+        X: torch.Tensor
+            Shape depends on mode:
+              'multimodal': (N, 5, L) — channels 0-3 one-hot DNA, channel 4 accessibility
+              'sequence':   (N, 4, L) — one-hot DNA only
+              'atac':       (N, 1, L) — base-pair accessibility profile only
 
         Returns
         -------
@@ -116,9 +128,14 @@ class MultiModalBPNet(torch.nn.Module):
         """
         start, end = self.trimming, X.shape[2] - self.trimming
 
-        X_seq = self.seq_relu(self.seq_conv(X[:, :4, :]))
-        X_acc = self.acc_relu(self.acc_conv(X[:, 4:, :]))
-        X_merged = torch.cat([X_seq, X_acc], dim=1)
+        if self.mode == 'multimodal':
+            X_seq = self.seq_relu(self.seq_conv(X[:, :4, :]))
+            X_acc = self.acc_relu(self.acc_conv(X[:, 4:, :]))
+            X_merged = torch.cat([X_seq, X_acc], dim=1)
+        elif self.mode == 'sequence':
+            X_merged = self.seq_relu(self.seq_conv(X))
+        elif self.mode == 'atac':
+            X_merged = self.acc_relu(self.acc_conv(X))
 
         for i in range(self.n_layers):
             X_conv = self.rrelus[i](self.rconvs[i](X_merged))
