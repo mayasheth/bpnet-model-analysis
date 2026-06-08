@@ -6,13 +6,19 @@ Outputs in --output-dir:
   mean_predictions.tsv.gz   mean predictions across all 5 folds (all elements)
   cv_predictions.tsv.gz     held-out test chromosome predictions per fold
 
+Supports three input modes via --mode:
+  multimodal  DNA sequence + ATAC profile (default)
+  sequence    DNA sequence only (--genome required, --accessibility-bw ignored)
+  atac        ATAC profile only (--genome not required)
+
 Usage:
   pixi run -e multimodal python scripts/2.1.predict_multimodal.py \
+    --mode [multimodal|sequence|atac] \
     --elements reference/K562_DNase_candidate_elements.narrowPeak \
-    --genome /path/to/hg38.fa \
+    --genome /path/to/hg38.fa \        # not required for --mode atac
     --signal-plus-bw /path/to/chip_plus.bw \
     --signal-minus-bw /path/to/chip_minus.bw \
-    --accessibility-bw data/atac.bw \
+    --accessibility-bw data/atac.bw \  # not required for --mode sequence
     --model-dir models/atac \
     --fold-json reference/hg38_five_folds.json \
     --peaks reference/ENCSR000EGE_peaks_inliers.narrowPeak \
@@ -41,11 +47,16 @@ NARROWPEAK_COLS = ["chrom", "start", "end", "name", "score", "strand",
 
 def parse_args():
     p = argparse.ArgumentParser()
+    p.add_argument("--mode", default="multimodal",
+                   choices=["multimodal", "sequence", "atac"],
+                   help="Input mode (default: multimodal)")
     p.add_argument("--elements", required=True, help="Candidate elements narrowPeak")
-    p.add_argument("--genome", required=True)
+    p.add_argument("--genome", default=None,
+                   help="Reference genome FASTA (required for multimodal and sequence modes)")
     p.add_argument("--signal-plus-bw", required=True)
     p.add_argument("--signal-minus-bw", required=True)
-    p.add_argument("--accessibility-bw", required=True)
+    p.add_argument("--accessibility-bw", default=None,
+                   help="Accessibility BigWig (required for multimodal and atac modes)")
     p.add_argument("--model-dir", required=True,
                    help="Dir containing fold0..fold4/ subdirs with multimodal_bpnet.torch")
     p.add_argument("--fold-json", required=True)
@@ -72,31 +83,35 @@ def extract_windows(elements_df, genome_fa, signal_plus_bw, signal_minus_bw,
                     accessibility_bw, in_window, out_window):
     """Extract seq, accessibility, and signal windows centered on each element.
 
+    genome_fa and accessibility_bw may be None (skips seq/acc extraction respectively).
+
     Returns
     -------
-    seqs:    (N, 4, in_window) float32
-    accs:    (N, 1, in_window) float32  (raw, not normalized)
+    seqs:    (N, 4, in_window) float32  — zeros if genome_fa is None
+    accs:    (N, 1, in_window) float32  — zeros if accessibility_bw is None (raw, not normalized)
     signals: (N, 2, out_window) float32  (plus, minus strands)
     coords:  DataFrame(chrom, out_start, out_end, region_name), RangeIndex 0..N-1
     """
     half_in = in_window // 2
     half_out = out_window // 2
 
-    genome = pyfaidx.Fasta(genome_fa)
+    use_seq = genome_fa is not None
+    use_acc = accessibility_bw is not None
+
+    genome = pyfaidx.Fasta(genome_fa) if use_seq else None
     plus_bw = pyBigWig.open(signal_plus_bw)
     minus_bw = pyBigWig.open(signal_minus_bw)
-    acc_bw = pyBigWig.open(accessibility_bw)
+    acc_bw = pyBigWig.open(accessibility_bw) if use_acc else None
 
-    # Use the intersection of chrom sizes across all sources to avoid invalid intervals
-    genome_chroms = set(genome.keys())
+    # Compute per-chrom size limits from all active sources
+    ref_chroms = set(genome.keys()) if use_seq else set(plus_bw.chroms().keys())
     chrom_sizes = {}
-    for chrom in genome_chroms:
-        sizes = [
-            len(genome[chrom]),
-            plus_bw.chroms().get(chrom, 0),
-            minus_bw.chroms().get(chrom, 0),
-            acc_bw.chroms().get(chrom, 0),
-        ]
+    for chrom in ref_chroms:
+        sizes = [plus_bw.chroms().get(chrom, 0), minus_bw.chroms().get(chrom, 0)]
+        if use_seq:
+            sizes.append(len(genome[chrom]))
+        if use_acc:
+            sizes.append(acc_bw.chroms().get(chrom, 0))
         chrom_sizes[chrom] = min(sizes)
 
     seqs, accs, signals, coords = [], [], [], []
@@ -114,23 +129,28 @@ def extract_windows(elements_df, genome_fa, signal_plus_bw, signal_minus_bw,
             n_skipped += 1
             continue
 
-        seq_str = str(genome[chrom][s_in:e_in])
-        if len(seq_str) != in_window:
-            n_skipped += 1
-            continue
+        if use_seq:
+            seq_str = str(genome[chrom][s_in:e_in])
+            if len(seq_str) != in_window:
+                n_skipped += 1
+                continue
 
         sig_plus = plus_bw.values(chrom, s_out, e_out, numpy=True)
         sig_minus = minus_bw.values(chrom, s_out, e_out, numpy=True)
-        acc = acc_bw.values(chrom, s_in, e_in, numpy=True)
-
         if (sig_plus is None or len(sig_plus) != out_window
-                or sig_minus is None or len(sig_minus) != out_window
-                or acc is None or len(acc) != in_window):
+                or sig_minus is None or len(sig_minus) != out_window):
             n_skipped += 1
             continue
 
-        seqs.append(one_hot_encode(seq_str))
-        accs.append(np.nan_to_num(acc, nan=0.0).astype(np.float32)[np.newaxis, :])
+        if use_acc:
+            acc = acc_bw.values(chrom, s_in, e_in, numpy=True)
+            if acc is None or len(acc) != in_window:
+                n_skipped += 1
+                continue
+            accs.append(np.nan_to_num(acc, nan=0.0).astype(np.float32)[np.newaxis, :])
+
+        if use_seq:
+            seqs.append(one_hot_encode(seq_str))
         signals.append(np.stack([
             np.nan_to_num(sig_plus, nan=0.0).astype(np.float32),
             np.nan_to_num(sig_minus, nan=0.0).astype(np.float32),
@@ -138,11 +158,18 @@ def extract_windows(elements_df, genome_fa, signal_plus_bw, signal_minus_bw,
         coords.append({"chrom": chrom, "out_start": s_out, "out_end": e_out,
                        "region_name": row["name"]})
 
-    genome.close(); plus_bw.close(); minus_bw.close(); acc_bw.close()
+    if use_seq:
+        genome.close()
+    plus_bw.close()
+    minus_bw.close()
+    if use_acc:
+        acc_bw.close()
 
-    print(f"  Extracted {len(seqs)} windows ({n_skipped} skipped)")
-    return (np.stack(seqs), np.stack(accs), np.stack(signals),
-            pd.DataFrame(coords))
+    n = len(signals)
+    print(f"  Extracted {n} windows ({n_skipped} skipped)")
+    seqs_arr = np.stack(seqs) if use_seq else np.zeros((n, 4, in_window), dtype=np.float32)
+    accs_arr = np.stack(accs) if use_acc else np.zeros((n, 1, in_window), dtype=np.float32)
+    return (seqs_arr, accs_arr, np.stack(signals), pd.DataFrame(coords))
 
 
 def compute_peak_overlap(coords_df, peaks_path):
@@ -173,13 +200,19 @@ def normalize_accessibility(accs, mean, std):
     return (accs - mean) / std
 
 
-def predict_fold(model_path, seqs, accs_raw, acc_stats, batch_size, device):
-    """Load model, normalize accessibility, return predicted log counts (N,)."""
+def predict_fold(model_path, seqs, accs_raw, acc_stats, batch_size, device, mode):
+    """Load model, build input tensor by mode, return predicted log counts (N,)."""
     model = torch.load(model_path, map_location="cpu", weights_only=False)
-    accs_norm = normalize_accessibility(
-        accs_raw.copy(), acc_stats["acc_mean"], acc_stats["acc_std"]
-    )
-    X = torch.from_numpy(np.concatenate([seqs, accs_norm], axis=1))  # (N, 5, L)
+    if mode in ("multimodal", "atac"):
+        accs_norm = normalize_accessibility(
+            accs_raw.copy(), acc_stats["acc_mean"], acc_stats["acc_std"]
+        )
+    if mode == "multimodal":
+        X = torch.from_numpy(np.concatenate([seqs, accs_norm], axis=1))  # (N, 5, L)
+    elif mode == "sequence":
+        X = torch.from_numpy(seqs)       # (N, 4, L)
+    elif mode == "atac":
+        X = torch.from_numpy(accs_norm)  # (N, 1, L)
     preds = tg_predict(model, X, func=lambda out: out[1],
                        batch_size=batch_size, device=device)  # (N, 1)
     return preds.squeeze(1).numpy()  # (N,)
@@ -187,6 +220,12 @@ def predict_fold(model_path, seqs, accs_raw, acc_stats, batch_size, device):
 
 def main():
     args = parse_args()
+
+    if args.mode in ("multimodal", "sequence") and args.genome is None:
+        raise ValueError(f"--genome is required for --mode {args.mode}")
+    if args.mode in ("multimodal", "atac") and args.accessibility_bw is None:
+        raise ValueError(f"--accessibility-bw is required for --mode {args.mode}")
+
     os.makedirs(args.output_dir, exist_ok=True)
 
     with open(args.fold_json) as f:
@@ -202,7 +241,7 @@ def main():
                            usecols=range(10), names=NARROWPEAK_COLS)
     print(f"  {len(elements)} elements")
 
-    print("Extracting windows (seq + accessibility + signal)...")
+    print(f"Extracting windows (mode={args.mode})...")
     seqs, accs_raw, signals, coords = extract_windows(
         elements, args.genome,
         args.signal_plus_bw, args.signal_minus_bw, args.accessibility_bw,
@@ -227,7 +266,8 @@ def main():
               f"(acc_mean={acc_stats['acc_mean']:.4f}, "
               f"acc_std={acc_stats['acc_std']:.4f})...")
         fold_preds[fold_idx] = predict_fold(
-            model_path, seqs, accs_raw, acc_stats, args.batch_size, args.device
+            model_path, seqs, accs_raw, acc_stats, args.batch_size, args.device,
+            mode=args.mode
         )
 
     # Assemble mean predictions TSV

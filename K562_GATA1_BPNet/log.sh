@@ -87,7 +87,7 @@ python $SCRIPTS_DIR/2.3.compute_prediction_performance.py \
   --cv_pred_dir $CV_PRED_DIR \
   --overlap_col "EP300_peak_overlap"
 
-### --- [2D] PREDICTION RESUBMISSION (2026-06-07) --- ###
+### --- [2D] PREDICTION RESUBMISSION ROUND 1 (2026-06-07) --- ###
 #
 # Root cause: jobs were hanging, not slow. --threads 2 spawns 2 parallel generator
 # workers. When one worker crashes (BigWig read error), the stealer thread blocks
@@ -97,18 +97,47 @@ python $SCRIPTS_DIR/2.3.compute_prediction_performance.py \
 # Its 2114bp window (end=17317) exceeds the GATA1 BigWig chrM size (16569 bp),
 # causing pyBigWig RuntimeError and deadlocking the generator.
 #
-# CV fold 2: cause unknown (chr4/11/12/15/Y have no out-of-bounds elements);
-# running --threads 1 to surface exact element with a clean error.
-#
-# Fix: GPU constraint, chrM excluded from mean predictions, --threads 1 for CV fold 2.
+# CV fold 2: cause unknown; running --threads 1 to surface exact error.
+# Fix: GPU constraint, chrM excluded from mean, --threads 1 for CV.
 # Scripts: resubmit_cv_fold2.sh, resubmit_mean_predict.sh
 
 cd $RESULTS_DIR
 sbatch resubmit_cv_fold2.sh           # job 28137653 — CV fold 2
 sbatch --array=0-4 resubmit_mean_predict.sh  # job 28137654 — mean predictions folds 0-4
 
-# After mean h5s complete, calculate mean across folds then run performance metrics:
-# (same as [2B.ii] / [2C] above, using pixi run -e ism instead of conda)
+# Round 1 failed: all 5 mean h5s = 96 bytes (truncated); BigWig fd leak + corrupt block.
+
+
+### --- [2E] PREDICTION RESUBMISSION ROUNDS 2 & 3 (2026-06-08) --- ###
+#
+# Round 2 fixes applied to bpnet-refactor/bpnet/generators/generators.py:
+#   - _proc_target: sends None sentinel to mpq on any exception
+#   - _stealer: checks for None sentinel, propagates and exits (no more hang)
+#   - gen(): raises RuntimeError on None — fails fast instead of hanging
+#   - Explicit BigWig handle close after each batch (fix fd accumulation)
+#
+# Round 2 still failed: corrupt BigWig block at chr15:69972829-69973829 in
+# GATA1 plus.bigWig crashed the worker even with the sentinel fix.
+# Error surfaced by element-level logging in _proc_target.
+#
+# Round 3 fix: wrapped per-element BigWig reads in try/except inside _generate_batch;
+# corrupt blocks fill with zeros and log a WARNING instead of crashing.
+# Final jobs 28338346 (CV fold 2) and 28338347 (mean predictions folds 0-4).
+# BOTH COMPLETED SUCCESSFULLY 2026-06-08.
+
+cd $RESULTS_DIR
+# Round 2 (failed): jobs 28329432/28329433
+# sbatch resubmit_cv_fold2.sh
+# sbatch --array=0-4 resubmit_mean_predict.sh
+
+# Round 3 (successful): jobs 28338346/28338347
+# sbatch resubmit_cv_fold2.sh           # job 28338346
+# sbatch --array=0-4 resubmit_mean_predict.sh  # job 28338347
+
+
+### --- [2F] POST-PROCESSING (2026-06-08) --- ###
+
+# [2F.i] Calculate mean across folds (COMPLETED 2026-06-08)
 module load devel pixi/0.53.0
 
 PRED_H5=model_split000_predictions.h5
@@ -119,13 +148,26 @@ python $BPNET_DIR/utils/mean_predictions.py \
   --prediction_h5s $PRED_H5_LIST \
   --chrom_sizes $CHR_SIZES \
   --output_dir $MEAN_PRED_DIR/all_folds
+# Output: predictions_mean/all_folds/mean_predictions.h5 (1.2 GB)
 
+# [2F.ii] Compute prediction performance metrics (RUNNING 2026-06-08)
+#
+# PEAKS FILE HISTORY:
+#   - data/peaks_inliers.bed.gz was 0 bytes (original download.sh used URL without experiment ID)
+#   - First metrics attempt used K562 p300 peaks (ENCSR000EGE) → all 150k elements called GATA1+ → crash
+#   - Fixed 2026-06-08: downloaded from ENCODE ENCFF509ZLE (4,603 GATA1 K562 peaks)
+#   wget -O data/peaks_inliers.bed.gz \
+#     "https://www.encodeproject.org/files/ENCFF509ZLE/@@download/ENCFF509ZLE.bed.gz"
+#
+module load devel pixi/0.53.0
 pixi run -e ism python $SCRIPTS_DIR/2.3.compute_prediction_performance.py \
-  --mean-pred-dir $MEAN_PRED_DIR \
   --cv-pred-dir $CV_PRED_DIR \
-  --peaks $PROJECT_DIR/reference/K562_DNase_candidate_elements.narrowPeak \
+  --mean-pred-dir $MEAN_PRED_DIR \
+  --peaks $RESULTS_DIR/data/peaks_inliers.bed.gz \
   --overlap-col "GATA1_peak_overlap" \
   --h5-name model_split000_predictions.h5
+# Output: predictions_cv/all_folds/prediction_accuracy.tsv
+#         predictions_mean/all_folds/prediction_accuracy.tsv
 
 ### --- [3] SHAP (ALL ELEMENTS) --- ###
 

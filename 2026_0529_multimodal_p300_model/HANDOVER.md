@@ -93,6 +93,15 @@ Architecture is defined in `scripts/multimodal_bpnet.py`. See `multimodal_bpnet_
   - [x] Plots written — `../2026_0606_GM12878_transferability/figures/transferability_{bar,scatter_all,scatter_peaks}.pdf`
     - Bar chart (Fig 2d): 4 bar groups with dual all/p300+ bars; inter-replicate ceiling added as 4th group
 
+- [x] **GM12878 multimodal BPNet training** — all 5 folds complete 2026-06-08 (job 28359131; ~6 min/fold on GPU)
+  - Same architecture as K562 ATAC model (64 filters, 8 layers, middle fusion)
+  - Models: `../2026_0606_GM12878_transferability/GM12878_multimodal_BPNet/models/atac/fold{0-4}/`
+  - Purpose: in-cell-type multimodal ceiling to compare against K562 → GM12878 transfer
+- [ ] **GM12878 multimodal predictions** — job 28387044 submitted 2026-06-08
+  - Script: `../2026_0606_GM12878_transferability/scripts/2.1.submit_predict_gm12878_multimodal.sh`
+  - Output: `../2026_0606_GM12878_transferability/predictions/gm12878_multimodal_atac/`
+  - After completion: evaluate with `2.3.compute_prediction_performance.py`, add to Fig 2d
+
 - [ ] Submit DNase training (5 folds) after `data/dnase.bw` exists:
   ```bash
   for FOLD in 0 1 2 3 4; do sbatch scripts/1.2.submit_training_dnase.sh $FOLD; done
