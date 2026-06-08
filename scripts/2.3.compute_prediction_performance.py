@@ -42,8 +42,9 @@ import seaborn as sns
 
 def parse_args():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--cv-pred-dir", required=True,
-                   help="Dir with fold{0-4}/<h5-name> (one held-out chr set per fold)")
+    p.add_argument("--cv-pred-dir",
+                   help="Dir with fold{0-4}/<h5-name> (one held-out chr set per fold); "
+                        "optional — omit for mean-only cross-cell-type evaluation")
     p.add_argument("--mean-pred-dir",
                    help="Dir with fold{0-4}/<h5-name> (all 150k elements per fold; optional)")
     p.add_argument("--h5-name", default="ENCSR000EGE_split000_predictions.h5",
@@ -203,20 +204,25 @@ def make_mean_plots(mean_df, oc, mean_out, mc):
 
 def main():
     args = parse_args()
-    cv_out = args.cv_output_dir or os.path.join(args.cv_pred_dir, "all_folds")
-    os.makedirs(cv_out, exist_ok=True)
     oc = args.overlap_col
     mc = args.max_counts
     acc_rows = []
 
+    cv_out = None
+    mean_out = None
+    if args.cv_pred_dir:
+        cv_out = args.cv_output_dir or os.path.join(args.cv_pred_dir, "all_folds")
+        os.makedirs(cv_out, exist_ok=True)
+
     if args.from_tsv:
         # ── Fast replot mode: read existing TSVs, skip h5 loading ─────────────
-        cv_tsv = os.path.join(cv_out, "cv_predictions.tsv.gz")
-        if not os.path.exists(cv_tsv):
-            raise FileNotFoundError(f"--from-tsv set but {cv_tsv} not found")
-        print(f"Reading {cv_tsv}")
-        cv_df = pd.read_csv(cv_tsv, sep="\t")
-        acc_rows += make_cv_plots(cv_df, oc, cv_out, mc)
+        if cv_out:
+            cv_tsv = os.path.join(cv_out, "cv_predictions.tsv.gz")
+            if not os.path.exists(cv_tsv):
+                raise FileNotFoundError(f"--from-tsv set but {cv_tsv} not found")
+            print(f"Reading {cv_tsv}")
+            cv_df = pd.read_csv(cv_tsv, sep="\t")
+            acc_rows += make_cv_plots(cv_df, oc, cv_out, mc)
 
         if args.mean_pred_dir:
             mean_out = args.mean_output_dir or os.path.join(args.mean_pred_dir, "all_folds")
@@ -233,31 +239,32 @@ def main():
             raise ValueError("--peaks is required unless --from-tsv is set")
         peaks_df = load_peaks(args.peaks)
 
-        print("Building CV predictions table...")
-        fold_dfs = []
-        for fold in range(5):
-            path = os.path.join(args.cv_pred_dir, f"fold{fold}", args.h5_name)
-            if not os.path.exists(path):
-                print(f"  WARNING: {path} not found, skipping"); continue
-            try:
-                chroms, starts, ends, true_lc, pred_lc = load_h5(path)
-            except OSError as e:
-                print(f"  WARNING: fold {fold} h5 unreadable ({e}), skipping"); continue
-            df = pd.DataFrame({
-                "chrom": chroms, "start": starts, "end": ends,
-                "true_logcounts": stranded_to_total(true_lc),
-                "pred_logcounts": stranded_to_total(pred_lc),
-                "fold": fold,
-            })
-            df[oc] = compute_peak_overlap(df, peaks_df)
-            fold_dfs.append(df)
-            print(f"  Fold {fold}: {len(df)} regions  (p300+ = {df[oc].sum()})")
+        if cv_out:
+            print("Building CV predictions table...")
+            fold_dfs = []
+            for fold in range(5):
+                path = os.path.join(args.cv_pred_dir, f"fold{fold}", args.h5_name)
+                if not os.path.exists(path):
+                    print(f"  WARNING: {path} not found, skipping"); continue
+                try:
+                    chroms, starts, ends, true_lc, pred_lc = load_h5(path)
+                except OSError as e:
+                    print(f"  WARNING: fold {fold} h5 unreadable ({e}), skipping"); continue
+                df = pd.DataFrame({
+                    "chrom": chroms, "start": starts, "end": ends,
+                    "true_logcounts": stranded_to_total(true_lc),
+                    "pred_logcounts": stranded_to_total(pred_lc),
+                    "fold": fold,
+                })
+                df[oc] = compute_peak_overlap(df, peaks_df)
+                fold_dfs.append(df)
+                print(f"  Fold {fold}: {len(df)} regions  (p300+ = {df[oc].sum()})")
 
-        cv_df = pd.concat(fold_dfs, ignore_index=True)
-        cv_df.to_csv(os.path.join(cv_out, "cv_predictions.tsv.gz"),
-                     sep="\t", index=False, compression="gzip")
-        print(f"Saved cv_predictions.tsv.gz ({len(cv_df)} total regions)")
-        acc_rows += make_cv_plots(cv_df, oc, cv_out, mc)
+            cv_df = pd.concat(fold_dfs, ignore_index=True)
+            cv_df.to_csv(os.path.join(cv_out, "cv_predictions.tsv.gz"),
+                         sep="\t", index=False, compression="gzip")
+            print(f"Saved cv_predictions.tsv.gz ({len(cv_df)} total regions)")
+            acc_rows += make_cv_plots(cv_df, oc, cv_out, mc)
 
         if args.mean_pred_dir:
             mean_out = args.mean_output_dir or os.path.join(args.mean_pred_dir, "all_folds")
@@ -302,8 +309,9 @@ def main():
     acc_df = pd.DataFrame(acc_rows)
     print("\nPrediction accuracy:")
     print(acc_df.to_string(index=False))
-    acc_df.to_csv(os.path.join(cv_out, "prediction_accuracy.tsv"), sep="\t", index=False)
-    print(f"\nSaved prediction_accuracy.tsv to {cv_out}")
+    out_dir = cv_out or mean_out
+    acc_df.to_csv(os.path.join(out_dir, "prediction_accuracy.tsv"), sep="\t", index=False)
+    print(f"\nSaved prediction_accuracy.tsv to {out_dir}")
 
 
 if __name__ == "__main__":

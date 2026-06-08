@@ -87,7 +87,47 @@ python $SCRIPTS_DIR/2.3.compute_prediction_performance.py \
   --cv_pred_dir $CV_PRED_DIR \
   --overlap_col "EP300_peak_overlap"
 
-### --- [3] SHAP (ALL ELEMENTS) --- ### 
+### --- [2D] PREDICTION RESUBMISSION (2026-06-07) --- ###
+#
+# Root cause: jobs were hanging, not slow. --threads 2 spawns 2 parallel generator
+# workers. When one worker crashes (BigWig read error), the stealer thread blocks
+# forever waiting for batches that never arrive.
+#
+# Mean predictions: chrM:15952-16568 is the last candidate element (row 150527/150528).
+# Its 2114bp window (end=17317) exceeds the GATA1 BigWig chrM size (16569 bp),
+# causing pyBigWig RuntimeError and deadlocking the generator.
+#
+# CV fold 2: cause unknown (chr4/11/12/15/Y have no out-of-bounds elements);
+# running --threads 1 to surface exact element with a clean error.
+#
+# Fix: GPU constraint, chrM excluded from mean predictions, --threads 1 for CV fold 2.
+# Scripts: resubmit_cv_fold2.sh, resubmit_mean_predict.sh
+
+cd $RESULTS_DIR
+sbatch resubmit_cv_fold2.sh           # job 28137653 — CV fold 2
+sbatch --array=0-4 resubmit_mean_predict.sh  # job 28137654 — mean predictions folds 0-4
+
+# After mean h5s complete, calculate mean across folds then run performance metrics:
+# (same as [2B.ii] / [2C] above, using pixi run -e ism instead of conda)
+module load devel pixi/0.53.0
+
+PRED_H5=model_split000_predictions.h5
+PRED_H5_LIST="$MEAN_PRED_DIR/fold0/$PRED_H5,$MEAN_PRED_DIR/fold1/$PRED_H5,$MEAN_PRED_DIR/fold2/$PRED_H5,$MEAN_PRED_DIR/fold3/$PRED_H5,$MEAN_PRED_DIR/fold4/$PRED_H5"
+
+conda activate bpnet_37
+python $BPNET_DIR/utils/mean_predictions.py \
+  --prediction_h5s $PRED_H5_LIST \
+  --chrom_sizes $CHR_SIZES \
+  --output_dir $MEAN_PRED_DIR/all_folds
+
+pixi run -e ism python $SCRIPTS_DIR/2.3.compute_prediction_performance.py \
+  --mean-pred-dir $MEAN_PRED_DIR \
+  --cv-pred-dir $CV_PRED_DIR \
+  --peaks $PROJECT_DIR/reference/K562_DNase_candidate_elements.narrowPeak \
+  --overlap-col "GATA1_peak_overlap" \
+  --h5-name model_split000_predictions.h5
+
+### --- [3] SHAP (ALL ELEMENTS) --- ###
 
 ## --- [3A] COMPUTE SHAP PER FOLD --- ##
 # folds complete: 0, 1, 2
