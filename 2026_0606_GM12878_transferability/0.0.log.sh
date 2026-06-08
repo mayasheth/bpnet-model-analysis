@@ -2,8 +2,10 @@
 # GM12878 cross-cell-type transferability analysis
 # Goal: evaluate whether K562-trained p300 models generalize to GM12878
 # Models tested:
-#   (1) p300 BPNet v1 — sequence-only (K562-trained)
-#   (2) Multimodal ATAC BPNet — DNA + ATAC accessibility (K562-trained)
+#   (1) GM12878 EP300 BPNet (ENCODE/TFAtlas) — in-cell-type ceiling
+#   (2) K562 p300 BPNet v1 — sequence-only (K562-trained)
+#   (3) K562 multimodal ATAC BPNet — DNA + ATAC accessibility (K562-trained)
+# See HANDOVER.md for full status and context.
 # Date: 2026-06-06
 
 # --- FILE PATHS --- #
@@ -18,26 +20,35 @@ LOG_DIR=$THIS_DIR/log
 PRED_DIR=$THIS_DIR/predictions
 
 # GM12878 candidate elements (154,224 regions; derived from H3K27ac megamap)
-# Source: /oak/stanford/groups/engreitz/Users/sheth/ENCODE_rE2G_main/ENCODE_rE2G/results/
-#         2025_0122_validation_CTCF_H3K27me3/GM12878_H3K27ac_megamap/Peaks/
-#         macs2_peaks.narrowPeak.sorted.candidateRegions.bed
-GM12878_ELEMENTS=$REF_DIR/GM12878_candidate_elements.narrowPeak  # DONE (2026-06-06)
+GM12878_ELEMENTS=$REF_DIR/GM12878_candidate_elements.narrowPeak  # DONE
 
-# GM12878 ENCODE data being downloaded
-ATAC_DIR=$OAK/Users/sheth/Data/ENCODE/GM12878/ATAC   # tagAlign files (in progress)
-EP300_DIR=$OAK/Users/sheth/Data/ENCODE/GM12878/EP300  # BAM files (in progress)
+# GM12878 p300 peaks (21,068 peaks)
+GM12878_PEAKS=$OAK/Users/sheth/Data/ENCODE/GM12878/EP300/ENCFF926AKK.bed.gz
+
+# GM12878 EP300 signal BigWigs (5' end, merged replicates) — output of stage 0.3
+EP300_PLUS=$DATA_DIR/EP300_plus.bw
+EP300_MINUS=$DATA_DIR/EP300_minus.bw
+
+# ENCODE processed signal BigWigs (fold-change over control) — for sanity checking only
+ENCODE_PLUS=$DATA_DIR/ENCFF960OFK_plus.bw
+ENCODE_MINUS=$DATA_DIR/ENCFF941MGK_minus.bw
+
+# GM12878 ATAC BigWig (for multimodal model) — generated in stage 0.2
+ATAC_BW=$DATA_DIR/atac.bw
 
 # Reference genome
 CHR_SIZES=$OAK/Users/sheth/hg38_resources/GRCh38.main.chrom.sizes
 GENOME=$OAK/Users/sheth/hg38_resources/hg38.fa
 
 # K562-trained models
-V1_MODEL_PATTERN="$PROJECT_DIR/2025_0517_official_EP300_K562_model/models/release_run_1/fold{fold}/ENCSR000EGE"
+V1_MODEL_PATTERN="$PROJECT_DIR/2025_0517_official_EP300_K562_model/models/release_run_1/fold{fold}/ENCSR000EGE/ENCSR000EGE_split000"
 MULTIMODAL_MODEL_DIR=$PROJECT_DIR/2026_0529_multimodal_p300_model
 
-# K562 p300 signal BigWigs (for computing K562 training performance reference)
-K562_PLUS=$PROJECT_DIR/2025_0703_retrain_p300_model/data/ENCSR000EGE_plus.bigWig
-K562_MINUS=$PROJECT_DIR/2025_0703_retrain_p300_model/data/ENCSR000EGE_minus.bigWig
+# GM12878 BPNet model (in-cell-type ceiling)
+# Experiment accession: ENCSR000DZG; extracted from ENCFF778VIB.tar.gz
+# TF SavedModel format; note fold_ (underscore) and accession in path vs K562 fold{N}/model_split000
+GM12878_MODEL_DIR=$THIS_DIR/GM12878_EP300_BPNet
+GM12878_MODEL_PATTERN="$GM12878_MODEL_DIR/models/fold_{fold}/ENCSR000DZG_split000"
 
 
 # ============================================================
@@ -45,102 +56,251 @@ K562_MINUS=$PROJECT_DIR/2025_0703_retrain_p300_model/data/ENCSR000EGE_minus.bigW
 # ============================================================
 
 ## [0.1] GM12878 candidate elements narrowPeak — DONE 2026-06-06
-# Converted from candidateRegions.bed using 0.2.bed_to_narrowPeak.sh (flank_size=1057)
+# 154,224 regions; source: .../GM12878_H3K27ac_megamap/Peaks/macs2_peaks.narrowPeak.sorted.candidateRegions.bed
 # bash $SCRIPTS_DIR/0.2.bed_to_narrowPeak.sh \
 #   .../macs2_peaks.narrowPeak.sorted.candidateRegions.bed \
-#   $GM12878_ELEMENTS \
-#   1057
+#   $GM12878_ELEMENTS 1057
 
 
 ## [0.2] Generate GM12878 ATAC BigWig from tagAlign files
-# (once tagAlign files are available at $ATAC_DIR)
-ATAC_BW=$DATA_DIR/atac.bw
+# (once tagAlign files are available at $OAK/Users/sheth/Data/ENCODE/GM12878/ATAC)
 # sbatch --partition=owners --time=8:00:00 --mem=64G --cpus-per-task=4 \
-#   --job-name=gm_atac_bw \
-#   --output=$LOG_DIR/atac_bw.%j.txt \
-#   --error=$LOG_DIR/atac_bw.%j.txt \
+#   --job-name=gm_atac_bw --output=$LOG_DIR/atac_bw.%j.txt --error=$LOG_DIR/atac_bw.%j.txt \
 #   --wrap="module load devel pixi/0.53.0 && pixi run -e multimodal bash \
 #     $PROJECT_DIR/2026_0529_multimodal_p300_model/scripts/0.1.make_accessibility_bigwig.sh \
 #     --input <tagAlign1> <tagAlign2> ... \
-#     --output $ATAC_BW \
-#     --chrom-sizes $CHR_SIZES \
-#     --type atac"
+#     --output $ATAC_BW --chrom-sizes $CHR_SIZES --type atac"
 
 
-## [0.3] Generate GM12878 EP300 BigWigs (plus/minus strand) from BAM
-# (once BAM files are available at $EP300_DIR)
-EP300_PLUS=$DATA_DIR/EP300_plus.bigWig
-EP300_MINUS=$DATA_DIR/EP300_minus.bigWig
-# Use same approach as 2025_0703_retrain_p300_model/scripts/0.3.make_training_bw.sh
-# or the make_accessibility_bigwig.sh script with --type chip
+## [0.3] Generate GM12878 EP300 BigWigs (merged reps, 5' end stranded) — job 27925774
+# Input BAMs: ENCFF515HYM.filtered.sorted.bam (14.4M reads), ENCFF215GSQ.filtered.sorted.bam (15.6M reads)
+# Location: $OAK/Users/sheth/Data/ENCODE/GM12878/EP300/
+# Outputs: $EP300_PLUS, $EP300_MINUS
+# Note: job 27925622 failed (missing samtools index before view); fixed in 27925774
+
+
+## [0.4] Download ENCODE BPNet signal BigWigs — job 27925868
+# Plus:  ENCFF960OFK → $ENCODE_PLUS
+# Minus: ENCFF941MGK → $ENCODE_MINUS
+# These are the actual signal BigWigs from the ENCODE BPNet annotation object —
+# the same files used to train the GM12878 BPNet model (not a standard fold-change track).
+# Purpose: sanity-check against our BAM-derived BigWigs; could also be used directly as model input.
+
+
+## [0.5] Download and extract GM12878 EP300 BPNet model — DONE (job 27925831)
+# Source: https://www.encodeproject.org/files/ENCFF778VIB/@@download/ENCFF778VIB.tar.gz
+# Extracted to $GM12878_MODEL_DIR/models/fold_{0-4}/ENCSR000DZG_split000/ (TF SavedModel)
+# Tars extracted in-place: for fold in 0 1 2 3 4; do
+#   tar -xf $GM12878_MODEL_DIR/models/fold_${fold}/model.fold_${fold}.ENCSR000DZG.tar \
+#     -C $GM12878_MODEL_DIR/models/fold_${fold}/; done
+# Model path pattern: $GM12878_MODEL_PATTERN (uses fold_ underscore; no script changes needed)
 
 
 # ============================================================
-# STAGE 1: PREDICT WITH p300 BPNET V1 (SEQUENCE-ONLY)
+# STAGE 1: PREDICT WITH GM12878 BPNET (IN-CELL-TYPE CEILING)
 # ============================================================
-# Model: 2025_0517_official_EP300_K562_model (5-fold, TF SavedModel format)
+# Model: $GM12878_MODEL_DIR (5-fold, TF SavedModel format — same arch as K562 v1)
 # Loci: GM12878 candidate elements
-# Config: needs input_data_predict.json pointing to GM12878 EP300 signal + candidate elements
+# Requires: GM12878 EP300 signal BigWigs + config JSON
 
-V1_PRED_DIR=$PRED_DIR/bpnet_v1
-V1_CONFIG=$THIS_DIR/config/input_data_predict.bpnet_v1.json
+GM12878_V1_PRED_DIR=$PRED_DIR/gm12878_bpnet
+GM12878_V1_CONFIG=$THIS_DIR/config/input_data_predict.gm12878_bpnet.json
 
-## [1.1] Create prediction config for v1 BPNet on GM12878
-# (copy from K562 config, update signal paths to GM12878 EP300 BigWigs and loci to GM12878 elements)
-# Template: $PROJECT_DIR/2025_0517_official_EP300_K562_model/config/input_data_predict.json
-
-## [1.2] Submit mean predictions (all genome, all folds)
-# (run from THIS_DIR so log paths resolve correctly)
+# SUBMITTED — job 27974981 (array 0-4), log: $LOG_DIR/gm12878_pred_f*.27974981.txt
+# Note: uses K562 controls as bias proxy (GM12878 controls not downloaded; minor effect on counts Pearson)
 # sbatch \
 #   --array=0-4 \
-#   --output=$LOG_DIR/v1_mean_pred_f%a.%A.txt \
-#   --error=$LOG_DIR/v1_mean_pred_f%a.%A.txt \
+#   --output=$LOG_DIR/gm12878_pred_f%a.%A.txt \
+#   --error=$LOG_DIR/gm12878_pred_f%a.%A.txt \
+#   --job-name=gm_bpnet_pred \
+#   $SCRIPTS_DIR/2.2.submit_mean_predict.sh \
+#     "$GM12878_MODEL_PATTERN" \
+#     $CHR_SIZES $GENOME \
+#     $GM12878_V1_PRED_DIR/mean \
+#     $GM12878_V1_CONFIG
+
+
+# ============================================================
+# STAGE 2: PREDICT WITH K562 p300 BPNET V1 (SEQUENCE-ONLY)
+# ============================================================
+
+K562_V1_PRED_DIR=$PRED_DIR/k562_bpnet_v1
+K562_V1_CONFIG=$THIS_DIR/config/input_data_predict.k562_v1.json
+
+## [2.1] Config created: $K562_V1_CONFIG
+# Signal: $EP300_PLUS / $EP300_MINUS (GM12878 BAM-derived 5' end BigWigs)
+# Loci: $GM12878_ELEMENTS
+# Bias: K562 controls (ENCSR000EGE_control_plus/minus.bigWig) — correct for this K562-trained model
+
+## [2.2] Submit mean predictions — SUBMITTED job 28041042 (array 0-4)
+# log: $LOG_DIR/k562_v1_pred_f*.28041042.txt
+# Note: first attempt (27974979) failed — model path was missing /ENCSR000EGE_split000
+# sbatch \
+#   --array=0-4 \
+#   --output=$LOG_DIR/k562_v1_pred_f%a.%A.txt \
+#   --error=$LOG_DIR/k562_v1_pred_f%a.%A.txt \
+#   --job-name=gm_v1_pred \
 #   $SCRIPTS_DIR/2.2.submit_mean_predict.sh \
 #     "$V1_MODEL_PATTERN" \
-#     $CHR_SIZES \
-#     $GENOME \
-#     $V1_PRED_DIR/mean \
-#     $V1_CONFIG
+#     $CHR_SIZES $GENOME \
+#     $K562_V1_PRED_DIR/mean \
+#     $K562_V1_CONFIG
 
 
 # ============================================================
-# STAGE 2: PREDICT WITH MULTIMODAL ATAC BPNET
+# STAGE 3: PREDICT WITH K562 MULTIMODAL ATAC BPNET
 # ============================================================
-# Model: 2026_0529_multimodal_p300_model (5-fold, PyTorch)
-# Loci: GM12878 candidate elements
-# Requires: GM12878 ATAC BigWig ($ATAC_BW)
 
-MULTIMODAL_PRED_DIR=$PRED_DIR/multimodal_atac
+MULTIMODAL_PRED_DIR=$PRED_DIR/k562_multimodal_atac
 
-## [2.1] Submit multimodal predictions on GM12878
-# (once ATAC BigWig is ready)
-# sbatch --partition=owners,engreitz --time=6:00:00 --mem=64G --gpus=1 \
+## [3.1] Submit multimodal predictions — SUBMITTED job 28041421
+# Note: 2.1.submit_predict_multimodal.sh has K562 paths hardcoded; submitted directly to predict_multimodal.py
+# log: $LOG_DIR/multimodal_pred.28041421.txt
+# sbatch --partition=owners,engreitz,normal \
+#   --time=6:00:00 --mem=64G --cpus-per-task=4 \
 #   --job-name=gm_mm_pred \
 #   --output=$LOG_DIR/multimodal_pred.%j.txt \
 #   --error=$LOG_DIR/multimodal_pred.%j.txt \
-#   $MULTIMODAL_MODEL_DIR/scripts/2.1.submit_predict_multimodal.sh atac \
+#   --wrap="module load devel pixi/0.53.0 && pixi run -e multimodal python \
+#     $MULTIMODAL_MODEL_DIR/scripts/2.1.predict_multimodal.py \
 #     --elements $GM12878_ELEMENTS \
-#     --atac-bw $ATAC_BW \
-#     --out-dir $MULTIMODAL_PRED_DIR
+#     --genome $GENOME \
+#     --signal-plus-bw $EP300_PLUS \
+#     --signal-minus-bw $EP300_MINUS \
+#     --accessibility-bw $ATAC_BW \
+#     --model-dir $MULTIMODAL_MODEL_DIR/models/atac \
+#     --fold-json $PROJECT_DIR/reference/hg38_five_folds.json \
+#     --peaks $GM12878_PEAKS \
+#     --output-dir $MULTIMODAL_PRED_DIR \
+#     --batch-size 512 --device cpu"
 
 
 # ============================================================
-# STAGE 3: EVALUATE TRANSFERABILITY
+# STAGE 4: EVALUATE TRANSFERABILITY
 # ============================================================
 # Compare predicted vs. observed GM12878 p300 log counts (Pearson r)
-# Subsets: all elements, p300+ (GM12878 peaks), p300-
+# Use same script as K562: scripts/2.3.compute_prediction_performance.py
 
-## [3.1] Compute prediction performance for v1 BPNet on GM12878
-# conda activate tfmodisco
-# python $SCRIPTS_DIR/2.3.compute_prediction_performance.py \
-#   --mean-pred-dir $V1_PRED_DIR/mean \
-#   --peaks <GM12878_EP300_peaks.narrowPeak> \
-#   --overlap-col EP300_peak_overlap \
-#   --h5-name ENCSR000EGE_split000_predictions.h5
+## [4.1] GM12878 BPNet (in-cell-type ceiling) — SUBMITTED job 28079524
+# log: $LOG_DIR/eval_gm12878_bpnet.28079524.txt
+# sbatch --partition=owners,engreitz,normal --time=2:00:00 --mem=32G \
+#   --job-name=gm_eval_gm12878 \
+#   --output=$LOG_DIR/eval_gm12878_bpnet.%j.txt \
+#   --error=$LOG_DIR/eval_gm12878_bpnet.%j.txt \
+#   --wrap="source ~/.bashrc && conda activate tfmodisco && \
+#     python $SCRIPTS_DIR/2.3.compute_prediction_performance.py \
+#       --mean-pred-dir $GM12878_V1_PRED_DIR/mean \
+#       --peaks $GM12878_PEAKS \
+#       --overlap-col EP300_peak_overlap \
+#       --h5-name ENCSR000DZG_split000_predictions.h5 \
+#       --output-dir $GM12878_V1_PRED_DIR"
 
-## [3.2] Compute prediction performance for multimodal ATAC BPNet on GM12878
-# conda activate tfmodisco
-# python $MULTIMODAL_MODEL_DIR/scripts/2.2.plot_prediction_accuracy.py \
-#   --pred-dir $MULTIMODAL_PRED_DIR \
-#   --peaks <GM12878_EP300_peaks.narrowPeak> \
-#   --overlap-col EP300_peak_overlap
+## [4.2] K562 v1 BPNet (sequence-only cross-cell-type) — SUBMITTED job 28079525
+# log: $LOG_DIR/eval_k562_v1.28079525.txt
+# sbatch --partition=owners,engreitz,normal --time=2:00:00 --mem=32G \
+#   --job-name=gm_eval_k562v1 \
+#   --output=$LOG_DIR/eval_k562_v1.%j.txt \
+#   --error=$LOG_DIR/eval_k562_v1.%j.txt \
+#   --wrap="source ~/.bashrc && conda activate tfmodisco && \
+#     python $SCRIPTS_DIR/2.3.compute_prediction_performance.py \
+#       --mean-pred-dir $K562_V1_PRED_DIR/mean \
+#       --peaks $GM12878_PEAKS \
+#       --overlap-col EP300_peak_overlap \
+#       --h5-name ENCSR000EGE_split000_predictions.h5 \
+#       --output-dir $K562_V1_PRED_DIR"
+
+## [4.3] K562 multimodal ATAC BPNet (multimodal cross-cell-type) — SUBMITTED job 28079529
+# log: $LOG_DIR/eval_multimodal.28079529.txt
+# sbatch --partition=owners,engreitz,normal --time=2:00:00 --mem=32G \
+#   --job-name=gm_eval_mm \
+#   --output=$LOG_DIR/eval_multimodal.%j.txt \
+#   --error=$LOG_DIR/eval_multimodal.%j.txt \
+#   --wrap="module load devel pixi/0.53.0 && pixi run -e multimodal python \
+#     $MULTIMODAL_MODEL_DIR/scripts/2.2.plot_prediction_accuracy.py \
+#     --predictions-dir $MULTIMODAL_PRED_DIR \
+#     --peaks $GM12878_PEAKS \
+#     --max-counts 10"
+
+
+# ============================================================
+# NOTE: eval jobs 28079524/525/529 (2026-06-06) all failed.
+# Fixed and resubmitted 2026-06-07:
+#   [4.1] job 28116257 — gm_eval_gm12878 — COMPLETED
+#   [4.2] job 28116346 — gm_eval_k562v1  — COMPLETED
+#   [4.3] job 28116354 — gm_eval_mm      — COMPLETED
+# Fixes: pixi run -e ism instead of conda; --cv-pred-dir made optional
+# in 2.3.compute_prediction_performance.py; seaborn added to ism pixi env;
+# multimodal eval corrected to use 2.2.plot_prediction_accuracy.py without --peaks.
+
+
+# ============================================================
+# STAGE 5: SHAP ON GM12878 EP300 BPNET (peaks only, counts head)
+# ============================================================
+# Compute per-fold SHAP scores on GM12878 p300 peaks (21,068 regions),
+# then merge per-chromosome, then average across folds.
+# Uses: conda bpnet_37 + cuda/11.1.1 cudnn/8.1.1.33 (via 3.1.submit_mean_shap_one_fold.sh)
+# Signal BigWigs: ENCODE processed (ENCFF960OFK_plus.bw, ENCFF941MGK_minus.bw) — match training
+# Bias: K562 control BigWigs as proxy (GM12878 controls not available)
+
+SHAP_DIR=$THIS_DIR/shap_peaks
+CONFIG=$THIS_DIR/config/input_data_gm12878_shap.json
+BPNET_DIR=$OAK/Users/sheth/bpnet-refactor/bpnet
+
+## [5.1] Submit SHAP per-fold — SUBMITTED 2026-06-07 as job array 28132251
+# NOTE: per-chromosome array approach (jobs 28131714–28131722) was cancelled — overkill for 21k peaks.
+# Replaced with one SLURM job per fold looping all chromosomes internally (~2h/fold vs 25 array tasks).
+# Script: $THIS_DIR/scripts/3.1.submit_gm12878_shap.sh
+# Logs:   $THIS_DIR/log/shap_fold{N}.28132251.txt
+# sbatch --array=0-4 $THIS_DIR/scripts/3.1.submit_gm12878_shap.sh
+
+## [5.2] Merge per-chromosome h5 files for each fold
+# Run after all per-chr jobs complete (check DONE.txt files exist).
+# conda activate bpnet_37 && module load cuda/11.1.1 cudnn/8.1.1.33
+# for FOLD in 0 1 2 3 4; do
+#   python $BPNET_DIR/utils/merge_shap_across_chrom.py \
+#     --input-dir $SHAP_DIR/fold${FOLD} \
+#     --h5-filename counts_scores.h5 \
+#     --output-file $SHAP_DIR/fold${FOLD}/shap_counts_merged.h5
+# done
+
+## [5.3] Compute mean SHAP across folds
+# SHAP_H5_LIST=$(printf "$SHAP_DIR/fold%d/shap_counts_merged.h5," {0..4} | sed 's/,$//') 
+# python $BPNET_DIR/utils/mean_shap_plus_peaks.py \
+#   --counts_shaps $SHAP_H5_LIST \
+#   --output_dir $SHAP_DIR/all_folds
+
+
+# ============================================================
+# STAGE 6: TFMODISCO ON GM12878 MEAN SHAP
+# ============================================================
+# Parameters mirror K562 shap_peaks MoDISCo run.
+
+MODISCO_DIR=$THIS_DIR/modisco
+MOTIF_REF=$PROJECT_DIR/reference/MotifCompendium-Database-Human.meme.txt
+SHAP_MEAN_H5=$SHAP_DIR/all_folds/counts_mean_shap_scores.h5
+MODISCO_WIDTH=400
+
+## [6.1] Run TF-MoDISco — submit after step 5.3 completes
+# sbatch $SCRIPTS_DIR/4.1.submit_counts_modisco.sh \
+#   $MODISCO_DIR/max_seqlets_250k_30_10_0 \
+#   $SHAP_MEAN_H5 \
+#   250000 \
+#   30 \
+#   10 \
+#   0 \
+#   $MOTIF_REF \
+#   $MODISCO_WIDTH
+
+
+# ============================================================
+# STAGE 7: PLOT TRANSFERABILITY RESULTS
+# ============================================================
+
+## [7.1] Fig 2d + S2a/b — transferability bar chart and scatter plots — job 28131732 COMPLETED (8m27s)
+# Outputs: $PROJECT_DIR/figures/transferability_{bar,scatter_all,scatter_peaks}.pdf
+# sbatch --partition=owners,engreitz,normal --time=0:30:00 --mem=32G \
+#   --job-name=plot_transfer \
+#   --output=$LOG_DIR/plot_transferability.%j.txt \
+#   --error=$LOG_DIR/plot_transferability.%j.txt \
+#   --wrap="module load devel pixi/0.53.0 && pixi run -e ism python \
+#     $SCRIPTS_DIR/plot_transferability.py --output-dir $PROJECT_DIR/figures"

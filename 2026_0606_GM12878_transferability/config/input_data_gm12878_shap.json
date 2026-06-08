@@ -1,0 +1,24 @@
+{
+    "0": {
+        "signal": {
+            "source": [
+                "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0606_GM12878_transferability/data/ENCFF960OFK_plus.bw",
+                "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0606_GM12878_transferability/data/ENCFF941MGK_minus.bw"
+            ]
+        },
+        "loci": {
+            "source": ["/oak/stanford/groups/engreitz/Users/sheth/Data/ENCODE/GM12878/EP300/ENCFF926AKK.bed.gz"]
+        },
+        "background_loci": {
+            "source": ["/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/reference/ENCSR000EGE_peaks_inliers.narrowPeak"],
+            "ratio": [0.25]
+        },
+        "bias": {
+            "source": [
+                "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2025_0703_retrain_p300_model/data/ENCSR000EGE_control_plus.bigWig",
+                "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2025_0703_retrain_p300_model/data/ENCSR000EGE_control_minus.bigWig"
+            ],
+            "smoothing": [null, null]
+        }
+    }
+}

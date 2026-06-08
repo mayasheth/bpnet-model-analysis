@@ -1,6 +1,6 @@
 # Handover: multimodal p300 BPNet
 
-**Date:** 2026-06-06
+**Date:** 2026-06-08 (updated)
 **Directory:** `/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0529_multimodal_p300_model/`
 
 ---
@@ -13,7 +13,7 @@ Architecture is defined in `scripts/multimodal_bpnet.py`. See `multimodal_bpnet_
 
 ---
 
-## Current status (as of 2026-06-06)
+## Current status (as of 2026-06-07)
 
 ### Completed
 - [x] Model architecture (`scripts/multimodal_bpnet.py`) — 5-channel input, middle fusion, n_outputs=2 (stranded), PyTorch
@@ -66,7 +66,8 @@ Architecture is defined in `scripts/multimodal_bpnet.py`. See `multimodal_bpnet_
 
 - [x] **Check prediction results and compare to standard BPNet counts Pearson**
   - Multimodal ATAC CV Pearson = 0.785 vs v1 BPNet CV Pearson = 0.651 — clear improvement
-  - `2.2.plot_prediction_accuracy.py` updated to also report CV — p300+ and CV — p300− subsets (for bar plot)
+  - `2.2.plot_prediction_accuracy.py` updated: `--max-counts` arg (default 10 for zoom), CV now shows all/p300+/p300- panels; `--from-tsv` flag for fast replotting without loading h5 files
+  - `scripts/2.3.compute_prediction_performance.py` (shared script) also updated with `--from-tsv` and `--max-counts` args
   - p300 BigWig files (`2025_0703_retrain_p300_model/data/ENCSR000EGE_{plus,minus}.bigWig`) verified correct: these are the Vivek/TFAtlas files; peak max ~2–4 per base at 1bp resolution is expected for this ChIP-seq depth
 
 - [ ] **Run SHAP on ATAC multimodal model** — use `scripts/shap_multimodal_bpnet.py`; submit similar to v1 BPNet SHAP jobs
@@ -86,13 +87,11 @@ Architecture is defined in `scripts/multimodal_bpnet.py`. See `multimodal_bpnet_
       --chrom-sizes /oak/stanford/groups/engreitz/Users/sheth/hg38_resources/GRCh38.main.chrom.sizes \
       --type dnase"
   ```
-- [ ] **Cross-cell-type transferability (GM12878)** — test whether adding accessibility improves cross-cell-type generalization:
-  1. Download GM12878 p300 BPNet models from TFAtlas
-  2. Obtain GM12878 150k accessible candidate elements (FASTA/narrowPeak) and p300 ChIP-seq BigWigs
-  3. Obtain GM12878 ATAC or DNase BigWig for the accessibility channel
-  4. Run `2.1.predict_multimodal.py` on GM12878 elements using the K562-trained ATAC multimodal model
-  5. Run equivalent predictions with the K562-trained **sequence-only** standard BPNet on GM12878 elements
-  6. Compare count Pearson on GM12878: sequence-only vs. multimodal — does chromatin accessibility help the model transfer?
+- [x] **Cross-cell-type transferability (GM12878)** — complete; see `../2026_0606_GM12878_transferability/HANDOVER.md`
+  - K562 multimodal on GM12878: Pearson = **0.793** (all), **0.628** (p300+)
+  - Outperforms GM12878-trained seq-only BPNet (0.432 / 0.328) — chromatin accessibility generalises cross-cell-type
+  - [x] Plots written — `../2026_0606_GM12878_transferability/figures/transferability_{bar,scatter_all,scatter_peaks}.pdf`
+    - Bar chart (Fig 2d): 4 bar groups with dual all/p300+ bars; inter-replicate ceiling added as 4th group
 
 - [ ] Submit DNase training (5 folds) after `data/dnase.bw` exists:
   ```bash
