@@ -1,0 +1,4 @@
+subset	n	pearson_r	spearman_rho	mse
+mean — all elements	150519	0.6878	0.6601	0.579
+mean — p300+	27176	0.6492	0.6233	0.3013
+mean — p300-	123343	0.5752	0.5483	0.6402

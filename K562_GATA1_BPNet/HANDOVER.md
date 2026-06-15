@@ -14,7 +14,7 @@ Train a BPNet model on GATA1 ChIP-seq in K562, compute predictions and SHAP valu
 ## Current status (as of 2026-06-08)
 
 ### In progress
-- [ ] **Regenerate `../figures/model_comparison.pdf`** — run `python ../scripts/plot_model_comparison.py` now that GATA1 metrics are available
+- [x] **Regenerate `../figures/model_comparison.pdf`** — complete 2026-06-08; run `python scripts/plot_model_comparison.py --output figures/model_comparison.pdf`
 
 ### Completed
 - [x] **Prediction performance metrics** — completed 2026-06-08:

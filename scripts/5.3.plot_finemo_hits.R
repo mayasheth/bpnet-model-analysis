@@ -326,11 +326,14 @@ plot_motif_bubble <- function(hits, cp, output_path) {
 # Function 4: Heatmap of motif importance by P300 signal bins
 plot_motif_heatmap_by_signal <- function(hits, peaks, cp, colname, collabel, output_path) {
   
-  # Create P300 signal bins
+  # Create P300 signal bins (unique breaks handles ties in true_logcounts)
+  q_breaks <- unique(quantile(peaks$true_logcounts, probs = seq(0, 1, by = 0.2), na.rm = TRUE))
+  n_bins <- length(q_breaks) - 1
+  bin_labels <- c("Bottom 20%", "20-40%", "40-60%", "60-80%", "Top 20%")[seq_len(n_bins)]
   peaks$signal_bin <- cut(
     peaks$true_logcounts,
-    breaks = quantile(peaks$true_logcounts, probs = seq(0, 1, by = 0.2), na.rm = TRUE),
-    labels = c("Bottom 20%", "20-40%", "40-60%", "60-80%", "Top 20%"),
+    breaks = q_breaks,
+    labels = bin_labels,
     include.lowest = TRUE
   )
   
@@ -516,10 +519,16 @@ main <- function() {
   cat("Hits data dimensions:", nrow(hits), "x", ncol(hits), "\n")
   cat("Peaks data dimensions:", nrow(peaks), "x", ncol(peaks), "\n")
 
-  cp <- c(GATA = "#0096a0", AP1_1 = "#429130", REPEAT_G = "#6e788d",
-    GATA_TAL1 = "#006eae", ETS_1 = "#ca9b23", STAT_2 = "#e96a00",
-    CREB_ATF_3 = "#a64791", CTCF = "#96a008", CREB_ATF_1 = "#c5373d"
+  nature_colors <- c(
+    "#dc6464", "#5496ce", "#e9c54e", "#c5c500",
+    "#5eb342", "#49bcbc", "#b778b3", "#f29742", "#bc9678"
   )
+  motif_order <- hits %>%
+    group_by(motif_name) %>%
+    summarise(total_hits = n(), .groups = "drop") %>%
+    arrange(desc(total_hits)) %>%
+    pull(motif_name)
+  cp <- setNames(nature_colors[seq_along(motif_order)], motif_order)
   
   # Generate plots
   cat("Creating motif frequency and importance bar plot...\n")

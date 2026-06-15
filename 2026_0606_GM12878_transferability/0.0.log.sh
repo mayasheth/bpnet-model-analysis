@@ -356,7 +356,7 @@ GM12878_MM_CONFIG=$THIS_DIR/config/input_data_gm12878_multimodal.json
 # Stage 9: ATAC-only model (GM12878 in-cell-type + K562 transfer)
 # ============================================================
 
-## [9.1] GM12878 ATAC-only training — SUBMITTED job array 28443287 2026-06-08
+## [9.1] GM12878 ATAC-only training — COMPLETE 2026-06-08 (job array 28443287); all 5 folds done in 2-9 min
 # Script: scripts/1.2.submit_training_gm12878_atac_only.sh
 # Logs: log/train_gm12878_atac_only.28443287_{0-4}.txt
 # Output: GM12878_ATAC_only_BPNet/models/atac_only/fold{0-4}/multimodal_bpnet.torch
@@ -382,7 +382,7 @@ GM12878_MM_CONFIG=$THIS_DIR/config/input_data_gm12878_multimodal.json
 #     --output-dir $THIS_DIR/predictions/k562_atac_only \
 #     --batch-size 512 --device cpu"
 
-## [9.3] Evaluate K562 ATAC-only transfer predictions — run after [9.2]
+## [9.3] Evaluate K562 ATAC-only transfer predictions — SUBMITTED job 28489944 2026-06-08
 # sbatch --partition=owners,engreitz,normal --time=0:30:00 --mem=32G \
 #   --job-name=k562_atac_gm12878_eval \
 #   --output=$THIS_DIR/log/eval_k562_atac_only.%j.txt \
@@ -394,7 +394,10 @@ GM12878_MM_CONFIG=$THIS_DIR/config/input_data_gm12878_multimodal.json
 #     --overlap-col EP300_peak_overlap \
 #     --from-tsv"
 
-## [9.4] GM12878 ATAC-only predictions on GM12878 elements (in-cell-type) — run after [9.1]
+## [9.4] GM12878 ATAC-only predictions on GM12878 elements (in-cell-type) — COMPLETE job 28454690 2026-06-08
+## [9.5] Evaluate GM12878 ATAC-only in-cell-type predictions — COMPLETE job 28499108 2026-06-08
+# K562 ATAC-only → GM12878 eval results (job 28489944): Pearson=0.717 all, 0.467 p300+
+# GM12878 ATAC-only in-cell-type eval results (job 28499108): Pearson=0.683 all, 0.579 p300+
 # sbatch --partition=owners,engreitz,normal --time=8:00:00 --mem=64G \
 #   --job-name=gm12878_atac_pred \
 #   --output=$THIS_DIR/log/predict_gm12878_atac_only.%j.txt \

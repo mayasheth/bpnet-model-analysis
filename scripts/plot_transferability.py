@@ -17,6 +17,8 @@ import os
 
 import matplotlib
 matplotlib.use("Agg")
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import numpy as np
@@ -47,12 +49,36 @@ MODELS = [
         "color": "#792374",  # purple
     },
     {
+        "label": "K562 ATAC-only\n(cross-cell-type)",
+        "acc_tsv": f"{GM_DIR}/predictions/k562_atac_only/prediction_accuracy.tsv",
+        "tsv":     f"{GM_DIR}/predictions/k562_atac_only/mean_predictions.tsv.gz",
+        "subset_all":   "mean — all elements",
+        "subset_peaks": "mean — p300+",
+        "color": "#0096a0",  # dark teal
+    },
+    {
         "label": "K562 multimodal\n(+ ATAC, cross-cell-type)",
         "acc_tsv": f"{GM_DIR}/predictions/k562_multimodal_atac/prediction_accuracy.tsv",
         "tsv":     f"{GM_DIR}/predictions/k562_multimodal_atac/mean_predictions.tsv.gz",
         "subset_all":   "mean — all elements",
         "subset_peaks": "mean — p300+",
         "color": "#006eae",  # blue
+    },
+    {
+        "label": "GM12878 ATAC-only\n(in-cell-type)",
+        "acc_tsv": f"{GM_DIR}/predictions/gm12878_atac_only/prediction_accuracy.tsv",
+        "tsv":     f"{GM_DIR}/predictions/gm12878_atac_only/mean_predictions.tsv.gz",
+        "subset_all":   "mean — all elements",
+        "subset_peaks": "mean — p300+",
+        "color": "#49bcbc",  # teal
+    },
+    {
+        "label": "GM12878 multimodal\n(+ ATAC, in-cell-type)",
+        "acc_tsv": f"{GM_DIR}/predictions/gm12878_multimodal_atac/prediction_accuracy.tsv",
+        "tsv":     f"{GM_DIR}/predictions/gm12878_multimodal_atac/mean_predictions.tsv.gz",
+        "subset_all":   "mean — all elements",
+        "subset_peaks": "mean — p300+",
+        "color": "#5496ce",  # medium blue
     },
     {
         "label": "GM12878\ninter-replicate ceiling",
@@ -105,32 +131,16 @@ def plot_scatter(x, y, ax, color, title, max_counts=10):
         sp.set_edgecolor("black")
 
 
-def fig2d(out_dir):
-    all_vals  = [load_pearson(m, "subset_all")   for m in MODELS]
-    peak_vals = [load_pearson(m, "subset_peaks")  for m in MODELS]
-    labels    = [m["label"] for m in MODELS]
-    colors    = [m["color"] for m in MODELS]
-
-    n = len(MODELS)
-    x = np.arange(n)
-    width, gap = 0.35, 0.08
-
-    fig, ax = plt.subplots(figsize=(max(7, n * 1.8 + 2), 5))
-
-    bars_all  = ax.bar(x - width/2 - gap/2, all_vals,  width, color=colors,
-                       edgecolor="black", linewidth=0.8, label="All elements")
-    bars_peak = ax.bar(x + width/2 + gap/2, peak_vals, width, color=colors,
-                       edgecolor="black", linewidth=0.8, alpha=0.55, label="p300+ elements")
-
-    for bar, val in list(zip(bars_all, all_vals)) + list(zip(bars_peak, peak_vals)):
+def _add_value_labels_h(ax, bars, vals):
+    for bar, val in zip(bars, vals):
         if np.isfinite(val):
-            ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.008,
-                    f"{val:.3f}", ha="center", va="bottom", fontsize=8, color="black")
+            ax.text(bar.get_width() + 0.008, bar.get_y() + bar.get_height() / 2,
+                    f"{val:.3f}", ha="left", va="center", fontsize=8, color="black")
 
-    ax.set_xticks(x)
-    ax.set_xticklabels(labels, fontsize=10, color="black")
-    ax.set_ylabel("Pearson r (log p300 counts)", color="black")
-    ax.set_ylim(0, 1.05)
+
+def _style_barh_ax(ax):
+    ax.set_xlabel("Pearson r (log p300 counts)", color="black")
+    ax.set_xlim(0, 1.10)
     ax.tick_params(colors="black")
     ax.grid(False)
     for sp in ax.spines.values():
@@ -138,15 +148,65 @@ def fig2d(out_dir):
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
 
+
+def fig2d(out_dir):
+    all_vals  = [load_pearson(m, "subset_all")   for m in MODELS]
+    peak_vals = [load_pearson(m, "subset_peaks")  for m in MODELS]
+    labels    = [m["label"] for m in MODELS]
+    colors    = [m["color"] for m in MODELS]
+
+    # Sort by all-elements Pearson r ascending
+    order = np.argsort([v if np.isfinite(v) else -1 for v in all_vals])
+    all_vals  = [all_vals[i]  for i in order]
+    peak_vals = [peak_vals[i] for i in order]
+    labels    = [labels[i]    for i in order]
+    colors    = [colors[i]    for i in order]
+    n = len(labels)
+
+    # Layout 1: grouped (all + p300+ per model), horizontal bars
+    y = np.arange(n)
+    height, gap = 0.35, 0.08
+
+    fig, ax = plt.subplots(figsize=(7, max(4, n * 0.8 + 1)))
+    bars_all  = ax.barh(y + height/2 + gap/2, all_vals,  height, color=colors,
+                        edgecolor="black", linewidth=0.8)
+    bars_peak = ax.barh(y - height/2 - gap/2, peak_vals, height, color=colors,
+                        edgecolor="black", linewidth=0.8, alpha=0.55)
+    _add_value_labels_h(ax, bars_all,  all_vals)
+    _add_value_labels_h(ax, bars_peak, peak_vals)
+    ax.set_yticks(y)
+    ax.set_yticklabels([l.replace("\n", " ") for l in labels], fontsize=9, color="black")
     solid = mpatches.Patch(facecolor="grey", edgecolor="black", lw=0.8, label="All elements")
     alpha = mpatches.Patch(facecolor="grey", edgecolor="black", lw=0.8, alpha=0.55, label="p300+ elements")
-    ax.legend(handles=[solid, alpha], frameon=False, fontsize=8, loc="upper right")
-
+    ax.legend(handles=[solid, alpha], frameon=False, fontsize=8, loc="lower right")
+    _style_barh_ax(ax)
     plt.tight_layout()
     path = os.path.join(out_dir, "transferability_bar.pdf")
     plt.savefig(path, bbox_inches="tight")
     plt.close()
     print(f"Saved: {path}")
+
+    # Layout 2: two separate figures, one per subset
+    height = 0.6
+    y = np.arange(n)
+    for vals, title, fname in [
+        (all_vals,  "All elements",   "transferability_bar_all_elements.pdf"),
+        (peak_vals, "p300+ elements", "transferability_bar_p300plus.pdf"),
+    ]:
+        fig, ax = plt.subplots(figsize=(7, max(3, n * 0.6 + 1)))
+        for yi, val, color in zip(y, vals, colors):
+            if np.isfinite(val):
+                bar = ax.barh(yi, val, height, color=color, edgecolor="black", linewidth=0.8)
+                _add_value_labels_h(ax, bar, [val])
+        ax.set_yticks(y)
+        ax.set_yticklabels([l.replace("\n", " ") for l in labels], fontsize=9, color="black")
+        ax.set_title(title, fontsize=11, color="black", fontweight="bold")
+        _style_barh_ax(ax)
+        plt.tight_layout()
+        path = os.path.join(out_dir, fname)
+        plt.savefig(path, bbox_inches="tight")
+        plt.close()
+        print(f"Saved: {path}")
 
 
 def scatter_panels(out_dir, peaks_only, max_counts=10):

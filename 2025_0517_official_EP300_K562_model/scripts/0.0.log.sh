@@ -440,3 +440,37 @@ meme=$OAK/Users/sheth/EP300_BPNet/reference/MotifCompendium-test.meme.txt
 fasta=$OAK/Users/sheth/EP300_BPNet/reference/K562_DNase_candidate_elements.fa
 out_dir=$OAK/Users/sheth/EP300_BPNet/FIMO/2025_1112_test
 fimo --oc $out_dir --qv-thresh --thresh 1e-3 --max-stored-scores 100000 $meme $fasta 
+
+
+#### FINEMO TF CORRELATION ANALYSIS (2026-06-10) ####
+
+this_dir=$OAK/Users/sheth/EP300_BPNet/2025_0517_official_EP300_K562_model
+finemo_dir=$this_dir/finemo/pkw_500_curated_motifs
+SCRIPTS_DIR=$OAK/Users/sheth/EP300_BPNet/scripts
+
+## Compute Spearman correlations between each motif's per-peak hit activity
+## and every TF ChIP-seq signal RPM in the K562 enhancer activity feature file.
+## conda activate analysis
+# sbatch $SCRIPTS_DIR/submit_finemo_tf_correlation.sh
+# Output: $finemo_dir/tf_correlation/correlations.tsv.gz
+# Output: $finemo_dir/tf_correlation/top10_per_motif.pdf
+# Output: $finemo_dir/tf_correlation/correlation_density.pdf
+
+## Compute fraction of total |SHAP| signal explained by FiNeMo motif hits
+## conda activate analysis
+# sbatch $SCRIPTS_DIR/submit_finemo_explained_fraction.sh
+# Results: overall 8.4%, p300+ 11.4%, p300− 7.6%
+# Output: $finemo_dir/annotated_motifs/motif_explained_fraction.pdf
+# Output: $finemo_dir/annotated_motifs/motif_explained_fraction.motifs_only.pdf
+
+## Correlate all 522 TF ChIP RPM signals with EP300 RPM (no motifs involved)
+## conda activate analysis
+# sbatch $SCRIPTS_DIR/submit_activity_ep300_correlation.sh
+# Top: TBL1XR1 r=0.784, JUND r=0.774, RCOR1 r=0.737, SMARCA4 r=0.695
+# Output: $finemo_dir/activity_ep300_correlation/top_corr_ep300.pdf
+# Output: $finemo_dir/activity_ep300_correlation/correlations.tsv.gz
+
+## 3-motif composite figure (CTCF / AP-1 / GATA) with p300 interaction markers
+## conda activate analysis
+# sbatch $SCRIPTS_DIR/submit_composite_figure.sh
+# Output: $finemo_dir/tf_correlation/composite_motif_tf_figure.pdf

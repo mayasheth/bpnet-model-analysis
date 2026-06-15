@@ -35,6 +35,8 @@ import pandas as pd
 from scipy.stats import pearsonr, spearmanr
 import matplotlib
 matplotlib.use("Agg")
+matplotlib.rcParams["pdf.fonttype"] = 42
+matplotlib.rcParams["ps.fonttype"] = 42
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 import seaborn as sns
