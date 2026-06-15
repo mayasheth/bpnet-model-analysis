@@ -73,7 +73,7 @@ cd $THIS_DIR
 # Output: predictions/atac/  (cv_predictions.tsv.gz, mean_predictions.tsv.gz)
 # CV Pearson r: 0.785 (all), 0.663 (p300+)
 
-## [2.2] ATAC-only predictions on K562 elements — SUBMITTED job 28442190 2026-06-08
+## [2.2] ATAC-only predictions on K562 elements — COMPLETE 2026-06-08 (job 28442190); CV Pearson = 0.606 (all), 0.435 (p300+)
 # sbatch --partition=owners,engreitz,normal --time=8:00:00 --mem=64G \
 #   --job-name=atac_only_pred \
 #   --output=$THIS_DIR/log/predict_atac_only.%j.txt \

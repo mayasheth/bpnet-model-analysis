@@ -1,6 +1,6 @@
 # Handover: GM12878 cross-cell-type transferability
 
-**Date:** 2026-06-08 (updated)
+**Date:** 2026-06-08 (updated end of day)
 **Directory:** `/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0606_GM12878_transferability/`
 
 ---
@@ -24,6 +24,9 @@ Test whether K562-trained p300 models generalise to GM12878, and compare against
 | GM12878 BPNet (in-cell-type ceiling) | 0.432 | 0.328 | 0.394 | 0.320 |
 | K562 v1 BPNet (seq only, cross-cell-type) | 0.277 | 0.114 | 0.267 | 0.114 |
 | K562 multimodal ATAC BPNet (cross-cell-type) | **0.793** | **0.628** | **0.819** | **0.636** |
+| GM12878 multimodal ATAC BPNet (in-cell-type) | **0.821** | **0.760** | — | — |
+| K562 ATAC-only BPNet (cross-cell-type) | 0.717 | 0.467 | — | — |
+| GM12878 ATAC-only BPNet (in-cell-type) | 0.683 | 0.579 | — | — |
 | Inter-replicate ceiling (GM12878) | 0.881 | 0.835 | — | — |
 
 Key finding: the K562-trained multimodal model substantially outperforms the GM12878-trained sequence-only BPNet on GM12878 elements. Chromatin accessibility generalises well across cell types and more than compensates for the cross-cell-type training gap.
@@ -33,35 +36,25 @@ Key finding: the K562-trained multimodal model substantially outperforms the GM1
 ## Current status (as of 2026-06-08)
 
 ### In progress
-- [ ] **SHAP merge + mean** — job 28394331 submitted 2026-06-08
-  - Script: `scripts/5.2.submit_merge_mean_shap.sh`; log: `log/merge_mean_shap.28394331.txt`
-  - Step 1: merge per-chrom h5s per fold → `shap_peaks/fold{0-4}/shap_counts_merged.h5`
-  - Step 2: mean across folds → `shap_peaks/all_folds/counts_mean_shap_scores.h5`
-  - After completion: run MoDISCo (step 6.1):
-    ```bash
-    cd 2026_0606_GM12878_transferability
-    sbatch ../scripts/4.1.submit_counts_modisco.sh \
-      modisco/max_seqlets_250k_30_10_0 \
-      shap_peaks/all_folds/counts_mean_shap_scores.h5 \
-      250000 30 10 0 \
-      ../reference/MotifCompendium-Database-Human.meme.txt \
-      400
-    ```
-
-- [ ] **MoDISCo on GM12878 mean SHAP** — job 28441249 submitted 2026-06-08
-  - Output: `modisco/max_seqlets_250k_30_10_0/`; log: `slurm_logs/modisco.28441249.txt`
+- None — all jobs complete as of end of day 2026-06-08.
 
 ### Completed
+- [x] **MoDISCo on GM12878 mean SHAP** — complete 2026-06-08 (job 28441249); 26 motifs
+  - Output: `modisco/max_seqlets_250k_30_10_0/`; log: `slurm_logs/modisco.28441249.txt`
+  - Motif logos: `modisco/max_seqlets_250k_30_10_0/logos/` (SVG, via `plot_motif_logos.py`)
+- [x] **GM12878 ATAC-only BPNet training** — complete 2026-06-08 (job 28443287); all 5 folds
+  - Output: `GM12878_ATAC_only_BPNet/models/atac_only/fold{0-4}/multimodal_bpnet.torch`
+- [x] **K562 ATAC-only → GM12878 predictions + eval** — complete 2026-06-08 (jobs 28443298 / 28489944)
+  - Output: `predictions/k562_atac_only/`; **Pearson = 0.717 (all), 0.467 (p300+)**
+- [x] **GM12878 ATAC-only in-cell-type predictions + eval** — complete 2026-06-08 (jobs 28454690 / 28499108)
+  - Output: `predictions/gm12878_atac_only/`; **Pearson = 0.683 (all), 0.579 (p300+)**
 - [x] **GM12878 multimodal predictions + eval** — complete 2026-06-08
-  - Output: `predictions/gm12878_multimodal_atac/{cv,mean}_predictions.tsv.gz`, `prediction_accuracy.tsv`
-  - **Results: Pearson = 0.821 (all), 0.760 (p300+), 0.781 (p300−)** — in-cell-type multimodal ceiling
-  - Eval command: `pixi run -e ism python ../scripts/2.3.compute_prediction_performance.py --mean-pred-dir predictions/gm12878_multimodal_atac --mean-output-dir predictions/gm12878_multimodal_atac --overlap-col EP300_peak_overlap --from-tsv`
+  - Output: `predictions/gm12878_multimodal_atac/`; **Pearson = 0.821 (all), 0.760 (p300+)**
 - [x] **SHAP on GM12878 BPNet (per-fold)** — all 5 folds complete (24/24 chroms each); job 28324270
-  - chrY has 0 peaks — `DONE.txt` created manually; chrY removed from `3.1.submit_gm12878_shap.sh`
-- [x] **Transferability plots** — script: `scripts/plot_transferability.py`; outputs in `figures/`:
-  - `figures/transferability_bar.pdf` (Fig 2d) — 4 bar groups: GM12878 BPNet ceiling, K562 BPNet v1, K562 multimodal ATAC, GM12878 inter-replicate ceiling; dual bars (all / p300+ elements)
-  - `figures/transferability_scatter_all.pdf` (S2a)
-  - `figures/transferability_scatter_peaks.pdf` (S2b)
+- [x] **Transferability plots** — all regenerated with TrueType fonts (Illustrator-compatible) 2026-06-08
+  - `figures/transferability_bar.pdf` — grouped by model
+  - `figures/transferability_bar_all_elements.pdf` / `transferability_bar_p300plus.pdf` — split subset panels
+  - `figures/transferability_scatter_all.pdf` / `transferability_scatter_peaks.pdf`
 - [x] GM12878 candidate elements narrowPeak — `reference/GM12878_candidate_elements.narrowPeak`
   - 154,224 regions (500 bp windows), derived from H3K27ac megamap candidate regions
 - [x] GM12878 EP300 BAM files filtered and sorted (`$OAK/Users/sheth/Data/ENCODE/GM12878/EP300/`)
