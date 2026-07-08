@@ -1,0 +1,360 @@
+diff --git a/bpnet/cli/argparsers.py b/bpnet/cli/argparsers.py
+index 62783c3..2f68b06 100755
+--- a/bpnet/cli/argparsers.py
++++ b/bpnet/cli/argparsers.py
+@@ -308,6 +308,11 @@ def shap_scores_argsparser():
+                         help="seed to create a NumPy RandomState object used"
+                         "for performing shuffles", default=20210304)  
+     
++    parser.add_argument('--counts-only', action='store_true',
++                        help="True if only to compute profile interpretation scores"
++                         "for counts",
++                        default=False)  
++    
+     # output params
+     parser.add_argument('--output-directory', '-o', type=str, required=True,
+                         help="destination directory to store the "
+diff --git a/bpnet/cli/gc/get_gc_matched_negatives.py b/bpnet/cli/gc/get_gc_matched_negatives.py
+index bb2c4b3..352c751 100644
+--- a/bpnet/cli/gc/get_gc_matched_negatives.py
++++ b/bpnet/cli/gc/get_gc_matched_negatives.py
+@@ -144,6 +144,9 @@ def get_gc_matched_negatives(candidate_negatives: str,
+ 
+         for row in tqdm(cur_peaks, total=num_lines):
+             chrom = row['chr']
++            if chrom not in negatives:
++                print(f"Skipping {chrom}: not in negatives dictionary")
++                continue
+             start = row['start']
+             end = row['end']
+             gc_value = float(row['gc'])
+diff --git a/bpnet/cli/shap_scores.py b/bpnet/cli/shap_scores.py
+index a9dcc33..b825fef 100755
+--- a/bpnet/cli/shap_scores.py
++++ b/bpnet/cli/shap_scores.py
+@@ -320,7 +320,6 @@ def shap_scores(args, shap_dir):
+         combine_mult_and_diffref=combine_mult_and_diffref)
+     
+ 
+-
+     logging.info("Generating 'counts' shap scores")
+     counts_shap_scores = profile_model_counts_explainer.shap_values(
+         counts_shap_inputs, progress_message=100)
+@@ -336,22 +335,22 @@ def shap_scores(args, shap_dir):
+     else:
+         save_scores(peaks_df, X, counts_shap_scores, output_fname)
+         
+-    
+-    logging.info("Generating 'profile' shap scores")
+-    profile_shap_scores = profile_model_profile_explainer.shap_values(
+-        profile_shap_inputs, progress_message=100)
+-    
+-    # save the dictionary in HDF5 formnat
+-    logging.info("Saving 'profile' scores")
+-    output_fname = '{}/profile_scores.h5'.format(shap_dir)
++    if not args.counts_only:
++        logging.info("Generating 'profile' shap scores")
++        profile_shap_scores = profile_model_profile_explainer.shap_values(
++            profile_shap_inputs, progress_message=100)
++        
++        # save the dictionary in HDF5 formnat
++        logging.info("Saving 'profile' scores")
++        output_fname = '{}/profile_scores.h5'.format(shap_dir)
+ 
+-    # save the profile hyp shap scores, one hot sequences & chrom 
+-    # positions to a HDF5 file
+-    
+-    if isinstance(counts_shap_scores, list):
+-        save_scores(peaks_df, X, profile_shap_scores[0], output_fname)
+-    else:
+-        save_scores(peaks_df, X, profile_shap_scores, output_fname)
++        # save the profile hyp shap scores, one hot sequences & chrom 
++        # positions to a HDF5 file
++        
++        if isinstance(profile_shap_scores, list):
++            save_scores(peaks_df, X, profile_shap_scores[0], output_fname)
++        else:
++            save_scores(peaks_df, X, profile_shap_scores, output_fname)
+             
+     # save the dataframe as a new .bed file 
+     peaks_df.to_csv('{}/peaks_valid_scores.bed'.format(shap_dir), 
+@@ -370,12 +369,12 @@ def shap_scores(args, shap_dir):
+                                       regions_path=f"{shap_dir}/peaks_valid_scores.bed", 
+                                       outfile=f"{shap_dir}/counts_scores.bw", 
+                                       outstats=f"{shap_dir}/counts_scores.stats.txt")
+-
+-            importance_hdf5_to_bigwig(hdf5_path=f"{shap_dir}/profile_scores.h5", 
+-                                      chrom_sizes=args.chrom_sizes, 
+-                                      regions_path=f"{shap_dir}/peaks_valid_scores.bed", 
+-                                      outfile=f"{shap_dir}/profile_scores.bw", 
+-                                      outstats=f"{shap_dir}/profile_scores.stats.txt")
++            if not args.counts_only:
++                importance_hdf5_to_bigwig(hdf5_path=f"{shap_dir}/profile_scores.h5", 
++                                        chrom_sizes=args.chrom_sizes, 
++                                        regions_path=f"{shap_dir}/peaks_valid_scores.bed", 
++                                        outfile=f"{shap_dir}/profile_scores.bw", 
++                                        outstats=f"{shap_dir}/profile_scores.stats.txt")
+         else:
+             import warnings
+             warnings.warn('Warning Message: generate_shap_bigWigs option is selected but chrom_sizes is not provided. chrom_sizes is required to generate the bigWigs.')
+diff --git a/bpnet/generators/generators.py b/bpnet/generators/generators.py
+index 17ce3c1..3895158 100755
+--- a/bpnet/generators/generators.py
++++ b/bpnet/generators/generators.py
+@@ -638,15 +638,24 @@ class MSequenceGenerator:
+             # index into the original loci .bed file
+             batch_df['idx'] = batch_df.index.values                        
+             
+-            # generate a batch of one hot encoded sequences and 
++            # generate a batch of one hot encoded sequences and
+             # corresponding outputs
+-            batch = self._generate_batch(batch_df)
+-            
++            try:
++                batch = self._generate_batch(batch_df)
++            except Exception as e:
++                chroms = batch_df['chrom'].unique().tolist()
++                pos_range = (int(batch_df['pos'].min()), int(batch_df['pos'].max()))
++                logging.error(
++                    "{} process {} failed on batch {} (chroms={}, pos={}-{}): {}".format(
++                        self._mode, proc_idx, cnt, chroms, pos_range[0], pos_range[1], e))
++                mpq.put(None)  # sentinel: signal stealer that this process died
++                return
++
+             # add batch to the multiprocessing queue
+             mpq.put(batch)
+-    
++
+             cnt += 1
+-        
++
+         logging.debug(
+             "{} process {} put {} batches into mpq".format(
+                 self._mode, proc_idx, cnt))
+@@ -668,8 +677,15 @@ class MSequenceGenerator:
+                 thread_id (int): thread id for debugging purposes
+ 
+         """
+-        for i in range(num_batches):            
+-            q.put(mpq.get())
++        for i in range(num_batches):
++            batch = mpq.get()
++            if batch is None:  # worker process died; propagate sentinel
++                q.put(None)
++                logging.error(
++                    "{} stealer thread {} received error sentinel from "
++                    "worker process; aborting".format(self._mode, thread_id))
++                return
++            q.put(batch)
+ 
+         logging.debug(
+             "{} stealer thread {} got {} batches from mpq".format(
+@@ -802,8 +818,13 @@ class MSequenceGenerator:
+         procs, threads, q, total_batches = self._epoch_run(data)
+ 
+         # yield the correct number of batches for each epoch
+-        for j in range(total_batches):      
++        for j in range(total_batches):
+             batch = q.get()
++            if batch is None:
++                raise RuntimeError(
++                    "A batch generation worker process failed — check logs "
++                    "for the underlying error (e.g. pyBigWig RuntimeError). "
++                    "Re-run with --threads 1 to get a cleaner traceback.")
+             yield batch
+ 
+         # wait for batch generation processes to finish once the
+@@ -1082,8 +1103,15 @@ class MBPNetSequenceGenerator(MSequenceGenerator):
+                                 
+                 # Step 2. get the profile signal value
+                 for signal_file in signal_files[i]:
++                    try:
++                        vals = signal_file.values(chrom, start, end)
++                    except Exception as e:
++                        logging.warning(
++                            "signal BigWig read failed for {}:{}-{} (filling with zeros): {}".format(
++                                chrom, start, end, e))
++                        vals = [0.0] * (end - start)
+                     profile_predictions[rowCnt, :, profile_track_idx] = \
+-                        np.nan_to_num(signal_file.values(chrom, start, end))  
++                        np.nan_to_num(vals)
+                         
+                     profile_track_idx += 1
+ 
+@@ -1102,8 +1130,15 @@ class MBPNetSequenceGenerator(MSequenceGenerator):
+ 
+                     for j in range(cur_num_bias_files):
+                         bias_file = bias_files[i][j]
++                        try:
++                            vals = bias_file.values(chrom, start, end)
++                        except Exception as e:
++                            logging.warning(
++                                "bias BigWig read failed for {}:{}-{} (filling with zeros): {}".format(
++                                    chrom, start, end, e))
++                            vals = [0.0] * (end - start)
+                         profile_bias_input[i][rowCnt, :, bias_track_idx] = \
+-                            np.nan_to_num(bias_file.values(chrom, start, end))
++                            np.nan_to_num(vals)
+ 
+                         bias_track_idx += 1                    
+                     
+@@ -1145,7 +1180,16 @@ class MBPNetSequenceGenerator(MSequenceGenerator):
+ 
+         fasta_ref.close()
+ 
+-        # Step 4. one hot encode all the sequences in the batch 
++        # close BigWig file handles to avoid accumulating open file descriptors
++        # across repeated _generate_batch calls within the same process
++        for task in signal_files:
++            for bw in signal_files[task]:
++                bw.close()
++        for task in bias_files:
++            for bw in bias_files[task]:
++                bw.close()
++
++        # Step 4. one hot encode all the sequences in the batch
+         if len(sequences) == profile_predictions.shape[0]:
+             X = sequtils.one_hot_encode(sequences, self._input_flank * 2)
+         else:
+diff --git a/bpnet/utils/mean_predictions.py b/bpnet/utils/mean_predictions.py
+index 28657fa..c33ee76 100644
+--- a/bpnet/utils/mean_predictions.py
++++ b/bpnet/utils/mean_predictions.py
+@@ -11,8 +11,10 @@ parser = argparse.ArgumentParser(description="Take a mean of prediction h5s and
+ parser.add_argument("--prediction_h5s", type=str, required=True, help="prediction_h5s")
+ parser.add_argument("--generate_bigwigs", action='store_true', help="whether to generate bigWigs from the merged prediction h5s")
+ parser.add_argument("-c", "--chrom_sizes", type=str, help="path to chromosome sizes 2 column file - first row is chromosome name and the second column is the chromosome size. Required if generate_bigwigs option is given ")
+-parser.add_argument("-o", "--output_dir", type=str, help="Output bigwig file",required=True)
+-
++parser.add_argument("--negate_minus_strand", action='store_true', help="whether to negate values for the minus strand bigWig")
++parser.add_argument("--chrom_annot", type=str, help="optional, file with chromatin annotation columns to merge to predictions, must have columns chrom/start/end")
++parser.add_argument("--chrom_cols", type=str, help="optional, comma-separated list with columns to merge")
++parser.add_argument("-o", "--output_dir", type=str, help="output bigwig file", required=True)
+ 
+ args = parser.parse_args()
+ print(args)
+@@ -31,17 +33,21 @@ def mean_predictions(predictions_list,h5_out_path):
+     for predictions_h5 in predictions_list:
+         try:
+             f = h5py.File(predictions_h5, 'r')
++            print(f)
+             coord_chrom = f['coords']['coords_chrom'][()]
+             coord_start = f['coords']['coords_start'][()]
+             coord_end = f['coords']['coords_end'][()]
+             order = np.argsort([str(coord_chrom[i])+"_"+str(coord_start[i])+"_"+str(coord_end[i]) for i in range(f['coords']['coords_chrom'][()].shape[0])])
+             pred_logcounts = f['predictions']['pred_logcounts'][()][order]
++            pred_logcounts[pred_logcounts <= 0] = 1e-6  # Avoid log(0)
++            
+             pred_logcounts_lst.append(pred_logcounts)
+             chrom_lst.append(coord_chrom[order])
+             start_lst.append(coord_start[order])
+             end_lst.append(coord_end[order])
+ 
+             pred_prof = f['predictions']['pred_profs'][()][order]
++            pred_prof[pred_prof <= 0] = 1e-6  # Avoid div by 0 or log(0)
+             pred_profs_lst.append(pred_prof)
+ 
+             pred_prof_sum = np.sum(pred_prof, axis=(1, 2), keepdims=True)
+@@ -52,17 +58,28 @@ def mean_predictions(predictions_list,h5_out_path):
+ 
+             pred_logcounts_both_st = np.log(pred_prof_sum)
+             pred_logcounts_both_st_lst.append(pred_logcounts_both_st)
+-            
+-            if np.any(pred_prof<=0) or np.any(pred_logcounts<=0):
+-                raise ValueError(f'pred_prof or pred_logcounts less than or equal zero for {predictions_h5}')
++
++            if np.any(pred_prof<=0):
++                raise ValueError(f'pred_prof less than or equal zero for {np.count_nonzero(pred_prof<=0)} in entries in {predictions_h5}')
++            elif np.any(pred_logcounts<=0):
++                raise ValueError(f'pred_logcounts less than or equal zero for {np.count_nonzero(pred_logcounts<=0)} entries in {predictions_h5}')
+                 
+             f.close()
+-        except:
+-            print(f'{predictions_h5} has problems or does not exist')
++        except Exception as e:
++            import traceback
++            print(f'{predictions_h5} has problems:')
++            traceback.print_exc()
++
++    # save true counts from one of the folds
++    f = h5py.File(predictions_list[0], 'r')
++    coord_chrom = f['coords']['coords_chrom'][()]
++    coord_start = f['coords']['coords_start'][()]
++    coord_end = f['coords']['coords_end'][()]
++    order = np.argsort([str(coord_chrom[i])+"_"+str(coord_start[i])+"_"+str(coord_end[i]) for i in range(f['coords']['coords_chrom'][()].shape[0])])
++    true_logcounts = f['predictions']['true_logcounts'][()][order]
++    f.close()
+             
+-    if(sum([all(all(element == chrom_lst[0]) for element in chrom_lst),
+-all(all(element == start_lst[0]) for element in start_lst),
+-all(all(element == end_lst[0]) for element in end_lst)])==3):
++    if(sum([all(all(element == chrom_lst[0]) for element in chrom_lst), all(all(element == start_lst[0]) for element in start_lst), all(all(element == end_lst[0]) for element in end_lst)])==3):
+ 
+         pred_logcounts_both_st_mean = np.nanmean(np.array(pred_logcounts_both_st_lst),axis=0)
+ 
+@@ -109,11 +126,47 @@ all(all(element == end_lst[0]) for element in end_lst)])==3):
+ 
+         f.close()
+ 
+-        del(log_pred_prob_mean,pred_prof_mean, exp_log_pred_prob_mean, pred_logcounts_mean,pred_logcounts_both_st_mean, chrom_lst,start_lst,end_lst,pred_logcounts_lst,pred_logcounts_both_st_lst,pred_profs_lst,log_pred_prob_lst)
++        ## save tsv of predicted and true counts
++        # Compute mean across both strands (axis=1)
++        pred_logcounts_both_st = pred_logcounts_mean.sum(axis=1)
++        true_logcounts_both_st = true_logcounts.sum(axis=1)
++
++        # Construct DataFrame
++        pred = pd.DataFrame({
++            "chrom": chrom_lst[0],
++            "start": start_lst[0],
++            "end": end_lst[0],
++            "mean_pred_logcounts": pred_logcounts_both_st,
++            "true_logcounts": true_logcounts_both_st
++        })
+ 
++        pred = pred.sort_values(by=['chrom', 'start'], ascending=[True, True])
++        pred["peak_id"] = np.arange(len(pred))
++        pred["peak_name"] = pred["chrom"] + ":" + pred["start"].astype(str) + "-" + pred["end"].astype(str)
++
++        del(log_pred_prob_mean,pred_prof_mean, exp_log_pred_prob_mean, pred_logcounts_mean,pred_logcounts_both_st_mean, chrom_lst,start_lst,end_lst,pred_logcounts_lst,pred_logcounts_both_st_lst,pred_profs_lst,log_pred_prob_lst)
+         gc.collect()
+ 
+-mean_predictions((args.prediction_h5s).split(","),f"{args.output_dir}/mean_predictions.h5")
++        return pred
++
++
++
++pred = mean_predictions((args.prediction_h5s).split(","),
++                 f"{args.output_dir}/mean_predictions.h5")
++
++# add other annotations if provided
++if args.chrom_annot:
++    if args.chrom_cols:
++        cols_keep = (args.chrom_cols).split(",")
++        chrom_annot = pd.read_table(args.chrom_annot, usecols = cols_keep)
++    else:
++        chrom_annot = pd.read_table(args.chrom_annot)
++
++    pred = pred.merge(chrom_annot, on = ["chrom", "start", "end"], how = "left")
++
++# save tsv with predictions
++tsv_out_path = f"{args.output_dir}/mean_predictions_counts.tsv.gz"
++pred.to_csv(tsv_out_path, sep="\t", compression = "gzip", index=False)
+ 
+ 
+ if args.generate_bigwigs:
+@@ -247,6 +300,8 @@ if args.generate_bigwigs:
+                         next_end = (i_mid+next_mid)//2
+ 
+                 vals = pred_prof[i,:,1][cur_end - i_start:next_end - i_start]
++                if args.negate_minus_strand:
++                    vals = [-float(x) for x in vals]
+                 bw.addEntries([i_chr]*(next_end-cur_end), 
+                                list(range(cur_end,next_end)), 
+                                ends = list(range(cur_end+1, next_end+1)), 
+@@ -258,4 +313,4 @@ if args.generate_bigwigs:
+ 
+         bw.close()
+     else:
+-        print("chrom_sizes file. It is required to output the bigwigs")
+\ No newline at end of file
++        print("chrom_sizes file. It is required to output the bigwigs")
