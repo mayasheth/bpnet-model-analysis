@@ -131,7 +131,7 @@ pip = ">=24"
 # CUDA-enabled torch via the PyTorch CUDA 11.8 wheel index (avoids conda channel priority issues)
 torch = { version = ">=2.0.0,<3", index = "https://download.pytorch.org/whl/cu118" }
 captum = ">=0.7.0,<0.8"
-bpnet-lite = { path = "/oak/stanford/groups/engreitz/Users/sheth/bpnet-lite", editable = true }
+bpnet-lite = { git = "https://github.com/jmschrei/bpnet-lite.git", rev = "fa5bcf5" }
 
 [environments]
 ism = { features = ["ism"], no-default-feature = true }
