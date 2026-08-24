@@ -1,0 +1,18 @@
+# Active Convention Packs
+# Updated by install_convention.py
+
+- name: robust-analysis
+  path: .living/conventions/robust-analysis/
+  installed: 2026-08-24T23:01:20Z
+- name: report-generator
+  path: .living/conventions/report-generator/
+  installed: 2026-08-24T23:01:20Z
+- name: idea-generator
+  path: .living/conventions/idea-generator/
+  installed: 2026-08-24T23:01:20Z
+- name: bioinformatics
+  path: .living/conventions/bioinformatics/
+  installed: 2026-08-24T23:01:20Z
+- name: engreitz-lab
+  path: .living/conventions/engreitz-lab/
+  installed: 2026-08-24T23:01:30Z

@@ -1,5 +1,7 @@
 # EP300_BPNet project
 
+> **Knowledge index (read first):** [`.living/INDEX.md`](.living/INDEX.md) is an auto-generated map of tag clusters, most-recent entries, and a tag → entry-ID inverted index. The SessionStart hook keeps it fresh — trust it. For targeted lookup: `module load python/3.12.1 && python3 $OAK/Users/sheth/EngreitzLabAgents/mycelium-upstream/skills/core/scripts/recall_lessons.py --living-dir .living/ --tag <tag>` (also `--id L-42`, `--since YYYY-MM-DD`).
+
 ## Overview
 
 This project interprets what BPNet sequence models have learned about **TF motif SYNTAX** (not just identity) that drives p300 coactivator binding. The core approach uses deep learning models trained on ChIP-seq data, combined with interpretability methods (SHAP, MoDISCo) and in silico motif insertion experiments to understand how motif arrangements, spacing, and orientations affect p300 recruitment.
@@ -286,3 +288,16 @@ EP300_BPNet/
 ├── 2025_0703_retrain_p300_model/         # p300 model v2
 └── 2025_1016_p300_model_v3/              # p300 model v3
 ```
+
+
+## Installed Convention Packs
+
+- **engreitz-lab** — See `.living/conventions/engreitz-lab/analysis-conventions.md`
+
+- **bioinformatics** — See `.living/conventions/bioinformatics/analysis-conventions.md`
+
+- **idea-generator** — See `.living/conventions/idea-generator/analysis-conventions.md`
+
+- **report-generator** — See `.living/conventions/report-generator/analysis-conventions.md`
+
+- **robust-analysis** — See `.living/conventions/robust-analysis/analysis-conventions.md`
