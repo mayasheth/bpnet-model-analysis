@@ -1,0 +1,16 @@
+---
+name: engreitz-lab
+version: 0.1.0
+core: true
+description: >
+  Engreitz Lab conventions for mycelium living repositories. Replaces
+  mycelium's uv/conda environment guidance with the lab standard (pixi for
+  Python / mixed Python+R, mise+renv for pure R, no global installs), teaches
+  Sherlock/Oak data handling (repos hold manifests + $GROUP_HOME/$SCRATCH
+  paths, not bytes), routes report generation to the lab's /analysis-report
+  (Quarto, Nature-style) and genome browsing to /igv, and points analyses at
+  the EngreitzLabVault. Install alongside mycelium's core packs.
+author: engreitz-lab
+dependencies: []
+tags: [engreitz-lab, pixi, sherlock, oak, renv, vault, reproducibility, no-global-installs]
+---

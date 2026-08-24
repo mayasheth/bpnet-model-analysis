@@ -1,0 +1,79 @@
+# CLAUDE.md — Engreitz Lab Living Repository
+
+This repository is a **mycelium-enabled living repository**, customized with the
+**Engreitz Lab** convention pack. It carries its own memory (`.living/`) and
+registers every analysis into the lab-wide `EngreitzLabVault`.
+
+## Quick Orientation
+
+1. **Read `.living/INDEX.md` first** — the auto-regenerated knowledge map (tag
+   clusters, recent entries). The SessionStart hook refreshes it each session.
+2. **Targeted lookup:** run `recall_lessons.py` (see mycelium core) with `--tag`,
+   `--id`, or `--since`.
+3. **Read `ENVIRONMENTS_INSTALLATIONS.md`** — this repo uses **pixi / mise+renv**,
+   never uv/conda (see `.living/conventions/engreitz-lab/environment-conventions.md`).
+4. **Read the relevant manifest** (`ANALYSIS_MANIFEST.md`, `DATA_MANIFEST.md`, …).
+
+## Lab conventions (read these — they override mycelium defaults)
+
+- **`.living/conventions/engreitz-lab/environment-conventions.md`** — pixi for
+  Python/mixed, mise+renv for pure R, Sherlock/Oak storage, **no global installs**.
+  Replaces mycelium's uv/conda guidance.
+- **`.living/conventions/engreitz-lab/data-conventions.md`** — **raw data lives on
+  Sherlock (`$GROUP_HOME`/`$SCRATCH`) or Drive; the repo holds manifests +
+  paths, not bytes.** Never commit raw or sensitive data.
+- **`.living/conventions/engreitz-lab/analysis-conventions.md`** — reports via
+  `/engreitzlab-report` → `/analysis-report` (Quarto, Nature-style); genome
+  views via `/igv`; every analysis auto-registered in the Vault.
+- **`.living/conventions/engreitz-lab/figure-conventions.md`** — every figure is
+  Nature-styled and saved as **both vector PDF and PNG** (use the `nature_style`
+  helper); never PNG-only.
+
+## The EngreitzLabVault
+
+Every analysis is registered as a **lean pointer note** (question + repo/Sherlock
+path + datasets/owner as `[[wikilinks]]`) in the private `EngreitzLabVault` at
+launch, automatically, through the fail-closed vault-ingest gate. Skipped writes
+(sensitive/high-risk) are logged to `.living/` for manual handling. The Vault is
+the discovery layer across projects — the note points back to this repo; it never
+duplicates data.
+
+## Core convention packs (auto-installed)
+
+- **engreitz-lab** — lab environment/data/analysis conventions (above).
+- **robust-analysis** — defensive execution: fail loudly, assert shapes, sensitivity
+  sweeps, null tests. See `.living/conventions/robust-analysis/`.
+- (mycelium may also install `report-generator` / `idea-generator`; in this lab,
+  prefer `/analysis-report` over `report-generator`.)
+
+### Domain (opt-in)
+
+No domain conventions installed yet. Install with mycelium's `install-convention`
+mode (e.g., "install bioinformatics conventions").
+
+## Data Conventions (summary — full text in the pack)
+
+- **Raw/sensitive bytes never live in the repo.** They live on Sherlock or Drive;
+  the repo stores manifest rows with `location`, `owner`, `sensitivity`, `access`.
+- **Sensitive / Stanford High-Risk data → `$SCRATCH` only**, never `$GROUP_HOME`,
+  never Git/GitHub.
+- **Sherlock transfers via the DTN** (`engreitz@dtn.sherlock.stanford.edu`).
+- **Never `chmod`/`setfacl` on Oak from Claude** — emit the command, ask the user.
+
+## After Every Significant Action (Post-Action Hook Protocol)
+
+Follow mycelium's post-action protocol (update manifests + docs, log
+decisions/learnings/findings, run `validate_structure.py`, write
+`.claude/last-session.md`). In this lab the protocol additionally registers the
+analysis into the Vault (handled by the vault bridge — automatic).
+
+## Key Files
+
+| File | Purpose |
+|------|---------|
+| `ENVIRONMENTS_INSTALLATIONS.md` | pixi/mise+renv setup for this repo |
+| `.living/INDEX.md` | Auto-regenerated knowledge map |
+| `.living/conventions/engreitz-lab/` | Lab environment/data/analysis conventions |
+| `.living/decisions.md` / `learnings.md` | Why choices were made / accumulated gotchas |
+| `data/DATA_MANIFEST.md` | Dataset registry — pointers to Sherlock/Drive |
+| `*/*_MANIFEST.md` | Registry of contents in each directory |
