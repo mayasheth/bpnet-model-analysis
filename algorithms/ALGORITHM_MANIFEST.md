@@ -34,8 +34,8 @@ to `dinuc_shuffle` or `make_model_prediction` invalidate those columns everywher
 
 ```yaml
 name: multimodal-bpnet
-implementation: 2026_0529_multimodal_p300_model/scripts/multimodal_bpnet.py   # a copy also sits in scripts/ at repo root — confirm which is current before editing
-trainer: 2026_0529_multimodal_p300_model/scripts/train_multimodal_bpnet.py
+implementation: scripts/multimodal_bpnet.py
+trainer: scripts/train_multimodal_bpnet.py
 status: active
 tags: [pytorch, multimodal, accessibility, architecture]
 ```
