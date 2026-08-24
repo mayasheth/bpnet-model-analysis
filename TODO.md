@@ -42,6 +42,9 @@ Key values (CV Pearson r):
 | 2d | Transferability bar chart (GM12878) | Done: `2026_0606_GM12878_transferability/figures/transferability_bar.pdf` + subset split PDFs |
 | S2a | 3-panel scatter, all GM12878 elements | Done: `transferability_scatter_all.pdf` |
 | S2b | 3-panel scatter, p300+ GM12878 elements | Done: `transferability_scatter_peaks.pdf` |
+| 2e | Reverse transferability bar chart (GM12878-trained models -> K562) | Done: `2026_0606_GM12878_transferability/figures/transferability_bar_on_k562.pdf` + subset split PDFs |
+| S2c | 3-panel scatter, all K562 elements (GM-trained models) | Done: `transferability_scatter_on_k562_all.pdf` |
+| S2d | 3-panel scatter, p300+ K562 elements (GM-trained models) | Done: `transferability_scatter_on_k562_peaks.pdf` |
 
 Key values (K562 CV Pearson r):
 - ATAC counts correlation: 0.590 all, 0.335 p300+
@@ -58,6 +61,13 @@ Key values (GM12878 mean Pearson r):
 - GM12878 ATAC-only (in-cell-type): 0.683 all, 0.579 p300+
 - GM12878 multimodal (in-cell-type): 0.821 all, 0.760 p300+
 - Inter-replicate ceiling (GM12878): 0.881 all, 0.835 p300+
+
+Key values, reverse direction (K562 mean Pearson r, computed 2026-07-09):
+- GM12878 seq-only BPNet -> K562: 0.535 all, 0.337 p300+
+- GM12878 ATAC-only BPNet -> K562: 0.597 all, 0.378 p300+
+- GM12878 multimodal BPNet -> K562: 0.684 all, 0.451 p300+
+- (for reference) K562 seq-only/ATAC-only/multimodal in-cell-type: 0.651/0.601/0.785 all; 0.521/0.428/0.663 p300+
+- (for reference) K562 inter-replicate ceiling: 0.876 all, 0.746 p300+
 
 ---
 
@@ -92,14 +102,11 @@ Key values (GM12878 mean Pearson r):
 
 ## Pending / next steps
 
-- [ ] Check composite figure output once job 28842356 completes; run `plot_motif_ep300_correlation.py`
 - [ ] Update `P300_INTERACTORS` set in `plot_finemo_composite_figure.py` after literature/BioGRID review
-- [ ] Decide whether to add GM12878 ATAC-only / K562 ATAC-only bars to Fig 2d transferability figure
 - [ ] Commit all changes to git
 - [ ] Section 3+ figures: MoDISCo motif logos, FiNeMo hits, motif spacing/pair experiments
   - [x] Individual motif insertions violin plot (`scripts/plot_individual_motif_insertions.py`)
   - [x] Motif pair heatmaps — max log2FC + synergy (`scripts/plot_motif_pair_heatmaps.py`)
-  - [ ] Motif spacing line plots (next up)
 
 ### Revisit p300+ definition across all figures
 The current `EP300_peak_overlap` flag (from `finemo_peaks_all_chr.chromatin_annotations.tsv`) is based on 1000bp windows overlapping a p300 ChIP-seq peak call. ~40% of "p300+" elements by this definition have `true_logcounts = 0` — likely because the peak call overlaps only the edge of the 1000bp window, outside the 500bp BPNet input window where reads are counted. Consider replacing `EP300_peak_overlap == 1` with **top 20% of elements by observed p300 counts** (`true_logcounts >= 80th percentile`) as the p300+ definition in all figures. Figures to update if definition changes:
