@@ -220,3 +220,45 @@ FIMO (via `memelite`) scan results under `elements_v1/analysis_v1/`, driven by
 `scripts/run_fimo.py`, `7.0.create_region_mapping.py`, and `7.1.fimo_motif_analysis.py`.
 Outputs `motif_enrichment.tsv`, `motif_pair_enrichment.tsv`, and
 `spacing_distributions.tsv` — column definitions in `CLAUDE.md`.
+
+---
+
+### h3k27ac-k562-models
+
+```yaml
+name: h3k27ac-k562-models
+path: 2026_0824_H3K27ac_model/
+status: active
+created: 2026-08-24
+last_updated: 2026-08-24
+datasets: [k562-h3k27ac-chipseq, k562-dnase-candidate-elements, k562-atac-bigwig]
+algorithms: [multimodal-bpnet, motif-exp-utils]
+parent_analysis: multimodal-p300-model
+key_findings:
+  - H3K27ac around DNase candidate elements is bimodal as expected - shoulders at -275/+275 bp with a central dip over the nucleosome-free element.
+  - Distal plateau is 17.1 with a peak of 59.6 (3.48x enrichment); signal reaches background by roughly +/-2000 bp.
+  - Window choice is a trade-off, not an optimum - neighbour contamination is 0% at +/-500 bp, 9.9% at +/-750, 19.9% at +/-1000, 41.5% at +/-2000. Signal-remaining and contamination curves cross near +/-1275 bp.
+report: null
+tags: [h3k27ac, k562, multimodal, atac, counts-only, window-selection, chromatin]
+```
+
+Two models predicting K562 H3K27ac from DNase candidate elements: sequence-only
+(`mode='sequence'`) and sequence+ATAC (`mode='multimodal'`), with ATAC-only
+(`mode='atac'`) as the control that separates learned sequence syntax from a model
+simply tracking the accessibility track. All three modes already exist in
+`scripts/multimodal_bpnet.py`; this is a retarget, not a new architecture.
+
+Differs from the p300 models in three ways: windows are centered on **candidate
+elements** rather than ChIP peak summits (the H3K27ac summit sits on a flanking
+nucleosome, not on the element); the counts window is **wider** than the element; and
+the profile head is **kept but down-weighted** via `--count-loss-weight`, since the
+bimodal flanking pattern is real structure worth fitting and reproducing the central
+dip is a check that the model learned H3K27ac biology rather than "accessible implies
+acetylated".
+
+Two questions in order: first how well H3K27ac is predictable from sequence
+(generalizably), then what motif syntax drives it.
+
+**Open:** final `--out-window` not yet chosen (see `results/window_tradeoff.tsv`);
+unstranded support needed in the shared trainer, which currently requires both
+`--signal-plus-bw` and `--signal-minus-bw` with `n_outputs=2`.

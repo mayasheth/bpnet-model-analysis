@@ -246,3 +246,30 @@ tags: [gata1, gata2, chipseq, k562, comparison-models]
 Training signal and peaks for the GATA1/GATA2 comparison models — each directory holds
 `plus.bigWig`, `minus.bigWig`, and `peaks_inliers.bed.gz` (GATA2 also has
 `peaks_inliers.narrowPeak`). Provenance is in each project's `download.sh`.
+
+---
+
+### k562-h3k27ac-chipseq
+
+```yaml
+name: k562-h3k27ac-chipseq
+type: genomic
+source: ENCODE ENCSR000AKP — H3K27ac ChIP-seq in K562, 2 replicates
+format: BAM (36 bp single-end, filtered/sorted/indexed) + derived coverage BigWig
+size: 267 MB + 518 MB (BAMs), 164 MB (BigWig)
+raw_path: $OAK/Users/sheth/Data/ENCODE/K562/ENCFF790GFL.se.filtered.sorted.bam
+processed_path: $OAK/Users/sheth/Data/share/IGV/ENCSR000AKP_coverage.bw
+status: processed
+known_issues:
+  - The BigWig lives under Data/share/IGV/, a visualization share directory, but is raw counts with 250 bp fragment extension (bam_to_bigWig.sh -r SINGLE) and is therefore valid as a training target. Do not assume files in that directory are normalized for display.
+  - Unstranded, so n_outputs=1; the shared trainer currently requires both plus and minus BigWigs.
+  - Reads are 36 bp with fragment extension to a fixed 250 bp. Extension length is an untested parameter.
+access_restrictions: none
+tags: [h3k27ac, chipseq, k562, encode, histone, training-target]
+```
+
+Second replicate is `ENCFF817HMW.se.filtered.sorted.bam`. The two were merged into the
+coverage BigWig by `$OAK/Users/sheth/Data/scripts/bam_to_bigWig.sh`; the invocation is
+recorded in `$OAK/Users/sheth/Data/ENCODE/log.sh`. Per-replicate BigWigs do **not**
+exist yet — they are needed to compute the inter-replicate ceiling as a function of
+counting window, which is the natural upper bound on model performance.

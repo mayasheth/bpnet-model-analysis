@@ -1,0 +1,7 @@
+half_window	out_window	profile_at_edge	frac_above_plateau	frac_elements_contaminated	required_in_window
+250	500	59.15	0.99	0.0	1614
+500	1000	51.1	0.801	0.0	2114
+750	1500	40.46	0.55	0.099	2614
+1000	2000	33.81	0.393	0.199	3114
+1500	3000	25.76	0.203	0.331	4114
+2000	4000	20.28	0.074	0.415	5114
