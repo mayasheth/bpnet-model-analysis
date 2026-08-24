@@ -103,7 +103,7 @@ Key values, reverse direction (K562 mean Pearson r, computed 2026-07-09):
 ## Pending / next steps
 
 - [ ] Update `P300_INTERACTORS` set in `plot_finemo_composite_figure.py` after literature/BioGRID review
-- [ ] Commit all changes to git
+- [x] Commit all changes to git
 - [ ] Section 3+ figures: MoDISCo motif logos, FiNeMo hits, motif spacing/pair experiments
   - [x] Individual motif insertions violin plot (`scripts/plot_individual_motif_insertions.py`)
   - [x] Motif pair heatmaps — max log2FC + synergy (`scripts/plot_motif_pair_heatmaps.py`)
