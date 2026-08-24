@@ -17,6 +17,10 @@
 *.vcf.gz
 *.sam.gz
 
+# Downloaded model/data archives (e.g. ENCODE ENCFF*.tar.gz)
+*.tar.gz
+*.tgz
+
 # Large data files - model outputs
 *.h5
 *.hdf5

@@ -1,19 +1,20 @@
 # Handover: GM12878 cross-cell-type transferability
 
-**Date:** 2026-06-08 (updated end of day)
+**Date:** 2026-07-09 (updated — reverse-direction eval in progress)
 **Directory:** `/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0606_GM12878_transferability/`
 
 ---
 
 ## Goal
 
-Test whether K562-trained p300 models generalise to GM12878, and compare against a GM12878-trained model as an in-cell-type ceiling.
+Test whether K562-trained p300 models generalise to GM12878, and compare against a GM12878-trained model as an in-cell-type ceiling. **As of 2026-07-09, also running the reverse direction**: evaluate GM12878-trained models on K562 elements (steps 6.1–6.4 below).
 
 | Model | Trained on | Evaluated on | Purpose |
 |-------|-----------|-------------|---------|
 | GM12878 EP300 BPNet (TFAtlas/ENCODE) | GM12878 | GM12878 | In-cell-type ceiling |
 | K562 p300 BPNet v1 (sequence-only) | K562 | GM12878 | Cross-cell-type transfer, seq only |
 | K562 multimodal ATAC BPNet | K562 | GM12878 | Cross-cell-type transfer + chromatin |
+| GM12878 BPNet (seq-only / ATAC-only / multimodal) | GM12878 | K562 | Reverse-direction cross-cell-type transfer (in progress) |
 
 ---
 
@@ -33,10 +34,33 @@ Key finding: the K562-trained multimodal model substantially outperforms the GM1
 
 ---
 
-## Current status (as of 2026-06-08)
+## Current status (as of 2026-07-09)
 
 ### In progress
-- None — all jobs complete as of end of day 2026-06-08.
+- None — reverse-direction (GM12878-trained models -> K562) analysis complete as of 2026-07-09 18:05.
+
+### Completed 2026-07-09 (reverse-direction: GM12878-trained models -> K562 elements)
+- Prediction jobs: 33320529 (ATAC-only, 2:58:20), 33328385 (multimodal, retry of failed 33320530, 2:39:10), 33320531_{0-4} (seq-only BPNet, all 5 folds, ~1h each)
+- Eval jobs: 33357837 (seq-only BPNet eval, retry of failed 33357106 — bad `--output-dir` flag, fixed in `scripts/6.4.submit_eval_gm_on_k562.sh`), 33357107 (ATAC-only eval), 33357108 (multimodal eval)
+- Plot job 33358993 (`scripts/plot_transferability_on_k562.py`, run via sbatch — do not run matplotlib/KDE plotting directly on the login node; took 17 min, mostly KDE scatter over 150k-point panels)
+- Outputs: `figures/transferability_bar_on_k562.pdf` (+ `_all_elements`/`_p300plus` split), `figures/transferability_scatter_on_k562_{all,peaks}.pdf`
+- Note: job 33320530 (gm_mm_on_k562, multimodal predict) FAILED after 8:41 on first attempt (exit 1) — resubmitted manually as 33328385 which succeeded.
+
+**Reverse-direction (GM->K562) results (2026-07-09):**
+
+| Model | Pearson — all | Pearson — p300+ |
+|-------|--------------|-----------------|
+| GM12878 seq-only BPNet -> K562 | 0.535 | 0.337 |
+| GM12878 ATAC-only BPNet -> K562 | 0.597 | 0.378 |
+| GM12878 multimodal BPNet -> K562 | 0.684 | 0.451 |
+
+For comparison (already known, in-cell-type / forward direction, from tables above):
+- K562 seq-only BPNet (in-cell-type ceiling): 0.651 / 0.521
+- K562 ATAC-only BPNet (in-cell-type): 0.601 / 0.428
+- K562 multimodal BPNet (in-cell-type): 0.785 / 0.663
+- K562 inter-replicate ceiling: 0.876 / 0.746
+
+Pattern mirrors the GM12878-direction finding: cross-cell-type transfer degrades performance for every architecture, and multimodal (ATAC) narrows the gap the most.
 
 ### Completed
 - [x] **MoDISCo on GM12878 mean SHAP** — complete 2026-06-08 (job 28441249); 26 motifs

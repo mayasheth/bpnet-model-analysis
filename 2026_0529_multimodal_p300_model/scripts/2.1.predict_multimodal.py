@@ -203,6 +203,9 @@ def normalize_accessibility(accs, mean, std):
 def predict_fold(model_path, seqs, accs_raw, acc_stats, batch_size, device, mode):
     """Load model, build input tensor by mode, return predicted log counts (N,)."""
     model = torch.load(model_path, map_location="cpu", weights_only=False)
+    if not hasattr(model, "mode"):
+        # older checkpoints were pickled before `mode` was added to MultiModalBPNet
+        model.mode = mode
     if mode in ("multimodal", "atac"):
         accs_norm = normalize_accessibility(
             accs_raw.copy(), acc_stats["acc_mean"], acc_stats["acc_std"]

@@ -414,3 +414,53 @@ GM12878_MM_CONFIG=$THIS_DIR/config/input_data_gm12878_multimodal.json
 #     --peaks /oak/stanford/groups/engreitz/Users/sheth/Data/ENCODE/GM12878/EP300/ENCFF926AKK.bed.gz \
 #     --output-dir $THIS_DIR/predictions/gm12878_atac_only \
 #     --batch-size 512 --device cpu"
+
+# ============================================================
+# [10] Reverse direction: evaluate GM12878-trained models on K562 elements
+# ============================================================
+
+## [10.1] GM12878 ATAC-only BPNet predictions on K562 elements — COMPLETE 2026-07-09 (job 33320529, 2:58:20)
+# Script: scripts/6.1.submit_predict_gm_atac_only_on_k562.sh
+# Output: predictions/gm12878_atac_only_on_k562/{cv,mean}_predictions.tsv.gz
+# sbatch scripts/6.1.submit_predict_gm_atac_only_on_k562.sh
+
+## [10.2] GM12878 multimodal BPNet predictions on K562 elements — job 33320530 FAILED (8:41, exit 1); resubmitted as 33328385, COMPLETE 2026-07-09 (2:39:10)
+# Script: scripts/6.2.submit_predict_gm_multimodal_on_k562.sh
+# Output: predictions/gm12878_multimodal_on_k562/{cv,mean}_predictions.tsv.gz
+# sbatch scripts/6.2.submit_predict_gm_multimodal_on_k562.sh
+
+## [10.3] GM12878 sequence-only BPNet predictions on K562 elements — COMPLETE 2026-07-09 (job array 33320531_{0-4}, ~1h/fold)
+# Script: scripts/6.3.submit_predict_gm_bpnet_on_k562.sh
+# Output: predictions/gm12878_bpnet_on_k562/mean/fold{0-4}/ENCSR000DZG_split000_predictions.h5
+# bash scripts/6.3.submit_predict_gm_bpnet_on_k562.sh
+
+## [10.4] Evaluate all 3 GM->K562 predictions (aggregate CV Pearson/Spearman across folds) — SUBMITTED 2026-07-09 (jobs 33357106, 33357107, 33357108)
+# Script: scripts/6.4.submit_eval_gm_on_k562.sh
+# [1] 33357106: gm_bpnet_on_k562 eval -> FAILED (unrecognized arg --output-dir; 2.3.compute_prediction_performance.py
+#     only accepts --cv-output-dir/--mean-output-dir). Fixed script (dropped --output-dir) and resubmitted as 33357837.
+# [2] 33357107: gm_atac_only_on_k562 eval -> predictions/gm12878_atac_only_on_k562/ (RUNNING)
+# [3] 33357108: gm_multimodal_on_k562 eval -> predictions/gm12878_multimodal_on_k562/ (RUNNING)
+# bash scripts/6.4.submit_eval_gm_on_k562.sh
+
+## [10.5] Plot reverse-direction transferability bar chart + scatter panels — PENDING (waiting on 10.4 to finish)
+# Script: scripts/plot_transferability_on_k562.py (already written, mirrors scripts/plot_transferability.py)
+# 7 models: K562 seq-only (in-cell ceiling), GM12878 seq-only/ATAC-only/multimodal (cross-cell-type),
+#           K562 ATAC-only/multimodal (in-cell-type), K562 inter-replicate ceiling
+# Outputs: figures/transferability_bar_on_k562.pdf (+ _all_elements/_p300plus split),
+#          figures/transferability_scatter_on_k562_{all,peaks}.pdf
+# pixi run -e ism python scripts/plot_transferability_on_k562.py --output-dir 2026_0606_GM12878_transferability/figures/
+
+## [10.4-result] Eval results (2026-07-09):
+#   GM12878 seq-only BPNet -> K562:   Pearson = 0.5352 all, 0.3374 p300+ (job 33357837)
+#   GM12878 ATAC-only BPNet -> K562:  Pearson = 0.5969 all, 0.3783 p300+ (job 33357107)
+#   GM12878 multimodal BPNet -> K562: Pearson = 0.6838 all, 0.4507 p300+ (job 33357108)
+
+## [10.5] Plot reverse-direction transferability bar chart + scatter panels — SUBMITTED job 33358993 2026-07-09
+# Script: scripts/plot_transferability_on_k562.py (already existed, mirrors scripts/plot_transferability.py)
+# Submitted as sbatch job (not run on login node, per Sherlock policy) — COMPLETE 2026-07-09 (16:59, 98.5% CPU eff);
+# sbatch --partition=owners,engreitz,normal --time=0:30:00 --mem=32G \
+#   --job-name=plot_transfer_k562 \
+#   --output=$LOG_DIR/plot_transferability_on_k562.%j.txt \
+#   --error=$LOG_DIR/plot_transferability_on_k562.%j.txt \
+#   --wrap="module load devel pixi/0.53.0 && pixi run -e ism python \
+#     $SCRIPTS_DIR/plot_transferability_on_k562.py --output-dir $THIS_DIR/figures/"
