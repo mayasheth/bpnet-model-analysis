@@ -93,9 +93,9 @@ $PY "$PROJECT_DIR/scripts/train_multimodal_bpnet.py" \
     --mode "$MODE" \
     --peaks "$ELEMENTS" \
     --negatives "$NEGATIVES" \
-    "${GENOME_ARG[@]}" \
+    ${GENOME_ARG[@]+"${GENOME_ARG[@]}"} \
     --signal-plus-bw "$H3K27AC_BW" \
-    "${ACC_ARG[@]}" \
+    ${ACC_ARG[@]+"${ACC_ARG[@]}"} \
     --fold "$FOLDS" \
     --fold-key "$FOLD" \
     --output-dir "$OUT_DIR" \
