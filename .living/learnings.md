@@ -109,3 +109,39 @@ Append-only log of gotchas, surprises, and insights.
 **mitigation_type**: convention
 
 **structural_mitigation_candidate**: A check in the repo that `grep -c '^### \[' .living/decisions.md` matches the count in `.living/INDEX.md`. Better still, report it upstream — either the template or `extract_entries` should change, since one of them is wrong.
+
+---
+
+### [2026-08-25] Excluding the nucleosome-free center makes the H3K27ac target worse, not better
+
+**Category**: insight
+
+**What happened**: Tested whether counting only the flanking windows (excluding +/-125 to +/-375 bp around the element center) gives a better H3K27ac target than a full symmetric window, on the reasoning that H3K27ac sits on flanking nucleosomes and the center is depleted. Inter-replicate ceiling on the top signal quintile fell monotonically with exclusion width: at +/-500 bp outer, 0.761 (no exclusion) -> 0.747 -> 0.729 -> 0.717. Same direction at +/-1000. Meanwhile the flanking-only count correlates 0.97-0.99 with the full-window count, so the two targets are barely different.
+
+**Why it matters**: The premise looked sound from the meta-profile but was wrong quantitatively. The observed central dip is only ~9% below the shoulders, so the center still carries ~91% of peak signal — excluding it discards reads rather than noise, and fewer reads means more Poisson noise and a lower ceiling. Implementing it properly would have required decoupling the count target from the profile target in bpnetlite's loss, so testing the premise first avoided real work on a dead end.
+
+**Resolution**: Dropped. Full symmetric window retained. `2026_0824_H3K27ac_model/scripts/0.4.flanking_vs_full.py`, results in `results/flanking_vs_full_window.tsv`.
+
+**Tags**: h3k27ac, window-selection, ceiling, negative-result, nucleosome
+
+**mitigation_type**: ambient-awareness
+
+**structural_mitigation_candidate**: Not a defect to prevent — the general lesson is to phrase target-definition questions as "does this raise the inter-replicate ceiling" and answer them with the replicate data before writing model code. That check is cheap and decisive.
+
+---
+
+### [2026-08-25] The IGV display track was the wrong target all along: use 5' ends
+
+**Category**: gotcha
+
+**What happened**: The H3K27ac target was `Data/share/IGV/ENCSR000AKP_coverage.bw`, built by `bam_to_bigWig.sh -r SINGLE`, which extends 36 bp reads to a fixed **250 bp fragment**. It was raw counts and unnormalized, so it looked valid as a training target — and it is, in the sense that nothing is scaled. But it was written for IGV display. Meanwhile the p300 pipeline (`scripts/0.3.make_training_bw.sh:83`) uses `bedtools genomecov -5 -dz`, i.e. single-base 5' ends.
+
+**Why it matters**: Two concrete costs, both of which were visible as symptoms before the cause was identified. (1) The 250 bp extension smears signal across the nucleosome-free center, flattening the bimodality to a ~9% dip and blurring the boundary between adjacent elements — this is also why the flanking-window idea above looked plausible but failed. (2) It makes the profile loss ill-posed: bpnetlite's MNLL expects multinomial read counts, and fragment-extended coverage inflates per-window totals ~250x with near-identical adjacent positions. That is why profile MNLL sat at ~2800 versus ~500 for p300, which in turn is what made `count_loss_weight` need to be ~1000 instead of 1.
+
+**Resolution**: Rebuilding the target from the source BAMs with `genomecov -5 -dz`, stranded, matching p300 — `scripts/0.5.make_5prime_bigwigs.sh`, merged plus per-replicate. Ceiling and models to be recomputed on the 5' target and compared against the fragment-extended results.
+
+**Tags**: h3k27ac, target-definition, bigwig, fragment-extension, 5-prime, bpnetlite, mnll
+
+**mitigation_type**: convention
+
+**structural_mitigation_candidate**: Recorded in `.living/conventions.md`: a track under `Data/share/IGV/` is a DISPLAY artifact and must not be used as a model target without checking how it was built. Deriving training targets from the BAMs inside the analysis project makes the processing choices explicit and reviewable.
