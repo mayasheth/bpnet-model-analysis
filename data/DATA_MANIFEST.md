@@ -270,6 +270,12 @@ tags: [h3k27ac, chipseq, k562, encode, histone, training-target]
 
 Second replicate is `ENCFF817HMW.se.filtered.sorted.bam`. The two were merged into the
 coverage BigWig by `$OAK/Users/sheth/Data/scripts/bam_to_bigWig.sh`; the invocation is
-recorded in `$OAK/Users/sheth/Data/ENCODE/log.sh`. Per-replicate BigWigs do **not**
-exist yet — they are needed to compute the inter-replicate ceiling as a function of
-counting window, which is the natural upper bound on model performance.
+recorded in `$OAK/Users/sheth/Data/ENCODE/log.sh`.
+
+Per-replicate BigWigs were built 2026-08-24 by
+`2026_0824_H3K27ac_model/scripts/0.2.make_replicate_bigwigs.sh` at
+`2026_0824_H3K27ac_model/data/h3k27ac_rep{1,2}.bw` (47 MB / 120 MB), using settings
+identical to the merged target so the ceiling is comparable. Results in
+`results/replicate_ceiling_by_window.tsv`. Note the raw `r(rep1, rep2)` there is
+single-replicate reliability, not a model ceiling — see `.living/learnings.md` for the
+two corrections needed.
