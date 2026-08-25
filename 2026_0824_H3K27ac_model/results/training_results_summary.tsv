@@ -1,0 +1,7 @@
+mode	half_window	count_loss_weight	n_folds	count_pearson_mean	count_pearson_sd	best_count_pearson_mean	profile_pearson_mean	r_rep1_rep2	reliability_merged	ceiling	frac_of_ceiling
+sequence	500	1000	5	0.4071	0.0272	0.4169	0.3953	0.6038	0.7530	0.8677	0.4692
+sequence	500	10000	1	0.3976		0.3976	0.3707	0.6038	0.7530	0.8677	0.4582
+multimodal	500	1000	4	0.8084	0.0191	0.8087	0.4710	0.6038	0.7530	0.8677	0.9316
+atac	500	1000	1	0.7441		0.7441	0.3127	0.6038	0.7530	0.8677	0.8576
+sequence	1000	1000	1	0.4837		0.4984	0.4172	0.6596	0.7949	0.8916	0.5426
+multimodal	1000	1000	1	0.8514		0.8561	0.5193	0.6596	0.7949	0.8916	0.9550
