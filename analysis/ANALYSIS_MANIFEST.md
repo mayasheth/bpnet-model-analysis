@@ -285,7 +285,9 @@ single fold seen mid-grid. So +/-500 wins on accuracy, on sequence contribution,
 neighbour contamination (0% vs 20%) - there is no longer a trade-off between the
 prediction and syntax goals.
 
-**Open:** motif-syntax analysis (SHAP/MoDISCo/FiNeMo) not started. Given F-001, expect
+**Open:** prioritized next steps with compute estimates are in `todo/TODOLIST.md`
+(waves) and `todo/h3k27ac-model.md` (detail) - mycelium's todo/ is canonical for
+this project. Motif-syntax analysis (SHAP/MoDISCo/FiNeMo) not started. Given F-001, expect
 less sequence signal to attribute here than for p300. Also unresolved: the profile head
 fits fragment-extended coverage with MNLL, which expects multinomial read counts - a
 possible fundamental mismatch, not just a weighting problem. And whether counting only
