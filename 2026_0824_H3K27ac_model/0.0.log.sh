@@ -60,3 +60,35 @@ sbatch --job-name=k27_smoke_seq_hw500 scripts/1.1.submit_training.sh sequence 0 
 # reported profile vs count losses in the log and retune — the profile loss roughly
 # doubles going from out_window 1000 to 2000, so the same weight is not equivalent
 # across the two windows.
+
+### 2026-08-24 — Smoke test result: count_loss_weight was ~100x too low ###
+# Job 40703099 (sequence, fold0, hw500, COUNT_LOSS_WEIGHT=10) ran end-to-end: the
+# unstranded path works, ~105 s/epoch, checkpoints save. But validation COUNT Pearson
+# plateaued at 0.19-0.21 against an inter-replicate ceiling of 0.604 (all elements,
+# +/-500). For scale, p300 sequence-only gets 0.651.
+#
+# Cause: bpnetlite's loss is  profile_loss + count_loss_weight * count_loss.
+# In this run profile MNLL ~= 2800 and count MSE ~= 3, so at weight 10 the counts term
+# contributed ~30 against ~2800 — the profile head took ~99% of the gradient.
+#
+# Profile MNLL is ~6x larger than the p300 runs (~500) because our target is
+# FRAGMENT-EXTENDED COVERAGE, not read counts: the 250 bp extension inflates the
+# per-window total ~250x and makes neighbouring positions near-identical, and MNLL
+# expects multinomial read counts. So the profile term is both dominant and fitting a
+# quantity that is not really a read profile. Worth revisiting whether the profile head
+# belongs here at all.
+#
+# Epoch log preserved (models/ and log/ are gitignored):
+#   results/training_logs/sequence_hw500_clw10.epochlog.tsv
+#
+# Fixes applied to 1.1.submit_training.sh:
+#   * OUT_DIR now includes _clw${COUNT_LOSS_WEIGHT} — otherwise a weight sweep
+#     overwrites itself.
+#   * Default COUNT_LOSS_WEIGHT raised 10 -> 1000 (rough parity of the two terms).
+#   * export PYTHONUNBUFFERED=1 so progress is visible during extraction.
+
+### 2026-08-24 — Weight sweep before committing the grid ###
+COUNT_LOSS_WEIGHT=1000  sbatch --job-name=k27_clw1000  --export=ALL,COUNT_LOSS_WEIGHT=1000  scripts/1.1.submit_training.sh sequence 0 500  # job 40707586
+COUNT_LOSS_WEIGHT=10000 sbatch --job-name=k27_clw10000 --export=ALL,COUNT_LOSS_WEIGHT=10000 scripts/1.1.submit_training.sh sequence 0 500  # job 40707587
+# Compare validation Count Pearson against the 0.604 ceiling, then set the default and
+# run bash scripts/1.2.submit_all.sh.

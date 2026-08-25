@@ -34,6 +34,10 @@
 
 set -euo pipefail
 
+# Unbuffered: otherwise Python block-buffers stdout to the log file and the job
+# looks silent for its entire extraction phase, which makes failures undiagnosable.
+export PYTHONUNBUFFERED=1
+
 MODE=${1:?Usage: sbatch 1.1.submit_training.sh MODE FOLD HALF_WINDOW}
 FOLD=${2:?Usage: sbatch 1.1.submit_training.sh MODE FOLD HALF_WINDOW}
 HALF_WINDOW=${3:?Usage: sbatch 1.1.submit_training.sh MODE FOLD HALF_WINDOW}
@@ -62,11 +66,11 @@ NEGATIVES="$PROJECT_DIR/reference/genomewide_gc_stride_1000_flank_size_1057.gc.b
 FOLDS="$PROJECT_DIR/reference/hg38_five_folds.json"
 
 # Hyperparameters
-COUNT_LOSS_WEIGHT=${COUNT_LOSS_WEIGHT:-10}   # >1 down-weights the profile head
+COUNT_LOSS_WEIGHT=${COUNT_LOSS_WEIGHT:-1000}   # profile MNLL ~2800 vs count MSE ~3, so 10 gave the profile ~99% of the gradient
 MAX_NEGATIVES=${MAX_NEGATIVES:-50000}
 NEGATIVE_RATIO=${NEGATIVE_RATIO:-0.1}
 
-OUT_DIR="$PROJ/models/${MODE}_hw${HALF_WINDOW}/fold${FOLD}"
+OUT_DIR="$PROJ/models/${MODE}_hw${HALF_WINDOW}_clw${COUNT_LOSS_WEIGHT}/fold${FOLD}"
 mkdir -p "$OUT_DIR" "$PROJ/log"
 
 echo "=================================================="
