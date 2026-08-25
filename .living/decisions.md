@@ -4,7 +4,7 @@ Append-only log of non-obvious decisions and their rationale.
 
 **Entry template:** copy from `skills/core/templates/decision-log-entry.md` (includes Context, Decision, Alternatives considered, Rationale, Consequences, Tags fields).
 
-## [2026-08-24] Center H3K27ac training windows on candidate elements, not ChIP peaks
+### [2026-08-24] Center H3K27ac training windows on candidate elements, not ChIP peaks
 
 **Context**: H3K27ac is deposited on the nucleosomes flanking a regulatory element, not on the nucleosome-free element itself. Measured meta-profile over 30k DNase candidate elements confirms this: shoulders at -275/+275 bp with a central dip, 3.48x over the distal plateau. The existing p300 pipeline centers windows on `start + summit` from a narrowPeak.
 
@@ -22,7 +22,7 @@ Append-only log of non-obvious decisions and their rationale.
 
 ---
 
-## [2026-08-24] Counting window is a trade-off between signal and neighbour contamination
+### [2026-08-24] Counting window is a trade-off between signal and neighbour contamination
 
 **Context**: H3K27ac signal has no clean saturation point — it decays slowly and only reaches its distal plateau around +/-2000 bp. Meanwhile the 150,528 candidate elements cluster, so wide windows start containing other elements.
 
@@ -40,7 +40,7 @@ Append-only log of non-obvious decisions and their rationale.
 
 ---
 
-## [2026-08-24] Keep the profile head, down-weighted, rather than removing it
+### [2026-08-24] Keep the profile head, down-weighted, rather than removing it
 
 **Context**: H3K27ac counts are the quantity of interest, and the bimodal flanking profile is arguably not a meaningful "read profile" at all: the target is fragment-extended coverage, so MNLL (which expects multinomial read counts) sees ~250x inflated totals and near-identical adjacent positions. Profile MNLL sits at ~2800 here versus ~500 for the p300 runs.
 

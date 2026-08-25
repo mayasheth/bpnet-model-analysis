@@ -91,3 +91,21 @@ Append-only log of gotchas, surprises, and insights.
 **mitigation_type**: structural
 
 **structural_mitigation_candidate**: Shipped as `--max-negatives`. A stronger version would estimate bytes from `n_regions * in_window * channels * 4` before extraction and refuse to start if it exceeds the SLURM allocation.
+
+---
+
+### [2026-08-25] Mycelium's decision-log template and its indexer disagree on heading level
+
+**Category**: gotcha
+
+**What happened**: Wrote three decision entries following `mycelium-upstream/skills/core/templates/decision-log-entry.md`, which specifies `## [YYYY-MM-DD] Title`. `generate_index.py` then reported "decisions.md | 0 entries". Its `extract_entries()` hardcodes `header_prefix = "### "` for both learnings AND decisions, while the decision template uses `## `. The learning template correctly uses `### `.
+
+**Why it matters**: Decision entries written exactly as the upstream template instructs are invisible to `.living/INDEX.md`, which is the file the SessionStart hook surfaces and which future sessions are told to trust. The entries are on disk and greppable, but they silently do not exist as far as the knowledge index is concerned — the worst kind of failure, because nothing errors.
+
+**Resolution**: Use `### [YYYY-MM-DD] Title` for decisions in this repo, matching the indexer rather than the template. Verified: index then reports the correct count. Upstream is a pinned submodule we do not edit, so this is a local convention.
+
+**Tags**: mycelium, tooling, index, decisions, template-mismatch, silent-failure
+
+**mitigation_type**: convention
+
+**structural_mitigation_candidate**: A check in the repo that `grep -c '^### \[' .living/decisions.md` matches the count in `.living/INDEX.md`. Better still, report it upstream — either the template or `extract_entries` should change, since one of them is wrong.
