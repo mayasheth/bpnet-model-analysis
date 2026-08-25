@@ -83,3 +83,10 @@ predicts H3K27ac at 0.746 over all elements but only 0.543 on the top quintile.
 
 Ceilings derived from replicate agreement need both the Spearman-Brown and sqrt
 corrections before they bound model performance — see `.living/learnings.md`.
+
+## Decision-log entries use `###`, not `##`
+
+Mycelium's `decision-log-entry.md` template says `## [YYYY-MM-DD] Title`, but
+`generate_index.py` only counts `### ` headings in `decisions.md`. Entries written per
+the template are silently absent from `.living/INDEX.md`. Use `### ` for decisions here.
+See `.living/learnings.md` (2026-08-25).
