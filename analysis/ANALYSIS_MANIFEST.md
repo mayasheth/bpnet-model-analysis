@@ -269,9 +269,24 @@ Unstranded support landed in the shared `scripts/train_multimodal_bpnet.py` on
 bit-identical to before the change. `--max-negatives` was added in the same pass because
 the old `10 x n_peaks` rule implies ~55 GB at 120k elements.
 
-**Open:** final `--out-window` still undecided - +/-500 and +/-1000 both trained (30 jobs,
-5 folds x 3 modes x 2 windows, all COMPLETED). +/-1000 looked stronger on one fold
-(multimodal 0.851 all / 0.659 top quintile) but 5-fold numbers for the +/-1000 configs
-were still running at last check. The open question that matters for the syntax work is
-whether the wider window raises the *sequence* contribution or only the accessibility
-one. Motif-syntax analysis (SHAP/MoDISCo/FiNeMo) not started.
+**Window resolved: use +/-500** (`--out-window 1000`, `--in-window 2114`). All 30 jobs
+COMPLETED; 5-fold stratified top-quintile Pearson:
+
+| Mode | +/-500 | +/-1000 |
+|---|---|---|
+| sequence | 0.357 | 0.373 |
+| atac | 0.543 | 0.582 |
+| multimodal | **0.668** | 0.659 |
+
+The wider window raises accessibility-only more than sequence (+0.039 vs +0.016), so the
+*marginal* sequence contribution shrinks: +0.125 at +/-500 vs +0.077 at +/-1000. And
+multimodal is flat-to-worse on the top quintile at +/-1000, despite looking better on the
+single fold seen mid-grid. So +/-500 wins on accuracy, on sequence contribution, and on
+neighbour contamination (0% vs 20%) - there is no longer a trade-off between the
+prediction and syntax goals.
+
+**Open:** motif-syntax analysis (SHAP/MoDISCo/FiNeMo) not started. Given F-001, expect
+less sequence signal to attribute here than for p300. Also unresolved: the profile head
+fits fragment-extended coverage with MNLL, which expects multinomial read counts - a
+possible fundamental mismatch, not just a weighting problem. And whether counting only
+the FLANKING windows (excluding the nucleosome-free center) improves the target.
