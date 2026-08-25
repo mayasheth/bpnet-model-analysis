@@ -12,6 +12,11 @@ deviation computed from training peaks. Pass --acc-mean / --acc-std to reuse
 pre-computed statistics (required when running multiple folds for consistency).
 --genome is not required in atac mode.
 
+Stranded and unstranded targets are both supported. Pass --signal-minus-bw for
+stranded data (n_outputs=2, the p300 setup); omit it for unstranded data such as
+histone-mark ChIP-seq (n_outputs=1). --accessibility-bw may be omitted in
+sequence mode, where the model never reads it.
+
 Usage:
     pixi run -e multimodal python scripts/train_multimodal_bpnet.py \\
         --mode [multimodal|sequence|atac] \\
@@ -19,8 +24,8 @@ Usage:
         --negatives reference/genomewide_gc_stride_1000_flank_size_1057.gc.bed \\
         --genome /path/to/hg38.fa \\        # not required for --mode atac
         --signal-plus-bw /path/to/chip_plus.bw \\
-        --signal-minus-bw /path/to/chip_minus.bw \\
-        --accessibility-bw /path/to/atac.bw \\
+        --signal-minus-bw /path/to/chip_minus.bw \\   # omit for unstranded
+        --accessibility-bw /path/to/atac.bw \\        # not required for --mode sequence
         --fold reference/hg38_five_folds.json \\
         --fold-key 0 \\
         --output-dir models/atac/fold0
@@ -57,9 +62,9 @@ def parse_args():
                    help="Reference genome FASTA (not required for --mode atac)")
     p.add_argument("--signal-plus-bw", required=True,
                    help="ChIP-seq signal BigWig, plus strand (target)")
-    p.add_argument("--signal-minus-bw", required=True,
+    p.add_argument("--signal-minus-bw", default=None,
                    help="ChIP-seq signal BigWig, minus strand (target)")
-    p.add_argument("--accessibility-bw", required=True,
+    p.add_argument("--accessibility-bw", default=None,
                    help="Accessibility BigWig (ATAC or DNase)")
     p.add_argument("--fold", required=True, help="Fold JSON file")
     p.add_argument("--fold-key", default="0", help="Key within fold JSON (default: 0)")
@@ -76,6 +81,13 @@ def parse_args():
     p.add_argument("--early-stopping", type=int, default=10)
     p.add_argument("--lr", type=float, default=1e-3)
     p.add_argument("--negative-ratio", type=float, default=0.1)
+    p.add_argument("--max-negatives", type=int, default=None,
+                   help="Cap on distinct negative windows held in memory. Default "
+                        "None = 10x the training peak count (historical behaviour). "
+                        "Set this when training on a large peak set: 10x of ~120k "
+                        "elements is ~1.2M windows and will OOM. The sampler only "
+                        "draws --negative-ratio of each batch from negatives, so a "
+                        "much smaller pool is usually sufficient.")
     p.add_argument("--acc-mean", type=float, default=None,
                    help="Pre-computed log1p accessibility mean for standardization")
     p.add_argument("--acc-std", type=float, default=None,
@@ -116,13 +128,15 @@ def extract_windows(regions_df, genome_fa, signal_plus_bw, signal_minus_bw,
     """Extract sequence, signal, and accessibility windows around each region center.
 
     genome_fa may be None for atac mode (seq extraction is skipped; seqs returned
-    as empty array).
+    as empty array). signal_minus_bw may be None for unstranded targets, giving a
+    1-channel signal array. accessibility_bw may be None in sequence mode, giving a
+    zero accs array the model never reads.
 
     Returns
     -------
     seqs:    np.ndarray, (N, 4, in_window + 2*max_jitter)  — zeros if genome_fa is None
-    signals: np.ndarray, (N, 2, out_window + 2*max_jitter)
-    accs:    np.ndarray, (N, 1, in_window + 2*max_jitter)
+    signals: np.ndarray, (N, C, out_window + 2*max_jitter) — C=2 stranded, 1 unstranded
+    accs:    np.ndarray, (N, 1, in_window + 2*max_jitter)  — zeros if no accessibility_bw
     valid:   bool array
     """
     jitter = max_jitter if is_peak else 0
@@ -132,9 +146,12 @@ def extract_windows(regions_df, genome_fa, signal_plus_bw, signal_minus_bw,
     use_seq = genome_fa is not None
     genome = pyfaidx.Fasta(genome_fa) if use_seq else None
     plus_bw = pyBigWig.open(signal_plus_bw)
-    minus_bw = pyBigWig.open(signal_minus_bw)
-    acc_bw = pyBigWig.open(accessibility_bw)
-    acc_chrom_sizes = dict(acc_bw.chroms())
+    stranded = signal_minus_bw is not None
+    minus_bw = pyBigWig.open(signal_minus_bw) if stranded else None
+    use_acc = accessibility_bw is not None
+    acc_bw = pyBigWig.open(accessibility_bw) if use_acc else None
+    # chrom sizes come from the accessibility track only when there is no genome
+    acc_chrom_sizes = dict(acc_bw.chroms()) if use_acc else dict(plus_bw.chroms())
 
     seqs, signals, accs = [], [], []
     valid = np.zeros(len(regions_df), dtype=bool)
@@ -166,36 +183,46 @@ def extract_windows(regions_df, genome_fa, signal_plus_bw, signal_minus_bw,
                 continue
 
         sig_plus = plus_bw.values(chrom, s_out, e_out, numpy=True)
-        sig_minus = minus_bw.values(chrom, s_out, e_out, numpy=True)
-        if (sig_plus is None or len(sig_plus) != out_window + 2 * jitter or
-                sig_minus is None or len(sig_minus) != out_window + 2 * jitter):
+        if sig_plus is None or len(sig_plus) != out_window + 2 * jitter:
             continue
         sig_plus = np.nan_to_num(sig_plus, nan=0.0).astype(np.float32)
-        sig_minus = np.nan_to_num(sig_minus, nan=0.0).astype(np.float32)
 
-        acc = acc_bw.values(chrom, s_in, e_in, numpy=True)
-        if acc is None or len(acc) != in_window + 2 * jitter:
-            continue
-        acc = np.nan_to_num(acc, nan=0.0).astype(np.float32)
+        if stranded:
+            sig_minus = minus_bw.values(chrom, s_out, e_out, numpy=True)
+            if sig_minus is None or len(sig_minus) != out_window + 2 * jitter:
+                continue
+            sig_minus = np.nan_to_num(sig_minus, nan=0.0).astype(np.float32)
+
+        if use_acc:
+            acc = acc_bw.values(chrom, s_in, e_in, numpy=True)
+            if acc is None or len(acc) != in_window + 2 * jitter:
+                continue
+            acc = np.nan_to_num(acc, nan=0.0).astype(np.float32)
+        else:
+            acc = np.zeros(in_window + 2 * jitter, dtype=np.float32)
 
         if use_seq:
             seqs.append(one_hot_encode(seq_str))
-        signals.append(np.stack([sig_plus, sig_minus], axis=0))
+        signals.append(np.stack([sig_plus, sig_minus], axis=0) if stranded
+                       else sig_plus[np.newaxis, :])
         accs.append(acc[np.newaxis, :])
         valid[idx] = True
 
     if use_seq:
         genome.close()
     plus_bw.close()
-    minus_bw.close()
-    acc_bw.close()
+    if stranded:
+        minus_bw.close()
+    if use_acc:
+        acc_bw.close()
 
     n = len(accs)
     L_in = in_window + 2 * jitter
     L_out = out_window + 2 * jitter
     if n == 0:
         return (np.zeros((0, 4, L_in), dtype=np.float32),
-                np.zeros((0, 2, L_out), dtype=np.float32),
+                np.zeros((0, 2 if signal_minus_bw is not None else 1, L_out),
+                         dtype=np.float32),
                 np.zeros((0, 1, L_in), dtype=np.float32),
                 valid)
 
@@ -300,6 +327,15 @@ def main():
     if args.mode != 'atac' and args.genome is None:
         raise ValueError("--genome is required for --mode sequence and --mode multimodal")
 
+    if args.mode in ('multimodal', 'atac') and args.accessibility_bw is None:
+        raise ValueError("--accessibility-bw is required for --mode multimodal and "
+                         "--mode atac")
+
+    # Stranded targets give 2 output tracks (the p300 setup); unstranded give 1.
+    n_outputs = 2 if args.signal_minus_bw is not None else 1
+    print(f"Target is {'stranded' if n_outputs == 2 else 'unstranded'} "
+          f"-> n_outputs={n_outputs}")
+
     with open(args.fold) as f:
         fold_data = json.load(f)[str(args.fold_key)]
     train_chroms = fold_data["train"]
@@ -315,11 +351,11 @@ def main():
 
     print("Loading negatives...")
     train_negs = load_negatives(args.negatives, train_chroms)
-    # Subsample to 10x peak count to avoid OOM when loading genome windows
-    max_negs = len(train_peaks) * 10
+    # Cap the negative pool to bound memory when loading genome windows
+    max_negs = args.max_negatives if args.max_negatives is not None else len(train_peaks) * 10
     if len(train_negs) > max_negs:
         train_negs = train_negs.sample(max_negs, random_state=42).reset_index(drop=True)
-    print(f"  Train negatives: {len(train_negs)} (subsampled to {max_negs} max)")
+    print(f"  Train negatives: {len(train_negs)} (capped at {max_negs})")
 
     genome = args.genome  # None for atac mode — extract_windows handles this
 
@@ -345,17 +381,20 @@ def main():
     )
     print(f"  Extracted {len(val_accs)} validation peaks")
 
-    # Normalize accessibility
-    tr_accs, acc_mean, acc_std = normalize_accessibility(
-        tr_accs, mean=args.acc_mean, std=args.acc_std
-    )
-    neg_accs = normalize_accessibility(neg_accs, mean=acc_mean, std=acc_std)[0]
-    val_accs = normalize_accessibility(val_accs, mean=acc_mean, std=acc_std)[0]
+    # Normalize accessibility (skipped when there is no accessibility track)
+    if args.accessibility_bw is not None:
+        tr_accs, acc_mean, acc_std = normalize_accessibility(
+            tr_accs, mean=args.acc_mean, std=args.acc_std
+        )
+        neg_accs = normalize_accessibility(neg_accs, mean=acc_mean, std=acc_std)[0]
+        val_accs = normalize_accessibility(val_accs, mean=acc_mean, std=acc_std)[0]
 
-    print(f"Accessibility normalization: mean={acc_mean:.4f}, std={acc_std:.4f}")
-    stats_path = os.path.join(args.output_dir, "acc_normalization_stats.json")
-    with open(stats_path, "w") as f:
-        json.dump({"acc_mean": float(acc_mean), "acc_std": float(acc_std)}, f)
+        print(f"Accessibility normalization: mean={acc_mean:.4f}, std={acc_std:.4f}")
+        stats_path = os.path.join(args.output_dir, "acc_normalization_stats.json")
+        with open(stats_path, "w") as f:
+            json.dump({"acc_mean": float(acc_mean), "acc_std": float(acc_std)}, f)
+    else:
+        print("No --accessibility-bw given; skipping accessibility normalization")
 
     # Build datasets
     train_dataset = MultiModalPeakNegativeSampler(
@@ -389,7 +428,7 @@ def main():
         n_filters=args.n_filters,
         n_acc_filters=args.n_acc_filters,
         n_layers=args.n_layers,
-        n_outputs=2,
+        n_outputs=n_outputs,
         mode=args.mode,
         count_loss_weight=args.count_loss_weight,
         name=model_prefix,
