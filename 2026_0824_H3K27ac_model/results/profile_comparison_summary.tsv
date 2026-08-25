@@ -1,0 +1,4 @@
+track	peak_offset_bp	center_over_peak	mean_abs_offset_bp
+ATAC	-12.5	1.0	482.1
+H3K27ac (250bp frag)	-237.5	0.959	559.7
+H3K27ac (5-prime)	-262.5	0.944	561.9
