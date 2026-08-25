@@ -1,0 +1,39 @@
+[
+  {
+    "label": "p300_multimodal_atac_hw500",
+    "mode": "multimodal",
+    "half_window": 500,
+    "model_dir": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0529_multimodal_p300_model/models/atac",
+    "signal_plus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2025_0703_retrain_p300_model/data/ENCSR000EGE_plus.bigWig",
+    "signal_minus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2025_0703_retrain_p300_model/data/ENCSR000EGE_minus.bigWig"
+  },
+  {
+    "label": "p300_atac_only_hw500",
+    "mode": "atac",
+    "half_window": 500,
+    "model_dir": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0529_multimodal_p300_model/models/atac_only",
+    "signal_plus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2025_0703_retrain_p300_model/data/ENCSR000EGE_plus.bigWig",
+    "signal_minus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2025_0703_retrain_p300_model/data/ENCSR000EGE_minus.bigWig"
+  },
+  {
+    "label": "h3k27ac_multimodal_hw500",
+    "mode": "multimodal",
+    "half_window": 500,
+    "model_dir": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/models/multimodal_hw500_clw1000",
+    "signal_plus_bw": "/oak/stanford/groups/engreitz/Users/sheth/Data/share/IGV/ENCSR000AKP_coverage.bw"
+  },
+  {
+    "label": "h3k27ac_atac_only_hw500",
+    "mode": "atac",
+    "half_window": 500,
+    "model_dir": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/models/atac_hw500_clw1000",
+    "signal_plus_bw": "/oak/stanford/groups/engreitz/Users/sheth/Data/share/IGV/ENCSR000AKP_coverage.bw"
+  },
+  {
+    "label": "h3k27ac_sequence_hw500",
+    "mode": "sequence",
+    "half_window": 500,
+    "model_dir": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/models/sequence_hw500_clw1000",
+    "signal_plus_bw": "/oak/stanford/groups/engreitz/Users/sheth/Data/share/IGV/ENCSR000AKP_coverage.bw"
+  }
+]
