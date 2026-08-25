@@ -69,10 +69,20 @@ def parse_args():
     p.add_argument("--outdir", default="results")
     p.add_argument("--figdir", default="figures")
     p.add_argument("--ceiling", default="results/replicate_ceiling_by_window.tsv")
+    p.add_argument("--out-prefix", default="",
+                   help="Prefix for output filenames so separate comparisons do not "
+                        "clobber each other")
     p.add_argument("--batch-size", type=int, default=256)
     p.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     p.add_argument("--configs", nargs="*", default=None,
                    help="Limit to these config dir names (default: all found)")
+    p.add_argument("--config-json", default=None,
+                   help="JSON list of explicit configs to evaluate instead of "
+                        "auto-discovering under --models-dir. Each entry needs label, "
+                        "mode, half_window, model_dir, signal_plus_bw; may also set "
+                        "signal_minus_bw (stranded targets), accessibility_bw, genome, "
+                        "elements. Use this for models whose directory layout does not "
+                        "match {mode}_hw{W}_clw{C}, e.g. the p300 models.")
     return p.parse_args()
 
 
@@ -88,9 +98,10 @@ def predict_logcounts(model, X, batch_size, device):
     return np.concatenate(out)
 
 
-def eval_one_fold(cfg_dir, mode, hw, fold, args):
+def eval_one_fold(cfg, fold, args):
     """Return (observed_log, predicted_log) for one fold's held-out chromosomes."""
-    model_path = os.path.join(cfg_dir, f"fold{fold}", "multimodal_bpnet.torch")
+    mode, hw = cfg["mode"], cfg["half_window"]
+    model_path = os.path.join(cfg["model_dir"], f"fold{fold}", "multimodal_bpnet.torch")
     if not os.path.exists(model_path):
         return None
 
@@ -99,22 +110,27 @@ def eval_one_fold(cfg_dir, mode, hw, fold, args):
 
     with open(args.fold_json) as f:
         val_chroms = json.load(f)[str(fold)]["val"]
-    els = load_peaks(args.elements, val_chroms)
+    els = load_peaks(cfg.get("elements") or args.elements, val_chroms)
     if len(els) == 0:
         return None
 
-    acc_bw = args.accessibility_bw if mode in ("multimodal", "atac") else None
-    genome = args.genome if mode != "atac" else None
+    acc_bw = (cfg.get("accessibility_bw") or args.accessibility_bw) \
+        if mode in ("multimodal", "atac") else None
+    genome = (cfg.get("genome") or args.genome) if mode != "atac" else None
 
     seqs, sigs, accs, _ = extract_windows(
-        els, genome, args.signal_bw, None, acc_bw,
+        els, genome, cfg.get("signal_plus_bw") or args.signal_bw,
+        cfg.get("signal_minus_bw"), acc_bw,
         in_window, out_window, 0, is_peak=True)
 
-    # observed target: what the counts head was trained against
-    observed = np.log1p(sigs[:, 0, :].sum(axis=1))
+    # Observed target, matching bpnetlite's _mixture_loss exactly: it does
+    # y.reshape(n, -1).sum(-1), i.e. a single count across ALL channels. Summing only
+    # channel 0 would silently halve a stranded target.
+    observed = np.log1p(sigs.sum(axis=(1, 2)))
 
     if acc_bw is not None:
-        stats_path = os.path.join(cfg_dir, f"fold{fold}", "acc_normalization_stats.json")
+        stats_path = os.path.join(cfg["model_dir"], f"fold{fold}",
+                                  "acc_normalization_stats.json")
         if not os.path.exists(stats_path):
             raise SystemExit(f"error: missing {stats_path}; needed to match training "
                              "accessibility normalization")
@@ -163,38 +179,50 @@ def main():
     os.makedirs(args.outdir, exist_ok=True)
     os.makedirs(args.figdir, exist_ok=True)
 
-    configs = sorted(d for d in os.listdir(args.models_dir) if DIR_RE.match(d))
-    if args.configs:
-        configs = [c for c in configs if c in args.configs]
+    if args.config_json:
+        with open(args.config_json) as f:
+            configs = json.load(f)
+        for c in configs:
+            for k in ("label", "mode", "half_window", "model_dir"):
+                if k not in c:
+                    raise SystemExit(f"config entry missing '{k}': {c}")
+    else:
+        names = sorted(d for d in os.listdir(args.models_dir) if DIR_RE.match(d))
+        if args.configs:
+            names = [c for c in names if c in args.configs]
+        configs = []
+        for n in names:
+            m = DIR_RE.match(n)
+            configs.append({"label": n, "mode": m["mode"],
+                            "half_window": int(m["hw"]),
+                            "model_dir": os.path.join(args.models_dir, n)})
     if not configs:
-        raise SystemExit("no matching config directories found")
+        raise SystemExit("no configs to evaluate")
 
     all_rows = []
     for cfg in configs:
-        m = DIR_RE.match(cfg)
-        mode, hw = m["mode"], int(m["hw"])
-        cfg_dir = os.path.join(args.models_dir, cfg)
+        mode, hw, label = cfg["mode"], cfg["half_window"], cfg["label"]
         obs_all, pred_all, folds_used = [], [], []
         for fold in range(5):
-            r = eval_one_fold(cfg_dir, mode, hw, fold, args)
+            r = eval_one_fold(cfg, fold, args)
             if r is None:
                 continue
             obs_all.append(r[0])
             pred_all.append(r[1])
             folds_used.append(fold)
-            print(f"  {cfg} fold{fold}: n={len(r[0])}")
+            print(f"  {label} fold{fold}: n={len(r[0])}")
         if not obs_all:
-            print(f"{cfg}: no folds available yet, skipping")
+            print(f"{label}: no folds available, skipping")
             continue
         obs = np.concatenate(obs_all)
         pred = np.concatenate(pred_all)
-        print(f"{cfg}: {len(folds_used)} folds, {len(obs):,} elements pooled")
+        print(f"{label}: {len(folds_used)} folds, {len(obs):,} elements pooled")
         all_rows += strat_rows(obs, pred, {
-            "config": cfg, "mode": mode, "half_window": hw,
+            "config": label, "mode": mode, "half_window": hw,
             "n_folds": len(folds_used)})
 
     res = pd.DataFrame(all_rows)
-    p1 = os.path.join(args.outdir, "stratified_evaluation.tsv")
+    p1 = os.path.join(args.outdir, f"{args.out_prefix}stratified_evaluation.tsv")
     res.to_csv(p1, sep="\t", index=False)
     print(f"\nWrote {p1}")
 
@@ -241,7 +269,7 @@ def main():
     axes[0].set_ylabel("Pearson r (log counts)")
     fig.tight_layout()
     for ext in ("pdf", "png"):
-        p = os.path.join(args.figdir, f"h3k27ac_stratified_eval.{ext}")
+        p = os.path.join(args.figdir, f"{args.out_prefix}stratified_eval.{ext}")
         fig.savefig(p, dpi=300, bbox_inches="tight")
         print(f"Wrote {p}")
 
