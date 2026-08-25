@@ -238,6 +238,10 @@ key_findings:
   - H3K27ac around DNase candidate elements is bimodal as expected - shoulders at -275/+275 bp with a central dip over the nucleosome-free element.
   - Distal plateau is 17.1 with a peak of 59.6 (3.48x enrichment); signal reaches background by roughly +/-2000 bp.
   - Window choice is a trade-off, not an optimum - neighbour contamination is 0% at +/-500 bp, 9.9% at +/-750, 19.9% at +/-1000, 41.5% at +/-2000. Signal-remaining and contamination curves cross near +/-1275 bp.
+  - count_loss_weight had to rise from 1 (the p300 default) to 1000 - profile MNLL ~2800 vs count MSE ~3 meant the counts head got under 1% of the gradient. Count Pearson 0.21 -> 0.41. Saturates by 1000; 10000 is no better.
+  - Stratification is essential - ATAC-only predicts H3K27ac at 0.746 over all 150k elements but only 0.543 on the top signal quintile. The unstratified number is mostly the dead-vs-active contrast.
+  - Top-quintile Pearson, 5 folds, +/-500 bp: sequence 0.357, ATAC-only 0.543, sequence+ATAC 0.668. The combination beats both parts by a wide margin.
+  - Against p300 evaluated identically, sequence adds ~2.4x more over accessibility for p300 (+0.301) than for H3K27ac (+0.125), even though H3K27ac is the more predictable target (0.668 vs 0.606). See .living/findings/predicting-regulatory-element-function-at-scale.md F-001.
 report: null
 tags: [h3k27ac, k562, multimodal, atac, counts-only, window-selection, chromatin]
 ```
@@ -259,6 +263,15 @@ acetylated".
 Two questions in order: first how well H3K27ac is predictable from sequence
 (generalizably), then what motif syntax drives it.
 
-**Open:** final `--out-window` not yet chosen (see `results/window_tradeoff.tsv`);
-unstranded support needed in the shared trainer, which currently requires both
-`--signal-plus-bw` and `--signal-minus-bw` with `n_outputs=2`.
+Unstranded support landed in the shared `scripts/train_multimodal_bpnet.py` on
+2026-08-24: `--signal-minus-bw` and `--accessibility-bw` are now optional and
+`n_outputs` is derived (2 stranded, 1 not). The stranded p300 path was verified
+bit-identical to before the change. `--max-negatives` was added in the same pass because
+the old `10 x n_peaks` rule implies ~55 GB at 120k elements.
+
+**Open:** final `--out-window` still undecided - +/-500 and +/-1000 both trained (30 jobs,
+5 folds x 3 modes x 2 windows, all COMPLETED). +/-1000 looked stronger on one fold
+(multimodal 0.851 all / 0.659 top quintile) but 5-fold numbers for the +/-1000 configs
+were still running at last check. The open question that matters for the syntax work is
+whether the wider window raises the *sequence* contribution or only the accessibility
+one. Motif-syntax analysis (SHAP/MoDISCo/FiNeMo) not started.

@@ -46,3 +46,40 @@ plus three conda envs — `bpnet_37` (training/prediction/SHAP, needs
 `module load cuda/11.1.1 cudnn/8.1.1.33`), `tfmodisco` (FIMO, MoDISCo, inference), and
 `analysis` (FiNeMo formatting, downstream plots). The multimodal project has its own pixi
 env named `multimodal`. Do not assume a single environment works across stages.
+
+## SLURM submit scripts (mandatory)
+
+Every new submit script in this repo must:
+
+1. **`export PYTHONUNBUFFERED=1`.** Python block-buffers stdout to a file, so a running
+   job shows an empty log and looks hung. Without this, a 35-minute job is
+   undiagnosable while alive.
+2. **Guard empty array expansion.** `set -u` plus `"${ARR[@]}"` on an empty array is an
+   unbound-variable error in bash < 4.4. Use `${ARR[@]+"${ARR[@]}"}` for any optional
+   argument array.
+3. **Put the varied hyperparameter in the output path.** A sweep whose runs share an
+   output directory silently overwrites itself. See
+   `2026_0824_H3K27ac_model/scripts/1.1.submit_training.sh`, where the counting window
+   and count-loss weight both appear in `OUT_DIR`.
+4. **Bound memory explicitly when a set size scales with the data.** Anything of the
+   form `n_items * k` needs a cap; see `--max-negatives`.
+
+## Never run heavy work on a login node
+
+Anything beyond a few seconds goes through `sbatch`. A long python process started over
+`ssh` on a login node is killed when the calling shell detaches — it exits 0 and writes
+no output, which reads as success. Login-node work is limited to inspecting files and
+small tabulations; the one window-profiling script that does run there is explicitly
+memory-bounded (264 MB) and documented as such.
+
+## Model evaluation must be stratified by signal level
+
+`reference/K562_DNase_candidate_elements.narrowPeak` holds 150,528 elements and most
+carry little signal, so any correlation computed over all of them is dominated by the
+dead-vs-active contrast. Report the top signal quintile alongside the overall number —
+this repo's equivalent of the all-vs-p300+ split already used for p300. See
+`2026_0824_H3K27ac_model/scripts/2.2.evaluate_stratified.py`. Concretely: ATAC-only
+predicts H3K27ac at 0.746 over all elements but only 0.543 on the top quintile.
+
+Ceilings derived from replicate agreement need both the Spearman-Brown and sqrt
+corrections before they bound model performance — see `.living/learnings.md`.
