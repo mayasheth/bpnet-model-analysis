@@ -90,3 +90,17 @@ Mycelium's `decision-log-entry.md` template says `## [YYYY-MM-DD] Title`, but
 `generate_index.py` only counts `### ` headings in `decisions.md`. Entries written per
 the template are silently absent from `.living/INDEX.md`. Use `### ` for decisions here.
 See `.living/learnings.md` (2026-08-25).
+
+## Never take a model target from a display directory
+
+Tracks under `$OAK/Users/sheth/Data/share/IGV/` are built for visualization. They may be
+raw-count and unnormalized — and so look usable — while carrying processing choices that
+are wrong for modelling. `ENCSR000AKP_coverage.bw` extends 36 bp reads to a fixed 250 bp
+fragment, which flattens nucleosome structure and breaks the multinomial assumption
+behind bpnetlite's profile loss.
+
+Derive training targets from the source BAMs inside the analysis project, so the
+processing is explicit, versioned, and reviewable. For ChIP-seq in this repo that means
+`bedtools genomecov -5 -dz` (single-base 5' ends, stranded), matching
+`scripts/0.3.make_training_bw.sh`. If a display track is used as a stopgap, record the
+exact command that produced it and treat replacing it as an open item.
