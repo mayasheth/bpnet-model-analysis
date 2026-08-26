@@ -61,9 +61,9 @@ def parse_args():
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--models-dir", default="models")
-    p.add_argument("--atac-config", required=True,
+    p.add_argument("--atac-config", default=None,
                    help="Config dir of the ATAC-only model that defines the baseline")
-    p.add_argument("--configs", nargs="+", required=True,
+    p.add_argument("--configs", nargs="+", default=None,
                    help="Config dirs to evaluate against that baseline")
     p.add_argument("--elements", required=True)
     p.add_argument("--genome", required=True)
@@ -72,6 +72,14 @@ def parse_args():
     p.add_argument("--fold-json", required=True)
     p.add_argument("--outdir", default="results")
     p.add_argument("--figdir", default="figures")
+    p.add_argument("--config-json", default=None,
+                   help="JSON {baseline: {...}, compare: [{...}]} giving explicit "
+                        "configs, for models outside the {mode}_hw{W}_clw{C} layout or "
+                        "with stranded targets (e.g. p300). Each entry needs label, "
+                        "mode, half_window, model_dir, signal_plus_bw; may set "
+                        "signal_minus_bw, accessibility_bw, genome, elements.")
+    p.add_argument("--out-prefix", default="",
+                   help="Prefix for output filenames")
     p.add_argument("--batch-size", type=int, default=256)
     p.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     return p.parse_args()
@@ -88,28 +96,33 @@ def predict_logcounts(model, X, batch_size, device):
     return np.concatenate(out)
 
 
-def run_fold(cfg_dir, mode, hw, fold, args, want_observed):
+def run_fold(cfg, fold, args, want_observed):
     """Predicted logcounts for one fold (and observed, if asked)."""
-    mp = os.path.join(cfg_dir, f"fold{fold}", "multimodal_bpnet.torch")
+    mode, hw = cfg["mode"], cfg["half_window"]
+    mp = os.path.join(cfg["model_dir"], f"fold{fold}", "multimodal_bpnet.torch")
     if not os.path.exists(mp):
         return None
     out_window = 2 * hw
     in_window = out_window + 2 * TRIMMING
     with open(args.fold_json) as f:
         val_chroms = json.load(f)[str(fold)]["val"]
-    els = load_peaks(args.elements, val_chroms)
+    els = load_peaks(cfg.get("elements") or args.elements, val_chroms)
     if len(els) == 0:
         return None
 
-    acc_bw = args.accessibility_bw if mode in ("multimodal", "atac") else None
-    genome = args.genome if mode != "atac" else None
+    acc_bw = ((cfg.get("accessibility_bw") or args.accessibility_bw)
+              if mode in ("multimodal", "atac") else None)
+    genome = (cfg.get("genome") or args.genome) if mode != "atac" else None
     seqs, sigs, accs, _ = extract_windows(
-        els, genome, args.signal_bw, None, acc_bw, in_window, out_window, 0,
+        els, genome, cfg.get("signal_plus_bw") or args.signal_bw,
+        cfg.get("signal_minus_bw"), acc_bw, in_window, out_window, 0,
         is_peak=True)
+    # sum over ALL channels, matching bpnetlite: stranded targets have 2
     observed = np.log1p(sigs.sum(axis=(1, 2))) if want_observed else None
 
     if acc_bw is not None:
-        sp = os.path.join(cfg_dir, f"fold{fold}", "acc_normalization_stats.json")
+        sp = os.path.join(cfg["model_dir"], f"fold{fold}",
+                          "acc_normalization_stats.json")
         with open(sp) as f:
             st = json.load(f)
         accs = normalize_accessibility(accs, mean=st["acc_mean"], std=st["acc_std"])[0]
@@ -137,23 +150,40 @@ def main():
     os.makedirs(args.outdir, exist_ok=True)
     os.makedirs(args.figdir, exist_ok=True)
 
-    m = DIR_RE.match(args.atac_config)
-    if not m or m["mode"] != "atac":
-        raise SystemExit(f"--atac-config must be an atac_* config dir, got "
-                         f"{args.atac_config}")
-    hw = int(m["hw"])
+    if args.config_json:
+        with open(args.config_json) as f:
+            spec = json.load(f)
+        baseline = spec["baseline"]
+        compare = spec["compare"]
+    else:
+        m = DIR_RE.match(args.atac_config)
+        if not m or m["mode"] != "atac":
+            raise SystemExit(f"--atac-config must be an atac_* config dir, got "
+                             f"{args.atac_config}")
+        baseline = {"label": args.atac_config, "mode": "atac",
+                    "half_window": int(m["hw"]),
+                    "model_dir": os.path.join(args.models_dir, args.atac_config)}
+        compare = []
+        for cfg in args.configs:
+            mm = DIR_RE.match(cfg)
+            if not mm:
+                print(f"skip unrecognized config {cfg}")
+                continue
+            compare.append({"label": cfg, "mode": mm["mode"],
+                            "half_window": int(mm["hw"]),
+                            "model_dir": os.path.join(args.models_dir, cfg)})
+    hw = baseline["half_window"]
 
     # baseline: ATAC-only predictions and the observed target, pooled over folds
     base_pred, observed, chrom_l, ctr_l, folds = [], [], [], [], []
     for fold in range(5):
-        r = run_fold(os.path.join(args.models_dir, args.atac_config), "atac", hw,
-                     fold, args, want_observed=True)
+        r = run_fold(baseline, fold, args, want_observed=True)
         if r is None:
             continue
         base_pred.append(r[0]); observed.append(r[1])
         chrom_l.append(r[2][0]); ctr_l.append(r[2][1])
         folds.append(fold)
-        print(f"  baseline {args.atac_config} fold{fold}: n={len(r[0])}")
+        print(f"  baseline {baseline['label']} fold{fold}: n={len(r[0])}")
     if not base_pred:
         raise SystemExit("no ATAC-only folds found")
     atac_pred = np.concatenate(base_pred)
@@ -168,24 +198,20 @@ def main():
 
     rows = []
     preds = {"atac": atac_pred}
-    for cfg in args.configs:
-        mm = DIR_RE.match(cfg)
-        if not mm:
-            print(f"skip unrecognized config {cfg}")
-            continue
-        if int(mm["hw"]) != hw:
-            raise SystemExit(f"{cfg} has hw={mm['hw']} but baseline hw={hw}; "
-                             "windows must match for the residual to be meaningful")
+    for cfg in compare:
+        label = cfg["label"]
+        if cfg["half_window"] != hw:
+            raise SystemExit(f"{label} has hw={cfg['half_window']} but baseline "
+                             f"hw={hw}; windows must match for a meaningful residual")
         ps = []
         for fold in folds:
-            r = run_fold(os.path.join(args.models_dir, cfg), mm["mode"], hw, fold,
-                         args, want_observed=False)
+            r = run_fold(cfg, fold, args, want_observed=False)
             if r is None:
-                raise SystemExit(f"{cfg} missing fold{fold}, which the baseline has")
+                raise SystemExit(f"{label} missing fold{fold}, which the baseline has")
             ps.append(r[0])
-            print(f"  {cfg} fold{fold}: n={len(r[0])}")
+            print(f"  {label} fold{fold}: n={len(r[0])}")
         pred = np.concatenate(ps)
-        preds[mm["mode"]] = pred
+        preds[cfg["mode"]] = pred
         model_resid = pred - atac_pred
 
         base_r2 = r2(obs, atac_pred)
@@ -194,7 +220,7 @@ def main():
             if mask.sum() < 10:
                 continue
             o, tr, mr, pr = obs[mask], true_resid[mask], model_resid[mask], pred[mask]
-            row = {"config": cfg, "mode": mm["mode"], "stratum": name,
+            row = {"config": label, "mode": cfg["mode"], "stratum": name,
                    "n": int(mask.sum()),
                    "overall_pearson": round(float(pearsonr(o, pr)[0]), 4)}
             if np.std(tr) > 1e-9 and np.std(mr) > 1e-9:
@@ -205,11 +231,11 @@ def main():
                 row["residual_spearman"] = np.nan
             row["incremental_r2"] = round(r2(o, pr) - r2(o, atac_pred[mask]), 4)
             rows.append(row)
-        print(f"{cfg}: residual_pearson(all)="
-              f"{[r for r in rows if r['config']==cfg and r['stratum']=='all'][0]['residual_pearson']}")
+        print(f"{label}: residual_pearson(all)="
+              f"{[r for r in rows if r['config']==label and r['stratum']=='all'][0]['residual_pearson']}")
 
     res = pd.DataFrame(rows)
-    p1 = os.path.join(args.outdir, "residual_evaluation.tsv")
+    p1 = os.path.join(args.outdir, f"{args.out_prefix}residual_evaluation.tsv")
     res.to_csv(p1, sep="\t", index=False)
     print(f"\nWrote {p1}")
     print(res.to_string(index=False))
@@ -230,7 +256,7 @@ def main():
             continue
         ex[f"{mode}_residual"] = np.concatenate([(pr - atac_pred)[order[:k]],
                                                 (pr - atac_pred)[order[-k:]]])
-    p2 = os.path.join(args.outdir, "extreme_residual_elements.tsv")
+    p2 = os.path.join(args.outdir, f"{args.out_prefix}extreme_residual_elements.tsv")
     ex.to_csv(p2, sep="\t", index=False)
     print(f"Wrote {p2}")
 
@@ -268,7 +294,7 @@ def main():
         ax.tick_params(colors="black")
     fig.tight_layout()
     for ext in ("pdf", "png"):
-        p = os.path.join(args.figdir, f"residual_evaluation.{ext}")
+        p = os.path.join(args.figdir, f"{args.out_prefix}residual_evaluation.{ext}")
         fig.savefig(p, dpi=300, bbox_inches="tight")
         print(f"Wrote {p}")
 
