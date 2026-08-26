@@ -55,7 +55,8 @@ class MultiModalBPNet(torch.nn.Module):
         Whether to print training statistics. Default True.
     """
 
-    def __init__(self, n_filters=64, n_acc_filters=8, n_layers=8, n_outputs=2,
+    def __init__(self, n_filters=64, n_acc_filters=8, n_acc_channels=1,
+                 n_layers=8, n_outputs=2,
                  mode='multimodal', count_loss_weight=1, profile_output_bias=True,
                  count_output_bias=True, name=None, trimming=None, verbose=True):
         super().__init__()
@@ -66,6 +67,9 @@ class MultiModalBPNet(torch.nn.Module):
         self.n_acc_filters = n_acc_filters
         self.n_layers = n_layers
         self.n_outputs = n_outputs
+        # Number of accessibility INPUT channels (1 = a single flat track; >1 for
+        # fragment-size-stratified channels). n_acc_filters is the output width.
+        self.n_acc_channels = n_acc_channels
         self.count_loss_weight = count_loss_weight
         self.name = name or f"multimodal_bpnet.{mode}.{n_filters}.{n_layers}"
         self.trimming = trimming or 47 + sum(2**i for i in range(1, n_layers + 1))
@@ -74,7 +78,8 @@ class MultiModalBPNet(torch.nn.Module):
             n_merged = n_filters + n_acc_filters
             self.seq_conv = torch.nn.Conv1d(4, n_filters, kernel_size=21, padding=10)
             self.seq_relu = torch.nn.ReLU()
-            self.acc_conv = torch.nn.Conv1d(1, n_acc_filters, kernel_size=21, padding=10)
+            self.acc_conv = torch.nn.Conv1d(n_acc_channels, n_acc_filters,
+                                            kernel_size=21, padding=10)
             self.acc_relu = torch.nn.ReLU()
         elif mode == 'sequence':
             n_merged = n_filters
@@ -148,7 +153,7 @@ class MultiModalBPNet(torch.nn.Module):
 
         return y_profile, y_counts
 
-    def fit(self, training_data, optimizer, scheduler=None,
+    def fit(self, training_data, optimizer, scheduler=None, offset_valid=None,
             X_valid=None, y_valid=None, max_epochs=100, batch_size=64,
             dtype='float32', device='cuda', early_stopping=None):
         """Train the model.
@@ -181,6 +186,11 @@ class MultiModalBPNet(torch.nn.Module):
 
             for data in training_data:
                 X, y, labels = data[0], data[-2], data[-1]
+                # Residual training: the dataset may insert a per-region count offset
+                # at data[1]. It is ADDED to the predicted logcounts before the loss, so
+                # the model learns (observed - offset) while the loss still scores the
+                # real target. data[-2]/data[-1] indexing above is unaffected.
+                offset = data[1].to(device).float() if len(data) > 3 else None
                 X = X.to(device).float()
                 y = y.to(device)
                 labels = labels.to(device)
@@ -190,6 +200,8 @@ class MultiModalBPNet(torch.nn.Module):
 
                 with torch.autocast(device_type=device_type, dtype=dtype):
                     y_hat_logits, y_hat_logcounts = self(X)
+                    if offset is not None:
+                        y_hat_logcounts = y_hat_logcounts + offset.reshape(-1, 1)
                     train_profile_loss, train_count_loss, loss = _mixture_loss(
                         y, y_hat_logits, y_hat_logcounts,
                         self.count_loss_weight, labels
@@ -210,6 +222,9 @@ class MultiModalBPNet(torch.nn.Module):
                     self, X_valid, batch_size=batch_size,
                     dtype=dtype, device=device
                 )
+                if offset_valid is not None:
+                    y_hat_logcounts = y_hat_logcounts + \
+                        offset_valid.to(y_hat_logcounts.device).reshape(-1, 1)
 
                 valid_profile_loss, valid_count_loss, valid_loss = _mixture_loss(
                     y_valid, y_hat_logits, y_hat_logcounts, self.count_loss_weight

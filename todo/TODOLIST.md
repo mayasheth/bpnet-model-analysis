@@ -48,6 +48,19 @@ neighbour bleed — not for an accuracy gain. See `.living/learnings.md`.
       sees real read counts. Was: (needs G1) — expect it
       to fall a long way from 1000 once MNLL sees real read counts. 2–3 GPU jobs.
 - [ ] **W2b. Train with fragment-size ATAC channels** (needs W1c) — 5–10 GPU jobs.
+      **Revisit the split first.** The fragment distribution is a clean nucleosomal
+      ladder (sub-nucleosomal mode ~42 bp, mono ~205 bp, di ~400 bp, tri ~600 bp; see
+      `figures/atac_fragment_lengths.pdf`), but the current two channels capture only
+      30% (sub 1–99) and 20% (mono 180–247) of fragments — **50% fall in neither**,
+      including both higher-order peaks and the 100–180 bp trough.
+      Preferred design: **[all, sub, mono, di]** — keep an all-fragments channel so the
+      input is a strict superset of the current flat-ATAC baseline and cannot regress,
+      plus a di-nucleosomal channel (~350–450 bp) for higher-order structure. Coverage
+      fractions per replicate are in `results/atac_fragment_length_summary.tsv`.
+      Architecture support landed 2026-08-25: `MultiModalBPNet(n_acc_channels=N)`; the
+      forward pass already slices `X[:, 4:, :]` generically, so only the `acc_conv`
+      in-channels needed changing. Still to do: multi-BigWig accessibility input in
+      `extract_windows` / `--accessibility-bw`, which currently accepts one track.
 - [ ] **W2c. Validate the binned profile target** (needs W1d) — 5–10 GPU jobs, ~4–8 GPU-h.
 - [ ] **W2d. Re-check the ±500 vs ±1000 window on the 5′ target** (needs G1) — less
       smearing means less neighbour bleed, so the contamination penalty may differ.
