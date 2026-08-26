@@ -275,3 +275,45 @@ Append-only log of gotchas, surprises, and insights.
 **mitigation_type**: ambient-awareness
 
 **structural_mitigation_candidate**: `train_multimodal_bpnet.py` should refuse to run when the offset model's target differs from the current one. The offset model directory has no record of which signal BigWig it trained on, so the check requires writing a small `training_target.json` next to `acc_normalization_stats.json` and comparing. That would have turned this into an immediate error instead of a plausible-looking result.
+
+---
+
+### [2026-08-26] Correction: the count_loss_weight "optimum" was within run-to-run noise
+
+**Category**: gotcha
+
+**Supersedes** the 2026-08-26 entry "The 5' count_loss_weight optimum is 10, with a genuine interior peak". That entry overstated the evidence.
+
+**What happened**: The 5-prime grid retrained `sequence` fold 0 at weight 10 — the identical configuration the weight sweep had already run — and got **0.4785** where the sweep got **0.4962**. Same mode, fold, window, weight, target. That is ~0.018 of pure run-to-run variance (GPU nondeterminism plus early-stopping epoch choice; the sampler seed is fixed at 42).
+
+**Why it matters**: The sweep was single-fold, and I called a "clean interior peak" off differences of ~0.01-0.03. With variance at 0.018, only the extremes are separable: weight 10 clearly beats 1 (0.437) and 1000 (0.464), gaps of 0.03-0.06. But **3 (0.484), 10 (0.478-0.496) and 100 (0.467) are not distinguishable from one run each**. Weight 10 is a defensible choice sitting in a flat region, not a measured optimum.
+
+**Also lost a data point to a directory collision**: the sweep and the grid both write to `models/sequence5p_hw500_clw10/fold0`, so the grid overwrote the sweep run. The clw10 log preserved under `results/training_logs/` is the FRAGMENT-target run, not the 5-prime sweep, so the original 0.4962 is unrecoverable. Sweep logs for weights 1/3/100/1000 survive as `sweep5p_clw*.epochlog.tsv` only because the grid did not reuse those paths.
+
+**Resolution**: Keep weight 10. Flagged in `todo/TODOLIST.md` as a point to revisit with a properly powered sweep (multi-fold, multi-seed) if the weight is ever suspected of mattering.
+
+**Tags**: h3k27ac, loss-weighting, variance, reproducibility, overclaim, hyperparameters
+
+**mitigation_type**: ambient-awareness
+
+**structural_mitigation_candidate**: Two things. (1) Hyperparameter comparisons should run >=3 folds before a winner is declared; a single fold cannot resolve differences below ~0.02 here. (2) The submit scripts should refuse to overwrite a fold directory that already contains a completed `multimodal_bpnet.log`, or include a run tag in the path, so a sweep result cannot be silently destroyed by a later grid.
+
+---
+
+### [2026-08-26] Correction: the 5' target's gain on all-elements is mostly the ceiling rising
+
+**Category**: insight
+
+**Refines** the 2026-08-26 entry "An identical ceiling does not mean identical learnability", which reported sequence-only going 0.4073 -> 0.4962 as a +22% gain from the 5-prime switch.
+
+**What happened**: That comparison was single-fold and on ALL validation elements. Expressed as a fraction of each target's own corrected ceiling, the three modes barely move: sequence 47% -> 50%, ATAC-only 86% -> 85%, multimodal 93% -> 91%. The absolute all-elements numbers rise (sequence 0.410 -> 0.479, ATAC 0.746 -> 0.813, multimodal 0.809 -> 0.871) largely because the all-elements ceiling itself rises from 0.868 to 0.957 (corrected), 5-prime having far greater dynamic range once bleed-in stops filling dead elements.
+
+**Why it matters**: The earlier entry's mechanism — bleed-through is reproducible but not predictable from the element's own sequence — is still sound, and the switch is still correct on principle (MNLL well-posed, no neighbour bleed). But the magnitude of the benefit was over-read from an all-elements single-fold number, which is exactly the metric this project has now been burned by three times. The honest test is the stratified top-quintile comparison, pending the full grid.
+
+**Resolution**: Do not quote "+22% from 5-prime". Await the stratified comparison. Report fraction-of-ceiling alongside raw correlation whenever the target definition changes, since raw correlations are not comparable across targets.
+
+**Tags**: h3k27ac, 5-prime, ceiling, all-elements-artifact, overclaim, stratification
+
+**mitigation_type**: convention
+
+**structural_mitigation_candidate**: Already the standing rule in `.living/conventions.md` (stratify every evaluation). Extend it: when the TARGET definition changes, raw correlations are incomparable and only fraction-of-corrected-ceiling should be compared across targets.
