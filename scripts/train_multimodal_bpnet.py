@@ -395,6 +395,37 @@ def main():
         raise ValueError("--count-offset-model requires --accessibility-bw, since the "
                          "offset model reads accessibility even when this model does not")
 
+    if args.count_offset_model is not None:
+        # The offset must be an accessibility prediction OF THIS TARGET. A model fit to a
+        # differently-processed signal (e.g. fragment-extended vs 5'-end, a ~250x scale
+        # difference) trains without error because correlation is shift-invariant, but the
+        # residual it produces is not "beyond accessibility" and is not comparable to
+        # anything. Fail loudly instead.
+        rec_path = os.path.join(args.count_offset_model, f"fold{args.fold_key}",
+                                "training_target.json")
+        if not os.path.exists(rec_path):
+            raise SystemExit(
+                f"error: offset model has no training_target.json at {rec_path}, so its "
+                "target cannot be verified against this run's. Retrain the offset model "
+                "with the current trainer, or backfill the record with "
+                "2026_0824_H3K27ac_model/scripts/1.5.backfill_training_target.py.")
+        with open(rec_path) as f:
+            off_rec = json.load(f)
+        for key in ("signal_plus_bw", "signal_minus_bw", "out_window"):
+            mine, theirs = target_record[key], off_rec.get(key)
+            if mine != theirs:
+                raise SystemExit(
+                    f"error: offset model target mismatch on '{key}'.\n"
+                    f"  this run:     {mine}\n"
+                    f"  offset model: {theirs}\n"
+                    "The offset model must be trained on the same signal and window. "
+                    "Train an ATAC-only model on this target first.")
+        if off_rec.get("mode") != "atac":
+            raise SystemExit(
+                f"error: offset model mode is '{off_rec.get('mode')}', expected 'atac'. "
+                "The offset must come from an accessibility-only model.")
+        print(f"Offset model target verified against {rec_path}")
+
     # Stranded targets give 2 output tracks (the p300 setup); unstranded give 1.
     n_outputs = 2 if args.signal_minus_bw is not None else 1
     print(f"Target is {'stranded' if n_outputs == 2 else 'unstranded'} "
@@ -407,6 +438,24 @@ def main():
 
     os.makedirs(args.output_dir, exist_ok=True)
     model_prefix = os.path.join(args.output_dir, "multimodal_bpnet")
+
+    # Record what this model was trained against. Without this a later run cannot tell
+    # whether an offset model was fit to the same target, which silently produced an
+    # uninterpretable residual result on 2026-08-26 (see .living/learnings.md).
+    target_record = {
+        "signal_plus_bw": args.signal_plus_bw,
+        "signal_minus_bw": args.signal_minus_bw,
+        "accessibility_bw": args.accessibility_bw,
+        "peaks": args.peaks,
+        "mode": args.mode,
+        "in_window": args.in_window,
+        "out_window": args.out_window,
+        "n_layers": args.n_layers,
+        "count_loss_weight": args.count_loss_weight,
+        "count_offset_model": args.count_offset_model,
+    }
+    with open(os.path.join(args.output_dir, "training_target.json"), "w") as f:
+        json.dump(target_record, f, indent=2)
 
     print("Loading peaks...")
     train_peaks = load_peaks(args.peaks, train_chroms)

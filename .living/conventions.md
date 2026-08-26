@@ -104,3 +104,17 @@ processing is explicit, versioned, and reviewable. For ChIP-seq in this repo tha
 `bedtools genomecov -5 -dz` (single-base 5' ends, stranded), matching
 `scripts/0.3.make_training_bw.sh`. If a display track is used as a stopgap, record the
 exact command that produced it and treat replacing it as an open item.
+
+## H3K27ac target is 5-prime ends, full stop
+
+`2026_0824_H3K27ac_model/data/h3k27ac_5p_{plus,minus}.bw`. Nothing new is trained or
+evaluated on the 250 bp fragment-extended track — it breaks MNLL's read-count assumption
+and bleeds signal between neighbouring elements. See
+`2026_0824_H3K27ac_model/results/TARGET_PROVENANCE.md` for which existing results used
+which target, and which conclusions survive.
+
+Enforcement: `scripts/train_multimodal_bpnet.py` writes `training_target.json` into every
+model directory and refuses a `--count-offset-model` whose signal tracks or output window
+differ from the current run. This exists because a fragment-trained offset model was
+silently used against a 5-prime target on 2026-08-26 and trained to a plausible-looking
+but meaningless result.
