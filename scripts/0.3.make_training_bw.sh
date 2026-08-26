@@ -77,11 +77,15 @@ fi
 echo "Merged and indexed control BAM files."
 
 ## Create bedgraph files
+# NOTE: bedGraphToBigWig requires chrom+start order. genomecov follows BAM
+# header order, which is not guaranteed to match chrom.sizes, so sort
+# explicitly. The control bedGraphs below already did; the experiment ones
+# did not (fixed 2026-08-25).
 # Experiment
 BG_PLUS="$OUT_DIR/interm/plus.bedGraph"
 BG_MINUS="$OUT_DIR/interm/minus.bedGraph"
-bedtools genomecov -ibam "$MERGED_INPUT" -5 -dz -strand + | awk '{print $1, $2, $2+1, $3}' OFS='\t' > "$BG_PLUS"
-bedtools genomecov -ibam "$MERGED_INPUT" -5 -dz -strand - | awk '{print $1, $2, $2+1, $3}' OFS='\t' > "$BG_MINUS"
+bedtools genomecov -ibam "$MERGED_INPUT" -5 -dz -strand + | awk '{print $1, $2, $2+1, $3}' OFS='\t' | sort -k1,1 -k2,2n > "$BG_PLUS"
+bedtools genomecov -ibam "$MERGED_INPUT" -5 -dz -strand - | awk '{print $1, $2, $2+1, $3}' OFS='\t' | sort -k1,1 -k2,2n > "$BG_MINUS"
 echo "Made experiment bedgraph files."
 
 # Control
