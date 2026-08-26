@@ -257,3 +257,21 @@ Append-only log of gotchas, surprises, and insights.
 **mitigation_type**: ambient-awareness
 
 **structural_mitigation_candidate**: Compute the target ceiling in BOTH cell types before interpreting any transfer number. A raw cross-cell-type correlation is uninterpretable without it — the drop could be the model or the target, and here it was neither in the expected direction.
+
+---
+
+### [2026-08-26] The offset model must be trained on the same target as the residual model
+
+**Category**: failure
+
+**What happened**: Ran residual training (sequence model fitting `observed - atac_pred`) against the 5' target, but supplied `models/atac_hw500_clw1000` as the offset model — which was trained on the **fragment-extended** target. Fragment counts are ~250x larger, so the offsets arrived at mean 8.15 in log space while the 5' target sits near 2.9. Training converged (valCountPearson 0.813-0.854 across folds) but the numbers are not interpretable as a residual result.
+
+**Why it matters**: Two separate problems, and the run looked healthy despite both. (1) The offset is not "what accessibility predicts for this target" but "what accessibility predicts for a different target, on a different scale". In log space a 250x factor is mostly a constant shift and correlation is shift-invariant, so nothing errored — but per-element neighbour bleed in the fragment track means the mismatch is more than a constant, so the learned component is residual PLUS a scale correction. (2) There was no ATAC-only baseline on the 5' target to compare against, and 5' all-elements correlations are inherently much higher than fragment ones (ceiling 0.844 vs 0.604), so 0.841 is not comparable to any previously reported figure.
+
+**Resolution**: Retrain all three modes on the 5' target at weight 10 (15 jobs), which produces both the correct ATAC-only baseline and the correct offset model, then redo residual training against that. The first residual run was not wasted — it validated the offset plumbing end to end (offsets computed from the right stats, applied at the right place, negatives correctly lower than peaks at 5.21 vs 8.15) — but its numbers are discarded.
+
+**Tags**: h3k27ac, residual, offset, target-mismatch, methodology, silent-failure
+
+**mitigation_type**: ambient-awareness
+
+**structural_mitigation_candidate**: `train_multimodal_bpnet.py` should refuse to run when the offset model's target differs from the current one. The offset model directory has no record of which signal BigWig it trained on, so the check requires writing a small `training_target.json` next to `acc_normalization_stats.json` and comparing. That would have turned this into an immediate error instead of a plausible-looking result.
