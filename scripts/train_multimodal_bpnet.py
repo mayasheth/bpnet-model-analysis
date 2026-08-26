@@ -81,6 +81,14 @@ def parse_args():
     p.add_argument("--early-stopping", type=int, default=10)
     p.add_argument("--lr", type=float, default=1e-3)
     p.add_argument("--negative-ratio", type=float, default=0.1)
+    p.add_argument("--count-offset-model", default=None,
+                   help="Directory of a trained ATAC-only model (containing fold*/). Its "
+                        "held-out predicted logcounts are used as a per-region OFFSET on "
+                        "the count loss, so this run learns the RESIDUAL beyond "
+                        "accessibility: observed - atac_pred. Final prediction at "
+                        "inference is model_output + atac_pred. Requires "
+                        "--accessibility-bw even in sequence mode, since the offset "
+                        "model reads it. Omit for normal training.")
     p.add_argument("--max-negatives", type=int, default=None,
                    help="Cap on distinct negative windows held in memory. Default "
                         "None = 10x the training peak count (historical behaviour). "
@@ -259,7 +267,7 @@ class MultiModalPeakNegativeSampler(torch.utils.data.Dataset):
                  neg_seqs, neg_accs, neg_signals,
                  negative_ratio=0.1, in_window=2114, out_window=1000,
                  max_jitter=0, reverse_complement=False, random_state=None,
-                 mode='multimodal'):
+                 mode='multimodal', peak_offsets=None, neg_offsets=None):
         self.peak_seqs = peak_seqs
         self.peak_accs = peak_accs
         self.peak_signals = peak_signals
@@ -278,6 +286,11 @@ class MultiModalPeakNegativeSampler(torch.utils.data.Dataset):
         self.reverse_complement = reverse_complement
         self.mode = mode
 
+        # Per-region count offsets for residual training; None = normal training.
+        self.peak_offsets = peak_offsets
+        self.neg_offsets = neg_offsets
+        self.use_offsets = peak_offsets is not None
+
         self.rng = np.random.RandomState(random_state)
         self.n_peaks_seen = 0
         self.peak_ordering = self.rng.permutation(self.n_peaks)
@@ -295,12 +308,14 @@ class MultiModalPeakNegativeSampler(torch.utils.data.Dataset):
             jitter = self.rng.randint(self.max_jitter * 2) if self.max_jitter > 0 else 0
             label = 1
             seqs, accs, signals = self.peak_seqs, self.peak_accs, self.peak_signals
+            offsets = self.peak_offsets
             self.n_peaks_seen += 1
         else:
             i = self.rng.randint(self.n_negatives)
             jitter = 0
             label = 0
             seqs, accs, signals = self.neg_seqs, self.neg_accs, self.neg_signals
+            offsets = self.neg_offsets
 
         Xi_seq = torch.from_numpy(seqs[i][:, jitter:jitter + self.in_window])
         Xi_acc = torch.from_numpy(accs[i][:, jitter:jitter + self.in_window])
@@ -318,7 +333,52 @@ class MultiModalPeakNegativeSampler(torch.utils.data.Dataset):
         elif self.mode == 'atac':
             Xi = Xi_acc                               # (1, in_window)
 
+        if self.use_offsets:
+            # inserted at position 1; fit() reads data[0], data[1], data[-2], data[-1]
+            return Xi, torch.tensor(offsets[i], dtype=torch.float32), yi, label
         return Xi, yi, label
+
+
+def compute_count_offsets(offset_model_dir, fold_key, accs_list, batch_size, device):
+    """Per-region logcount predictions from a trained ATAC-only model.
+
+    Used as the offset for residual training. Accessibility is normalized with the
+    OFFSET MODEL's own saved statistics, not this run's, or the offset model would be
+    fed inputs on a different scale than it was trained on.
+
+    accs_list: list of RAW (unnormalized) accessibility arrays, one per region set.
+    Returns a list of 1-D offset arrays in the same order.
+    """
+    model_path = os.path.join(offset_model_dir, f"fold{fold_key}", "multimodal_bpnet.torch")
+    stats_path = os.path.join(offset_model_dir, f"fold{fold_key}",
+                              "acc_normalization_stats.json")
+    for pth in (model_path, stats_path):
+        if not os.path.exists(pth):
+            raise SystemExit(f"error: --count-offset-model missing {pth}")
+    with open(stats_path) as f:
+        st = json.load(f)
+    model = torch.load(model_path, map_location="cpu", weights_only=False)
+    if not hasattr(model, "mode"):
+        model.mode = "atac"
+    if model.mode != "atac":
+        raise SystemExit(f"error: offset model mode is '{model.mode}', expected 'atac'. "
+                         "The offset must come from an accessibility-only model, "
+                         "otherwise the residual is not 'beyond accessibility'.")
+    model = model.to(device).eval()
+
+    out = []
+    for accs in accs_list:
+        normed = normalize_accessibility(accs.copy(), mean=st["acc_mean"],
+                                        std=st["acc_std"])[0]
+        preds = []
+        with torch.no_grad():
+            for i in range(0, len(normed), batch_size):
+                xb = torch.from_numpy(normed[i:i + batch_size]).to(device).float()
+                _, lc = model(xb)
+                preds.append(lc.squeeze(-1).cpu().numpy())
+        out.append(np.concatenate(preds) if preds else np.zeros(0, dtype=np.float32))
+    model.to("cpu")
+    return out
 
 
 def main():
@@ -330,6 +390,10 @@ def main():
     if args.mode in ('multimodal', 'atac') and args.accessibility_bw is None:
         raise ValueError("--accessibility-bw is required for --mode multimodal and "
                          "--mode atac")
+
+    if args.count_offset_model is not None and args.accessibility_bw is None:
+        raise ValueError("--count-offset-model requires --accessibility-bw, since the "
+                         "offset model reads accessibility even when this model does not")
 
     # Stranded targets give 2 output tracks (the p300 setup); unstranded give 1.
     n_outputs = 2 if args.signal_minus_bw is not None else 1
@@ -381,6 +445,21 @@ def main():
     )
     print(f"  Extracted {len(val_accs)} validation peaks")
 
+    # Residual training: offsets must be computed from RAW accessibility, before the
+    # normalization below overwrites tr_accs/neg_accs/val_accs in place.
+    tr_off = neg_off = val_off = None
+    if args.count_offset_model is not None:
+        print(f"Computing count offsets from {args.count_offset_model} "
+              f"(fold {args.fold_key})...")
+        tr_off, neg_off, val_off = compute_count_offsets(
+            args.count_offset_model, args.fold_key,
+            [tr_accs, neg_accs, val_accs], args.batch_size, args.device)
+        print(f"  offsets: train {tr_off.shape} mean {tr_off.mean():.3f}, "
+              f"neg {neg_off.shape} mean {neg_off.mean():.3f}, "
+              f"val {val_off.shape} mean {val_off.mean():.3f}")
+        print("  this run learns the RESIDUAL; final prediction is "
+              "model_output + offset")
+
     # Normalize accessibility (skipped when there is no accessibility track)
     if args.accessibility_bw is not None:
         tr_accs, acc_mean, acc_std = normalize_accessibility(
@@ -406,7 +485,9 @@ def main():
         max_jitter=args.max_jitter,
         reverse_complement=True,
         random_state=42,
-        mode=args.mode
+        mode=args.mode,
+        peak_offsets=tr_off,
+        neg_offsets=neg_off
     )
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=args.batch_size,
@@ -450,6 +531,7 @@ def main():
         training_data=train_loader,
         optimizer=optimizer,
         scheduler=scheduler,
+        offset_valid=None if val_off is None else torch.from_numpy(val_off),
         X_valid=X_valid,
         y_valid=y_valid,
         max_epochs=args.max_epochs,
