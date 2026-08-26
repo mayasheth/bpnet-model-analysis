@@ -88,6 +88,22 @@ neighbour bleed — not for an accuracy gain. See `.living/learnings.md`.
 - [ ] **W4. Motif syntax (SHAP / MoDISCo / FiNeMo)** on the final chosen model. Per F-001,
       expect less sequence signal to attribute here than for p300.
 
+### Revisit with proper statistical power
+
+- [ ] **Re-run the `count_loss_weight` sweep with >=3 folds and >=2 seeds.** The current
+      choice of 10 rests on single-fold runs, and measured run-to-run variance is ~0.018
+      (same config gave 0.4962 and 0.4785 on separate runs). Only the extremes are
+      resolvable at that noise level: 10 clearly beats 1 and 1000, but 3 / 10 / 100 are
+      indistinguishable. Weight 10 sits in a flat region so nothing is currently wrong —
+      revisit if the weight is ever suspected of mattering, or after the profile target is
+      binned (which changes MNLL's magnitude and so moves the optimum).
+- [ ] **Quantify run-to-run variance properly.** One config x 5 seeds would give an error
+      bar for every comparison in this project. Several conclusions so far rest on
+      differences of 0.01-0.05 between single runs, which may or may not clear it.
+- [ ] **Make submit scripts refuse to overwrite a completed fold directory** (or add a run
+      tag to the path). The 5-prime grid silently destroyed the weight sweep's clw10 run
+      because both wrote to `models/sequence5p_hw500_clw10/fold0`.
+
 ### Housekeeping
 
 - [ ] Delete the local git tag `backup-pre-msg-rewrite` on Oak once the rewritten history
