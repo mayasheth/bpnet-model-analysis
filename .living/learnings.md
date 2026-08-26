@@ -163,3 +163,59 @@ Append-only log of gotchas, surprises, and insights.
 **mitigation_type**: ambient-awareness
 
 **structural_mitigation_candidate**: This is the third time an all-elements metric has been misleading in this project (ATAC-only skill, the ceiling comparison, and now this). The stratified number should be the DEFAULT output of every evaluation script here, with all-elements reported as secondary. `2.2.evaluate_stratified.py` and `2.4.evaluate_residual.py` already do this; the earlier scripts do not.
+
+---
+
+### [2026-08-25] An identical ceiling does not mean identical learnability
+
+**Category**: insight
+
+**What happened**: Predicted that switching from the 250 bp fragment-extended H3K27ac target to 5' ends would not improve accuracy, on the grounds that the inter-replicate ceiling was identical on the top quintile (0.760 vs 0.761 at +/-500). Wrong: sequence-only count Pearson went 0.4073 -> 0.4962 (+22% relative), same mode, same fold, same window.
+
+**Why it matters**: The ceiling measures how REPRODUCIBLY a target can be measured. It says nothing about how PREDICTABLY it can be modelled from sequence. Fragment extension smears each read across 250 bp, so signal bleeds in from neighbouring elements — and that bleed is highly reproducible (both replicates see the same smear) while being unpredictable from the element's own sequence. Removing it raises predictability and leaves reproducibility untouched. Treating the ceiling as a proxy for "how much better can a model get" is therefore wrong in a specific, directional way: it is blind to reproducible-but-unattributable signal.
+
+**Resolution**: Ceiling remains useful for ranking window widths and for sanity-checking that a model has not exceeded the possible. It must not be used to predict whether a target-definition change will help.
+
+**Tags**: h3k27ac, ceiling, learnability, 5-prime, target-definition, prediction-was-wrong
+
+**mitigation_type**: ambient-awareness
+
+**structural_mitigation_candidate**: When comparing two target definitions, run one cheap single-fold model on each rather than reasoning from the ceiling. One 30-minute job answered what the ceiling could not.
+
+---
+
+### [2026-08-25] count_loss_weight collapsed 1000 -> 10 on the 5' target, confirming the units diagnosis
+
+**Category**: insight
+
+**What happened**: On the fragment-extended target the optimal `count_loss_weight` was 1000 and profile MNLL sat at ~2800. On the 5' target, MNLL is ~119-195 and the optimum moved to 10 (weights 1 and 3 still testing). Best count Pearson by weight on 5': 10 -> 0.4962, 100 -> 0.4666, 1000 -> 0.4641.
+
+**Why it matters**: Confirms MNLL magnitude was a units artifact of fragment extension, not a property of the data — the loss is a count-weighted sum, so inflating every count ~250x inflates it proportionally. It also reverses the earlier conclusion about the profile head: at weight 10 the profile term still outweighs counts roughly 12:1, and that is the BEST setting. On smeared coverage profile dominance was harmful because MNLL was fitting the smear; on real read counts it is helpful, acting as a useful auxiliary task. So "down-weight the profile head" was the right fix for the wrong target, and is not needed once the target is correct.
+
+**Resolution**: Use `count_loss_weight` ~10 for the 5' target pending the 1/3 sweep. Do not carry the 1000 forward.
+
+**Tags**: h3k27ac, loss-weighting, mnll, 5-prime, bpnetlite, profile-head
+
+**mitigation_type**: convention
+
+**structural_mitigation_candidate**: Already noted in `.living/conventions.md`: calibrate the weight from the first-epoch loss magnitudes rather than copying it between targets.
+
+---
+
+### [2026-08-25] The ATAC library is textbook-bimodal, but the 2-channel split covers only half of it
+
+**Category**: gotcha
+
+**What headline**: Fragment-length distribution across all three K562 ATAC replicates is a clean nucleosomal ladder: sub-nucleosomal mode at ~42 bp, mono-nucleosomal peak at ~205 bp, di- at ~400 bp, tri- at ~600 bp, replicates superimposed. Median 201 bp.
+
+**What happened**: An earlier read off a truncated text histogram (first 16 bins only) suggested a short-fragment-dominated library with no mono-nucleosomal population, which would have undermined the fragment-channel idea. The full distribution shows the opposite. Separately, the chosen channels (sub 1-99, mono 180-247) capture only 30% and 20% of fragments — **50% fall in neither**, namely the 100-180 bp trough and everything above 247 bp including both higher-order nucleosomal peaks.
+
+**Why it matters**: Two lessons. Never conclude a distribution's shape from a truncated view of it. And the current channel design silently discards half the data; a di-nucleosomal channel (~350-450 bp) or wider bounds would recover information about higher-order chromatin structure that is plainly present.
+
+**Resolution**: Channels built as specified for now. `results/atac_fragment_length_summary.tsv` and `figures/atac_fragment_lengths.pdf` record the distribution and the coverage fractions so the split can be revisited.
+
+**Tags**: atac, fragment-length, nucleosome, channels, data-inspection
+
+**mitigation_type**: ambient-awareness
+
+**structural_mitigation_candidate**: `0.10.plot_fragment_lengths.py` now reports `frac_sub`, `frac_mono` and `frac_neither` explicitly, so the coverage gap cannot go unnoticed again.
