@@ -54,3 +54,23 @@ IGVF-style consortium work — the slug avoids naming the consortium.)_
 - Does explicitly training a sequence model on `observed - atac_pred` recover a complement that the independently-trained sequence model missed, for either target?
 - Does the H3K27ac residual become more predictable with a wider receptive field, given acetylation domains extend kilobases?
 - Does the sequence-only redundancy hold across cell types, or is it a K562-specific artifact of ATAC and H3K27ac both tracking the same K562 activity axis?
+
+---
+
+## F-003: A sequence-only H3K27ac model does not transfer across cell types, while an accessibility model does
+**Status:** preliminary
+**Claim:** K562-trained models evaluated on GM12878 candidate elements (top signal quintile) retain very different fractions of their in-cell-type performance: sequence-only falls 0.357 -> 0.153 (43% retained), ATAC-only 0.543 -> 0.473 (87% retained), sequence+ATAC 0.668 -> 0.522 (78% retained). The multimodal advantage over accessibility alone shrinks from +0.125 in K562 to +0.049 in GM12878.
+**Implications:** Taken with F-002 (an independently-trained sequence model captures almost none of the ATAC residual, r = 0.100), the sequence contribution to H3K27ac prediction looks largely cell-type-specific rather than a generalizable sequence grammar. Accessibility transfers well because it is a direct measurement of the state rather than an inference from sequence. This bears directly on the stated goal of predicting H3K27ac "in a generalizable way": the current sequence-only model does not meet it, and roughly 60% of the multimodal model's edge over accessibility does not survive a cell-type change. It also means in-cell-type performance is a poor guide to generalization here, so any architecture work should be scored on transfer, not only on held-out chromosomes.
+**Tags:** h3k27ac, transferability, gm12878, k562, sequence-vs-accessibility, generalization
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-08-25 | job 40874283 | ENCSR000AKP (K562), ENCFF645BAL+ENCFF865OOP (GM12878), K562+GM12878 ATAC | 2026_0824_H3K27ac_model | Top-quintile Pearson on GM12878: sequence 0.1533, ATAC-only 0.4727, multimodal 0.5219, vs K562 in-cell-type 0.357 / 0.543 / 0.668 | supports |
+
+### Open Questions
+- **The GM12878 ceiling has not been computed**, so these numbers are not normalized for how hard the GM12878 target itself is. Part of every drop could be target difficulty rather than failure to transfer. Per-replicate GM12878 5' tracks exist; the ceiling should be computed before this finding is promoted beyond preliminary.
+- GM12878 ATAC is a different experiment at different depth, which could independently depress ATAC-only and multimodal transfer.
+- Does the reverse direction (train GM12878, test K562) show the same asymmetry, as it did for p300?
+- Would residual training — fitting `observed - atac_pred` explicitly — produce a sequence component that transfers better, given it would be forced onto signal accessibility cannot supply?
+- p300 sequence models transfer at 0.277 (from the earlier transferability work). Is the H3K27ac sequence collapse worse than p300's, evaluated identically?
