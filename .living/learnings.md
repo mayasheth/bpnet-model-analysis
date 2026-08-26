@@ -219,3 +219,41 @@ Append-only log of gotchas, surprises, and insights.
 **mitigation_type**: ambient-awareness
 
 **structural_mitigation_candidate**: `0.10.plot_fragment_lengths.py` now reports `frac_sub`, `frac_mono` and `frac_neither` explicitly, so the coverage gap cannot go unnoticed again.
+
+---
+
+### [2026-08-26] The 5' count_loss_weight optimum is 10, with a genuine interior peak
+
+**Category**: insight
+
+**What happened**: Full sweep on the 5' target, sequence-only, fold 0, +/-500: weight 1 -> 0.4366, 3 -> 0.4838, **10 -> 0.4962**, 100 -> 0.4666, 1000 -> 0.4641. A clean interior optimum, not a plateau or a monotone trend.
+
+**Why it matters**: Confirms the profile head is genuinely useful on a well-posed target rather than merely harmless. Too little counts weight (1) is worse than balanced, and so is too much (100+). On the fragment-extended target the optimum was 1000 — two orders of magnitude higher — purely because MNLL was inflated ~15-24x by smearing. The weight is a property of the TARGET'S UNITS, not of the biology or the architecture, and must be re-swept whenever the target definition changes.
+
+**Resolution**: Use `--count-loss-weight 10` for the 5' target. Re-sweep if the profile target is binned (planned) or the window changes, since both alter MNLL's magnitude.
+
+**Tags**: h3k27ac, loss-weighting, mnll, 5-prime, hyperparameters
+
+**mitigation_type**: convention
+
+**structural_mitigation_candidate**: Already in `.living/conventions.md` — calibrate from first-epoch loss magnitudes. A 3-point sweep spanning two orders of magnitude costs ~90 min and finds it reliably.
+
+---
+
+### [2026-08-26] GM12878 is an EASIER H3K27ac target than K562, which makes the transfer failure worse
+
+**Category**: insight
+
+**What happened**: Computed the GM12878 inter-replicate ceiling to normalize the cross-cell-type transfer numbers, expecting some of the drop to be explained by GM12878 being a harder target. The opposite: GM12878's top-quintile ceiling is **0.8321** at +/-500 versus K562's **0.7601** — GM12878 is more reproducible (mean counts 21.1 vs 17.0 per window, i.e. deeper effective coverage).
+
+**Why it matters**: The transfer drops cannot be excused as target difficulty. Normalized as a fraction of each cell type's own achievable ceiling, sequence-only goes from 47% of ceiling in K562 to just **18%** in GM12878; ATAC-only 71% -> 57%; multimodal 88% -> 63%. Normalizing makes the sequence-only collapse look *worse* than the raw correlations suggested, because it was measured against an easier target. This was the open question blocking F-003 from being read quantitatively, and it resolves against the sequence model.
+
+**Caveat carried forward**: the transfer evaluation used the fragment-extended GM12878 target (matching what the models were trained on) while this ceiling is on the 5' GM12878 target. In K562 the two ceilings were identical to three decimals (0.760 vs 0.761), so the substitution is well-supported, but per-replicate GM12878 fragment tracks were never built and the equivalence is assumed rather than measured in GM12878.
+
+**Resolution**: F-003 updated with normalized figures and promoted to supported. Architecture work should be scored on transfer, not held-out chromosomes.
+
+**Tags**: h3k27ac, gm12878, ceiling, transferability, normalization, prediction-was-wrong
+
+**mitigation_type**: ambient-awareness
+
+**structural_mitigation_candidate**: Compute the target ceiling in BOTH cell types before interpreting any transfer number. A raw cross-cell-type correlation is uninterpretable without it — the drop could be the model or the target, and here it was neither in the expected direction.
