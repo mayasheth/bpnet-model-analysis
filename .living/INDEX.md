@@ -6,7 +6,7 @@ Last audit: 2026-08-26
 |------|---------|--------------|------------|
 | conventions.md | 9 sections | 2026-08-25 | Layout: analyses live at the repo root, not under `analysis/`, Reports, Figures, Environments, SLURM submit scripts (mandatory) |
 | decisions.md | 4 entries | 2026-08-25 | Center H3K27ac training windows on candidate elements, not ChIP peaks, Counting window is a trade-off between signal and neighbour contamination, Keep the profile head, down-weighted, rather than removing it, Residual correlation beyond ATAC becomes the headline metric |
-| learnings.md | 12 entries | 2026-08-26 | count_loss_weight must be calibrated to the actual loss magnitudes, not copied, Inter-replicate r is not a model performance ceiling without two corrections, bpnetlite's count target sums ALL channels, not one strand, Three Sherlock/SLURM traps that cost a job each, Peak count scales the negative pool, which can OOM by 50x |
+| learnings.md | 14 entries | 2026-08-26 | count_loss_weight must be calibrated to the actual loss magnitudes, not copied, Inter-replicate r is not a model performance ceiling without two corrections, bpnetlite's count target sums ALL channels, not one strand, Three Sherlock/SLURM traps that cost a job each, Peak count scales the negative pool, which can OOM by 50x |
 | findings/ | 3 findings across 4 topics | 2026-08-26 | predicting-regulatory-element-function-at-scale, linking-noncoding-variation-to-molecular-function, mapping-regulatory-perturbations-to-phenotype, how-enhancers-control-gene-expression |
 
 ## Local skills
@@ -18,15 +18,17 @@ Last summarized: 2026-08-26 (heuristic)
 
 ## Tag clusters
 
-- **h3k27ac** (10 entries) — L-11, D-1, D-2, D-3, D-4
+- **h3k27ac** (12 entries) — L-14, D-1, D-2, D-3, D-4
+- **ceiling** (6 entries) — L-7, L-9, L-10, L-14, D-2
+- **5-prime** (5 entries) — L-8, L-9, L-10, L-11, L-13
 - **bpnetlite** (5 entries) — L-1, L-3, L-8, L-11, D-3
-- **ceiling** (5 entries) — L-2, L-7, L-9, L-10, D-2
-- **5-prime** (4 entries) — L-8, L-9, L-10, L-11
+- **loss-weighting** (4 entries) — L-1, L-11, L-13, D-3
 - **evaluation** (3 entries) — L-2, L-3, D-4
-- **loss-weighting** (3 entries) — L-1, L-11, D-3
 
 ## Most recent (10)
 
+- [2026-08-26] L-13: The 5' count_loss_weight optimum is 10, with a genuine interior peak
+- [2026-08-26] L-14: GM12878 is an EASIER H3K27ac target than K562, which makes the transfer failure worse
 - [2026-08-25] L-6: Mycelium's decision-log template and its indexer disagree on heading level
 - [2026-08-25] L-7: Excluding the nucleosome-free center makes the H3K27ac target worse, not better
 - [2026-08-25] L-8: The IGV display track was the wrong target all along: use 5' ends
@@ -35,24 +37,24 @@ Last summarized: 2026-08-26 (heuristic)
 - [2026-08-25] L-11: count_loss_weight collapsed 1000 -> 10 on the 5' target, confirming the units diagnosis
 - [2026-08-25] L-12: The ATAC library is textbook-bimodal, but the 2-channel split covers only half of it
 - [2026-08-25] D-4: Residual correlation beyond ATAC becomes the headline metric
-- [2026-08-24] L-1: count_loss_weight must be calibrated to the actual loss magnitudes, not copied
-- [2026-08-24] L-2: Inter-replicate r is not a model performance ceiling without two corrections
 
 ## By tag
 
-- `h3k27ac`: L-1, L-7, L-8, L-9, L-10, L-11, D-1, D-2, D-3, D-4
+- `h3k27ac`: L-1, L-7, L-8, L-9, L-10, L-11, L-13, L-14, D-1, D-2, D-3, D-4
+- `ceiling`: L-2, L-7, L-9, L-10, L-14, D-2
+- `5-prime`: L-8, L-9, L-10, L-11, L-13
 - `bpnetlite`: L-1, L-3, L-8, L-11, D-3
-- `ceiling`: L-2, L-7, L-9, L-10, D-2
-- `5-prime`: L-8, L-9, L-10, L-11
+- `loss-weighting`: L-1, L-11, L-13, D-3
 - `evaluation`: L-2, L-3, D-4
-- `loss-weighting`: L-1, L-11, D-3
+- `mnll`: L-8, L-11, L-13
 - `target-definition`: L-8, L-9, L-10
 - `window-selection`: L-7, D-1, D-2
 - `atac`: L-12, D-4
 - `fragment-extension`: L-8, L-9
-- `mnll`: L-8, L-11
+- `hyperparameters`: L-1, L-13
 - `negative-result`: L-7, L-9
 - `nucleosome`: L-7, L-12
+- `prediction-was-wrong`: L-10, L-14
 - `profile-head`: L-11, D-3
 - `tooling`: L-4, L-6
 - `training`: L-1, L-5
@@ -67,17 +69,17 @@ Last summarized: 2026-08-26 (heuristic)
 - `decisions`: L-6
 - `element-centric`: D-1
 - `fragment-length`: L-12
-- `hyperparameters`: L-1
+- `gm12878`: L-14
 - `index`: L-6
 - `learnability`: L-10
 - `memory`: L-5
 - `metric-choice`: D-4
 - `mycelium`: L-6
 - `negatives`: L-5
+- `normalization`: L-14
 - `off-by-factor`: L-3
 - `oom`: L-5
 - `p300`: L-3
-- `prediction-was-wrong`: L-10
 - `reliability`: L-2
 - `replicates`: L-2
 - `residual`: D-4
@@ -92,6 +94,7 @@ Last summarized: 2026-08-26 (heuristic)
 - `template-mismatch`: L-6
 - `trade-off`: D-2
 - `training-design`: D-1
+- `transferability`: L-14
 
 _Heuristic clustering: tags with ≥2 entries, top 6 by count. To fetch matching entries: `python3 skills/core/scripts/recall_lessons.py --living-dir <path> --tag <tag>` or `--id L-N`._
 <!-- END KNOWLEDGE SUMMARY -->
