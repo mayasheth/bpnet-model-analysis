@@ -145,3 +145,21 @@ Append-only log of gotchas, surprises, and insights.
 **mitigation_type**: convention
 
 **structural_mitigation_candidate**: Recorded in `.living/conventions.md`: a track under `Data/share/IGV/` is a DISPLAY artifact and must not be used as a model target without checking how it was built. Deriving training targets from the BAMs inside the analysis project makes the processing choices explicit and reviewable.
+
+---
+
+### [2026-08-25] 5'-end vs fragment-extended target: identical ceiling on active elements
+
+**Category**: insight
+
+**What happened**: Expected the 5'-end target to have a *lower* inter-replicate ceiling than the 250 bp fragment-extended track, because 5' counting gives far fewer counts per window (mean 17 vs 4271 at +/-500 bp) and so more Poisson noise. It does not. Top-quintile ceiling is 0.760 (5') vs 0.761 (fragment) at +/-500, and 0.785 vs 0.785 at +/-1000 — identical to three decimals in places. The all-elements ceiling *rises* sharply (0.844 vs 0.604), but that is the dead-vs-active contrast getting easier rather than a real gain: fragment extension gives every element hundreds of bleed-in counts, compressing log-scale dynamic range, whereas 5' leaves dead elements genuinely near-zero.
+
+**Why it matters**: The switch to 5' is justified on principle — MNLL sees real multinomial read counts, no bleed across the nucleosome-free centre or into neighbouring elements — but it should NOT be expected to improve accuracy by itself. Predicting otherwise would have set up a false attribution when downstream numbers move.
+
+**Resolution**: Adopt 5' as the target. Expect the benefit in the profile task and in `count_loss_weight` normalising, not in the counts ceiling.
+
+**Tags**: h3k27ac, target-definition, ceiling, 5-prime, fragment-extension, negative-result
+
+**mitigation_type**: ambient-awareness
+
+**structural_mitigation_candidate**: This is the third time an all-elements metric has been misleading in this project (ATAC-only skill, the ceiling comparison, and now this). The stratified number should be the DEFAULT output of every evaluation script here, with all-elements reported as secondary. `2.2.evaluate_stratified.py` and `2.4.evaluate_residual.py` already do this; the earlier scripts do not.

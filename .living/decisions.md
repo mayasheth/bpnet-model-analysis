@@ -55,3 +55,22 @@ Append-only log of non-obvious decisions and their rationale.
 **Consequences**: `fconv` still consumes model capacity even with a small gradient, a second-order cost not measured. If ATAC and window width also plateau, revisit this alongside the more fundamental coverage-vs-read-counts mismatch.
 
 **Tags**: h3k27ac, profile-head, loss-weighting, architecture, bpnetlite
+
+---
+
+### [2026-08-25] Residual correlation beyond ATAC becomes the headline metric
+
+**Context**: ATAC alone predicts H3K27ac at 0.543 (top quintile), so a sequence+ATAC model at 0.668 looks strong while saying little about what sequence contributed. The deliverable is a model that takes ATAC + sequence and predicts activity, which makes the *departure from the ATAC expectation* the quantity of interest, not overall correlation.
+
+**Decision**: Report `residual_pearson = r(observed - atac_pred, model_pred - atac_pred)` as the headline, with incremental R^2 and stratification by |true residual|. The baseline is the ATAC-only MODEL's held-out prediction, not the raw ATAC track, so the residual is what accessibility genuinely cannot explain. Implemented in `2026_0824_H3K27ac_model/scripts/2.4.evaluate_residual.py`.
+
+**Alternatives considered**:
+- Keep overall Pearson as the headline — rejected: it ranked the two targets backwards (see F-002).
+- Partial correlation controlling for `atac_pred` — equivalent in spirit but less directly interpretable; the residual form states plainly "does the model's departure track the true departure".
+- Use the raw ATAC track as the baseline — rejected: then the residual includes everything a linear read of the track misses, which flatters any model that merely learns a better ATAC transform.
+
+**Rationale**: Overall correlation on this element set is dominated by the dead-vs-active contrast, which accessibility resolves on its own. The residual isolates the increment that motivates having a sequence model at all.
+
+**Consequences**: Earlier reported numbers (all-elements and top-quintile Pearson) remain valid but are no longer the headline. Any future model comparison in this project must report the residual metric or it is not comparable to these results. Also implies a training change: see the residual-training item in `todo/TODOLIST.md`.
+
+**Tags**: h3k27ac, evaluation, residual, metric-choice, atac
