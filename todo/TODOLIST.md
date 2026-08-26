@@ -10,9 +10,11 @@ in a separate `.md` file in this directory.
 Detailed writeup: [`h3k27ac-model.md`](h3k27ac-model.md). Ordered into waves by
 dependency; everything inside a wave can run at the same time.
 
-**Gate — run before committing GPU time to anything expensive**
+**Gate — DONE 2026-08-25.** 5′ and fragment-extended ceilings are *identical* on the
+top quintile (0.760 vs 0.761 at ±500). Switched to 5′ on principle — MNLL well-posed, no
+neighbour bleed — not for an accuracy gain. See `.living/learnings.md`.
 
-- [ ] **G1. Inter-replicate ceiling on the 5′ target** — decides whether 5′ ends or the
+- [x] **G1. Inter-replicate ceiling on the 5′ target** — decides whether 5′ ends or the
       250 bp fragment track is the model target. Every later training decision inherits
       this. ~10 min CPU. `0.3.replicate_ceiling_by_window.py` with the new
       `h3k27ac_rep{1,2}_5p_{plus,minus}.bw`. The 5′ track is sparse (max 27, ~6 reads per
@@ -21,11 +23,16 @@ dependency; everything inside a wave can run at the same time.
 
 **Wave 1 — independent of G1, all parallel**
 
-- [ ] **W1a. Residual / difference-from-ATAC model + evaluation** — the highest-value
+- [x] **W1a. Residual EVALUATION** — done (jobs 40799753, 40803766). Residual metric
+      is now the headline; it reverses the p300/H3K27ac ranking (F-002). Residual
+      *training* is now item W2e below, promoted by that result.
+- [ ] **W1a-bis. Residual / difference-from-ATAC model + evaluation** — the highest-value
       item and the one that matches the actual goal. Stage 1 already trained. ~4 GPU-h.
 - [ ] **W1b. GM12878 cross-cell-type transfer** — separates model capacity from
       "H3K27ac is not sequence-determinable". Inference only on existing K562 models.
       ~0.5 GPU-h. Data all present (`ENCFF645BAL`, `ENCFF865OOP`).
+- [x] **W1c-i. PE ATAC BAMs downloaded** to `$SCRATCH/atac_pe` (24.5 GB, 165M/153M/229M
+      paired reads). Channels building: job 40808663.
 - [ ] **W1c. Download paired-end ATAC BAMs → fragment-stratified channels** — unblocks
       the nucleosome-positioning input. `K562/log.sh:9` has the curl commands
       (commented). **Download to `$SCRATCH`, not Oak — Oak is at 97%.**
@@ -36,12 +43,25 @@ dependency; everything inside a wave can run at the same time.
 
 **Wave 2 — needs its Wave 1 / gate input**
 
-- [ ] **W2a. Re-sweep `count_loss_weight` on the chosen target** (needs G1) — expect it
+- [~] **W2a. Re-sweep `count_loss_weight` on the 5′ target** — RUNNING (jobs 40808673/6/8,
+      weights 10/100/1000). Expect the optimum to fall far below 1000 now that MNLL
+      sees real read counts. Was: (needs G1) — expect it
       to fall a long way from 1000 once MNLL sees real read counts. 2–3 GPU jobs.
 - [ ] **W2b. Train with fragment-size ATAC channels** (needs W1c) — 5–10 GPU jobs.
 - [ ] **W2c. Validate the binned profile target** (needs W1d) — 5–10 GPU jobs, ~4–8 GPU-h.
 - [ ] **W2d. Re-check the ±500 vs ±1000 window on the 5′ target** (needs G1) — less
       smearing means less neighbour bleed, so the contamination penalty may differ.
+
+- [ ] **W2e. Residual TRAINING — promoted, high value.** An independently-trained
+      sequence model captures almost none of the ATAC residual (r = 0.100): it is
+      *redundant* with accessibility, not complementary. So do not expect a sequence
+      model to find the complement on its own — train it explicitly on
+      `observed − atac_pred`. Needs a per-region count offset in the trainer, applied to
+      the count loss only. ~4 GPU-h once implemented.
+- [ ] **W2f. GM12878 transfer evaluation** — GM12878 fragment-extended target building
+      (job 40808659); ATAC (`2026_0606_GM12878_transferability/data/atac.bw`) and
+      elements already exist. Must match the target definition the models were trained
+      on, so this runs against the fragment target until the 5′ retrain lands.
 
 **Wave 3 — only once the target and weight are settled, so it is not redone**
 
@@ -66,3 +86,13 @@ dependency; everything inside a wave can run at the same time.
       `bedGraphToBigWig`, which requires chrom+start order. It has worked so far because
       `genomecov` follows BAM header order, but that is not guaranteed to match
       `chrom.sizes`. `0.5.make_5prime_bigwigs.sh` sorts explicitly; consider backporting.
+
+### Report (do not build yet)
+
+- [ ] **Write up this analysis path** via `/engreitzlab-report` → `/analysis-report`
+      (Quarto → self-contained HTML), once the story settles. Deliberately deferred: the
+      narrative has already reversed twice (flanking-window idea rejected; residual metric
+      flipping the p300/H3K27ac ranking), so wait for the residual-training and transfer
+      results before fixing a storyline. Figures that would carry it, already generated:
+      `h3k27ac_signal_vs_distance`, `profile_comparison`, `h3k27ac_model_comparison`,
+      `h3k27ac_stratified_eval`, `residual_evaluation`, `h3k27ac_replicate_ceiling`.

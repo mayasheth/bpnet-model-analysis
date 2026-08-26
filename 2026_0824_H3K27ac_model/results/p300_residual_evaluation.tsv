@@ -1,0 +1,7 @@
+config	mode	stratum	n	overall_pearson	residual_pearson	residual_spearman	incremental_r2
+p300_multimodal	multimodal	all	58655	0.791	0.6542	0.6376	0.2646
+p300_multimodal	multimodal	abs_resid_q1	11731	0.9069	0.2601	0.2632	-0.0772
+p300_multimodal	multimodal	abs_resid_q2	11731	0.8535	0.4263	0.3019	0.026
+p300_multimodal	multimodal	abs_resid_q3	11731	0.8142	0.48	0.2592	0.0822
+p300_multimodal	multimodal	abs_resid_q4	11731	0.7976	0.4923	0.2316	0.0983
+p300_multimodal	multimodal	abs_resid_q5	11731	0.7422	0.5755	0.3719	0.2185
