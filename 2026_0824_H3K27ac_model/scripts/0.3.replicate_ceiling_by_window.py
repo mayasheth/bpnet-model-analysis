@@ -40,8 +40,14 @@ def parse_args():
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--elements", required=True)
-    p.add_argument("--rep1-bw", required=True)
-    p.add_argument("--rep2-bw", required=True)
+    p.add_argument("--rep1-bw", required=True,
+                   help="BigWig for replicate 1; comma-separate to SUM tracks "
+                        "(e.g. 5-prime plus,minus)")
+    p.add_argument("--rep2-bw", required=True,
+                   help="BigWig for replicate 2; comma-separate to SUM tracks")
+    p.add_argument("--label", default="",
+                   help="Prefix for the output filename, to keep target "
+                        "definitions side by side")
     p.add_argument("--outdir", required=True)
     p.add_argument("--figdir", required=True)
     p.add_argument("--half-windows", type=int, nargs="+",
@@ -58,10 +64,15 @@ def load_elements(path):
     return df
 
 
-def window_sums(df, bw_path, half_windows):
-    """Per-element summed coverage for each half-window. NaN where out of bounds."""
-    bw = pyBigWig.open(bw_path)
-    sizes = bw.chroms()
+def window_sums(df, bw_spec, half_windows):
+    """Per-element summed coverage for each half-window. NaN where out of bounds.
+
+    bw_spec may be a comma-separated list of BigWigs, which are SUMMED — needed for
+    stranded 5'-end tracks, where plus and minus together are the measurement.
+    """
+    paths = [p for p in bw_spec.split(",") if p]
+    bws = [pyBigWig.open(p) for p in paths]
+    sizes = bws[0].chroms()
     max_hw = max(half_windows)
     out = {hw: np.full(len(df), np.nan) for hw in half_windows}
     centers = df["center"].to_numpy()
@@ -70,13 +81,20 @@ def window_sums(df, bw_path, half_windows):
         chrom, center = chroms[i], int(centers[i])
         if chrom not in sizes or center - max_hw < 0 or center + max_hw > sizes[chrom]:
             continue
-        v = bw.values(chrom, center - max_hw, center + max_hw, numpy=True)
-        if v is None or len(v) != 2 * max_hw:
+        acc = np.zeros(2 * max_hw)
+        bad = False
+        for bw in bws:
+            v = bw.values(chrom, center - max_hw, center + max_hw, numpy=True)
+            if v is None or len(v) != 2 * max_hw:
+                bad = True
+                break
+            acc += np.nan_to_num(v, nan=0.0)
+        if bad:
             continue
-        v = np.nan_to_num(v, nan=0.0)
         for hw in half_windows:
-            out[hw][i] = v[max_hw - hw:max_hw + hw].sum()
-    bw.close()
+            out[hw][i] = acc[max_hw - hw:max_hw + hw].sum()
+    for bw in bws:
+        bw.close()
     return out
 
 
@@ -115,7 +133,8 @@ def main():
             "mean_counts_rep1": round(float(np.mean(a[ok])), 1),
         })
     res = pd.DataFrame(rows)
-    path = os.path.join(args.outdir, "replicate_ceiling_by_window.tsv")
+    path = os.path.join(args.outdir,
+                        f"{args.label}replicate_ceiling_by_window.tsv")
     res.to_csv(path, sep="\t", index=False)
     print(f"Wrote {path}")
     print(res.to_string(index=False))
@@ -137,7 +156,8 @@ def main():
     ax.tick_params(colors="black")
     fig.tight_layout()
     for ext in ("pdf", "png"):
-        p = os.path.join(args.figdir, f"h3k27ac_replicate_ceiling.{ext}")
+        p = os.path.join(args.figdir,
+                         f"{args.label}h3k27ac_replicate_ceiling.{ext}")
         fig.savefig(p, dpi=300, bbox_inches="tight")
         print(f"Wrote {p}")
 
