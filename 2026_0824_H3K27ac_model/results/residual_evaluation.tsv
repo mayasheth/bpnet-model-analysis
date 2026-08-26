@@ -1,0 +1,13 @@
+config	mode	stratum	n	overall_pearson	residual_pearson	residual_spearman	incremental_r2
+multimodal_hw500_clw1000	multimodal	all	58655	0.8094	0.4747	0.482	0.0987
+multimodal_hw500_clw1000	multimodal	abs_resid_q1	11731	0.9328	0.0655	0.0643	-0.1199
+multimodal_hw500_clw1000	multimodal	abs_resid_q2	11731	0.9211	0.2253	0.2209	-0.0821
+multimodal_hw500_clw1000	multimodal	abs_resid_q3	11731	0.8958	0.3588	0.3242	-0.0179
+multimodal_hw500_clw1000	multimodal	abs_resid_q4	11731	0.8631	0.5175	0.4754	0.0878
+multimodal_hw500_clw1000	multimodal	abs_resid_q5	11731	0.7272	0.5982	0.6568	0.2355
+sequence_hw500_clw1000	sequence	all	58655	0.4103	0.0996	0.1495	-0.3881
+sequence_hw500_clw1000	sequence	abs_resid_q1	11731	0.4836	0.0342	0.036	-0.7561
+sequence_hw500_clw1000	sequence	abs_resid_q2	11731	0.4744	0.0863	0.0869	-0.7055
+sequence_hw500_clw1000	sequence	abs_resid_q3	11731	0.4544	0.1304	0.1129	-0.6139
+sequence_hw500_clw1000	sequence	abs_resid_q4	11731	0.4638	0.1815	0.1586	-0.442
+sequence_hw500_clw1000	sequence	abs_resid_q5	11731	0.3617	0.1213	0.1743	-0.1625
