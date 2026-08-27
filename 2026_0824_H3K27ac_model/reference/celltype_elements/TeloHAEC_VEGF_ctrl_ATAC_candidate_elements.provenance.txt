@@ -1,0 +1,11 @@
+label:          TeloHAEC_VEGF_ctrl
+derived_from:   ATAC
+source:         /oak/stanford/groups/engreitz/Projects/E2G/endothelial_cells/TeloHAEC_GSE210489_GSE210491/ENCODE_rE2G_results/TeloHAEC_VEGF_ctrl/Neighborhoods/EnhancerList.bed
+model_dir:      atac_h3k27ac_powerlaw
+n_input:        146133
+n_output:       146122
+dropped_non_canonical_chr: 11
+dropped_width_lt_50: 0
+dropped_duplicate_intervals: 0
+mean_width:     724.8
+summit_convention: width // 2 (element midpoint), matching K562_DNase_candidate_elements.narrowPeak
