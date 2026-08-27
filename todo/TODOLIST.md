@@ -91,12 +91,23 @@ neighbour bleed — not for an accuracy gain. See `.living/learnings.md`.
 ### Multi-cell-type generalization (promoted — supersedes the single GM12878 pair)
 
 Inventory built from `2023_0701 Maya's sequences.xlsx` ("ENCODE data" sheet) into
-`2026_0824_H3K27ac_model/results/celltype_inventory.tsv`: **12 rows with H3K27ac plus an
-accessibility assay**. The structure matters more than the count.
+`2026_0824_H3K27ac_model/results/celltype_inventory.tsv`, under two standing rules:
+
+1. **Mint-ChIP is excluded** — different assay chemistry, not comparable to standard ChIP.
+   This drops **WTC11** from the H3K27ac panel entirely (ENCSR146DPQ is its only H3K27ac
+   experiment), and also its H3K27me3 and H3K4me1.
+2. **Each (experiment, processing) pair is a separate SAMPLE.** Replicates may only be
+   pooled, or compared as an inter-replicate ceiling, within one experiment and one
+   processing. Two consequences below.
+
+After exclusions: **11 biosamples with H3K27ac**, of which 6 have ATAC (K562, GM12878, and
+the 4 TeloHAEC conditions) and 7 have DNase (K562, GM12878, H1, H9, HCT116, Jurkat, THP-1).
+The structure matters more than the count.
 
 - [ ] **Train a DNase-input model — this is the enabling step, not an optional variant.**
-      Only 3 distinct cell types have ATAC (K562, GM12878, TeloHAEC); **9 have DNase**
-      (adding H1, H9, HCT116, Jurkat, THP-1, WTC11). Applying an ATAC-trained model to a
+      Only 3 distinct cell types have ATAC (K562, GM12878, TeloHAEC — the other 3 ATAC
+      entries are TeloHAEC conditions); **7 have DNase** (K562, GM12878, H1, H9, HCT116,
+      Jurkat, THP-1 — WTC11 is out on the Mint-ChIP rule). Applying an ATAC-trained model to a
       DNase cell type shifts the *input* domain, which confounds the transfer test with a
       change of assay. So DNase is the common denominator across the panel, and without a
       DNase model most of this data is unusable for generalization. Note the p300 project
@@ -112,12 +123,32 @@ accessibility assay**. The structure matters more than the count.
       K562 and GM12878 have element sets in the repo. Everything here is element-centred,
       so each new cell type needs a DNase/ATAC-derived candidate set built the same way,
       or the comparison confounds element definition with cell type.
+- [x] **Checked: the existing K562 and GM12878 ceilings are unaffected by rule 2.**
+      ENCSR000AKP and ENCSR000AKC are each a single experiment, `run_type = se`, with two
+      replicates processed identically (`.filtered.sorted.bam`), so every ceiling and
+      transfer number reported so far is computed within one experiment and one processing.
+      No correction needed.
 - [ ] **TeloHAEC ±IL1b / ±TNFa / ±VEGF is a different and sharper test.** Those four rows
       are *conditions of one cell type*, not four cell types, so they are weak evidence
       for cross-cell-type transfer — but they are strong evidence for something else:
       whether the model tracks condition-specific H3K27ac changes *within* a cell type,
       with no input-domain shift and no element-definition change. Worth running early
       because it is cheap and the interpretation is clean.
+- [ ] **Split the TeloHAEC rows before use — each pools 2 experiments.** All four
+      TeloHAEC rows list `GSE210489,GSE210491`, so under rule 2 each row is at least two
+      samples, not one. The ctrl row has 4 replicate files (SRR20810532/533/544/545),
+      likely 2 per experiment, but the sheet does not say which SRR belongs to which GSE —
+      that needs SRA metadata before any ceiling is computed. Computing a single
+      4-replicate ceiling across both experiments would fold batch effect into what is
+      reported as biological reproducibility. Upside: once split, the same-condition
+      cross-experiment pair is a clean estimate of experiment-level batch effect.
+- [ ] **HCT116 cannot yield an inter-replicate ceiling as catalogued.** ENCSR661KMA is
+      `run_type = "se, pe"`, so its two replicates differ in run type and are separate
+      samples under rule 2. Their correlation would conflate a run-type difference with
+      biological noise and understate the ceiling. Either use one run type only (and then
+      there is a single replicate, so no ceiling), or find additional same-processing
+      replicates. Same caution applies to HCT116's DNase, CTCF, H3K27me3 and H3K4me1 rows,
+      which are all `"se, pe"`.
 - [ ] **Watch two confounds when comparing absolute numbers across the panel.** Run type
       is mixed (K562 is 36 bp SE; THP-1, TeloHAEC, WTC11 are PE), and provenance is mixed
       (ENCODE versus GEO/SRA with different processing, some deduplicated). Within-cell-type
