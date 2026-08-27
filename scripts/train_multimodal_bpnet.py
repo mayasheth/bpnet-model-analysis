@@ -65,6 +65,12 @@ def parse_args():
     p.add_argument("--signal-minus-bw", default=None,
                    help="ChIP-seq signal BigWig, minus strand (target)")
     p.add_argument("--accessibility-bw", default=None,
+                   # comma-separate for fragment-size-stratified channels, e.g.
+                   #   --accessibility-bw all.bw,sub.bw,mono.bw,di.bw
+                   # Channel ORDER is part of the model contract: prediction must pass
+                   # the same tracks in the same order, or the learned filters are
+                   # applied to the wrong inputs. The order used is recorded in
+                   # training_target.json.
                    help="Accessibility BigWig (ATAC or DNase)")
     p.add_argument("--fold", required=True, help="Fold JSON file")
     p.add_argument("--fold-key", default="0", help="Key within fold JSON (default: 0)")
@@ -144,7 +150,8 @@ def extract_windows(regions_df, genome_fa, signal_plus_bw, signal_minus_bw,
     -------
     seqs:    np.ndarray, (N, 4, in_window + 2*max_jitter)  — zeros if genome_fa is None
     signals: np.ndarray, (N, C, out_window + 2*max_jitter) — C=2 stranded, 1 unstranded
-    accs:    np.ndarray, (N, 1, in_window + 2*max_jitter)  — zeros if no accessibility_bw
+    accs:    np.ndarray, (N, C, in_window + 2*max_jitter)  — C = number of comma-
+             separated accessibility tracks; a single zero channel if none given
     valid:   bool array
     """
     jitter = max_jitter if is_peak else 0
@@ -156,10 +163,14 @@ def extract_windows(regions_df, genome_fa, signal_plus_bw, signal_minus_bw,
     plus_bw = pyBigWig.open(signal_plus_bw)
     stranded = signal_minus_bw is not None
     minus_bw = pyBigWig.open(signal_minus_bw) if stranded else None
-    use_acc = accessibility_bw is not None
-    acc_bw = pyBigWig.open(accessibility_bw) if use_acc else None
+    # accessibility_bw may be a comma-separated list -> one input channel per track
+    acc_paths = ([p for p in accessibility_bw.split(",") if p]
+                 if accessibility_bw else [])
+    use_acc = len(acc_paths) > 0
+    acc_bws = [pyBigWig.open(p) for p in acc_paths]
+    n_acc = max(1, len(acc_bws))
     # chrom sizes come from the accessibility track only when there is no genome
-    acc_chrom_sizes = dict(acc_bw.chroms()) if use_acc else dict(plus_bw.chroms())
+    acc_chrom_sizes = dict(acc_bws[0].chroms()) if use_acc else dict(plus_bw.chroms())
 
     seqs, signals, accs = [], [], []
     valid = np.zeros(len(regions_df), dtype=bool)
@@ -202,18 +213,24 @@ def extract_windows(regions_df, genome_fa, signal_plus_bw, signal_minus_bw,
             sig_minus = np.nan_to_num(sig_minus, nan=0.0).astype(np.float32)
 
         if use_acc:
-            acc = acc_bw.values(chrom, s_in, e_in, numpy=True)
-            if acc is None or len(acc) != in_window + 2 * jitter:
+            chans, bad_acc = [], False
+            for bw in acc_bws:
+                a = bw.values(chrom, s_in, e_in, numpy=True)
+                if a is None or len(a) != in_window + 2 * jitter:
+                    bad_acc = True
+                    break
+                chans.append(np.nan_to_num(a, nan=0.0).astype(np.float32))
+            if bad_acc:
                 continue
-            acc = np.nan_to_num(acc, nan=0.0).astype(np.float32)
+            acc = np.stack(chans, axis=0)                       # (C, L)
         else:
-            acc = np.zeros(in_window + 2 * jitter, dtype=np.float32)
+            acc = np.zeros((1, in_window + 2 * jitter), dtype=np.float32)
 
         if use_seq:
             seqs.append(one_hot_encode(seq_str))
         signals.append(np.stack([sig_plus, sig_minus], axis=0) if stranded
                        else sig_plus[np.newaxis, :])
-        accs.append(acc[np.newaxis, :])
+        accs.append(acc)
         valid[idx] = True
 
     if use_seq:
@@ -221,8 +238,8 @@ def extract_windows(regions_df, genome_fa, signal_plus_bw, signal_minus_bw,
     plus_bw.close()
     if stranded:
         minus_bw.close()
-    if use_acc:
-        acc_bw.close()
+    for bw in acc_bws:
+        bw.close()
 
     n = len(accs)
     L_in = in_window + 2 * jitter
@@ -231,7 +248,7 @@ def extract_windows(regions_df, genome_fa, signal_plus_bw, signal_minus_bw,
         return (np.zeros((0, 4, L_in), dtype=np.float32),
                 np.zeros((0, 2 if signal_minus_bw is not None else 1, L_out),
                          dtype=np.float32),
-                np.zeros((0, 1, L_in), dtype=np.float32),
+                np.zeros((0, n_acc, L_in), dtype=np.float32),
                 valid)
 
     seqs_arr = np.stack(seqs) if use_seq else np.zeros((n, 4, L_in), dtype=np.float32)
@@ -446,6 +463,9 @@ def main():
         "signal_plus_bw": args.signal_plus_bw,
         "signal_minus_bw": args.signal_minus_bw,
         "accessibility_bw": args.accessibility_bw,
+        "accessibility_channels": (
+            [p for p in args.accessibility_bw.split(",") if p]
+            if args.accessibility_bw else []),
         "peaks": args.peaks,
         "mode": args.mode,
         "in_window": args.in_window,
@@ -553,10 +573,17 @@ def main():
         X_valid = torch.from_numpy(val_accs)   # (N, 1, L)
     y_valid = torch.from_numpy(val_sigs)
 
+    # Number of accessibility input channels, from the extracted arrays rather than
+    # re-parsing the argument, so the model can never disagree with the data.
+    n_acc_channels = tr_accs.shape[1]
+    if args.mode in ("multimodal", "atac"):
+        print(f"Accessibility input channels: {n_acc_channels}")
+
     # Model
     model = MultiModalBPNet(
         n_filters=args.n_filters,
         n_acc_filters=args.n_acc_filters,
+        n_acc_channels=n_acc_channels,
         n_layers=args.n_layers,
         n_outputs=n_outputs,
         mode=args.mode,
