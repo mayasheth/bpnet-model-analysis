@@ -412,6 +412,25 @@ def main():
         raise ValueError("--count-offset-model requires --accessibility-bw, since the "
                          "offset model reads accessibility even when this model does not")
 
+    # Record what this model was trained against. Without this a later run cannot tell
+    # whether an offset model was fit to the same target, which silently produced an
+    # uninterpretable residual result on 2026-08-26 (see .living/learnings.md).
+    target_record = {
+        "signal_plus_bw": args.signal_plus_bw,
+        "signal_minus_bw": args.signal_minus_bw,
+        "accessibility_bw": args.accessibility_bw,
+        "accessibility_channels": (
+            [p for p in args.accessibility_bw.split(",") if p]
+            if args.accessibility_bw else []),
+        "peaks": args.peaks,
+        "mode": args.mode,
+        "in_window": args.in_window,
+        "out_window": args.out_window,
+        "n_layers": args.n_layers,
+        "count_loss_weight": args.count_loss_weight,
+        "count_offset_model": args.count_offset_model,
+    }
+
     if args.count_offset_model is not None:
         # The offset must be an accessibility prediction OF THIS TARGET. A model fit to a
         # differently-processed signal (e.g. fragment-extended vs 5'-end, a ~250x scale
@@ -456,24 +475,6 @@ def main():
     os.makedirs(args.output_dir, exist_ok=True)
     model_prefix = os.path.join(args.output_dir, "multimodal_bpnet")
 
-    # Record what this model was trained against. Without this a later run cannot tell
-    # whether an offset model was fit to the same target, which silently produced an
-    # uninterpretable residual result on 2026-08-26 (see .living/learnings.md).
-    target_record = {
-        "signal_plus_bw": args.signal_plus_bw,
-        "signal_minus_bw": args.signal_minus_bw,
-        "accessibility_bw": args.accessibility_bw,
-        "accessibility_channels": (
-            [p for p in args.accessibility_bw.split(",") if p]
-            if args.accessibility_bw else []),
-        "peaks": args.peaks,
-        "mode": args.mode,
-        "in_window": args.in_window,
-        "out_window": args.out_window,
-        "n_layers": args.n_layers,
-        "count_loss_weight": args.count_loss_weight,
-        "count_offset_model": args.count_offset_model,
-    }
     with open(os.path.join(args.output_dir, "training_target.json"), "w") as f:
         json.dump(target_record, f, indent=2)
 
@@ -489,6 +490,16 @@ def main():
     if len(train_negs) > max_negs:
         train_negs = train_negs.sample(max_negs, random_state=42).reset_index(drop=True)
     print(f"  Train negatives: {len(train_negs)} (capped at {max_negs})")
+    # The default cap is 10x the peak count, which is fine for a ~12k-peak TF set but
+    # implies ~1.05M windows on the ~105k-element candidate set — tens of GB, and it
+    # fails only after a long extraction. Warn rather than change the default, which is
+    # shared with the p300 models.
+    if args.max_negatives is None and len(train_negs) > 200_000:
+        est_gb = (len(train_negs) * args.in_window * 6 * 4) / 1e9
+        print(f"  WARNING: --max-negatives was not set, so the pool defaulted to "
+              f"10x peaks = {len(train_negs):,} windows (~{est_gb:.0f} GB of extracted "
+              f"arrays). Set --max-negatives explicitly; the sampler only draws "
+              f"{args.negative_ratio:.0%} of each batch from negatives.")
 
     genome = args.genome  # None for atac mode — extract_windows handles this
 

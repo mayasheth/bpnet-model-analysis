@@ -317,3 +317,33 @@ Append-only log of gotchas, surprises, and insights.
 **mitigation_type**: convention
 
 **structural_mitigation_candidate**: Already the standing rule in `.living/conventions.md` (stratify every evaluation). Extend it: when the TARGET definition changes, raw correlations are incomparable and only fraction-of-corrected-ceiling should be compared across targets.
+
+---
+
+### [2026-08-26] The 5' switch is a real but modest gain — biggest for sequence-only
+
+**Category**: insight
+
+**What happened**: Full 5-fold stratified comparison, top quintile, where the two targets have essentially identical ceilings (fragment 0.7605 vs 5-prime 0.7601 raw; 0.9295 vs 0.9293 corrected), so the numbers ARE comparable:
+
+| mode | fragment | 5-prime | delta |
+|---|---|---|---|
+| sequence | 0.357 | 0.3893 | +0.032 |
+| atac-only | 0.543 | 0.5508 | +0.008 |
+| multimodal | 0.668 | 0.6861 | +0.018 |
+
+**Why it matters**: Settles two open questions. First, the switch genuinely helps rather than merely moving the ceiling — the all-elements gain was mostly ceiling, but the top-quintile gain is real. Second, the gain is **largest for sequence-only**, which fits the mechanism: fragment bleed-through is signal from neighbouring elements, unattributable to this element's own sequence, so removing it helps the model that has nothing but sequence the most.
+
+Against the measured run-to-run variance of ~0.018 on a single fold, the standard error on a 5-fold pooled estimate is roughly 0.008. So sequence +0.032 is about 4 SE and solid; multimodal +0.018 about 2 SE and probably real; **atac-only +0.008 is about 1 SE and not distinguishable from noise**.
+
+The earlier "+22% from 5-prime" claim remains wrong — the honest figure is **+9% relative** for sequence-only on the stratum that matters.
+
+Critically, this does not move the core conclusion. Sequence's marginal contribution over accessibility is +0.135 on 5-prime versus +0.125 on fragment — essentially unchanged, and still roughly 2.2x smaller than p300's +0.301.
+
+**Resolution**: 5-prime adopted as the target, with an honest account of what it bought. All superseded numbers now re-derived except GM12878 transfer and the p300 comparison's H3K27ac side.
+
+**Tags**: h3k27ac, 5-prime, stratification, ceiling, variance, sequence-vs-accessibility
+
+**mitigation_type**: ambient-awareness
+
+**structural_mitigation_candidate**: Report the pooled standard error next to every comparison. Roughly SE = single-fold sd / sqrt(n_folds); at ~0.018 sd, differences under ~0.016 across 5 folds are not resolvable and should not be described as improvements.
