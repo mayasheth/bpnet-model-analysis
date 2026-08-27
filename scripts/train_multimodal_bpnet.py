@@ -627,6 +627,14 @@ def main():
         early_stopping=args.early_stopping
     )
 
+    # Completion marker, written LAST. A preempted job (the `owners` partition is
+    # preemptible) leaves a best-so-far checkpoint that is indistinguishable from a
+    # finished one, so evaluators must be able to tell them apart. Absence of this file
+    # means the run did not finish.
+    with open(os.path.join(args.output_dir, "training_complete.json"), "w") as f:
+        json.dump({"epochs_requested": args.max_epochs,
+                   "early_stopping": args.early_stopping,
+                   "model": f"{model_prefix}.torch"}, f, indent=2)
     print(f"Training complete. Model saved to {model_prefix}.torch")
 
 
