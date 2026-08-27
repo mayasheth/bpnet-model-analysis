@@ -347,3 +347,23 @@ Critically, this does not move the core conclusion. Sequence's marginal contribu
 **mitigation_type**: ambient-awareness
 
 **structural_mitigation_candidate**: Report the pooled standard error next to every comparison. Roughly SE = single-fold sd / sqrt(n_folds); at ~0.018 sd, differences under ~0.016 across 5 folds are not resolvable and should not be described as improvements.
+
+---
+
+### [2026-08-26] A guard written to prevent a silent failure failed itself, because it was never tested
+
+**Category**: failure
+
+**What happened**: After a fragment-trained offset model was silently used against a 5-prime target (see the 2026-08-26 entry above), I added a guard to `train_multimodal_bpnet.py` that reads the offset model's `training_target.json` and refuses a mismatch. Then submitted 5 residual-training jobs against it. All 5 died within 17-288 seconds: `UnboundLocalError: local variable 'target_record' referenced before assignment`. The guard's comparison block sat early in `main()` among the argument validations, while `target_record` was built ~30 lines later next to `os.makedirs(args.output_dir)`.
+
+**Why it matters**: The guard was written specifically to stop a silent failure, and shipped without a single execution. Syntax checks passed, which is exactly why it felt safe. A guard on a rarely-taken branch has no natural test coverage — the code path only runs when someone passes `--count-offset-model`, which nothing else in the project does. Cost was five queued GPU jobs and a full queue-wait cycle on a saturated partition.
+
+**Resolution**: Moved the `target_record` build above the guard, then tested **both directions** before resubmitting: a fragment offset model is refused with the missing-record message, and the 5-prime offset model prints `Offset model target verified` and proceeds. Both verified by actually running the trainer, not by inspection.
+
+Silver lining worth keeping: failing loudly in 17 seconds is the correct failure mode. The bug this guard exists to prevent trained cleanly for 40 minutes and produced a plausible wrong answer.
+
+**Tags**: guards, validation, testing, silent-failure, methodology, slurm
+
+**mitigation_type**: convention
+
+**structural_mitigation_candidate**: Any new validation or guard must be exercised in both the pass and fail direction before it gates real work — a syntax check proves nothing about a branch that never runs. Cheapest form: invoke the entry point twice with deliberately good and bad inputs and confirm the message, which took ~2 minutes here versus five wasted jobs.
