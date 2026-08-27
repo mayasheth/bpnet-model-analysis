@@ -118,3 +118,21 @@ model directory and refuses a `--count-offset-model` whose signal tracks or outp
 differ from the current run. This exists because a fragment-trained offset model was
 silently used against a 5-prime target on 2026-08-26 and trained to a plausible-looking
 but meaningless result.
+
+## Sample definition for multi-dataset comparisons
+
+Two rules when assembling panels from the lab data inventory
+(`2023_0701 Maya-s sequences.xlsx`, "ENCODE data" sheet):
+
+1. **No Mint-ChIP.** Different assay chemistry from standard ChIP-seq and not comparable.
+   Excludes WTC11 H3K27ac/H3K27me3/H3K4me1 (ENCSR146DPQ, ENCSR418YEV, ENCSR473GYW).
+2. **A sample is one (experiment, processing) pair.** Replicates may be pooled, or
+   compared as an inter-replicate ceiling, only within a single experiment AND a single
+   processing. Rows in the sheet sometimes pool two experiments (all four TeloHAEC
+   H3K27ac rows list GSE210489 and GSE210491) or mix run types across replicates
+   (HCT116 rows are `se, pe`); both must be split before use. Pooling across either
+   folds batch or assay differences into what gets reported as biological
+   reproducibility, which understates the ceiling.
+
+Recorded because the ceiling is the denominator for every performance number in the
+H3K27ac work, so contaminating it silently rescales all of them.
