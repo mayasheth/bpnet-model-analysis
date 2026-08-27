@@ -212,9 +212,11 @@ def main():
         raise SystemExit("no configs to evaluate")
 
     all_rows = []
+    per_fold_all = []
     for cfg in configs:
         mode, hw, label = cfg["mode"], cfg["half_window"], cfg["label"]
         obs_all, pred_all, folds_used = [], [], []
+        per_fold_rows = []
         for fold in range(5):
             r = eval_one_fold(cfg, fold, args)
             if r is None:
@@ -222,6 +224,14 @@ def main():
             obs_all.append(r[0])
             pred_all.append(r[1])
             folds_used.append(fold)
+            # Per-fold statistics. Each fold is an independent replicate of the
+            # train-and-evaluate procedure, so the spread across folds is the only
+            # honest uncertainty estimate available. Pooling all folds into one
+            # correlation gives a single number with no error bar, and can be biased
+            # when folds differ in mean or scale.
+            for row in strat_rows(r[0], r[1], {"config": label, "mode": mode,
+                                               "half_window": hw, "fold": fold}):
+                per_fold_rows.append(row)
             print(f"  {label} fold{fold}: n={len(r[0])}")
         if not obs_all:
             print(f"{label}: no folds available, skipping")
@@ -232,6 +242,39 @@ def main():
         all_rows += strat_rows(obs, pred, {
             "config": label, "mode": mode, "half_window": hw,
             "n_folds": len(folds_used)})
+        per_fold_all += per_fold_rows
+
+    # --- per-fold table and its mean +/- 95% CI summary ---------------------
+    if per_fold_all:
+        pf = pd.DataFrame(per_fold_all)
+        pf_path = os.path.join(args.outdir,
+                               f"{args.out_prefix}stratified_per_fold.tsv")
+        pf.to_csv(pf_path, sep="\t", index=False)
+        print(f"Wrote {pf_path}  ({len(pf)} rows)")
+
+        # t-based 95% CI on the mean of the per-fold correlations. With 5 folds
+        # t(0.975, df=4) = 2.776, so the interval is mean +/- 2.776 * sd / sqrt(5).
+        from scipy import stats as _st
+        agg = []
+        for (cfg_l, mode_l, hw_l, stratum), g in pf.groupby(
+                ["config", "mode", "half_window", "stratum"], sort=False):
+            v = g["pearson"].to_numpy(dtype=float)
+            n = len(v)
+            mean = float(v.mean())
+            sd = float(v.std(ddof=1)) if n > 1 else float("nan")
+            half = (float(_st.t.ppf(0.975, n - 1)) * sd / n ** 0.5) if n > 1 else float("nan")
+            agg.append({"config": cfg_l, "mode": mode_l, "half_window": hw_l,
+                        "stratum": stratum, "n_folds": n,
+                        "pearson_mean": round(mean, 4),
+                        "pearson_sd": round(sd, 4) if n > 1 else None,
+                        "ci95_half_width": round(half, 4) if n > 1 else None,
+                        "ci95_lo": round(mean - half, 4) if n > 1 else None,
+                        "ci95_hi": round(mean + half, 4) if n > 1 else None})
+        agg_df = pd.DataFrame(agg)
+        agg_path = os.path.join(args.outdir,
+                                f"{args.out_prefix}stratified_fold_summary.tsv")
+        agg_df.to_csv(agg_path, sep="\t", index=False)
+        print(f"Wrote {agg_path}")
 
     res = pd.DataFrame(all_rows)
     p1 = os.path.join(args.outdir, f"{args.out_prefix}stratified_evaluation.tsv")

@@ -88,6 +88,43 @@ neighbour bleed — not for an accuracy gain. See `.living/learnings.md`.
 - [ ] **W4. Motif syntax (SHAP / MoDISCo / FiNeMo)** on the final chosen model. Per F-001,
       expect less sequence signal to attribute here than for p300.
 
+### Multi-cell-type generalization (promoted — supersedes the single GM12878 pair)
+
+Inventory built from `2023_0701 Maya's sequences.xlsx` ("ENCODE data" sheet) into
+`2026_0824_H3K27ac_model/results/celltype_inventory.tsv`: **12 rows with H3K27ac plus an
+accessibility assay**. The structure matters more than the count.
+
+- [ ] **Train a DNase-input model — this is the enabling step, not an optional variant.**
+      Only 3 distinct cell types have ATAC (K562, GM12878, TeloHAEC); **9 have DNase**
+      (adding H1, H9, HCT116, Jurkat, THP-1, WTC11). Applying an ATAC-trained model to a
+      DNase cell type shifts the *input* domain, which confounds the transfer test with a
+      change of assay. So DNase is the common denominator across the panel, and without a
+      DNase model most of this data is unusable for generalization. Note the p300 project
+      already has a `models/dnase` directory that was never trained (blocked on generating
+      `data/dnase.bw`), so this was always intended.
+- [ ] **Cross-cell-type matrix: train on each, evaluate on all others.** Currently every
+      conclusion assumes K562 is representative, and it may well not be — it is a cancer
+      line with an atypical chromatin landscape. If sequence transfers better *out of*
+      GM12878 or an untransformed line than out of K562, the story changes from "H3K27ac
+      has little sequence signal" to "K562 is a poor training cell type". This is the test
+      that decides which.
+- [ ] **Derive candidate elements per cell type — likely the binding constraint.** Only
+      K562 and GM12878 have element sets in the repo. Everything here is element-centred,
+      so each new cell type needs a DNase/ATAC-derived candidate set built the same way,
+      or the comparison confounds element definition with cell type.
+- [ ] **TeloHAEC ±IL1b / ±TNFa / ±VEGF is a different and sharper test.** Those four rows
+      are *conditions of one cell type*, not four cell types, so they are weak evidence
+      for cross-cell-type transfer — but they are strong evidence for something else:
+      whether the model tracks condition-specific H3K27ac changes *within* a cell type,
+      with no input-domain shift and no element-definition change. Worth running early
+      because it is cheap and the interpretation is clean.
+- [ ] **Watch two confounds when comparing absolute numbers across the panel.** Run type
+      is mixed (K562 is 36 bp SE; THP-1, TeloHAEC, WTC11 are PE), and provenance is mixed
+      (ENCODE versus GEO/SRA with different processing, some deduplicated). Within-cell-type
+      ceilings are unaffected; cross-cell-type absolute correlations are not, which is
+      another reason to report every transfer number as a fraction of that cell type's own
+      inter-replicate ceiling rather than raw.
+
 ### Revisit with proper statistical power
 
 - [ ] **Re-run the `count_loss_weight` sweep with >=3 folds and >=2 seeds.** The current
