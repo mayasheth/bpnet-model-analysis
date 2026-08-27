@@ -18,7 +18,7 @@ IGVF-style consortium work — the slug avoids naming the consortium.)_
 
 ---
 
-## F-001: Sequence adds ~2.4x more predictive information over accessibility for p300 than for H3K27ac
+## F-001: Sequence adds ~2.2x more predictive information over accessibility for p300 than for H3K27ac
 **Status:** preliminary
 **Claim:** In K562, on DNase candidate elements, models predicting p300 gain +0.301 Pearson from adding sequence to an accessibility-only model (0.305 -> 0.606 on the top signal quintile), whereas models predicting H3K27ac gain only +0.125 (0.543 -> 0.668). H3K27ac is the more predictable target overall (0.668 vs 0.606 multimodal), but a larger share of its predictability is carried by chromatin accessibility alone.
 **Implications:** Target choice matters for sequence-interpretability work independently of how well a model scores. A high-performing H3K27ac model is substantially reading the accessibility track, so attributions from it will reflect less sequence-specific information than the equivalent p300 model, despite the better headline correlation. For motif-syntax questions, p300 remains the better substrate. Also a caution against ranking targets by overall correlation: the accessibility-only control is what makes the comparison interpretable.
@@ -28,6 +28,7 @@ IGVF-style consortium work — the slug avoids naming the consortium.)_
 | Date | Run/Session | Dataset | Project | Result | Direction |
 |------|-------------|---------|---------|--------|-----------|
 | 2026-08-24 | job 40783892 | ENCSR000AKP (H3K27ac), ENCSR000EGE (p300), K562 ATAC | 2026_0824_H3K27ac_model | Top-quintile Pearson, 5 folds pooled: p300 ATAC-only 0.305, p300 multimodal 0.606; H3K27ac ATAC-only 0.543, H3K27ac multimodal 0.668, H3K27ac sequence-only 0.357 | supports |
+| 2026-08-26 | job 40917535 | ENCSR000AKP 5-prime target, K562 ATAC | 2026_0824_H3K27ac_model | Re-derived on the corrected 5-prime target, 5 folds, top quintile: H3K27ac ATAC-only 0.5508 -> multimodal 0.6861, so sequence adds +0.135 (was +0.125 on the superseded fragment target). p300 remains +0.301, so the ratio is ~2.2x rather than ~2.4x. Conclusion unchanged. | refines |
 
 ### Open Questions
 - The p300 models were trained on ENCSR000EGE peak summits but evaluated on element centers, which likely understates p300 and so probably widens rather than closes the gap. Does a matched element-centered p300 model change the magnitude?

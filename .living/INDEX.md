@@ -6,8 +6,8 @@ Last audit: 2026-08-27
 |------|---------|--------------|------------|
 | conventions.md | 10 sections | 2026-08-26 | Layout: analyses live at the repo root, not under `analysis/`, Reports, Figures, Environments, SLURM submit scripts (mandatory) |
 | decisions.md | 4 entries | 2026-08-25 | Center H3K27ac training windows on candidate elements, not ChIP peaks, Counting window is a trade-off between signal and neighbour contamination, Keep the profile head, down-weighted, rather than removing it, Residual correlation beyond ATAC becomes the headline metric |
-| learnings.md | 18 entries | 2026-08-27 | count_loss_weight must be calibrated to the actual loss magnitudes, not copied, Inter-replicate r is not a model performance ceiling without two corrections, bpnetlite's count target sums ALL channels, not one strand, Three Sherlock/SLURM traps that cost a job each, Peak count scales the negative pool, which can OOM by 50x |
-| findings/ | 3 findings across 4 topics | 2026-08-26 | predicting-regulatory-element-function-at-scale, linking-noncoding-variation-to-molecular-function, mapping-regulatory-perturbations-to-phenotype, how-enhancers-control-gene-expression |
+| learnings.md | 19 entries | 2026-08-27 | count_loss_weight must be calibrated to the actual loss magnitudes, not copied, Inter-replicate r is not a model performance ceiling without two corrections, bpnetlite's count target sums ALL channels, not one strand, Three Sherlock/SLURM traps that cost a job each, Peak count scales the negative pool, which can OOM by 50x |
+| findings/ | 3 findings across 4 topics | 2026-08-27 | predicting-regulatory-element-function-at-scale, linking-noncoding-variation-to-molecular-function, mapping-regulatory-perturbations-to-phenotype, how-enhancers-control-gene-expression |
 
 ## Local skills
 See `.living/skills/` for project-specific skill packs.
@@ -33,10 +33,10 @@ Last summarized: 2026-08-27 (heuristic)
 - [2026-08-26] L-16: Correction: the count_loss_weight "optimum" was within run-to-run noise
 - [2026-08-26] L-17: Correction: the 5' target's gain on all-elements is mostly the ceiling rising
 - [2026-08-26] L-18: The 5' switch is a real but modest gain — biggest for sequence-only
+- [2026-08-26] L-19: A guard written to prevent a silent failure failed itself, because it was never tested
 - [2026-08-25] L-6: Mycelium's decision-log template and its indexer disagree on heading level
 - [2026-08-25] L-7: Excluding the nucleosome-free center makes the H3K27ac target worse, not better
 - [2026-08-25] L-8: The IGV display track was the wrong target all along: use 5' ends
-- [2026-08-25] L-9: 5'-end vs fragment-extended target: identical ceiling on active elements
 
 ## By tag
 
@@ -48,17 +48,19 @@ Last summarized: 2026-08-27 (heuristic)
 - `evaluation`: L-2, L-3, D-4
 - `hyperparameters`: L-1, L-13, L-16
 - `mnll`: L-8, L-11, L-13
+- `silent-failure`: L-6, L-15, L-19
 - `target-definition`: L-8, L-9, L-10
 - `window-selection`: L-7, D-1, D-2
 - `atac`: L-12, D-4
 - `fragment-extension`: L-8, L-9
+- `methodology`: L-15, L-19
 - `negative-result`: L-7, L-9
 - `nucleosome`: L-7, L-12
 - `overclaim`: L-16, L-17
 - `prediction-was-wrong`: L-10, L-14
 - `profile-head`: L-11, D-3
 - `residual`: L-15, D-4
-- `silent-failure`: L-6, L-15
+- `slurm`: L-4, L-19
 - `stratification`: L-17, L-18
 - `tooling`: L-4, L-6
 - `training`: L-1, L-5
@@ -76,10 +78,10 @@ Last summarized: 2026-08-27 (heuristic)
 - `element-centric`: D-1
 - `fragment-length`: L-12
 - `gm12878`: L-14
+- `guards`: L-19
 - `index`: L-6
 - `learnability`: L-10
 - `memory`: L-5
-- `methodology`: L-15
 - `metric-choice`: D-4
 - `mycelium`: L-6
 - `negatives`: L-5
@@ -94,16 +96,17 @@ Last summarized: 2026-08-27 (heuristic)
 - `scaling`: L-5
 - `sequence-vs-accessibility`: L-18
 - `sherlock`: L-4
-- `slurm`: L-4
 - `spearman-brown`: L-2
 - `statistics`: L-2
 - `stranded`: L-3
 - `submit-scripts`: L-4
 - `target-mismatch`: L-15
 - `template-mismatch`: L-6
+- `testing`: L-19
 - `trade-off`: D-2
 - `training-design`: D-1
 - `transferability`: L-14
+- `validation`: L-19
 
 _Heuristic clustering: tags with ≥2 entries, top 6 by count. To fetch matching entries: `python3 skills/core/scripts/recall_lessons.py --living-dir <path> --tag <tag>` or `--id L-N`._
 <!-- END KNOWLEDGE SUMMARY -->
