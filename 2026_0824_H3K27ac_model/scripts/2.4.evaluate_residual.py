@@ -80,6 +80,9 @@ def parse_args():
                         "signal_minus_bw, accessibility_bw, genome, elements.")
     p.add_argument("--out-prefix", default="",
                    help="Prefix for output filenames")
+    p.add_argument("--allow-incomplete-folds", action="store_true",
+                   help="Score folds lacking training_complete.json "
+                        "(i.e. preempted / unfinished runs). Off by default.")
     p.add_argument("--batch-size", type=int, default=256)
     p.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     return p.parse_args()
@@ -102,6 +105,15 @@ def run_fold(cfg, fold, args, want_observed):
     mp = os.path.join(cfg["model_dir"], f"fold{fold}", "multimodal_bpnet.torch")
     if not os.path.exists(mp):
         return None
+    # A preempted run leaves a usable-looking checkpoint from a partial fit. Refuse it
+    # rather than silently scoring an undertrained model.
+    if (not args.allow_incomplete_folds) and not os.path.exists(
+            os.path.join(os.path.dirname(mp), "training_complete.json")):
+        raise SystemExit(
+            f"error: {mp} has no training_complete.json alongside it, so that fold did "
+            "not finish (most likely preempted on the owners partition). Wait for it to "
+            "complete, or pass --allow-incomplete-folds to score it anyway.")
+
     out_window = 2 * hw
     in_window = out_window + 2 * TRIMMING
     with open(args.fold_json) as f:

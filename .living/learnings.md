@@ -367,3 +367,39 @@ Silver lining worth keeping: failing loudly in 17 seconds is the correct failure
 **mitigation_type**: convention
 
 **structural_mitigation_candidate**: Any new validation or guard must be exercised in both the pass and fail direction before it gates real work — a syntax check proves nothing about a branch that never runs. Cheapest form: invoke the entry point twice with deliberately good and bad inputs and confirm the message, which took ~2 minutes here versus five wasted jobs.
+
+---
+
+### [2026-08-26] A naive str.replace on a 2-character token corrupted a guard into always-fail
+
+**Category**: failure
+
+**What happened**: Patching the completion-marker guard into two evaluators, the script parameterized the model-path variable name with `CHECK.replace("mp", mvar)`. In `2.2.evaluate_stratified.py` the variable is `model_path`, so every occurrence of the substring "mp" became "model_path": `complete` -> `comodel_pathlete`, `preempted` -> `preemodel_pathted`, and critically the **filename literal** `training_complete.json` -> `training_comodel_pathlete.json`. The guard therefore looked for a file that can never exist and refused every fold unconditionally. `2.4.evaluate_residual.py` escaped only because its variable is literally named `mp`, making the replace a no-op there.
+
+**Why it matters**: Both failure directions are bad. The guard would have blocked all evaluation, and the error message it printed was mangled gibberish that obscured the cause. The corruption is invisible to a syntax check — the file parsed fine, because only string contents changed. This is the second guard in two days shipped broken, and the first one also passed a syntax check.
+
+**Resolution**: Repaired the block, then verified: the negative direction refuses with a clean message; the filename literal now appears 7 times consistently across the trainer and both evaluators; the `--allow-incomplete-folds` opt-out is defined in both. Testing is what caught it — the guard's own error message was the tell.
+
+**Tags**: patching, str-replace, guards, testing, silent-failure, tooling
+
+**mitigation_type**: convention
+
+**structural_mitigation_candidate**: Never `str.replace` a short token when parameterizing patch text — use an unambiguous placeholder like `__MODELVAR__`, or better, write the block out per-file rather than templating it. And after any patch that rewrites string literals, grep for the literal across all touched files and confirm the count matches expectation; a syntax check cannot see this class of error.
+
+---
+
+### [2026-08-26] Jobs on the `owners` partition are preempted and restart from scratch
+
+**Category**: gotcha
+
+**What happened**: Residual fold 4 ran 15 epochs, was evicted from `owners`, and was requeued as PENDING with its SLURM start time reset. The trainer has no checkpoint resume, so it restarts from epoch 0 and the 15 epochs are lost. Meanwhile the fold directory still held a best-so-far checkpoint from the partial fit — indistinguishable from a finished model.
+
+**Why it matters**: That partial checkpoint is a silent-failure trap: any evaluator pointed at the directory would have loaded an undertrained model and scored it without complaint. The lab's submit scripts all use `-p owners,gpu` because it schedules faster, so this is the default condition, not an edge case. It also means elapsed job times are not training times, and some earlier "slow" jobs in this project may have been preempted and restarted without my noticing.
+
+**Resolution**: The trainer now writes `training_complete.json` as its final action and both evaluators refuse folds without it. `1.7.backfill_training_complete.py` infers completion from the epoch log for folds trained before the marker existed — validated against ground truth, correctly flagging the preempted fold and passing the four that SLURM confirmed complete.
+
+**Tags**: slurm, owners, preemption, silent-failure, checkpoints, sherlock
+
+**mitigation_type**: structural
+
+**structural_mitigation_candidate**: Shipped — the marker plus the evaluator check. A stronger version would add checkpoint-resume to the trainer so preemption costs minutes rather than a whole run, which matters more as windows and receptive fields grow.
