@@ -104,6 +104,26 @@ After exclusions: **11 biosamples with H3K27ac**, of which 6 have ATAC (K562, GM
 the 4 TeloHAEC conditions) and 7 have DNase (K562, GM12878, H1, H9, HCT116, Jurkat, THP-1).
 The structure matters more than the count.
 
+- [~] **Model-free ATAC-vs-H3K27ac correlation across the panel — cheap, do first.**
+      Correlate summed ATAC against summed H3K27ac over the same element windows, no model
+      involved. This is the model-free reference for the ATAC-only baseline: it separates
+      "how much accessibility can explain in principle" from "how well a network learns
+      it". If accessibility explains less of H3K27ac in other cell types, then the
+      ATAC-only model's strength in K562 is partly a property of K562 rather than of the
+      assay pair — which would also mean the sequence margin is not directly comparable
+      across cell types. Needs no GPU and no training; it is bigwig reads plus a
+      correlation. `scripts/0.12.atac_vs_h3k27ac.py`, accumulating into
+      `results/atac_vs_h3k27ac_by_celltype.tsv` one row-set per label.
+      **K562 and GM12878 reference points running now (job 41010962).** Remaining cell
+      types are blocked only on candidate elements (below).
+- [ ] **BLOCKED, needs Maya: candidate element sets for the other cell types.** Every
+      analysis here is element-centred, and only K562 and GM12878 have element sets in the
+      repo. Each additional cell type needs one built the same way (DNase/ATAC-derived,
+      ~500 bp, summit column = width/2 so windows are element-centred), or the comparison
+      confounds element definition with cell type. This blocks both the model-free
+      correlation above and the cross-cell-type training matrix.
+      [Q for Maya] Where do the candidate element sets for H1, H9, HCT116, Jurkat, THP-1
+      and TeloHAEC live, or should they be derived here?
 - [ ] **Train a DNase-input model — this is the enabling step, not an optional variant.**
       Only 3 distinct cell types have ATAC (K562, GM12878, TeloHAEC — the other 3 ATAC
       entries are TeloHAEC conditions); **7 have DNase** (K562, GM12878, H1, H9, HCT116,
@@ -119,10 +139,6 @@ The structure matters more than the count.
       GM12878 or an untransformed line than out of K562, the story changes from "H3K27ac
       has little sequence signal" to "K562 is a poor training cell type". This is the test
       that decides which.
-- [ ] **Derive candidate elements per cell type — likely the binding constraint.** Only
-      K562 and GM12878 have element sets in the repo. Everything here is element-centred,
-      so each new cell type needs a DNase/ATAC-derived candidate set built the same way,
-      or the comparison confounds element definition with cell type.
 - [x] **Checked: the existing K562 and GM12878 ceilings are unaffected by rule 2.**
       ENCSR000AKP and ENCSR000AKC are each a single experiment, `run_type = se`, with two
       replicates processed identically (`.filtered.sorted.bam`), so every ceiling and

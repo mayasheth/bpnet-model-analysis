@@ -1,6 +1,6 @@
 config	mode	half_window	n_folds	stratum	n	pearson	spearman
 sequence5p	sequence	500	5	all	58655	0.4996	0.4309
-sequence5p	sequence	500	5	quintile1	11731	0.0687	0.0861
+sequence5p	sequence	500	5	quintile1	11731	0.0688	0.0861
 sequence5p	sequence	500	5	quintile2	11731	0.0422	0.0505
 sequence5p	sequence	500	5	quintile3	11731	0.0746	0.0754
 sequence5p	sequence	500	5	quintile4	11731	0.1132	0.0992
