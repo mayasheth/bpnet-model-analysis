@@ -116,14 +116,40 @@ The structure matters more than the count.
       `results/atac_vs_h3k27ac_by_celltype.tsv` one row-set per label.
       **K562 and GM12878 reference points running now (job 41010962).** Remaining cell
       types are blocked only on candidate elements (below).
-- [ ] **BLOCKED, needs Maya: candidate element sets for the other cell types.** Every
-      analysis here is element-centred, and only K562 and GM12878 have element sets in the
-      repo. Each additional cell type needs one built the same way (DNase/ATAC-derived,
-      ~500 bp, summit column = width/2 so windows are element-centred), or the comparison
-      confounds element definition with cell type. This blocks both the model-free
-      correlation above and the cross-cell-type training matrix.
-      [Q for Maya] Where do the candidate element sets for H1, H9, HCT116, Jurkat, THP-1
-      and TeloHAEC live, or should they be derived here?
+- [x] **UNBLOCKED: candidate element sets built for all 11 panel cell types.** Converted
+      from ENCODE_rE2G `Neighborhoods/EnhancerList.bed` by
+      `scripts/0.13.make_candidate_elements.py` into
+      `reference/celltype_elements/<label>_<assay>_candidate_elements.narrowPeak`, each with
+      a `.provenance.txt` sidecar. EnhancerList.bed is BED4 with no summit column, so the
+      conversion writes `summit = width // 2` to preserve element-centred windows.
+      Verified: EnhancerList.bed is byte-identical between the `*_H3K27ac_megamap` and
+      `*_megamap` variants, so that choice does not matter.
+      Sources: `2025_0227_validation_new_inputs` (K562, GM12878, HCT116, Jurkat),
+      `2025_0219_ESC` (H1, H9), `Projects/E2G/THP1/ENCODE_rE2G_results` (THP-1),
+      `Projects/E2G/endothelial_cells/.../ENCODE_rE2G_results` (TeloHAEC x4).
+      WTC11 is present in both rE2G dirs but stays excluded on the Mint-ChIP rule.
+
+- [ ] **Element derivation is NOT uniform across the panel — manage as a confound.**
+      DNase/DHS-derived (`dhs_*` model dirs): K562, GM12878, HCT116, Jurkat, H1, H9, THP-1.
+      **ATAC-derived** (`atac_h3k27ac_powerlaw`): all four TeloHAEC conditions. So TeloHAEC
+      differs from the rest in how its elements were called, not only in cell type. Either
+      restrict cross-cell-type claims to the DNase-derived subset, or derive DNase-based
+      TeloHAEC elements, or state the confound wherever TeloHAEC is compared to the others.
+      Also note H9's elements are much wider (mean 798 bp vs ~570-600 for the rest), which
+      will change its neighbour-contamination profile at any given window.
+
+- [ ] **Decide whether to re-derive the K562 analysis on its rE2G EnhancerList.** GM12878's
+      in-use element set IS its EnhancerList (154,224 / 154,224 exact). K562's is not — it
+      is a separate derivation. The two K562 sets are largely the same loci with different
+      boundaries: of 150,528 in-use elements, 144,194 (96%) overlap an EnhancerList element
+      and 142,536 (95%) at 50% reciprocal overlap, with only 6,334 (4%) having no overlap.
+      So this is a boundary difference, not a different set of loci — but it does mean K562
+      is currently the odd one out in the panel, and every window is centred slightly
+      differently there. Cheap to resolve by re-running the K562 evaluations on
+      `reference/celltype_elements/K562_DNase_candidate_elements.narrowPeak`.
+      (An earlier exact-interval count of 25,550 shared was an artifact of comparing files
+      that were not lexicographically sorted; the bedtools overlap figures above supersede
+      it.)
 - [ ] **Train a DNase-input model — this is the enabling step, not an optional variant.**
       Only 3 distinct cell types have ATAC (K562, GM12878, TeloHAEC — the other 3 ATAC
       entries are TeloHAEC conditions); **7 have DNase** (K562, GM12878, H1, H9, HCT116,

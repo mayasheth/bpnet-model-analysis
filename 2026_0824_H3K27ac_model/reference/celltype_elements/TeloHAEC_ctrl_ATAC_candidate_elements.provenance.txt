@@ -1,0 +1,11 @@
+label:          TeloHAEC_ctrl
+derived_from:   ATAC
+source:         /oak/stanford/groups/engreitz/Projects/E2G/endothelial_cells/TeloHAEC_GSE210489_GSE210491/ENCODE_rE2G_results/TeloHAEC_ctrl/Neighborhoods/EnhancerList.bed
+model_dir:      atac_h3k27ac_powerlaw
+n_input:        151409
+n_output:       151399
+dropped_non_canonical_chr: 10
+dropped_width_lt_50: 0
+dropped_duplicate_intervals: 0
+mean_width:     734.5
+summit_convention: width // 2 (element midpoint), matching K562_DNase_candidate_elements.narrowPeak

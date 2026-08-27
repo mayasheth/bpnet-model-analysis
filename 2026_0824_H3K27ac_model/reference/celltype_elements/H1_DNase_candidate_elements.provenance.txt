@@ -1,0 +1,11 @@
+label:          H1
+derived_from:   DNase
+source:         /oak/stanford/groups/engreitz/Users/sheth/ENCODE_rE2G_main/ENCODE_rE2G/results/2025_0219_ESC/H1_H3K27ac_megamap/Neighborhoods/EnhancerList.bed
+model_dir:      dhs_h3k27ac_megamap
+n_input:        149865
+n_output:       149853
+dropped_non_canonical_chr: 12
+dropped_width_lt_50: 0
+dropped_duplicate_intervals: 0
+mean_width:     567.7
+summit_convention: width // 2 (element midpoint), matching K562_DNase_candidate_elements.narrowPeak
