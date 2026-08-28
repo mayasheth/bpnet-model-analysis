@@ -457,3 +457,36 @@ Note the multimodal model has a much tighter spread (sd 0.015) than the single-i
 **mitigation_type**: structural
 
 **structural_mitigation_candidate**: Shipped in the evaluator. The remaining gap is that folds are paired (same held-out chromosomes across models), so a paired test would be tighter than the independent-CI comparison used above; the current approach is conservative.
+
+---
+
+### [2026-08-27] Transfer is strongly asymmetric: the K562->GM12878 collapse is largely a property of the target cell type, not of sequence
+
+**Category**: insight
+
+**What happened**: Trained all three modalities on GM12878 with settings identical to the K562 runs and evaluated both directions on the 5-prime target, with each direction's in-cell-type reference. Top-quintile Pearson, mean over 5 folds, and as a percentage of that cell type's corrected ceiling:
+
+| | sequence | ATAC only | seq+ATAC |
+|---|---|---|---|
+| K562-trained -> K562 | 0.380 (41%) | 0.548 (59%) | 0.685 (74%) |
+| K562-trained -> GM12878 | 0.146 (15%) | 0.476 (50%) | 0.519 (54%) |
+| GM-trained -> GM12878 | 0.221 (23%) | 0.493 (52%) | 0.579 (61%) |
+| GM-trained -> K562 | 0.317 (34%) | 0.539 (58%) | 0.600 (65%) |
+
+Sequence-only retention, transfer relative to that model's own in-cell-type score, both as a fraction of the respective ceiling: **K562->GM12878 38%, GM12878->K562 147%.**
+
+**Why it matters**: F-003 was built on the forward direction alone and read the 38% retention as "the sequence component does not transfer". The reciprocal shows that is not the right reading. GM-trained models do *better* on K562 than in their own cell type — for every modality, and after normalising by each cell type's ceiling. So a large part of what looked like a transfer failure is that **GM12878 is simply a harder cell type to predict and K562 an easier one**, in a way the inter-replicate ceiling does not capture. The ceiling measures how reproducibly the target can be measured; it says nothing about how determined that target is by the available inputs, and those differ between cell types.
+
+Two things do survive, and they are the parts worth keeping:
+- **Sequence is weak in absolute terms in every direction** — 15-41% of ceiling, against 50-59% for accessibility alone and 54-74% for both. The core conclusion that accessibility dominates is unchanged.
+- **The sequence margin shrinks on transfer in both directions**: +0.138 in-cell K562 -> +0.044 transferred (68% lost), +0.086 in-cell GM -> +0.061 transferred (29% lost). Some of the sequence contribution is genuinely cell-type-specific either way.
+
+Also worth noting against the original worry that K562 might be unrepresentative: K562 is the *stronger* cell type both to train on (in-cell multimodal 74% of ceiling vs 61% for GM12878) and to predict. That does not make it representative — it may be atypically predictable — but it does rule out "K562 is a poor training cell type" as the explanation for weak sequence signal.
+
+**Resolution**: F-003 must be restated. A single transfer direction cannot distinguish a model that fails to generalise from a target cell type that is harder to predict; both directions plus both in-cell-type references are the minimum for the claim.
+
+**Tags**: h3k27ac, transferability, gm12878, k562, asymmetry, reciprocal, prediction-was-wrong, ceiling
+
+**mitigation_type**: convention
+
+**structural_mitigation_candidate**: Any cross-cell-type claim in this project requires four evaluations, not two: both transfer directions and both in-cell-type references, all on the same target processing. `scripts/2.6.submit_reciprocal.sh` runs exactly that set and should be the template when cell types are added.
