@@ -403,3 +403,57 @@ Silver lining worth keeping: failing loudly in 17 seconds is the correct failure
 **mitigation_type**: structural
 
 **structural_mitigation_candidate**: Shipped — the marker plus the evaluator check. A stronger version would add checkpoint-resume to the trainer so preemption costs minutes rather than a whole run, which matters more as windows and receptive fields grow.
+
+---
+
+### [2026-08-27] The ATAC-only model transfers fine; only sequence collapses
+
+**Category**: insight
+
+**What happened**: The model-free ATAC-vs-H3K27ac correlation (no network involved, just summed ATAC against summed H3K27ac over the same element windows) is **lower in GM12878 than in K562**: top-quintile Pearson 0.409 vs 0.510, a 20% relative drop in how tightly the two assays are coupled. Maya predicted this.
+
+**Why it matters**: It reassigns most of the ATAC-only model's apparent transfer loss. Comparing the model against what is available to it in each cell type:
+
+| | K562 | GM12878 |
+|---|---|---|
+| model-free ATAC-H3K27ac coupling | 0.510 | 0.409 |
+| ATAC-only model | 0.542 | 0.467 |
+| model / coupling | 1.06 | 1.14 |
+
+The ATAC-only model does not degrade across cell types at all — it actually extracts *more* relative to the raw coupling in GM12878 (1.14 vs 1.06). Its lower absolute score there is a property of the assay pair in that cell type, not a failure to generalize. Sequence-only, by contrast, falls 0.360 -> 0.146 with no comparable explanation available.
+
+This sharpens F-003 rather than softening it. The earlier framing implied everything transfers somewhat worse; in fact **accessibility transfers essentially perfectly and only the sequence component collapses**, which is the more specific and more damning version of the claim.
+
+**Resolution**: F-003 evidence ledger updated. Any future cross-cell-type comparison should report the model-free coupling for that cell type alongside the model, since the coupling is the denominator that makes accessibility-based numbers comparable.
+
+**Tags**: h3k27ac, atac, transferability, gm12878, model-free-baseline, denominator
+
+**mitigation_type**: convention
+
+**structural_mitigation_candidate**: `scripts/0.12.atac_vs_h3k27ac.py` accumulates one row-set per cell type into a single TSV, so the coupling is cheap to compute for every new cell type before any model is trained. Make it a prerequisite for adding a cell type to the panel.
+
+---
+
+### [2026-08-27] Confidence intervals confirm the main claims and kill one of them
+
+**Category**: insight
+
+**What happened**: Switched every evaluation from a single pooled correlation to mean across the five chromosome-holdout folds with a t-based 95% CI. Results at +/-500 bp, top quintile:
+
+| comparison | mean (95% CI) | verdict |
+|---|---|---|
+| sequence+ATAC vs ATAC-only, H3K27ac | 0.685 [0.667, 0.704] vs 0.548 [0.497, 0.599] | separated |
+| ATAC-only vs sequence-only, H3K27ac | 0.548 [0.497, 0.599] vs 0.380 [0.323, 0.437] | separated |
+| p300 sequence margin vs H3K27ac sequence margin | +0.304 vs +0.127, difference 0.177 +/- 0.027 | ~6.6 SE, decisive |
+
+**Why it matters**: The headline claims survive with room to spare, so they were not artifacts of pooling. But the fold spread is large — `sd` is 0.041-0.046 for the sequence and ATAC-only models, giving CI half-widths near 0.05, which is **2-3x the run-to-run variance of 0.018 measured earlier**. Most of the uncertainty is between-fold (which chromosomes are held out), not between-run. That means: (a) differences under ~0.05 in this project are not resolvable by adding seeds, only by adding folds or elements; (b) the earlier `count_loss_weight` sweep, which compared single folds, could not possibly have resolved 3 vs 10 vs 100.
+
+Note the multimodal model has a much tighter spread (sd 0.015) than the single-input models (0.041-0.046) — accessibility plus sequence is more stable across chromosome sets than either alone.
+
+**Resolution**: Mean +/- CI with individual fold points is now the reporting standard; `2.2.evaluate_stratified.py` emits `*_stratified_per_fold.tsv` and `*_stratified_fold_summary.tsv` alongside the pooled table.
+
+**Tags**: statistics, confidence-intervals, cross-validation, variance, reporting-standard
+
+**mitigation_type**: structural
+
+**structural_mitigation_candidate**: Shipped in the evaluator. The remaining gap is that folds are paired (same held-out chromosomes across models), so a paired test would be tighter than the independent-CI comparison used above; the current approach is conservative.
