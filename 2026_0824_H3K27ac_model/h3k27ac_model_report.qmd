@@ -82,7 +82,7 @@ blockquote { border-left: 3px solid #ddd; margin-left: 0; padding-left: 1rem;
 
 - Accessibility does most of the work. On elements carrying the mark, ATAC alone reaches 0.548 [0.497, 0.599] and sequence alone 0.380 [0.323, 0.437]; together 0.685 [0.667, 0.704], so sequence adds +0.137 over accessibility (Fig. 1b).
 - The same comparison for p300 gives sequence a +0.304 margin over accessibility against +0.127 for H3K27ac — a difference of 0.177 ± 0.027, about 6.6 standard errors (Fig. 4). H3K27ac scores higher overall but is the poorer substrate for sequence interpretation.
-- **Accessibility transfers across cell types; only sequence collapses.** ATAC-only extracts *more* relative to the available signal in GM12878 than in K562 (ratio 1.14 vs 1.06, Fig. 8), so its lower absolute score there reflects weaker ATAC–H3K27ac coupling in that cell type rather than a failure to generalise. Sequence-only falls 0.360 → 0.146 with no comparable explanation (Fig. 6).
+- **Transfer is asymmetric and mostly reflects cell-type difficulty, not a sequence-specific failure.** GM12878-trained models score higher on K562 than in their own cell type for every modality (Fig. 6), and the ATAC-only difference is separately explained by weaker ATAC–H3K27ac coupling in GM12878 (Fig. 8). What survives is that sequence is weak everywhere (15–41% of ceiling) and its margin over accessibility shrinks on transfer in both directions.
 - Overall correlation is misleading when accessibility is an available input: sequence + ATAC scores 0.809 overall but only 0.475 against the departure from what accessibility alone predicts (Fig. 5).
 - ATAC and H3K27ac are spatially offset — ATAC peaks on the element centre, H3K27ac on flanking nucleosomes at ±250 bp and is far broader (Fig. 2). H3K27ac reaches its distal plateau near ±2 kb, well beyond the model's ~1.1 kb receptive field.
 
@@ -246,24 +246,24 @@ pixi run python scripts/2.4.evaluate_residual.py \
 Source: `scripts/2.4.evaluate_residual.py`
 </details>
 
-## The sequence component does not transfer to a new cell type
+## Transfer is asymmetric: GM12878 is the harder cell type, in both directions
 
-**Q:** Does a K562-trained model still work on GM12878?
+**Q:** Does the sequence component fail to generalise across cell types, or is one cell type simply harder to predict?
 
-**A:** Accessibility transfers and sequence does not — ATAC-only retains 50% of the achievable ceiling in GM12878 against 16% for sequence-only, and the ATAC-only drop is fully explained by weaker ATAC–H3K27ac coupling in GM12878 rather than any loss of generalisation (Fig. 8).
+**A:** Mostly the latter — GM12878-trained models score *higher* on K562 than in their own cell type for every modality (sequence 34% vs 23% of ceiling), so the one-directional picture of a sequence collapse does not survive the reciprocal.
 
 ![](figures/fig6_transfer.png)
 
 <details>
 <summary>Figure 6 legend</summary>
 
-**Figure 6 | Accessibility transfers across cell types; the sequence component does not.** K562-trained models applied without retraining to GM12878 candidate elements (n = 154,215; 30,843 in the top quintile), evaluated against GM12878 H3K27ac. Bars are the mean across five folds as a percentage of each cell type's own achievable ceiling — necessary because the two targets differ in quality — with 95% CI whiskers; solid = K562 in-cell-type, hatched = GM12878 transfer. Top-quintile Pearson in GM12878: sequence only 0.146 [0.112, 0.180], ATAC only 0.467 [0.433, 0.500], sequence + ATAC 0.518 [0.490, 0.546]. As a fraction of ceiling, sequence-only falls from 38% in K562 to **16%** in GM12878, ATAC only 58% → 50%, sequence + ATAC 72% → 55%. The sequence margin over accessibility shrinks from +0.125 to +0.049, so roughly 60% of the sequence contribution does not survive a change of cell type. Two points guard the interpretation. The GM12878 target is *easier*, not harder — top-quintile inter-replicate ceiling 0.832 against K562's 0.760 — so normalising makes the sequence collapse look worse, not better. And the ATAC-only decline is not a transfer failure once assay coupling is accounted for (Fig. 8). Sources: `results/gm12878_transfer_stratified_fold_summary.tsv`, `results/gm12878_fiveprime_replicate_ceiling_by_window.tsv`.
+**Figure 6 | Both transfer directions, each scored against the ceiling of the cell type being predicted.** Top-quintile Pearson as a percentage of that cell type's corrected ceiling; bars are the mean across five chromosome-holdout folds, whiskers the 95% CI. Solid = evaluated in the training cell type, hatched = transferred. **a**, Models trained on K562. **b**, Models trained on GM12878, with settings identical to **a** — same architecture, window, count-loss weight, negative cap, folds and 5′-end target processing — so the two directions are comparable. Absolute top-quintile values: K562→K562 sequence 0.380 / ATAC 0.548 / both 0.685; K562→GM12878 0.146 / 0.476 / 0.519; GM→GM12878 0.221 / 0.493 / 0.579; GM→K562 0.317 / 0.539 / 0.600. As a percentage of the relevant ceiling those are 41/59/74, 15/50/54, 23/52/61 and 34/58/65. **Every GM-trained model does better on K562 than in GM12878**, so a large part of what a one-directional analysis reads as failed transfer is that GM12878 is the harder cell type to predict — a difference the inter-replicate ceiling does not capture, since it measures how reproducibly the target can be measured, not how strongly it is determined by the available inputs. Two conclusions do survive the reciprocal: sequence is weak in absolute terms in all four settings (15–41% of ceiling, against 50–59% for accessibility alone), and the sequence margin over accessibility shrinks on transfer in both directions (+0.138 → +0.044 and +0.086 → +0.061). Sources: `results/{fiveprime,k562_to_gm_5p,gm_incell,gm_to_k562}_stratified_fold_summary.tsv`.
 </details>
 
 **Method.**
 
-- K562 models applied to GM12878 elements with no retraining or fine-tuning.
-- Both cell types' ceilings computed so the drop is normalised for target quality.
+- Four evaluations: both transfer directions and both in-cell-type references.
+- Each scored against the ceiling of the cell type being predicted, not the training one.
 
 <details>
 <summary>Full methods &amp; code</summary>

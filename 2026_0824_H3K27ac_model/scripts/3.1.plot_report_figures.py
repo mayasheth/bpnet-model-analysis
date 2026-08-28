@@ -217,38 +217,61 @@ def fig_p300_vs_h3k27ac(pf, figdir):
 
 
 def fig_transfer(pf_gm, pf_k562, results, figdir):
-    """K562 in-cell-type vs GM12878 transfer, as a fraction of each ceiling."""
-    kc = pd.read_csv(os.path.join(results, "replicate_ceiling_by_window.tsv"),
-                     sep="\t")
-    gc = pd.read_csv(os.path.join(results,
-                                  "gm12878_frag250_replicate_ceiling_by_window.tsv"),
-                     sep="\t")
-    k_ceil = ceiling(kc[kc["half_window"] == 500]["pearson_top_quintile"].iloc[0])
-    g_ceil = ceiling(gc[gc["half_window"] == 500]["pearson_top_quintile"].iloc[0])
+    """Both transfer directions, each against its own cell type's ceiling.
 
-    fig, ax = plt.subplots(figsize=figsize(columns=1, aspect=0.78))
-    width = 0.38
-    for j, mode in enumerate(MODE_ORDER):
-        k = pf_k562[(pf_k562["mode"] == mode)
-                    & (pf_k562["stratum"] == "top_quintile")
-                    & pf_k562["config"].str.startswith("h3k27ac_")]
-        g = pf_gm[(pf_gm["mode"] == mode) & (pf_gm["stratum"] == "top_quintile")]
-        if k.empty or g.empty:
-            continue
-        kf = 100 * k["pearson"].to_numpy() / k_ceil
-        gf = 100 * g["pearson"].to_numpy() / g_ceil
-        for off, vals, hatch in ((-width / 2, kf, None), (width / 2, gf, "///")):
-            m, half = mean_ci(vals)
-            ax.bar(j + off, m, width=width, color=COLOR[mode], hatch=hatch,
-                   edgecolor="white", linewidth=0.4, zorder=2)
-            if np.isfinite(half):
-                ax.errorbar(j + off, m, yerr=half, fmt="none", ecolor="black",
-                            elinewidth=0.75, capsize=2, capthick=0.75, zorder=4)
-    ax.set_xticks(range(len(MODE_ORDER)))
-    ax.set_xticklabels([LABEL[m] for m in MODE_ORDER])
-    ax.set_ylabel("Percent of achievable ceiling")
-    ax.set_ylim(0, 100)
-    ax.set_title("K562 (solid) vs GM12878 transfer (hatched)")
+    A single direction cannot separate a model that fails to generalise from a target
+    cell type that is simply harder to predict. Four evaluations are needed: both
+    transfers and both in-cell-type references, all on the same target processing.
+    """
+    def ceil_of(path, col="pearson_top_quintile"):
+        d = pd.read_csv(path, sep="\t")
+        return ceiling(d[d["half_window"] == 500][col].iloc[0])
+
+    K = ceil_of(os.path.join(results, "fiveprime_replicate_ceiling_by_window.tsv"))
+    G = ceil_of(os.path.join(results, "gm12878_fiveprime_replicate_ceiling_by_window.tsv"))
+
+    # (label, per-fold table, ceiling of the cell type being PREDICTED)
+    panels = [
+        ("Trained on K562", [("K562\n(in-cell)", "fiveprime_", K),
+                             ("GM12878\n(transfer)", "k562_to_gm_5p_", G)]),
+        ("Trained on GM12878", [("GM12878\n(in-cell)", "gm_incell_", G),
+                                ("K562\n(transfer)", "gm_to_k562_", K)]),
+    ]
+    norm = {"sequence5p": "sequence", "atac5p": "atac", "multimodal5p": "multimodal",
+            "seq": "sequence"}
+
+    fig, axes = plt.subplots(1, 2, figsize=figsize(columns=2, aspect=0.44), sharey=True)
+    width = 0.26
+    for ax, (title, cols), panel in zip(axes, panels, "ab"):
+        for ci, (xlab, prefix, cl) in enumerate(cols):
+            path = os.path.join(results, f"{prefix}stratified_per_fold.tsv")
+            if not os.path.exists(path):
+                continue
+            d = pd.read_csv(path, sep="\t")
+            d = d[d["stratum"] == "top_quintile"].copy()
+            d["m"] = d["config"].map(lambda c: norm.get(c, c))
+            for mi, mode in enumerate(MODE_ORDER):
+                sub = d[d["m"] == mode]
+                if sub.empty:
+                    continue
+                vals = 100 * sub["pearson"].to_numpy(dtype=float) / cl
+                m, half = mean_ci(vals)
+                x = ci * 1.25 + (mi - 1) * width
+                ax.bar(x, m, width=width, color=COLOR[mode], zorder=2,
+                       hatch=None if ci == 0 else "///", edgecolor="white", linewidth=0.4)
+                if np.isfinite(half):
+                    ax.errorbar(x, m, yerr=half, fmt="none", ecolor="black",
+                                elinewidth=0.7, capsize=1.8, capthick=0.7, zorder=4)
+        ax.set_xticks([0, 1.25])
+        ax.set_xticklabels([c[0] for c in cols])
+        ax.set_ylim(0, 100)
+        ax.set_title(title)
+        if panel == "a":
+            ax.set_ylabel("Percent of that cell type's ceiling")
+        add_panel_label(ax, panel)
+    handles = [plt.Rectangle((0, 0), 1, 1, color=COLOR[m]) for m in MODE_ORDER]
+    axes[1].legend(handles, [LABEL[m].replace("\n", " ") for m in MODE_ORDER],
+                   loc="upper right", fontsize=6)
     fig.tight_layout()
     return save_fig(fig, os.path.join(figdir, "fig6_transfer.png"))
 
@@ -271,11 +294,10 @@ def main():
     else:
         print("note: p300_vs_h3k27ac per-fold table not found; skipping Fig 4")
 
-    pfg = load_per_fold(args.results, "gm12878_transfer_")
-    if pfg is not None and pfc is not None:
-        written.append(fig_transfer(pfg, pfc, args.results, args.figdir))
+    if os.path.exists(os.path.join(args.results, "gm_to_k562_stratified_per_fold.tsv")):
+        written.append(fig_transfer(None, None, args.results, args.figdir))
     else:
-        print("note: transfer per-fold table not found; skipping Fig 6")
+        print("note: reciprocal per-fold tables not found; skipping Fig 6")
 
     for w in written:
         print(f"Wrote {w}")
