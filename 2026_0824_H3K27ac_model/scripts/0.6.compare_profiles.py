@@ -26,6 +26,7 @@ Usage:
 
 import argparse
 import os
+import sys
 
 import numpy as np
 import pandas as pd
@@ -34,10 +35,16 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from nature_style import apply_rcparams  # Nature-spec fonts, spines, dpi
+
+
 SEED = 0
 COLS = ["chr", "start", "end", "name", "score", "strand",
         "signalValue", "pValue", "qValue", "summit"]
-COLORS = ["#0096a0", "#792374", "#e96a00", "#c5373d", "#429130"]
+# ATAC blue, H3K27ac purple-family, matching the modality palette used in the
+# model figures (blue = accessibility, red = sequence, purple = both).
+COLORS = ["#2166AC", "#762A83", "#B2182B", "#5AAE61", "#E08214"]
 
 
 def parse_args():
@@ -94,6 +101,7 @@ def extract(df, paths, flank, bin_size):
 
 def main():
     args = parse_args()
+    apply_rcparams()
     os.makedirs(args.outdir, exist_ok=True)
     os.makedirs(args.figdir, exist_ok=True)
 

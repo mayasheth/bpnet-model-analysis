@@ -136,34 +136,82 @@ def fig_three_mode(pf, results, figdir):
 
 
 def fig_p300_vs_h3k27ac(pf, figdir):
-    """p300 and H3K27ac side by side, each target explicitly labelled."""
+    """The sequence margin over accessibility, for two targets.
+
+    Deliberately shows only ATAC-only and sequence+ATAC. There is no p300 sequence-only
+    model in this format (the p300 sequence models are bpnet-refactor/TF checkpoints, not
+    loadable here), so including a sequence-only bar would leave the p300 panel with a
+    hole. The margin — how much sequence+ATAC gains over ATAC alone — is the quantity
+    being compared and is defined for both targets.
+
+    Panel b plots that margin directly, computed PER FOLD and then averaged, which is a
+    paired comparison: both models see the same held-out chromosomes in a given fold, so
+    differencing within a fold removes the between-fold variation that dominates the
+    absolute numbers.
+    """
     targets = [("p300", "p300_"), ("H3K27ac", "h3k27ac_")]
-    fig, axes = plt.subplots(1, 2, figsize=figsize(columns=2, aspect=0.44),
-                             sharey=True)
-    for ax, (tname, tprefix), panel in zip(axes, targets, "ab"):
-        groups = []
-        for mode in MODE_ORDER:
+    modes = ["atac", "multimodal"]
+    fig, axes = plt.subplots(1, 2, figsize=figsize(columns=2, aspect=0.46))
+
+    # --- panel a: the two modalities, grouped by target --------------------
+    ax = axes[0]
+    width, xt, xl = 0.36, [], []
+    for gi, (tname, tprefix) in enumerate(targets):
+        for mi, mode in enumerate(modes):
             sub = pf[(pf["mode"] == mode) & (pf["stratum"] == "top_quintile")
                      & pf["config"].str.startswith(tprefix)]
             if sub.empty:
                 continue
-            groups.append((LABEL[mode], mode, sub["pearson"].tolist()))
-        if not groups:
+            vals = sub["pearson"].to_numpy(dtype=float)
+            m, half = mean_ci(vals)
+            x = gi * 1.15 + (mi - 0.5) * width
+            ax.bar(x, m, width=width, color=COLOR[mode], zorder=2)
+            if np.isfinite(half):
+                ax.errorbar(x, m, yerr=half, fmt="none", ecolor="black",
+                            elinewidth=0.75, capsize=2, capthick=0.75, zorder=4)
+            rng = np.random.default_rng(0)
+            ax.scatter(np.full(len(vals), x) + rng.uniform(-0.08, 0.08, len(vals)),
+                       vals, s=4, color="black", alpha=0.75, linewidths=0, zorder=5)
+            xt.append(x)
+            xl.append("ATAC\nonly" if mode == "atac" else "Seq\n+ ATAC")
+        ax.text(gi * 1.15, -0.20, tname, ha="center", va="top", fontsize=7.5,
+                fontweight="medium", transform=ax.get_xaxis_transform())
+    ax.set_xticks(xt)
+    ax.set_xticklabels(xl)
+    ax.set_ylim(0, 1.0)
+    ax.set_ylabel("Pearson r (log counts)")
+    ax.set_title("Top signal quintile")
+    add_panel_label(ax, "a")
+
+    # --- panel b: the margin itself, paired within fold --------------------
+    ax = axes[1]
+    for gi, (tname, tprefix) in enumerate(targets):
+        a = pf[(pf["mode"] == "atac") & (pf["stratum"] == "top_quintile")
+               & pf["config"].str.startswith(tprefix)].sort_values("fold")
+        m_ = pf[(pf["mode"] == "multimodal") & (pf["stratum"] == "top_quintile")
+                & pf["config"].str.startswith(tprefix)].sort_values("fold")
+        if a.empty or m_.empty:
             continue
-        bars_with_folds(ax, groups,
-                        ylabel="Pearson r (log counts)" if panel == "a" else None,
-                        title=f"{tname} target")
-        # the quantity being compared: the sequence margin over accessibility
-        by = {m: np.mean(v) for _, m, v in groups}
-        if "atac" in by and "multimodal" in by:
-            delta = by["multimodal"] - by["atac"]
-            ax.annotate("", xy=(2, by["multimodal"]), xytext=(2, by["atac"]),
-                        arrowprops=dict(arrowstyle="<->", lw=0.75, color="#333"))
-            ax.text(2.28, (by["multimodal"] + by["atac"]) / 2,
-                    f"+{delta:.3f}", fontsize=6.5, va="center", color="#333")
-        ax.set_xlim(-0.6, 2.75)
-        add_panel_label(ax, panel)
-    fig.suptitle("Sequence margin over accessibility, top signal quintile", y=1.02)
+        folds = sorted(set(a["fold"]) & set(m_["fold"]))
+        d = np.array([float(m_[m_["fold"] == f]["pearson"].iloc[0])
+                      - float(a[a["fold"] == f]["pearson"].iloc[0]) for f in folds])
+        mean, half = mean_ci(d)
+        ax.bar(gi, mean, width=0.5, color="#4D4D4D", zorder=2)
+        if np.isfinite(half):
+            ax.errorbar(gi, mean, yerr=half, fmt="none", ecolor="black",
+                        elinewidth=0.75, capsize=2.5, capthick=0.75, zorder=4)
+        rng = np.random.default_rng(1)
+        ax.scatter(np.full(len(d), gi) + rng.uniform(-0.1, 0.1, len(d)), d, s=4.5,
+                   color="black", alpha=0.75, linewidths=0, zorder=5)
+        ax.text(gi, mean + (half if np.isfinite(half) else 0) + 0.02,
+                f"+{mean:.3f}", ha="center", fontsize=7)
+    ax.set_xticks(range(len(targets)))
+    ax.set_xticklabels([n for n, _ in targets])
+    ax.set_ylim(0, 0.45)
+    ax.set_ylabel("Sequence margin over ATAC only")
+    ax.set_title("Paired within fold")
+    add_panel_label(ax, "b")
+
     fig.tight_layout()
     return save_fig(fig, os.path.join(figdir, "fig4_p300_vs_h3k27ac.png"))
 
