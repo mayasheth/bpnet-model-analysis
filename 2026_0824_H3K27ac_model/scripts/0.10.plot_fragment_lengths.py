@@ -17,6 +17,7 @@ Usage:
 
 import argparse
 import os
+import sys
 import subprocess
 
 import numpy as np
@@ -24,6 +25,10 @@ import pandas as pd
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from nature_style import apply_rcparams  # Nature-spec fonts, spines, dpi
+
 
 SAMTOOLS = "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/.pixi/envs/multimodal/bin/samtools"
 SUB = (1, 99)         # channel: sub-nucleosomal
@@ -52,6 +57,7 @@ def tlens(bam, region, n_reads, max_len):
 
 def main():
     args = parse_args()
+    apply_rcparams()
     os.makedirs(args.outdir, exist_ok=True)
     os.makedirs(args.figdir, exist_ok=True)
 

@@ -24,6 +24,7 @@ Usage:
 
 import argparse
 import os
+import sys
 
 import numpy as np
 import pandas as pd
@@ -32,6 +33,10 @@ from scipy.stats import pearsonr, spearmanr
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from nature_style import apply_rcparams  # Nature-spec fonts, spines, dpi
+
 
 COLS = ["chr", "start", "end", "name", "score", "strand",
         "signalValue", "pValue", "qValue", "summit"]
@@ -88,6 +93,7 @@ def window_sums(df, spec, hw):
 
 def main():
     args = parse_args()
+    apply_rcparams()
     os.makedirs(args.outdir, exist_ok=True)
     os.makedirs(args.figdir, exist_ok=True)
 

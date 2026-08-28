@@ -68,23 +68,23 @@ blockquote { border-left: 3px solid #ddd; margin-left: 0; padding-left: 1rem;
 
 ## Headline figure
 
-![](figures/fiveprime_stratified_eval.png)
+![](figures/fig1_three_mode_comparison.png)
 
-**Figure 1 | Sequence alone reaches 42% of the achievable ceiling for H3K27ac; adding ATAC reaches 74%.** **Headline figure.**
+**Figure 1 | Sequence alone reaches 0.38 on H3K27ac-positive elements; adding ATAC reaches 0.69.** **Headline figure.**
 
 <details>
 <summary>Full legend</summary>
 
-**Figure 1 | Model performance for predicting K562 H3K27ac at candidate regulatory elements, by input modality.** Pearson correlation between predicted and observed log counts, pooled over the five held-out chromosome folds of a chromosome-partitioned 5-fold cross-validation (n = 58,655 element–fold observations). **a**, All candidate elements. **b**, Top quintile of elements by observed H3K27ac (n = 11,731) — the elements that actually carry the mark. Bars are the three input modalities of `MultiModalBPNet`: sequence only (4-channel one-hot DNA), ATAC only (1-channel base-resolution accessibility), and sequence + ATAC (5-channel). Dashed line is the achievable ceiling, `sqrt(2r/(1+r))` where *r* is the inter-replicate Pearson correlation on the same elements and window (Spearman–Brown correction for the two-replicate merged target, then square root because a model predicts the expected signal rather than a noisy draw of it); ceiling = 0.957 for all elements, 0.929 for the top quintile. Target is K562 H3K27ac ChIP-seq (ENCODE ENCSR000AKP), 5′-end counts summed over a 1,000 bp window centred on each element. Restricting to elements that carry the mark lowers every model, but lowers the accessibility-containing models least: sequence 0.500 → 0.389, ATAC 0.814 → 0.551, sequence + ATAC 0.874 → 0.686. Source: `results/fiveprime_stratified_evaluation.tsv`.
+**Figure 1 | Model performance for predicting K562 H3K27ac at candidate regulatory elements, by input modality.** Pearson correlation between predicted and observed log counts. Bars are the mean across the five chromosome-holdout folds, whiskers the t-based 95% confidence interval (`t(0.975, df=4) = 2.776`), points the five individual fold values. **a**, All candidate elements. **b**, Top quintile by observed H3K27ac — the elements that carry the mark. Colour encodes input modality throughout this report: red = sequence only (4-channel one-hot DNA), blue = ATAC only (1-channel base-resolution accessibility), purple = sequence + ATAC (5-channel). Dashed line is the achievable ceiling, `sqrt(2r/(1+r))` where *r* is the inter-replicate Pearson correlation on the same elements and window; 0.957 for all elements, 0.929 for the top quintile. Top-quintile means with 95% CI: sequence 0.380 [0.323, 0.437], ATAC only 0.548 [0.497, 0.599], sequence + ATAC 0.685 [0.667, 0.704] — all three intervals disjoint. The multimodal model's fold-to-fold spread (sd 0.015) is a third of either single-input model's (0.041–0.046): combining inputs is markedly more stable across chromosome sets than either alone. Target is K562 H3K27ac ChIP-seq (ENCODE ENCSR000AKP), 5′-end counts over a 1,000 bp element-centred window. Source: `results/fiveprime_stratified_fold_summary.tsv`.
 </details>
 
 ## Summary
 
-- Accessibility does most of the work. On the elements that carry the mark, ATAC alone reaches 0.551 and sequence alone 0.389; together they reach 0.686, so sequence adds +0.135 over accessibility (Fig. 1b).
-- The same comparison for p300, evaluated identically on the same elements, gives sequence a +0.300 margin over accessibility — **2.2× larger than for H3K27ac** (Fig. 4). H3K27ac is the higher-scoring target overall but the poorer substrate for sequence interpretation.
-- A sequence-only model trained in K562 retains only 16% of the achievable ceiling when applied to GM12878, against 50% for ATAC-only (Fig. 6). The sequence component is largely cell-type-specific rather than a transferable grammar.
-- Overall correlation is a misleading headline when accessibility is an available input: sequence + ATAC scores 0.809 overall but only 0.475 on the departure from what accessibility alone predicts (Fig. 5).
-- ATAC and H3K27ac are spatially offset — ATAC peaks on the element centre, H3K27ac on flanking nucleosomes at ±250 bp and is far broader (Fig. 2). H3K27ac around active elements only reaches its distal plateau near ±2 kb, well beyond the model's ~1.1 kb receptive field.
+- Accessibility does most of the work. On elements carrying the mark, ATAC alone reaches 0.548 [0.497, 0.599] and sequence alone 0.380 [0.323, 0.437]; together 0.685 [0.667, 0.704], so sequence adds +0.137 over accessibility (Fig. 1b).
+- The same comparison for p300 gives sequence a +0.304 margin over accessibility against +0.127 for H3K27ac — a difference of 0.177 ± 0.027, about 6.6 standard errors (Fig. 4). H3K27ac scores higher overall but is the poorer substrate for sequence interpretation.
+- **Accessibility transfers across cell types; only sequence collapses.** ATAC-only extracts *more* relative to the available signal in GM12878 than in K562 (ratio 1.14 vs 1.06, Fig. 8), so its lower absolute score there reflects weaker ATAC–H3K27ac coupling in that cell type rather than a failure to generalise. Sequence-only falls 0.360 → 0.146 with no comparable explanation (Fig. 6).
+- Overall correlation is misleading when accessibility is an available input: sequence + ATAC scores 0.809 overall but only 0.475 against the departure from what accessibility alone predicts (Fig. 5).
+- ATAC and H3K27ac are spatially offset — ATAC peaks on the element centre, H3K27ac on flanking nucleosomes at ±250 bp and is far broader (Fig. 2). H3K27ac reaches its distal plateau near ±2 kb, well beyond the model's ~1.1 kb receptive field.
 
 ## Goals
 
@@ -181,14 +181,14 @@ Source: `scripts/0.3.replicate_ceiling_by_window.py`, `scripts/0.4.flanking_vs_f
 
 **Q:** Does sequence add as much information beyond accessibility for H3K27ac as it does for p300?
 
-**A:** No — on the top quintile, sequence adds +0.300 over accessibility for p300 but only +0.135 for H3K27ac, despite H3K27ac scoring higher overall.
+**A:** No — sequence adds +0.304 over accessibility for p300 but only +0.127 for H3K27ac, a difference of 0.177 ± 0.027 (about 6.6 SE), despite H3K27ac scoring higher overall.
 
-![](figures/p300_vs_h3k27ac_stratified_eval.png)
+![](figures/fig4_p300_vs_h3k27ac.png)
 
 <details>
 <summary>Figure 4 legend</summary>
 
-**Figure 4 | H3K27ac is the easier target but the weaker substrate for sequence.** Pearson correlation on log counts, top quintile of elements by observed signal, pooled over 5 chromosome-holdout folds (n = 11,731). All models are `MultiModalBPNet` evaluated on the same K562 DNase candidate elements with element-centred ±500 bp windows, so the comparison isolates the target. p300 (ENCSR000EGE, stranded 5′ ends): ATAC-only 0.305, sequence + ATAC 0.606, margin **+0.300**. H3K27ac (ENCSR000AKP, 5′ ends): ATAC-only 0.551, sequence + ATAC 0.686, margin **+0.135**; sequence-only 0.389. The margin — what sequence adds once accessibility is already available — is 2.2× larger for p300. Note the ranking inverts depending on the statistic used: H3K27ac has the higher joint-model correlation (0.686 vs 0.606) but the smaller sequence margin. One caveat: the p300 models were *trained* on ENCSR000EGE peak summits and are *evaluated* here on candidate-element centres, matching this repository's existing p300 prediction pipeline; a matched element-centred p300 model would most likely raise p300 further and widen the gap. Source: `results/p300_vs_h3k27ac_stratified_evaluation.tsv`.
+**Figure 4 | H3K27ac is the easier target but the weaker substrate for sequence.** Top quintile of elements by observed signal. **a**, ATAC-only (blue) and sequence + ATAC (purple) for each target; bars are the mean across five chromosome-holdout folds, whiskers the 95% CI, points the individual folds. p300 (ENCSR000EGE, stranded 5′ ends): ATAC only 0.304 [0.280, 0.329], sequence + ATAC 0.608 [0.566, 0.651]. H3K27ac (ENCSR000AKP): ATAC only 0.542 [0.489, 0.596], sequence + ATAC 0.669 [0.654, 0.684]. **b**, The sequence margin — sequence + ATAC minus ATAC-only — computed **within each fold and then averaged**, a paired comparison: both models see the same held-out chromosomes in a given fold, so differencing within a fold removes the between-fold variation that dominates the absolute values in **a**. p300 **+0.304**, H3K27ac **+0.127**; the intervals do not overlap. Sequence-only is deliberately absent: there is no p300 sequence-only model in this format (the p300 sequence models are bpnet-refactor/TensorFlow checkpoints), and the margin is defined without it. Both targets are evaluated on the same K562 DNase candidate elements with element-centred ±500 bp windows, so the comparison isolates the target. Caveat: the p300 models were *trained* on ENCSR000EGE peak summits and *evaluated* here on element centres, matching this repository's existing p300 prediction pipeline; a matched element-centred p300 model would likely raise p300 further and widen the gap. Source: `results/p300_vs_h3k27ac_stratified_per_fold.tsv`.
 </details>
 
 **Method.**
@@ -250,14 +250,14 @@ Source: `scripts/2.4.evaluate_residual.py`
 
 **Q:** Does a K562-trained model still work on GM12878?
 
-**A:** Accessibility transfers and sequence does not — ATAC-only retains 50% of the achievable ceiling in GM12878 while sequence-only retains 16%.
+**A:** Accessibility transfers and sequence does not — ATAC-only retains 50% of the achievable ceiling in GM12878 against 16% for sequence-only, and the ATAC-only drop is fully explained by weaker ATAC–H3K27ac coupling in GM12878 rather than any loss of generalisation (Fig. 8).
 
-![](figures/gm12878_transfer_stratified_eval.png)
+![](figures/fig6_transfer.png)
 
 <details>
 <summary>Figure 6 legend</summary>
 
-**Figure 6 | Accessibility transfers across cell types; the sequence component largely does not.** K562-trained models applied without retraining to GM12878 candidate elements (n = 154,224 elements; 11,429 in the top quintile), evaluated against GM12878 H3K27ac. Top-quintile Pearson: sequence-only 0.153, ATAC-only 0.473, sequence + ATAC 0.522. Expressed as a fraction of each cell type's own achievable ceiling — necessary because the two targets differ in quality — sequence-only falls from 38% of ceiling in K562 to **16%** in GM12878, ATAC-only 58% → 50%, sequence + ATAC 72% → 55%. The sequence margin over accessibility shrinks from +0.125 in K562 to +0.049 in GM12878, so roughly 60% of what sequence contributes does not survive a change of cell type. Note the GM12878 target is *easier*, not harder: its top-quintile inter-replicate ceiling is 0.832 against K562's 0.760 (mean 21.1 versus 17.0 counts per window), so normalising makes the sequence collapse look worse than the raw correlations suggest. **These transfer numbers were computed on an earlier processing of the target and are being re-derived on 5′ ends.** Sources: `results/gm12878_transfer_stratified_evaluation.tsv`, `results/gm12878_fiveprime_replicate_ceiling_by_window.tsv`.
+**Figure 6 | Accessibility transfers across cell types; the sequence component does not.** K562-trained models applied without retraining to GM12878 candidate elements (n = 154,215; 30,843 in the top quintile), evaluated against GM12878 H3K27ac. Bars are the mean across five folds as a percentage of each cell type's own achievable ceiling — necessary because the two targets differ in quality — with 95% CI whiskers; solid = K562 in-cell-type, hatched = GM12878 transfer. Top-quintile Pearson in GM12878: sequence only 0.146 [0.112, 0.180], ATAC only 0.467 [0.433, 0.500], sequence + ATAC 0.518 [0.490, 0.546]. As a fraction of ceiling, sequence-only falls from 38% in K562 to **16%** in GM12878, ATAC only 58% → 50%, sequence + ATAC 72% → 55%. The sequence margin over accessibility shrinks from +0.125 to +0.049, so roughly 60% of the sequence contribution does not survive a change of cell type. Two points guard the interpretation. The GM12878 target is *easier*, not harder — top-quintile inter-replicate ceiling 0.832 against K562's 0.760 — so normalising makes the sequence collapse look worse, not better. And the ATAC-only decline is not a transfer failure once assay coupling is accounted for (Fig. 8). Sources: `results/gm12878_transfer_stratified_fold_summary.tsv`, `results/gm12878_fiveprime_replicate_ceiling_by_window.tsv`.
 </details>
 
 **Method.**
@@ -279,6 +279,48 @@ pixi run python scripts/2.2.evaluate_stratified.py \
 Source: `scripts/2.2.evaluate_stratified.py`, `scripts/0.7.make_gm12878_5prime.sh`
 </details>
 
+## Accessibility explains less of H3K27ac in GM12878, which accounts for the ATAC-only transfer drop
+
+**Q:** Is the ATAC-only model's lower score in GM12878 a failure to generalise, or is accessibility simply less coupled to H3K27ac there?
+
+**A:** The latter — the model-free ATAC–H3K27ac correlation is 0.409 in GM12878 against 0.510 in K562, and the ATAC-only model extracts *more* relative to that available signal in GM12878 (ratio 1.14) than in K562 (1.06).
+
+![](figures/atac_vs_h3k27ac_K562.png)
+
+<details>
+<summary>Figure 8 legend</summary>
+
+**Figure 8 | Model-free coupling between accessibility and H3K27ac, and what it implies for transfer.** Hexbin of log1p summed ATAC against log1p summed H3K27ac over identical element-centred ±500 bp windows in K562 (n = 150,519 elements with usable windows); colour is element density, log scale. No model is involved — this is the direct correlation between the two assays and therefore an upper reference for what any accessibility-only predictor could achieve. Top-quintile Pearson: **K562 0.510, GM12878 0.409**. Placing the ATAC-only model against that reference in each cell type:
+
+| | K562 | GM12878 |
+|---|---|---|
+| model-free ATAC–H3K27ac coupling | 0.510 | 0.409 |
+| ATAC-only model | 0.542 | 0.467 |
+| model / coupling | 1.06 | 1.14 |
+
+The ATAC-only model does not degrade across cell types; it exceeds the raw coupling in both, and by a wider margin in GM12878. Its lower absolute score there is a property of the assay pair in that cell type. Sequence-only, by contrast, falls 0.360 → 0.146 with no analogous denominator to absorb it. This makes the transfer conclusion more specific rather than weaker: accessibility transfers, and only the sequence component collapses. Both cell types use the same 5′ target processing and window, so the comparison is not confounded by target definition. Source: `results/atac_vs_h3k27ac_by_celltype.tsv`.
+</details>
+
+**Method.**
+
+- Summed ATAC against summed H3K27ac over identical element windows; no model.
+- Reported on the top H3K27ac quintile, matching every other evaluation here.
+
+<details>
+<summary>Full methods &amp; code</summary>
+
+This is the model-free reference for the ATAC-only baseline: it separates how much accessibility can explain in principle from how well a network learns it. Both are needed to read a cross-cell-type comparison, because the coupling is the denominator that makes accessibility-based numbers comparable between cell types. Results accumulate one row-set per label into a single TSV, so the panel extends by one invocation per cell type.
+
+```bash
+pixi run python scripts/0.12.atac_vs_h3k27ac.py --label K562 \
+    --elements reference/K562_DNase_candidate_elements.narrowPeak \
+    --atac-bw .../atac.bw \
+    --h3k27ac-bw data/h3k27ac_5p_plus.bw,data/h3k27ac_5p_minus.bw \
+    --outdir results --figdir figures
+```
+Source: `scripts/0.12.atac_vs_h3k27ac.py`
+</details>
+
 ## The ATAC library supports fragment-size stratification
 
 **Q:** Does the K562 ATAC data contain a usable mono-nucleosomal population?
@@ -288,9 +330,9 @@ Source: `scripts/2.2.evaluate_stratified.py`, `scripts/0.7.make_gm12878_5prime.s
 ![](figures/atac_fragment_lengths.png)
 
 <details>
-<summary>Figure 7 legend</summary>
+<summary>Figure 9 legend</summary>
 
-**Figure 7 | K562 ATAC fragment lengths show clear nucleosomal laddering.** Fragment-length density from TLEN of properly-paired reads, chr1, ~1.4 million fragments per replicate, three ENCSR868FGK replicates overlaid (ENCFF077FBI, ENCFF128WZG, ENCFF534DCE). Sub-nucleosomal mode at 42 bp, mono-nucleosomal peak at ~205 bp, di-nucleosomal at ~400 bp and tri-nucleosomal at ~600 bp; median 201 bp; replicates superimpose. Shaded bands are the two channel windows built so far: sub-nucleosomal 1–99 bp (30.3% of fragments) and mono-nucleosomal 180–247 bp (19.7%), leaving **49.8% of fragments in neither** — the 100–180 bp trough and everything above 247 bp, including both higher-order peaks. A four-channel design of [all fragments, sub, mono, di] would make the input a strict superset of the current flat-accessibility baseline, so it cannot regress, while adding the higher-order structure the ladder shows is present. Source: `results/atac_fragment_length_summary.tsv`.
+**Figure 9 | K562 ATAC fragment lengths show clear nucleosomal laddering.** Fragment-length density from TLEN of properly-paired reads, chr1, ~1.4 million fragments per replicate, three ENCSR868FGK replicates overlaid (ENCFF077FBI, ENCFF128WZG, ENCFF534DCE). Sub-nucleosomal mode at 42 bp, mono-nucleosomal peak at ~205 bp, di-nucleosomal at ~400 bp and tri-nucleosomal at ~600 bp; median 201 bp; replicates superimpose. Shaded bands are the two channel windows built so far: sub-nucleosomal 1–99 bp (30.3% of fragments) and mono-nucleosomal 180–247 bp (19.7%), leaving **49.8% of fragments in neither** — the 100–180 bp trough and everything above 247 bp, including both higher-order peaks. A four-channel design of [all fragments, sub, mono, di] would make the input a strict superset of the current flat-accessibility baseline, so it cannot regress, while adding the higher-order structure the ladder shows is present. Source: `results/atac_fragment_length_summary.tsv`.
 </details>
 
 **Method.**
@@ -312,29 +354,42 @@ Source: `scripts/0.10.plot_fragment_lengths.py`, `scripts/0.9.make_atac_fragment
 
 ## Open questions / next steps
 
-**Immediately in progress**
+**In progress**
 
-- Re-derive the residual (Fig. 5) and GM12878 transfer (Fig. 6) numbers on the 5′ target. The three-mode comparison (Fig. 1) and the p300 comparison (Fig. 4) are already on it.
-- Residual training: fit the sequence model on `observed − atac_pred` directly rather than hoping a jointly-trained model finds the complement. Motivated by the sequence-only residual *r* of 0.100 in Fig. 5, which says an independently-trained sequence model does not discover what accessibility misses. ~4 GPU-hours; 4 of 5 folds complete.
+- Re-derive the residual (Fig. 5) and GM12878 transfer (Fig. 6) numbers on the 5′ target. Figures 1, 4 and 8 are already on it.
+- Residual training — fit the sequence model on `observed − atac_pred` directly rather than hoping a jointly-trained model finds the complement, motivated by the sequence-only residual *r* of 0.100 in Fig. 5. All five folds trained; evaluation pending.
+
+**Multi-cell-type generalisation — now the highest-value direction**
+
+Every conclusion above rests on a single cell-type pair, which is thin for a claim about generalisation. Candidate element sets are now built for **11 cell types** from ENCODE_rE2G `Neighborhoods/EnhancerList.bed` (`reference/celltype_elements/`, each with a `.provenance.txt`): K562, GM12878, HCT116, Jurkat, H1, H9, THP-1 and four TeloHAEC conditions. WTC11 is excluded because its only H3K27ac experiment is Mint-ChIP.
+
+- **Train a DNase-input model — the enabling step, not an optional variant.** Only 3 distinct cell types have ATAC (K562, GM12878, TeloHAEC); 7 have DNase. Applying an ATAC-trained model to a DNase cell type shifts the input domain and would confound "does sequence transfer" with "does the model tolerate a different accessibility assay".
+- **Reciprocal direction (GM12878 → K562) — RUNNING.** All three modalities training on GM12878 with settings identical to the K562 runs (15 jobs). Every result above trains on K562 and tests on GM12878, which cannot separate "H3K27ac has little transferable sequence signal" from "K562 is a poor cell type to learn from". If the sequence component transfers better out of GM12878, the limitation is the training cell type rather than the target. `scripts/1.8.submit_training_gm12878.sh`.
+- **Then the full cross-cell-type matrix: train on each, evaluate on all others**, once the DNase model opens up the remaining seven cell types.
+- **Compute the model-free coupling (Fig. 8) for every new cell type first.** Minutes of CPU, no model needed, and without it a transfer number cannot be interpreted.
+- **TeloHAEC ±IL1b / ±TNFa / ±VEGF is a sharper, cheaper test.** Those four are *conditions of one cell type*, so they are weak evidence for cross-cell-type transfer but strong evidence for whether the model tracks condition-specific H3K27ac changes — with no input-domain shift and no change in element definition.
+- **Two confounds to manage.** Element derivation is not uniform: the seven above are DNase/DHS-derived, the four TeloHAEC sets are ATAC-derived. And K562's currently-in-use element set is a different derivation from its own rE2G EnhancerList — 95% the same loci at 50% reciprocal overlap but with different boundaries — so K562 is the odd one out in the panel. Re-running the K562 evaluations on its EnhancerList would give all 11 cell types one element definition.
 
 **Architecture, in expected order of value**
 
-- **Wider receptive field.** `n_layers = 8` gives the model a ~1.1 kb view, but H3K27ac around strong elements only reaches its plateau near ±4 kb (Fig. 2), and those elements sit in acetylation domains kilobases wide. `n_layers = 10` gives ~4.2 kb and requires only a wider input window (5,186 bp for a ±500 bp count window). Most expensive item at ~30–60 GPU-hours.
-- **Nucleosome-resolution profile target.** H3K27ac has no meaningful single-base structure; it is nucleosomal. Binning the profile target to ~50–150 bp matches the biology and makes the multinomial assumption behind the profile loss appropriate at the scale where the signal is real.
-- **Fragment-size-stratified accessibility channels.** The current accessibility input is flat coverage, which discards fragment length — exactly the information that distinguishes nucleosome-free from nucleosome-occupied. H3K27ac requires a nucleosome to acetylate, so this supplies a mechanistically missing variable. The K562 ATAC library shows a clean nucleosomal ladder (Fig. 7), and the architecture now accepts an arbitrary number of accessibility channels.
+- **Wider receptive field.** `n_layers = 8` gives ~1.1 kb, but H3K27ac reaches its plateau near ±4 kb and strong elements sit in acetylation domains kilobases wide (Fig. 2). `n_layers = 10` gives ~4.2 kb for a 5,186 bp input window. ~30–60 GPU-hours, the most expensive item.
+- **Nucleosome-resolution profile target.** H3K27ac has no meaningful single-base structure. Binning the profile target to ~50–150 bp matches the biology and makes the multinomial assumption behind the profile loss appropriate at the scale where signal exists.
+- **Fragment-size-stratified accessibility channels.** The current input is flat coverage, discarding fragment length — the information distinguishing nucleosome-free from nucleosome-occupied. The library supports it (Fig. 9) and the architecture now accepts arbitrary accessibility channels. An `[all, sub, mono, di]` design keeps the input a strict superset of the present baseline, so it cannot regress.
 
 **Framing**
 
-- Score architecture changes on **cross-cell-type transfer**, not held-out chromosomes. Fig. 6 shows in-cell-type performance is a poor guide to generalisation for this target.
-- Establish an error bar. Measured run-to-run variance is ~0.018 on a single fold (~0.008 pooled over 5), and several comparisons in this analysis rest on differences of that order. One configuration × 5 seeds would give every comparison here a confidence interval. The p300-versus-H3K27ac margin (+0.300 vs +0.135) is comfortably outside it; the ±500 versus ±1000 window comparison is not.
-- Motif syntax (SHAP / TF-MoDISco / FiNeMo) is not started. Given Figs. 4–6, expect substantially less attributable sequence signal here than for p300, and prefer the ±500 bp window since its windows are free of neighbour contamination.
-- [Q for Maya] Is a model that is mostly reading accessibility still useful for the intended application, or does the goal require the sequence component specifically? The answer decides whether to invest in the architecture list above or to reframe around accessibility as a first-class input.
+- Score architecture changes on **cross-cell-type transfer**, not held-out chromosomes: Fig. 6 shows in-cell-type performance is a poor guide to generalisation here.
+- Between-fold variability dominates. Fold `sd` is 0.041–0.046 for the single-input models, giving CI half-widths near 0.05 — 2–3× the run-to-run variance of 0.018. Differences under ~0.05 cannot be resolved by adding seeds, only by adding folds or elements.
+- Motif syntax (SHAP / TF-MoDISco / FiNeMo) not started. Given Figs. 4–6, expect less attributable sequence signal than for p300, and prefer the ±500 bp window since its windows carry no neighbour contamination.
+- [Q for Maya] Is a model that mostly reads accessibility still useful for the intended application, or does the goal require the sequence component specifically? That decides whether the architecture list is worth the GPU time or whether the work should reframe around accessibility as a first-class input.
 
 ## Methods
 
 Model is `MultiModalBPNet` (`scripts/multimodal_bpnet.py`), a BPNet variant with a dilated-convolution trunk, a profile head trained with multinomial negative log-likelihood, and a counts head trained with log1p mean-squared error; total loss is `profile_loss + w · count_loss`. All results here concern the counts head. Training uses `n_layers = 8` (a ~1.1 kb receptive field), a ±500 bp counting window with the required 2,114 bp input window, `w = 10`, reverse-complement augmentation, chromosome-holdout 5-fold cross-validation, and a 50,000-window cap on the GC-matched negative pool. Windows are centred on candidate-element midpoints rather than ChIP peak summits, because the H3K27ac summit sits on a flanking nucleosome rather than on the element (Fig. 2).
 
-`w = 10` was chosen from a single-fold sweep over 1, 3, 10, 100 and 1,000. Only the extremes are resolvable at the measured noise level: 10 clearly beats 1 (0.437) and 1,000 (0.464), while 3, 10 and 100 are within run-to-run variance of one another. `w = 10` sits in a flat region; a properly powered sweep is listed under next steps.
+All correlations are reported as the **mean across the five chromosome-holdout folds with a t-based 95% confidence interval**, with individual fold values shown as points. Each fold is an independent replicate of the train-and-evaluate procedure, so between-fold spread is the only uncertainty estimate available; a single pooled correlation over concatenated folds gives no error bar and can be biased when folds differ in mean or scale. Per-fold tables are in `results/*_stratified_per_fold.tsv`, summaries in `results/*_stratified_fold_summary.tsv`.
+
+`w = 10` was chosen from a single-fold sweep over 1, 3, 10, 100 and 1,000. Only the extremes are resolvable at the measured noise level: 10 clearly beats 1 (0.437) and 1,000 (0.464), while 3, 10 and 100 are within run-to-run variance of one another. `w = 10` sits in a flat region; a properly powered sweep is listed under next steps. With between-fold `sd` of 0.041–0.046, a single-fold sweep could not have resolved those differences at all.
 
 ### Regenerate
 
