@@ -223,8 +223,16 @@ def main():
             ps.append(r[0])
             print(f"  {label} fold{fold}: n={len(r[0])}")
         pred = np.concatenate(ps)
-        preds[cfg["mode"]] = pred
-        model_resid = pred - atac_pred
+        # A model trained with --count-offset-model learns (observed - atac_pred), and
+        # forward() does not add the offset back -- it is applied only inside fit() when
+        # scoring the loss. So this model's raw output already IS the residual.
+        # Subtracting atac_pred again would double-count it.
+        if cfg.get("residual", False):
+            model_resid = pred
+            pred = pred + atac_pred
+        else:
+            model_resid = pred - atac_pred
+        preds[label] = pred
 
         base_r2 = r2(obs, atac_pred)
         for name, mask in ([("all", np.ones(len(obs), bool))]
@@ -263,11 +271,11 @@ def main():
         "true_residual": np.concatenate([true_resid[order[:k]], true_resid[order[-k:]]]),
         "class": ["accessible_not_acetylated"] * k + ["acetylated_beyond_accessibility"] * k,
     })
-    for mode, pr in preds.items():
-        if mode == "atac":
+    for label_, pr in preds.items():
+        if label_ == "atac":
             continue
-        ex[f"{mode}_residual"] = np.concatenate([(pr - atac_pred)[order[:k]],
-                                                (pr - atac_pred)[order[-k:]]])
+        ex[f"{label_}_residual"] = np.concatenate([(pr - atac_pred)[order[:k]],
+                                                   (pr - atac_pred)[order[-k:]]])
     p2 = os.path.join(args.outdir, f"{args.out_prefix}extreme_residual_elements.tsv")
     ex.to_csv(p2, sep="\t", index=False)
     print(f"Wrote {p2}")
@@ -280,18 +288,21 @@ def main():
     ax.bar(x - 0.2, sub["overall_pearson"], width=0.38, color="#bbbbbb",
            label="Overall r (observed vs pred)")
     ax.bar(x + 0.2, sub["residual_pearson"], width=0.38,
-           color=[COLOR[m] for m in sub["mode"]], label="Residual r (beyond ATAC)")
+           color=[COLOR.get(m, "#777777") for m in sub["mode"]],
+           label="Residual r (beyond ATAC)")
     ax.set_xticks(x)
-    ax.set_xticklabels(sub["mode"], fontsize=8)
+    ax.set_xticklabels(sub["config"], fontsize=7, rotation=20, ha="right")
     ax.set_ylabel("Pearson r")
     ax.set_title("Overall correlation overstates what sequence adds", fontsize=9)
     ax.legend(frameon=False, fontsize=7)
 
     ax = axes[1]
-    for mode in sub["mode"]:
-        s = res[(res["mode"] == mode) & res["stratum"].str.startswith("abs_resid_q")]
+    for label_ in sub["config"]:
+        s = res[(res["config"] == label_) & res["stratum"].str.startswith("abs_resid_q")]
+        if not len(s):
+            continue
         ax.plot(range(1, len(s) + 1), s["residual_pearson"], marker="o", ms=4,
-                color=COLOR[mode], label=mode)
+                color=COLOR.get(s["mode"].iloc[0], "#777777"), label=label_)
     ax.set_xlabel("|true residual| quintile (5 = ATAC most wrong)")
     ax.set_ylabel("Residual Pearson r")
     ax.set_title("Where accessibility fails, does sequence help?", fontsize=9)
