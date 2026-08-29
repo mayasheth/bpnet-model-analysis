@@ -100,9 +100,17 @@ Inventory built from `2023_0701 Maya's sequences.xlsx` ("ENCODE data" sheet) int
    pooled, or compared as an inter-replicate ceiling, within one experiment and one
    processing. Two consequences below.
 
+3. **ATAC only — DNase is not an acceptable substitute** (Maya, 2026-08-29). DNase I
+   cutting and Tn5 insertion have different sequence biases and footprint structure, and
+   every model here is ATAC-trained. Swapping in DNase for the cell types that lack ATAC
+   would confound assay with cell type inside the very comparison the panel exists to
+   make, invisibly — it would surface as a cell-type effect.
+
 After exclusions: **11 biosamples with H3K27ac**, of which 6 have ATAC (K562, GM12878, and
 the 4 TeloHAEC conditions) and 7 have DNase (K562, GM12878, H1, H9, HCT116, Jurkat, THP-1).
-The structure matters more than the count.
+Under rule 3 only the ATAC set is usable, so the panel is **K562, GM12878 and TeloHAEC x4**
+— three distinct cell types, two of them already trained. The structure matters more than
+the count.
 
 - [~] **Model-free ATAC-vs-H3K27ac correlation across the panel — cheap, do first.**
       Correlate summed ATAC against summed H3K27ac over the same element windows, no model
@@ -135,6 +143,10 @@ The structure matters more than the count.
       differs from the rest in how its elements were called, not only in cell type. Either
       restrict cross-cell-type claims to the DNase-derived subset, or derive DNase-based
       TeloHAEC elements, or state the confound wherever TeloHAEC is compared to the others.
+      **Note rule 3 inverts this.** With the panel restricted to ATAC, TeloHAEC's
+      ATAC-derived elements are the ones consistent with the input assay and the
+      DNase-derived K562/GM12878 sets are the odd ones out. Element derivation and
+      accessibility assay should be made to agree; decide which way before training.
       Also note H9's elements are much wider (mean 798 bp vs ~570-600 for the rest), which
       will change its neighbour-contamination profile at any given window.
 
@@ -150,15 +162,26 @@ The structure matters more than the count.
       (An earlier exact-interval count of 25,550 shared was an artifact of comparing files
       that were not lexicographically sorted; the bedtools overlap figures above supersede
       it.)
-- [ ] **Train a DNase-input model — this is the enabling step, not an optional variant.**
-      Only 3 distinct cell types have ATAC (K562, GM12878, TeloHAEC — the other 3 ATAC
-      entries are TeloHAEC conditions); **7 have DNase** (K562, GM12878, H1, H9, HCT116,
-      Jurkat, THP-1 — WTC11 is out on the Mint-ChIP rule). Applying an ATAC-trained model to a
-      DNase cell type shifts the *input* domain, which confounds the transfer test with a
-      change of assay. So DNase is the common denominator across the panel, and without a
-      DNase model most of this data is unusable for generalization. Note the p300 project
-      already has a `models/dnase` directory that was never trained (blocked on generating
-      `data/dnase.bw`), so this was always intended.
+- [x] **DROPPED: train a DNase-input model.** This was previously the "enabling step" on
+      the reasoning that DNase is the common denominator across 7 cell types. Rejected
+      under rule 3 — it trades a known confound (assay) for a coverage gain, in the one
+      comparison where assay must be held fixed. The 5 DNase bigwigs already built in
+      `2026_0824_H3K27ac_model/data/panel/` (K562, GM12878, H1, H9, Jurkat) are validated
+      and complete but now unused; kept, not deleted.
+- [ ] **Acquire ATAC where it exists, rather than substituting DNase.** Scanned all 559
+      released ENCODE ATAC-seq experiments (matching biosample term names locally — a
+      one-at-a-time term query 404s on a miss, indistinguishable from "assay absent"):
+      **HCT116 has 17**, K562 64, GM12878 2. **H1, H9, Jurkat and THP-1 have none.**
+      So downloading from ENCODE rescues HCT116 only; the other four would need GEO/SRA
+      fastqs through `Data/scripts/sra_paired_fastq_to_bam.sh`, which is a separate
+      decision rather than a track rebuild. Processing pattern is in
+      `Data/ENCODE/<cell_type>/log.sh`: wget the BAM, then
+      `process_filtered_paired_ended_bam.sh` (ATAC is paired-end throughout), with
+      `Data/scripts/filter_ATAC_bam_pe.sh` for ATAC-specific filtering.
+      **HCT116 caveat is on the target side, not the input:** its H3K27ac experiment
+      ENCSR661KMA is `run_type = "se, pe"`, so under rule 2 the replicates are not
+      interchangeable and no inter-replicate ceiling is computable — and every
+      cross-cell-type number so far is ceiling-normalised. Trainable, not normalisable.
 - [ ] **Cross-cell-type matrix: train on each, evaluate on all others.** Currently every
       conclusion assumes K562 is representative, and it may well not be — it is a cancer
       line with an atypical chromatin landscape. If sequence transfers better *out of*
