@@ -490,3 +490,104 @@ Also worth noting against the original worry that K562 might be unrepresentative
 **mitigation_type**: convention
 
 **structural_mitigation_candidate**: Any cross-cell-type claim in this project requires four evaluations, not two: both transfer directions and both in-cell-type references, all on the same target processing. `scripts/2.6.submit_reciprocal.sh` runs exactly that set and should be the template when cell types are added.
+
+### [2026-08-29] ATAC-only is the right rule, and it cuts the panel from five new cell types to one
+
+**Category**: constraint
+
+**What happened**: The multi-cell-type panel was planned around DNase, on the reasoning that
+only 3 cell types had ATAC while 7 had DNase, and that swapping the accessibility bigwig
+needed no architecture change. Maya rejected this: the project should consider ATAC only.
+Eight panel tracks had already been built (5 DNase coverage + 3 H3K27ac 5' sets); all 23
+bigwigs validated clean, and the 5 DNase files are now unused.
+
+Scanning **all 559 released ENCODE ATAC-seq experiments** (matching cell types locally
+rather than querying biosample term names one at a time, since a term-name miss returns
+404 and is indistinguishable from "assay absent"):
+
+| Cell type | ENCODE ATAC experiments | Usable now |
+|---|---|---|
+| K562 | 64 | yes — already trained |
+| GM12878 | 2 | yes — already trained |
+| HCT116 | 17 | input yes, target blocked |
+| TeloHAEC (+IL1b/TNFa/noVEGF) | n/a, GEO | yes — ATAC BAMs already on Oak |
+| H1, H9, Jurkat, THP-1 | **0** | no ENCODE ATAC under any biosample name |
+
+**Why it matters**: DNase and ATAC are not interchangeable inputs. DNase I cutting and Tn5
+insertion have different sequence biases and different footprint structure, and every
+existing model here is ATAC-trained. A DNase-input panel would have confounded assay with
+cell type in exactly the comparison the panel exists to make — cross-cell-type transfer —
+and the confound would have been invisible in the results, appearing as a cell-type effect.
+
+The cost is real and worth stating plainly: ATAC-only takes the expansion from five new
+cell types (H1, H9, Jurkat, THP-1, HCT116) to **one** (TeloHAEC), plus three perturbation
+conditions of that same line. HCT116 is recoverable on the input side but its H3K27ac
+experiment ENCSR661KMA is `run_type = "se, pe"`, so under the one-(experiment, processing)-
+pair-per-sample rule its replicates are not interchangeable and no inter-replicate ceiling
+is computable — and every cross-cell-type number in this analysis is ceiling-normalised.
+
+TeloHAEC is not a consolation prize: it is endothelial rather than a blood cancer line, so
+it is a more distant lineage from K562/GM12878 than H1/H9 would have been, and its three
+cytokine conditions give a within-cell-type perturbation axis that tests a different and
+arguably more relevant kind of generalisation. Its elements are ATAC-derived, which under
+the ATAC-only rule now makes it the *consistent* one and the DNase-derived element sets the
+odd ones out.
+
+**Resolution**: Panel restricted to ATAC. TeloHAEC is the one new cell type available
+without new data processing, and its ctrl row pools GSE210489 + GSE210491, so it must be
+split by experiment before use. H1/H9/Jurkat/THP-1 would require GEO/SRA fastqs through
+`Data/scripts/sra_paired_fastq_to_bam.sh` — a separate decision, not a track rebuild.
+
+**Tags**: atac, dnase, panel, generalization, encode, data-availability, confounding, scope
+
+**mitigation_type**: convention
+
+**structural_mitigation_candidate**: Accessibility input assay is part of the sample
+definition, not a swappable file path. Any cell type entering the panel must supply ATAC;
+record the assay alongside the bigwig path in `config/panel_bam_paths.tsv` so a DNase track
+cannot be substituted silently.
+
+### [2026-08-29] TeloHAEC's recorded blocker was the wrong blocker — the real one is a second cell line in the directory
+
+**Category**: correction
+
+**What happened**: The cell-type inventory carried `ceiling_computable = no` for all four
+TeloHAEC rows, with the caveat "row pools 2 experiments (GSE210489 + GSE210491); split
+before use". Under the ATAC-only rule TeloHAEC became the single available new cell type,
+so the blocker was worth resolving rather than working around. Querying GEO for the series
+of every GSM in `config/sample_metadata.tsv` shows the premise was wrong:
+
+- **GSE210489 is the ATAC series; GSE210491 is the H3K27ac series**, both under SuperSeries
+  GSE210523. One series per assay — not two experiments of the same assay pooled into one
+  row. Every (condition, assay) group is a single experiment with a clean replicate set:
+  ctrl H3K27ac n=4, ctrl ATAC n=6, and n=2 H3K27ac / n=3 ATAC for each of IL1b, TNFa and
+  no-VEGF. **The inter-replicate ceiling is computable for all four conditions.**
+
+The genuine defect was not recorded anywhere:
+
+- **`TeloHAEC_ctrl/ATAC/` contains 9 BAMs, of which 3 are `cell_line = Eahy926`** —
+  EA.hy926, a different endothelial line — not TeloHAEC replicates:
+  `SRR20809434, SRR20809435, SRR20809436` (GSM6431138, GSM6431133, GSM6431132).
+  They sit in the same directory under the same `sample_name`, so any glob of
+  `TeloHAEC_ctrl/ATAC/*.bam` silently merges two cell lines into one accessibility track.
+  The other three conditions and every H3K27ac group are pure TeloHAEC.
+
+**Why it matters**: Two failure modes, opposite in direction. The recorded caveat would have
+cost a real cell type — the only one ATAC-only leaves — for a reason that does not exist.
+The unrecorded one would have produced a TeloHAEC ATAC input that is one-third a different
+line, which no downstream check would catch: the track would be well-formed, the ceiling
+would compute, and the number would simply be wrong. Directory layout encoded the condition
+but not the cell line, and `sample_name` said `TeloHAEC_ctrl` for all nine.
+
+**Resolution**: `results/celltype_inventory.tsv` corrected — all four TeloHAEC rows now
+`ceiling_computable = yes`, with the Eahy926 accessions named in the caveat. Build TeloHAEC
+tracks from an explicit BAM list, never a directory glob.
+
+**Tags**: telohaec, data-provenance, cell-line-contamination, geo, sample-definition,
+prediction-was-wrong, ceiling
+
+**mitigation_type**: convention
+
+**structural_mitigation_candidate**: A sample is (experiment, processing) *and cell line*.
+Where a metadata table carries a `cell_line` column, group by it before merging BAMs, and
+assert the group is single-valued — the directory name is not authoritative.
