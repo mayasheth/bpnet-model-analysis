@@ -1,0 +1,22 @@
+{
+  "baseline": {
+    "label": "atac5p", "mode": "atac", "half_window": 500,
+    "model_dir": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/models/atac5p_hw500_clw10",
+    "signal_plus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/h3k27ac_5p_plus.bw",
+    "signal_minus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/h3k27ac_5p_minus.bw"
+  },
+  "compare": [
+    {"label": "sequence5p", "mode": "sequence", "half_window": 500,
+     "model_dir": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/models/sequence5p_hw500_clw10",
+     "signal_plus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/h3k27ac_5p_plus.bw",
+     "signal_minus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/h3k27ac_5p_minus.bw"},
+    {"label": "multimodal5p", "mode": "multimodal", "half_window": 500,
+     "model_dir": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/models/multimodal5p_hw500_clw10",
+     "signal_plus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/h3k27ac_5p_plus.bw",
+     "signal_minus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/h3k27ac_5p_minus.bw"},
+    {"label": "residual5p", "mode": "sequence", "half_window": 500, "residual": true,
+     "model_dir": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/models/residual5pFIXED_hw500_clw10",
+     "signal_plus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/h3k27ac_5p_plus.bw",
+     "signal_minus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/h3k27ac_5p_minus.bw"}
+  ]
+}
