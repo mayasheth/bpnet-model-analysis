@@ -242,7 +242,7 @@ key_findings:
   - Stratification is essential - ATAC-only predicts H3K27ac at 0.746 over all 150k elements but only 0.543 on the top signal quintile. The unstratified number is mostly the dead-vs-active contrast.
   - Top-quintile Pearson, 5 folds, +/-500 bp: sequence 0.357, ATAC-only 0.543, sequence+ATAC 0.668. The combination beats both parts by a wide margin.
   - Against p300 evaluated identically, sequence adds ~2.4x more over accessibility for p300 (+0.301) than for H3K27ac (+0.125), even though H3K27ac is the more predictable target (0.668 vs 0.606). See .living/findings/predicting-regulatory-element-function-at-scale.md F-001.
-report: null
+report: 2026_0824_H3K27ac_model/h3k27ac_model_report.html
 tags: [h3k27ac, k562, multimodal, atac, counts-only, window-selection, chromatin]
 ```
 
@@ -268,6 +268,12 @@ Unstranded support landed in the shared `scripts/train_multimodal_bpnet.py` on
 `n_outputs` is derived (2 stranded, 1 not). The stranded p300 path was verified
 bit-identical to before the change. `--max-negatives` was added in the same pass because
 the old `10 x n_peaks` rule implies ~55 GB at 120k elements.
+
+**Report (draft, 2026-08-27):** `2026_0824_H3K27ac_model/h3k27ac_model_report.html`, source `h3k27ac_model_report.qmd`. Covers window selection, ATAC-vs-H3K27ac spatial
+comparison, inter-replicate ceilings in both cell types, the three-mode model
+comparison, the residual-beyond-accessibility metric, the p300 comparison, and
+GM12878 transfer. Scope stops before residual-model results. Rendered with the
+lab `/analysis-report` skill (Quarto source, pandoc fallback on Sherlock).
 
 **Window resolved: use +/-500** (`--out-window 1000`, `--in-window 2114`). All 30 jobs
 COMPLETED; 5-fold stratified top-quintile Pearson:
