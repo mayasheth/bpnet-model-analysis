@@ -74,3 +74,48 @@ Append-only log of non-obvious decisions and their rationale.
 **Consequences**: Earlier reported numbers (all-elements and top-quintile Pearson) remain valid but are no longer the headline. Any future model comparison in this project must report the residual metric or it is not comparable to these results. Also implies a training change: see the residual-training item in `todo/TODOLIST.md`.
 
 **Tags**: h3k27ac, evaluation, residual, metric-choice, atac
+
+---
+
+### [2026-08-29] Paired-end H3K27ac targets use read 1 only, not both mates
+
+**Context**: TeloHAEC H3K27ac is paired-end; K562 and GM12878 are single-end. A plain
+`bedtools genomecov -5` on PE data marks TWO 5' ends per fragment, one at each end, which is
+not the quantity the SE tracks measure. Both variants were built and compared
+(`scripts/0.16.compare_pe_5prime_variants.py`, job 41258528) across all four TeloHAEC
+conditions, rather than assuming.
+
+**Decision**: Build PE H3K27ac 5' targets from **read 1 only** (`samtools view -f 64`), so
+each fragment contributes exactly one 5' end. Applies to TeloHAEC now and to any PE H3K27ac
+entering the panel later. Both variants remain on disk (`*_r1_5p_*`, `*_both_5p_*`), so this
+is reversible at no compute cost.
+
+**Alternatives considered**:
+- Count both mates — rejected on principle despite winning the top-quintile ceiling by
+  0.003-0.005 in all four conditions. Two reasons. (i) It is a different quantity from the SE
+  cell types, giving TeloHAEC a different count-to-molecule relationship. (ii) Each fragment
+  contributes two *correlated* counts, violating the independent-read assumption behind
+  bpnetlite's multinomial profile loss -- the same class of defect recorded as the reason for
+  rejecting the 250 bp fragment-extended track.
+- Decide from the ceiling numbers alone -- rejected: the differences are ~0.003-0.005
+  corrected, far below the 0.041-0.046 between-fold sd that governs every model comparison
+  here, so no model result could resolve them. The choice is measurably immaterial to
+  performance and should therefore be made on assumptions, not on a tiebreak.
+
+**Rationale**: The two variants are *not* distinguishable by signal quality. Normalised
+meta-profiles agree at r = 0.9999 with max deviation below 0.9% of peak height, identical
+shoulder positions and dip depth -- because R1 is equally likely to be the left or right end
+of a fragment, so sampling one end recovers the same spatial distribution at half the
+density. There is no smearing here, unlike fragment extension. With signal quality tied, the
+deciding criteria are comparability with the existing cell types and not breaking the loss
+function's assumptions, both of which favour r1.
+
+**Consequences**: TeloHAEC counts will be ~half those of a both-mates track, which is
+irrelevant to correlation but must be remembered if raw counts are ever compared across cell
+types. The `*_both_5p_*` tracks stay on disk and must not be mixed into an analysis with r1
+tracks. A `both_depthmatched` column exists in
+`results/telohaec_*_pe_variant_ceiling.tsv` and is **not** a fair control -- matching total
+counts halves the fragment count for `both`, because each fragment there contributes two
+marks, so it is a half-depth library and loses for that reason alone. The script now says so.
+
+**Tags**: h3k27ac, telohaec, paired-end, target-definition, profile-loss, panel, 5-prime
