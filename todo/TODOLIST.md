@@ -26,8 +26,14 @@ neighbour bleed — not for an accuracy gain. See `.living/learnings.md`.
 - [x] **W1a. Residual EVALUATION** — done (jobs 40799753, 40803766). Residual metric
       is now the headline; it reverses the p300/H3K27ac ranking (F-002). Residual
       *training* is now item W2e below, promoted by that result.
-- [ ] **W1a-bis. Residual / difference-from-ATAC model + evaluation** — the highest-value
-      item and the one that matches the actual goal. Stage 1 already trained. ~4 GPU-h.
+- [x] **W1a-bis. Residual / difference-from-ATAC model + evaluation — DONE 2026-08-29**
+      (jobs 41232315, 41233130). Residual r 0.459 [0.421, 0.496] vs 0.149 [0.076, 0.222]
+      for the independently-trained sequence model; multimodal 0.551 [0.510, 0.592].
+      Results: `results/residual5p_{residual_evaluation,per_fold,fold_summary}.tsv`.
+      Required fixing `2.4.evaluate_residual.py`, which double-subtracted `atac_pred`
+      from offset-trained models — `forward()` never adds the offset, so their output
+      already IS the residual. Gated behind a `residual` config flag;
+      `2.7.diagnose_residual_offset.py` confirms the semantics empirically before scoring.
 - [ ] **W1b. GM12878 cross-cell-type transfer** — separates model capacity from
       "H3K27ac is not sequence-determinable". Inference only on existing K562 models.
       ~0.5 GPU-h. Data all present (`ENCFF645BAL`, `ENCFF865OOP`).
@@ -65,12 +71,24 @@ neighbour bleed — not for an accuracy gain. See `.living/learnings.md`.
 - [ ] **W2d. Re-check the ±500 vs ±1000 window on the 5′ target** (needs G1) — less
       smearing means less neighbour bleed, so the contamination penalty may differ.
 
-- [ ] **W2e. Residual TRAINING — promoted, high value.** An independently-trained
-      sequence model captures almost none of the ATAC residual (r = 0.100): it is
-      *redundant* with accessibility, not complementary. So do not expect a sequence
-      model to find the complement on its own — train it explicitly on
-      `observed − atac_pred`. Needs a per-region count offset in the trainer, applied to
-      the count loss only. ~4 GPU-h once implemented.
+- [x] **W2e. Residual TRAINING — DONE, and it overturned the premise.** The item was
+      written on the reading that sequence is *redundant* with accessibility. That was
+      wrong: it is a property of the training objective, not of sequence. Trained on
+      `observed − atac_pred`, the same sequence input reaches residual r 0.459 vs 0.149.
+      Artifact excluded — `r(output, atac_pred) = -0.090` and partialling `atac_pred` out
+      of both sides leaves 0.459 unchanged; incremental R^2 over ATAC-only is
+      +0.071 [0.058, 0.085] against the observed signal, +0.115 on the top quintile.
+      **But the jointly-trained multimodal model captures MORE of the residual (0.551)
+      than explicit residual training does**, so residual training is not the better
+      predictor — its value is diagnostic and interpretive.
+- [ ] **W2e-bis. Decide what residual training is FOR, now that multimodal beats it.**
+      Candidate: run SHAP/MoDISCo on the residual model rather than the multimodal one,
+      since its attributions are forced onto accessibility-independent signal — which is
+      exactly what the motif-syntax question wants and what the multimodal model's
+      attributions cannot cleanly separate.
+- [ ] **W2e-ter. Repeat the residual comparison for p300.** F-002's open question was
+      posed "for either target" and is resolved only for H3K27ac. p300's residual r is
+      already much higher (0.654), so the headroom may be smaller.
 - [ ] **W2f. GM12878 transfer evaluation** — GM12878 fragment-extended target building
       (job 40808659); ATAC (`2026_0606_GM12878_transferability/data/atac.bw`) and
       elements already exist. Must match the target definition the models were trained
