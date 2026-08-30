@@ -1,0 +1,7 @@
+label	stratum	n	raw_r	spearman_brown	corrected_ceiling	total_counts	note
+r1	all	147397	0.9259	0.9615	0.9806	4471238	
+r1	top_quintile	29522	0.9074	0.9515	0.9754	4471238	
+both	all	147397	0.9134	0.9547	0.9771	8942496	
+both	top_quintile	29482	0.9175	0.957	0.9783	8942496	
+both_depthmatched	all	147397	0.9066	0.951	0.9752	4468991	thinned p=0.500
+both_depthmatched	top_quintile	29571	0.8779	0.935	0.9669	4468991	thinned p=0.500

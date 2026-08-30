@@ -86,6 +86,17 @@ neighbour bleed — not for an accuracy gain. See `.living/learnings.md`.
       since its attributions are forced onto accessibility-independent signal — which is
       exactly what the motif-syntax question wants and what the multimodal model's
       attributions cannot cleanly separate.
+- [ ] **W2e-quater. Fill in the residual-objective grid — only one cell exists.** Just ONE
+      residual model was ever trained: `residual5pFIXED_hw500_clw10`, mode=sequence, offset
+      from `atac5p_hw500_clw10`. So we currently cannot separate "the residual is
+      sequence-predictable" from "residual training helps". Missing cells:
+      - **multimodal residual** (sequence + ATAC -> `observed - atac_pred`): the genuinely
+        informative one. If it beats the jointly-trained multimodal model's 0.551 residual r,
+        the objective matters even when ATAC is an input; if not, joint training is already
+        optimal and residual training is purely an interpretability tool. ~4 GPU-h.
+      - **ATAC-only residual** (ATAC -> `observed - atac_pred`): expected ~0 by construction,
+        since it would predict an ATAC model's own errors from the same ATAC input. Worth
+        running only as a negative control for the residual metric. ~4 GPU-h.
 - [ ] **W2e-ter. Repeat the residual comparison for p300.** F-002's open question was
       posed "for either target" and is resolved only for H3K27ac. p300's residual r is
       already much higher (0.654), so the headroom may be smaller.
@@ -161,6 +172,11 @@ the count.
       differs from the rest in how its elements were called, not only in cell type. Either
       restrict cross-cell-type claims to the DNase-derived subset, or derive DNase-based
       TeloHAEC elements, or state the confound wherever TeloHAEC is compared to the others.
+      **DECIDED 2026-08-29: PE H3K27ac targets use read 1 only** (`-f 64`), so each
+      fragment contributes one 5' end, matching the SE convention in K562/GM12878. Both
+      variants are on disk; `*_both_5p_*` must not be mixed with `*_r1_5p_*`. See
+      `.living/decisions.md`.
+
       **Note rule 3 inverts this.** With the panel restricted to ATAC, TeloHAEC's
       ATAC-derived elements are the ones consistent with the input assay and the
       DNase-derived K562/GM12878 sets are the odd ones out. Element derivation and

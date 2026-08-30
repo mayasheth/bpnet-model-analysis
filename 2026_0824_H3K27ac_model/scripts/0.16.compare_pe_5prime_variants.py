@@ -8,16 +8,28 @@ SE tracks measure. Two candidate targets:
   r1    read 1 only (-f 64): one 5' end per fragment, matching the SE convention.
   both  both mates: all reads, but signal deposited at both fragment ends.
 
-THE COMPARISON HAS A BUILT-IN CONFOUND. `r1` has roughly half the reads by construction, so
-its inter-replicate ceiling is depressed by Poisson noise regardless of whether it is the
-better-defined quantity. Ranking the two on raw ceiling would favour `both` trivially. So:
+WHAT THIS SCRIPT MEASURES, AND ONE CONTROL THAT TURNED OUT TO BE WRONG.
 
-  1. Meta-profile SHAPE is the primary evidence, normalised to unit mass so depth cancels.
-     If counting both mates smears the bimodal H3K27ac shoulders, that is the same defect
-     that disqualified the 250 bp fragment-extended track.
-  2. The ceiling is reported BOTH raw and DEPTH-MATCHED: `both` counts are binomially
-     thinned to `r1`'s total before the correlation, which removes the read-count advantage
-     and leaves only the question of whether the quantity is more reproducible.
+  1. Meta-profile SHAPE, normalised to unit mass so depth cancels. If counting both mates
+     smeared the bimodal H3K27ac shoulders, that would be the same defect that disqualified
+     the 250 bp fragment-extended track. MEASURED 2026-08-29: it does not. The two profiles
+     agree at r = 0.9999 with max deviation < 0.9% of peak height, identical shoulder
+     positions and dip depth. R1 is equally likely to be the left or right end of a
+     fragment, so sampling one end per fragment recovers the same spatial distribution as
+     marking both, at half the density.
+
+  2. `both_depthmatched` -- binomially thinning `both` counts to `r1`'s total -- WAS
+     INTENDED as a fair control and IS NOT ONE. Keep it only as a demonstration of the
+     pairing effect, and do not read it as "which quantity is more reproducible".
+     Why it fails: `r1` at N counts represents N fragments (one mark each), whereas `both`
+     at N counts represents N/2 fragments (two marks each). Matching TOTAL COUNTS therefore
+     halves the number of independent molecules, so `both_depthmatched` is a half-depth
+     library and loses to `r1` everywhere for that reason alone.
+
+  There is in fact NO depth confound to correct. `r1` and `both` are built from exactly the
+  same fragments; `both` merely records two positions per fragment instead of one. The 2x
+  read count is the same molecules counted twice, not extra information. So the fair
+  comparison is simply r1 (full) vs both (full).
 
 Ceiling correction is the project standard: sqrt(2r/(1+r)) -- Spearman-Brown for the merged
 two-replicate target, then sqrt because a model predicts the expected signal, not a draw.
@@ -169,10 +181,15 @@ def main():
             ceil_rows += ceiling(c1, c2, "both_depthmatched", rng, thin_to=r1_total)
 
     cdf = pd.DataFrame(ceil_rows)
+    cdf["fair_comparison"] = cdf["label"].ne("both_depthmatched")
     p1 = f"{a.outdir}/telohaec_{C}_pe_variant_ceiling.tsv"
     cdf.to_csv(p1, sep="\t", index=False)
     print("\nWrote", p1)
     print(cdf.to_string(index=False))
+    print("\nNOTE: both_depthmatched is NOT a fair control -- matching total counts halves\n"
+          "the fragment count for `both`, because each fragment there contributes two\n"
+          "correlated marks. Compare r1 vs both at full depth instead; they use the same\n"
+          "fragments.")
 
     # profile shapes, each normalised to unit mass so depth cancels
     nb = len(prof["r1"])
