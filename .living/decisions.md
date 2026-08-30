@@ -119,3 +119,61 @@ counts halves the fragment count for `both`, because each fragment there contrib
 marks, so it is a half-depth library and loses for that reason alone. The script now says so.
 
 **Tags**: h3k27ac, telohaec, paired-end, target-definition, profile-loss, panel, 5-prime
+
+---
+
+### [2026-08-30] Accessibility inputs should be 5'-end insertion counts (ChromBPNet convention), and ours are not
+
+**Context**: The TeloHAEC coupling run exposed an accessibility-scale mismatch. K562 ATAC
+mean coverage is 17.6 and GM12878's 18.3, but TeloHAEC's is 2.7-3.7 -- a 5-7x gap. Tracing
+it: our `atac.bw` files are built by `bedtools genomecov -bg` over the FULL tagAlign
+interval, so coverage is proportional to read length. K562 tagAlign entries are 94-95 bp;
+TeloHAEC's are 35-36 bp. So roughly 2.6x of the gap is read length and ~2x is depth.
+K562 and GM12878 happen to match each other closely, which is why this never surfaced
+during their transfer work.
+
+Checked against ChromBPNet (`chrombpnet/helpers/preprocessing/reads_to_bigwig.py`), verbatim:
+```
+awk (strand-specific shift) | bedtools genomecov -bg -5 -i stdin -g <genome>
+ATAC:  plus_shift_delta, minus_shift_delta = 4-plus_shift, -4-minus_shift
+DNase: plus_shift_delta, minus_shift_delta = -plus_shift, 1-minus_shift
+```
+Single-base 5' ends, unstranded, `-5` applied after the shift. Their pipeline auto-detects
+pre-existing shifts, so an already-Tn5-shifted tagAlign gets zero additional shift.
+
+**Decision**: **5'-end insertion counts are the standard for accessibility inputs going
+forward** (Maya, 2026-08-30). Because our tagAligns are already Tn5-shifted
+(`*.tn5.sorted.tagAlign.gz`), the correct build reduces to `bedtools genomecov -bg -5` with
+no further shift. Build to NEW filenames (`atac_5p.bw`), never overwrite `atac.bw`.
+
+**Alternatives considered**:
+- Keep full-interval coverage and rely on z-normalisation -- rejected. Normalisation fixes
+  mean and sd but not read-length-dependent spatial spread, and measurably not dynamic range:
+  peak-to-background is ~9 for TeloHAEC against ~6 for K562/GM12878. Applying a K562-trained
+  model's saved normalisation stats to TeloHAEC would put the input outside the training
+  distribution for a purely technical reason, and it would present as a transfer failure.
+- Truncate all tagAligns to a common width -- rejected: throws away real data and still
+  depends on the arbitrary common width.
+- Rebuild in place -- rejected: `2026_0529_multimodal_p300_model/data/atac.bw` is shared with
+  the p300 models, so overwriting would silently invalidate those results too.
+
+**Rationale**: This is the same defect, one level up, as the 250 bp fragment extension
+rejected for the H3K27ac target: a read-length-dependent smear that breaks comparability
+across samples. Matching the field-standard tool also means our accessibility input is
+directly comparable to published ChromBPNet work.
+
+**Consequences**: **Every ATAC-input model is affected and they must be redone as a set, not
+piecemeal.** That is `atac5p_hw500_clw10`, `multimodal5p_hw500_clw10`,
+`residual5pFIXED_hw500_clw10` (sequence input, but its offset comes from an ATAC model),
+`gm12878_atac5p_*`, `gm12878_multimodal5p_*`, and the 10 residual runs launched 2026-08-30 --
+roughly 35 fold-jobs plus re-evaluation. Sequence-only models are unaffected. Mixing a 5'
+ATAC input with any existing number is invalid, so until the set is rebuilt, current results
+stand as-is on the old input and must be quoted as such. The p300 models also use the shared
+`atac.bw` and would need the same treatment before any p300/H3K27ac comparison is remade.
+
+**Not yet decided**: whether to rebuild now (invalidating the in-flight residual grid) or
+after the residual grid completes on the current input, so the grid comparison stays
+internally consistent. Current course is the latter.
+
+**Tags**: atac, accessibility, chrombpnet, 5-prime, input-definition, read-length,
+comparability, transfer, telohaec
