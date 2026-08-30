@@ -83,7 +83,7 @@ blockquote { border-left: 3px solid #ddd; margin-left: 0; padding-left: 1rem;
 - Accessibility does most of the work. On elements carrying the mark, ATAC alone reaches 0.548 [0.497, 0.599] and sequence alone 0.380 [0.323, 0.437]; together 0.685 [0.667, 0.704], so sequence adds +0.137 over accessibility (Fig. 1b).
 - The same comparison for p300 gives sequence a +0.304 margin over accessibility against +0.127 for H3K27ac — a difference of 0.177 ± 0.027, about 6.6 standard errors (Fig. 4). H3K27ac scores higher overall but is the poorer substrate for sequence interpretation.
 - **Transfer is asymmetric and mostly reflects cell-type difficulty, not a sequence-specific failure.** GM12878-trained models score higher on K562 than in their own cell type for every modality (Fig. 6), and the ATAC-only difference is separately explained by weaker ATAC–H3K27ac coupling in GM12878 (Fig. 8). What survives is that sequence is weak everywhere (15–41% of ceiling) and its margin over accessibility shrinks on transfer in both directions.
-- Overall correlation is misleading when accessibility is an available input: sequence + ATAC scores 0.809 overall but only 0.475 against the departure from what accessibility alone predicts (Fig. 5).
+- **Sequence does carry an accessibility-independent component; an earlier version of this report concluded otherwise.** A sequence model trained on the total signal captures almost none of the accessibility residual (0.149), but the same input trained directly on `observed − atac_pred` reaches 0.459 — the limitation was the training objective, not the data (Fig. 5). Overall correlation still overstates what a model adds when accessibility is an input: sequence + ATAC scores 0.874 overall against 0.551 on the residual. Joint training remains the better predictor, capturing more of the residual than explicit residual training does.
 - ATAC and H3K27ac are spatially offset — ATAC peaks on the element centre, H3K27ac on flanking nucleosomes at ±250 bp and is far broader (Fig. 2). H3K27ac reaches its distal plateau near ±2 kb, well beyond the model's ~1.1 kb receptive field.
 
 ## Goals
@@ -210,40 +210,58 @@ pixi run python scripts/2.2.evaluate_stratified.py \
 Source: `scripts/2.2.evaluate_stratified.py`
 </details>
 
-## Overall correlation overstates what the model adds beyond accessibility
+## Sequence carries an accessibility-independent component — but only if you train for it
 
-**Q:** How much of the joint model's performance is a departure from what accessibility alone predicts?
+**Q:** How much does each model add beyond what accessibility alone predicts, and does sequence carry anything accessibility cannot supply?
 
-**A:** Less than half — the sequence + ATAC model correlates 0.809 with observed signal overall but only 0.475 with the residual left by an accessibility-only model.
+**A:** It does, and the earlier answer was wrong: a sequence model trained on the total signal captures almost none of the accessibility residual (*r* = 0.149 [0.076, 0.222]), while the same architecture on the same sequence-only input, trained directly on `observed − atac_pred`, reaches 0.459 [0.421, 0.496].
 
-![](figures/residual_evaluation.png)
+The difference is the training objective, not the information available. Told to predict the total signal, a sequence model spends its capacity on the large accessibility-correlated component and leaves the residual alone.
+
+![](figures/fig5_residual_beyond_accessibility.png)
 
 <details>
 <summary>Figure 5 legend</summary>
 
-**Figure 5 | The residual metric separates what a model adds from what accessibility already supplied.** **a**, Overall Pearson *r* (grey) against residual Pearson *r* (coloured) for each model. Residual *r* is `r(observed − atac_pred, model_pred − atac_pred)`, where `atac_pred` is the held-out prediction of the accessibility-only *model* rather than the raw ATAC track — so the residual is what accessibility genuinely cannot explain, not what a linear read of the track misses. **b**, Residual *r* stratified by quintile of |true residual|, i.e. by how wrong accessibility is for that element. Sequence + ATAC: overall 0.809, residual 0.475, incremental R² +0.099; residual *r* rises monotonically from 0.066 in the quintile where accessibility is nearly right to 0.598 where it is most wrong, and incremental R² is negative (−0.120) in the easiest quintile and +0.236 in the hardest. Sequence-only captures almost none of the accessibility residual (0.100), i.e. an independently-trained sequence model is largely *redundant* with accessibility rather than complementary to it. n = 58,655 element–fold observations pooled over 5 folds. **These numbers were computed on an earlier processing of the target and are being re-derived on 5′ ends; the metric definition and the qualitative conclusions are unaffected, but the exact values will shift.** Source: `results/residual_evaluation.tsv`, `results/p300_residual_evaluation.tsv`.
+**Figure 5 | Sequence carries an accessibility-independent component that a total-signal objective fails to surface.** Baseline throughout is the held-out prediction of the accessibility-only *model* (`atac5p_hw500_clw10`), not the raw ATAC track, so the residual is what accessibility genuinely cannot explain rather than what a linear read of the track misses. Colour encodes input modality (red = sequence only, purple = sequence + ATAC); hatching encodes the training objective (hatched = trained on `observed − atac_pred`). The two red bars therefore have **identical inputs** and differ only in what they were trained to predict. **a**, Residual Pearson *r* = `r(observed − atac_pred, model_pred − atac_pred)`, mean over the 5 chromosome-holdout folds with *t*-based 95% CI; points are individual folds. Sequence trained on total signal 0.149 [0.076, 0.222]; same input trained on the residual 0.459 [0.421, 0.496]; sequence + ATAC 0.551 [0.510, 0.592]. **b**, Residual *r* by quintile of |true residual|, i.e. by how wrong accessibility is for that element, pooled over folds. All three rise monotonically — 0.033 / 0.067 / 0.091 in the quintile where accessibility is nearly right, to 0.261 / 0.638 / 0.712 where it is most wrong — which is the behaviour a real effect should show and an artifact of the metric should not. **c**, Incremental *R²* over the ATAC-only model scored against the **observed** signal, for all elements and the top signal quintile; this metric cannot be inflated by the artifact described in Methods. Sequence-on-total is substantially *worse* than ATAC alone (−0.418 [−0.467, −0.368]; −0.156 on the top quintile), residual-trained is +0.071 [0.058, 0.085] (+0.115 [0.075, 0.154]), and sequence + ATAC +0.102 [0.087, 0.117] (+0.169 [0.131, 0.207]). n = 58,655 element–fold observations over 5 folds. Source: `results/residual5p_per_fold.tsv`, `results/residual5p_fold_summary.tsv`, `results/residual5p_residual_evaluation.tsv`.
 </details>
+
+**Two things follow, in opposite directions.**
+
+- *Sequence is not redundant with accessibility.* An earlier version of this report concluded it was, from the 0.100 figure for the independently-trained sequence model. That number is reproduced here (0.149 on the 5′ target) but it does not support the conclusion drawn from it.
+- *Residual training is nonetheless not the better predictor.* The jointly-trained sequence + ATAC model captures **more** of the residual (0.551) than explicit residual training does (0.459), and more incremental *R²*. Joint training already exploits the accessibility-independent component, and exploits it better. So residual training's value here is diagnostic — it demonstrates the component exists — and interpretive: its attributions are forced onto signal accessibility cannot supply, which is what the motif-syntax work needs and what the multimodal model's attributions cannot cleanly separate.
 
 **Method.**
 
 - Baseline is the accessibility-only model's held-out prediction, not the raw ATAC track.
-- Stratified by |true residual| so performance is scored where accessibility fails.
+- Stratified by |true residual| so performance is scored where accessibility fails, and reported as mean ± 95% CI over folds rather than pooled, since between-fold sd here is 0.041–0.046.
 
 <details>
 <summary>Full methods &amp; code</summary>
 
-The same metric applied to p300 gives residual *r* = 0.654 and incremental R² = +0.265 — versus 0.475 and +0.099 for H3K27ac, reinforcing Fig. 4 on a second statistic. p300's residual *r* is also high (0.260) in the quintile where accessibility is nearly right, against 0.066 for H3K27ac, so p300's sequence contribution is broadly useful rather than confined to the elements accessibility gets wrong.
+**The residual metric has a built-in artifact, and it was explicitly excluded.** Because `true_resid = obs − atac_pred`, *any* prediction that merely anti-correlates with `atac_pred` earns positive residual *r* for free, without carrying information about what accessibility missed — and a sequence model can partially predict accessibility, so the channel is live rather than hypothetical. Three checks rule it out for the residual-trained model: its output correlates only −0.090 [−0.104, −0.076] with `atac_pred`; partialling `atac_pred` out of both sides leaves the score unchanged (0.459 → 0.459, versus 0.149 → 0.205 for the sequence-on-total model, which is the more `atac_pred`-entangled of the two at +0.477); and the incremental *R²* in panel **c** is scored against the observed signal, which cannot be faked out of sample.
 
-The evaluator refuses to run when the baseline and comparison models use different windows, since a residual across mismatched geometries is not meaningful.
+**A trap for anyone re-running this.** `MultiModalBPNet.forward()` does **not** add the count offset — it is applied only inside `fit()` when scoring the loss — so an offset-trained model's raw output *is* the residual, not logcounts. `2.4.evaluate_residual.py` originally subtracted `atac_pred` from it anyway, double-counting the baseline and correlating a residual against the observed signal for `overall_pearson`. Both produced plausible wrong numbers rather than errors. The fix is gated behind a `"residual": true` key in the config JSON so earlier results stay reproducible, and `2.7.diagnose_residual_offset.py` confirms the semantics empirically before scoring — a residual predictor's output centres near 0 (measured: −0.044) and a logcounts predictor near the mean observed logcount (2.835 against an observed mean of 2.786), with the plain sequence model as a control proving the test discriminates.
+
+The same metric applied to p300 gives residual *r* = 0.654 and incremental *R²* = +0.265, versus 0.551 and +0.102 for H3K27ac's multimodal model, reinforcing Fig. 4 on a second statistic. p300's residual *r* is also high (0.260) in the quintile where accessibility is nearly right, against 0.091 for H3K27ac, so p300's sequence contribution is broadly useful rather than confined to the elements accessibility gets wrong. The p300 side has **not** been re-run with the residual objective — that comparison is open.
+
+The evaluator refuses to run when the baseline and comparison models use different windows, since a residual across mismatched geometries is not meaningful, and refuses folds lacking `training_complete.json`.
 
 ```bash
+# semantics check, then the pooled evaluation
+pixi run python scripts/2.7.diagnose_residual_offset.py
 pixi run python scripts/2.4.evaluate_residual.py \
-    --models-dir models --atac-config atac5p_hw500_clw10 \
-    --configs multimodal5p_hw500_clw10 sequence5p_hw500_clw10 \
+    --config-json config/residual5p_eval_configs.json --out-prefix residual5p_ \
     --elements reference/K562_DNase_candidate_elements.narrowPeak \
-    --fold-json reference/hg38_five_folds.json --outdir results --figdir figures
+    --genome $GEN --signal-bw data/h3k27ac_5p_plus.bw \
+    --accessibility-bw $ATAC --fold-json reference/hg38_five_folds.json \
+    --outdir results --figdir figures
+
+# per-fold CIs + the artifact controls, then the figure
+pixi run python scripts/2.8.residual_perfold_and_artifact.py
+pixi run python scripts/3.3.plot_residual_figure.py
 ```
-Source: `scripts/2.4.evaluate_residual.py`
+Source: `scripts/2.4.evaluate_residual.py`, `scripts/2.7.diagnose_residual_offset.py`, `scripts/2.8.residual_perfold_and_artifact.py`, `scripts/3.3.plot_residual_figure.py`
 </details>
 
 ## Transfer is asymmetric: GM12878 is the harder cell type, in both directions
@@ -356,8 +374,8 @@ Source: `scripts/0.10.plot_fragment_lengths.py`, `scripts/0.9.make_atac_fragment
 
 **In progress**
 
-- Re-derive the residual (Fig. 5) and GM12878 transfer (Fig. 6) numbers on the 5′ target. Figures 1, 4 and 8 are already on it.
-- Residual training — fit the sequence model on `observed − atac_pred` directly rather than hoping a jointly-trained model finds the complement, motivated by the sequence-only residual *r* of 0.100 in Fig. 5. All five folds trained; evaluation pending.
+- ~~Re-derive the residual (Fig. 5) numbers on the 5′ target~~ — **done**; Fig. 5 is now on 5′ ends with per-fold CIs. GM12878 transfer (Fig. 6) is also on the 5′ target. Figures 1, 4 and 8 already were.
+- ~~Residual training — fit the sequence model on `observed − atac_pred` directly~~ — **done, and it overturned the premise.** The item was motivated by the sequence-only residual *r* of 0.100 read as sequence being redundant with accessibility; that reading was wrong (Fig. 5). Two follow-ups replace it: (i) decide what residual training is *for*, now that the multimodal model beats it as a predictor — the likely answer is attribution/motif work, where being forced onto accessibility-independent signal is the point; (ii) repeat the comparison for p300, which is still open and where the headroom may be smaller since its residual *r* is already 0.654.
 
 **Multi-cell-type generalisation — now the highest-value direction**
 
@@ -416,7 +434,10 @@ done; done
 # Evaluation (Figs 1, 4, 5, 6)
 sbatch scripts/2.2.submit_evaluate.sh                       # Fig 1
 pixi run python scripts/2.2.evaluate_stratified.py --config-json config/compare_configs.json ...      # Fig 4
-pixi run python scripts/2.4.evaluate_residual.py  ...       # Fig 5
+pixi run python scripts/2.7.diagnose_residual_offset.py     # offset semantics check
+pixi run python scripts/2.4.evaluate_residual.py  ...       # residual, pooled
+pixi run python scripts/2.8.residual_perfold_and_artifact.py  # per-fold CIs + artifact controls
+pixi run python scripts/3.3.plot_residual_figure.py         # Fig 5
 pixi run python scripts/2.2.evaluate_stratified.py --config-json config/gm_transfer_configs.json ...  # Fig 6
 
 # This report
