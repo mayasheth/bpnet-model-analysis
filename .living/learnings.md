@@ -591,3 +591,64 @@ prediction-was-wrong, ceiling
 **structural_mitigation_candidate**: A sample is (experiment, processing) *and cell line*.
 Where a metadata table carries a `cell_line` column, group by it before merging BAMs, and
 assert the group is single-valued — the directory name is not authoritative.
+
+### [2026-08-30] The residual objective helps only when the input is blind to accessibility
+
+**Category**: insight
+
+**What happened**: Until now exactly ONE residual-objective model existed
+(`residual5pFIXED_hw500_clw10`, mode=sequence), so "the residual is sequence-predictable"
+and "residual training helps" were confounded. Trained the two missing cells (multimodal and
+atac, 5 folds each, jobs 41326647-41326656 plus 41328487/41328488 after two `owners`
+preemptions) and evaluated all five models together (job 41334970). Residual *r*, mean over
+5 folds:
+
+| input | trained on total signal | trained on residual |
+|---|---|---|
+| sequence | 0.149 [0.076, 0.222] | **0.459** [0.421, 0.496] |
+| sequence + ATAC | **0.551** [0.510, 0.592] | 0.514 [0.473, 0.556] |
+| ATAC | (baseline) | **-0.003** [-0.065, 0.060] |
+
+Folds are paired across models, so paired differences are much tighter than the marginal CIs:
+- `residual_sequence - sequence5p` = **+0.310** [0.224, 0.395], p = 5e-4
+- `residual_multimodal - multimodal5p` = **-0.037** [-0.039, -0.034], p < 1e-4
+- `multimodal5p - residual_sequence` = +0.093 [0.072, 0.113], p = 2e-4
+
+**Why it matters**: The residual objective is not a general improvement — it is a fix for a
+specific handicap. Where the input cannot see accessibility, forcing the target to be the
+residual triples the score. Where the input already includes accessibility, it **costs**
+0.037, and does so in every single fold (-0.0357, -0.0351, -0.0356, -0.0388, -0.0393). That
+consistency is the point: the marginal CIs overlap and would have been read as "no
+difference", but the paired comparison shows a small, highly reproducible harm. A multimodal
+model can learn whatever transform of ATAC it needs; nailing it to a fixed offset it cannot
+adjust only removes freedom. Joint training stays the best predictor.
+
+The ATAC control is the load-bearing part. Asked to predict an ATAC model's own errors from
+the same ATAC input, it scores -0.003 with incremental R^2 of -0.000 and a flat line across
+all five |residual| quintiles. Had it come in clearly positive, the 0.459 would have been an
+artifact of the metric rather than a finding.
+
+**Correction to an earlier claim**: the residual metric's supposed free artifact channel --
+that anything anti-correlated with `atac_pred` scores positive residual *r* -- is largely
+CLOSED by construction, and this was overstated when first raised. `obs - atac_pred` is
+approximately orthogonal to `atac_pred` by the least-squares residual property. The ATAC
+control demonstrates it directly: `r(output, atac_pred) = -0.620 [-1.146, -0.094]`, i.e. the
+channel is wide open, and it still scores -0.003. Partialling `atac_pred` out of `sequence5p`
+*raised* its score (0.149 -> 0.205) rather than lowering it. The controls were worth running;
+the alarm was disproportionate.
+
+**Resolution**: Use joint (multimodal) training for prediction. Reserve residual training for
+attribution/motif work, where forcing the model onto accessibility-independent signal is the
+objective rather than a cost. Report Fig. 5 rebuilt as the full 2x2 plus control
+(`figures/fig5_residual_grid.png`).
+
+**Tags**: h3k27ac, residual, training-objective, multimodal, negative-control, paired-test,
+prediction-was-wrong, interpretability
+
+**mitigation_type**: convention
+
+**structural_mitigation_candidate**: Compare models on PAIRED fold differences, not
+overlapping marginal CIs -- the -0.037 multimodal effect is invisible in the marginals and
+unambiguous when paired. And when a metric is defined against a model's own baseline, train
+that baseline's own input on the residual as a negative control; it costs one model and
+converts a suspected artifact into a measurement.
