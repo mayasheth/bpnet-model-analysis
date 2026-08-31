@@ -42,14 +42,22 @@ IN_W = OUT_W + 2 * TRIM
 dev = "cuda" if torch.cuda.is_available() else "cpu"
 
 MODELS = [
-    ("atac5p",      "atac",       f"{P}/models/atac5p_hw500_clw10",            False),
-    ("sequence5p",  "sequence",   f"{P}/models/sequence5p_hw500_clw10",        False),
-    ("multimodal5p","multimodal", f"{P}/models/multimodal5p_hw500_clw10",      False),
-    ("residual5p",  "sequence",   f"{P}/models/residual5pFIXED_hw500_clw10",   True),
+    ("atac5p",             "atac",       f"{P}/models/atac5p_hw500_clw10",                  False),
+    ("sequence5p",         "sequence",   f"{P}/models/sequence5p_hw500_clw10",              False),
+    ("multimodal5p",       "multimodal", f"{P}/models/multimodal5p_hw500_clw10",            False),
+    ("residual_sequence",  "sequence",   f"{P}/models/residual5pFIXED_hw500_clw10",         True),
+    ("residual_multimodal","multimodal", f"{P}/models/residual5p_multimodal_hw500_clw10",   True),
+    ("residual_atac",      "atac",       f"{P}/models/residual5p_atac_hw500_clw10",         True),
 ]
+OUT_PREFIX = sys.argv[1] if len(sys.argv) > 1 else "residual5p_"
 
 
 def predict(model_dir, mode, fold, seqs, accs_raw):
+    marker = f"{model_dir}/fold{fold}/training_complete.json"
+    if not os.path.exists(marker):
+        raise SystemExit(f"error: {marker} missing, so that fold did not finish "
+                         "(most likely preempted on the owners partition). Refusing to "
+                         "score a partially trained model.")
     a = accs_raw
     if mode in ("multimodal", "atac"):
         st = json.load(open(f"{model_dir}/fold{fold}/acc_normalization_stats.json"))
@@ -122,7 +130,7 @@ for fold in range(5):
     print(f"fold{fold}: n={len(obs):,} atac r={pearsonr(obs, atac_pred)[0]:.4f} done", flush=True)
 
 df = pd.DataFrame(rows)
-p1 = f"{P}/results/residual5p_per_fold.tsv"
+p1 = f"{P}/results/{OUT_PREFIX}per_fold.tsv"
 df.round(4).to_csv(p1, sep="\t", index=False)
 print("\nWrote", p1)
 print(df.round(4).to_string(index=False))
@@ -139,7 +147,7 @@ for label, g in df.groupby("config", sort=False):
         r[m] = f"{v.mean():.3f} [{v.mean()-half:.3f}, {v.mean()+half:.3f}]"
     srows.append(r)
 summ = pd.DataFrame(srows)
-p2 = f"{P}/results/residual5p_fold_summary.tsv"
+p2 = f"{P}/results/{OUT_PREFIX}fold_summary.tsv"
 summ.to_csv(p2, sep="\t", index=False)
 print("\nWrote", p2)
 print(summ.to_string(index=False))

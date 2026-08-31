@@ -34,9 +34,11 @@ TCRIT = tdist.ppf(0.975, df=4)
 
 # (config key, display label, modality colour, hatched = residual objective)
 BARS = [
-    ("sequence5p",   "Sequence\n(total signal)",  "sequence",   False, "Seq\n(total)"),
-    ("residual5p",   "Sequence\n(residual)",      "sequence",   True,  "Seq\n(resid.)"),
-    ("multimodal5p", "Sequence + ATAC",           "multimodal", False, "Seq +\nATAC"),
+    ("sequence5p",          "Sequence\n(total signal)",   "sequence",   False, "Seq\n(total)"),
+    ("residual_sequence",   "Sequence\n(residual)",       "sequence",   True,  "Seq\n(resid.)"),
+    ("multimodal5p",        "Seq + ATAC\n(total signal)", "multimodal", False, "Seq+ATAC\n(total)"),
+    ("residual_multimodal", "Seq + ATAC\n(residual)",     "multimodal", True,  "Seq+ATAC\n(resid.)"),
+    ("residual_atac",       "ATAC\n(residual, control)",  "atac",       True,  "ATAC\n(ctrl)"),
 ]
 
 
@@ -49,10 +51,10 @@ def mean_ci(v):
 
 def main():
     apply_rcparams()
-    pf = pd.read_csv(f"{P}/results/residual5p_per_fold.tsv", sep="\t")
-    pooled = pd.read_csv(f"{P}/results/residual5p_residual_evaluation.tsv", sep="\t")
+    pf = pd.read_csv(f"{P}/results/residual_grid_per_fold.tsv", sep="\t")
+    pooled = pd.read_csv(f"{P}/results/residual_grid_residual_evaluation.tsv", sep="\t")
 
-    fig, axes = plt.subplots(1, 3, figsize=figsize(columns=2, aspect=0.38))
+    fig, axes = plt.subplots(1, 3, figsize=figsize(columns=2, aspect=0.42))
 
     # --- panel a: residual r, mean +/- 95% CI, fold points -------------------
     ax = axes[0]
@@ -68,10 +70,12 @@ def main():
         ax.scatter(np.full(len(vals), i) + jit, vals, s=4.5, color="black",
                    alpha=0.75, linewidths=0, zorder=5)
     ax.set_xticks(range(len(BARS)))
-    ax.set_xticklabels([b[1] for b in BARS], fontsize=6)
+    ax.set_xticklabels([b[4].replace("\n", " ") for b in BARS], fontsize=5,
+                       rotation=30, ha="right")
     ax.set_ylabel("Residual Pearson $r$")
     ax.set_title("What the model adds beyond ATAC", fontsize=8)
-    ax.set_ylim(0, 0.72)
+    ax.set_ylim(-0.12, 0.72)
+    ax.axhline(0, color="black", lw=0.6, zorder=3)
     add_panel_label(ax, "a")
 
     # --- panel b: residual r by |true residual| quintile ---------------------
@@ -88,7 +92,7 @@ def main():
     ax.set_ylabel("Residual Pearson $r$")
     ax.set_xticks(range(1, 6))
     ax.set_title("Sequence helps where ATAC fails", fontsize=8)
-    ax.legend(frameon=False, fontsize=5.5, loc="upper left")
+    ax.legend(frameon=False, fontsize=5, loc="upper left")
     add_panel_label(ax, "b")
 
     # --- panel c: incremental R^2 vs observed signal (artifact-immune) -------
@@ -107,7 +111,8 @@ def main():
                         capsize=1.5, capthick=0.75, zorder=4)
     ax.axhline(0, color="black", lw=0.75, zorder=3)
     ax.set_xticks(range(len(BARS)))
-    ax.set_xticklabels([b[4] for b in BARS], fontsize=6)
+    ax.set_xticklabels([b[4].replace("\n", " ") for b in BARS], fontsize=5,
+                       rotation=30, ha="right")
     ax.set_ylabel("Incremental $R^2$ over ATAC-only")
     ax.set_title("Gain against the observed signal", fontsize=8)
     ax.set_ylim(-0.55, 0.30)
@@ -118,7 +123,7 @@ def main():
     add_panel_label(ax, "c")
 
     fig.tight_layout()
-    out = save_fig(fig, f"{P}/figures/fig5_residual_beyond_accessibility.png")
+    out = save_fig(fig, f"{P}/figures/fig5_residual_grid.png")
     print("Wrote", out, "and .pdf")
 
     # numbers for the legend, so the caption is never hand-typed from memory
