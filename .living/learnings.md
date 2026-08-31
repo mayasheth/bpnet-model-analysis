@@ -699,3 +699,61 @@ current input so those comparisons stay internally consistent.
 **structural_mitigation_candidate**: When rebuilding a track to remove a suspected artifact,
 verify with an arithmetic identity the fix implies (here: old/new ratio == read length), not
 just that the new file opens. `scripts/0.21.validate_atac_5prime.py` encodes that check.
+
+### [2026-08-31] The 5' ATAC input helps the ATAC-only model and does nothing for multimodal
+
+**Category**: insight
+
+**What happened**: Retrained every ATAC-input model on the ChromBPNet-convention 5' input
+(`genomecov -bg -5`) and compared each against its original, full-interval counterpart. The
+training scripts were byte-identical copies apart from the ATAC path and the output dir, and
+both arms were scored in a single paired run (`2.2` reads `accessibility_bw` per config
+entry), so the only difference is the input definition. Paired over folds, top signal
+quintile:
+
+| | ATAC-only | multimodal |
+|---|---|---|
+| K562 | **+0.032** [0.012, 0.053], p=0.011 | +0.003 [-0.009, 0.015], p=0.51 |
+| GM12878 | **+0.023** [0.006, 0.039], p=0.019 | -0.001 [-0.013, 0.011], p=0.84 |
+| p300 | +0.019 [-0.054, 0.092], p=0.51 | +0.009 [-0.052, 0.070], p=0.70 |
+
+All-elements shows the same split: ATAC-only +0.016 (K562, p=0.001) and +0.015 (GM12878,
+p<0.001); multimodal +0.001 in both, not significant.
+
+**Why it matters**: The prediction going in was "no within-cell-type difference, because read
+length is constant there and z-normalisation absorbs a scale change". That was right for
+multimodal and **wrong for ATAC-only**. The missing step: within a cell type the smear is
+not only a scale change. Scale is constant, but a 94-95 bp interval still BLURS positional
+information, and that blur costs a model that has nothing else to go on.
+
+The split is the informative part. Sharpening accessibility helps only the model that
+depends on accessibility alone. The multimodal model already has sequence, which supplies
+the fine positional detail the smeared ATAC lacked, so a sharper input is redundant with
+what it already had. This is the same shape as the residual-grid result: joint training
+already extracts what is available, and improving one input does not add to it.
+
+**p300 is underpowered, not null.** 11,412 elements pooled against 57,144 for H3K27ac (2,283
+vs 11,429 in the top quintile), giving CIs roughly 5x wider. Its point estimates trend the
+same direction; it cannot resolve them.
+
+**Log caveat**: the `ceiling` and fraction-of-ceiling values printed in
+`log/accs5p_compare.*.txt` come from `2.2`'s DEFAULT `--ceiling`
+(`results/replicate_ceiling_by_window.tsv`), which is the superseded fragment-target K562
+ceiling. They are stale for K562 and the wrong cell type for GM12878 and p300. They are NOT
+written to the saved TSVs, and no reported number depends on them, but do not quote them.
+
+**Resolution**: The 5' switch is worth keeping — it is the field convention, it is
+read-length independent, and it measurably helps the accessibility-only model. Its practical
+effect on the multimodal model, which is the one used for prediction, is nil within a cell
+type. The case for it remains strongest ACROSS cell types (TeloHAEC 36 bp vs K562/GM12878
+94-95 bp), which this comparison does not test.
+
+**Tags**: atac, chrombpnet, 5-prime, accessibility, paired-test, multimodal, p300,
+prediction-was-wrong, input-definition
+
+**mitigation_type**: convention
+
+**structural_mitigation_candidate**: When a preprocessing change is claimed to be
+"just a scale change that normalisation absorbs", check whether it also changes RESOLUTION.
+Scale and blur are separable, normalisation only handles the first, and only models with a
+single input feel the second.

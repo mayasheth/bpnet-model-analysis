@@ -1,0 +1,18 @@
+[
+  {"label": "atac_OLD", "mode": "atac", "half_window": 500,
+   "model_dir": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/models/gm12878_atac5p_hw500_clw10",
+   "accessibility_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0606_GM12878_transferability/data/atac.bw",
+   "signal_plus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/gm12878_h3k27ac_5p_plus.bw", "signal_minus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/gm12878_h3k27ac_5p_minus.bw"},
+  {"label": "atac_5PRIME", "mode": "atac", "half_window": 500,
+   "model_dir": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/models/gm12878_atac5p_accs5p_hw500_clw10",
+   "accessibility_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0606_GM12878_transferability/data/atac_5p.bw",
+   "signal_plus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/gm12878_h3k27ac_5p_plus.bw", "signal_minus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/gm12878_h3k27ac_5p_minus.bw"},
+  {"label": "multimodal_OLD", "mode": "multimodal", "half_window": 500,
+   "model_dir": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/models/gm12878_multimodal5p_hw500_clw10",
+   "accessibility_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0606_GM12878_transferability/data/atac.bw",
+   "signal_plus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/gm12878_h3k27ac_5p_plus.bw", "signal_minus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/gm12878_h3k27ac_5p_minus.bw"},
+  {"label": "multimodal_5PRIME", "mode": "multimodal", "half_window": 500,
+   "model_dir": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/models/gm12878_multimodal5p_accs5p_hw500_clw10",
+   "accessibility_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0606_GM12878_transferability/data/atac_5p.bw",
+   "signal_plus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/gm12878_h3k27ac_5p_plus.bw", "signal_minus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/gm12878_h3k27ac_5p_minus.bw"}
+]
