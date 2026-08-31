@@ -652,3 +652,50 @@ overlapping marginal CIs -- the -0.037 multimodal effect is invisible in the mar
 unambiguous when paired. And when a metric is defined against a model's own baseline, train
 that baseline's own input on the residual as a negative control; it costs one model and
 converts a suspected artifact into a measurement.
+
+### [2026-08-31] The 5' ATAC rebuild works, and the read-length artifact is confirmed quantitatively
+
+**Category**: verification
+
+**What happened**: Built ChromBPNet-convention accessibility tracks (`genomecov -bg -5`,
+single-base 5' insertion counts) for K562, GM12878 and the four TeloHAEC conditions as
+`*_atac_5p.bw`, alongside the existing full-interval `atac.bw` (job 41326960, 6 tracks).
+Validated with a check stronger than readability: `sum(atac.bw) / sum(atac_5p.bw)` must
+equal the MEAN READ LENGTH, because full-interval coverage counts read_length bases per read
+while 5'-end counting counts exactly one.
+
+| | ratio measured | read length |
+|---|---|---|
+| K562 | 84.5 | 94-95 bp |
+| GM12878 | 85.6 | 94-95 bp |
+| TeloHAEC x4 | 30.9-35.5 | 35-36 bp |
+
+The ratio lands at the read length in every case, so the smear being removed is exactly the
+one diagnosed. With read length gone, the 5' totals are read COUNTS and the K562-vs-TeloHAEC
+gap falls from 13-27x to **5.3-12.3x nuclear depth** -- the ~2.6x that was pure read-length
+artifact is eliminated, and what remains is a real depth difference.
+
+**Also found**: TeloHAEC tracks contain chrM (6-7% of reads) while K562/GM12878 do not --
+their tagAligns were filtered upstream. This does NOT affect training or evaluation, because
+windows are element-centred on nuclear chromosomes and `normalize_accessibility` derives its
+statistics from those windows, so chrM never enters. It matters only if a genome-wide
+statistic is ever computed from these tracks, and it means raw total-read comparisons across
+these cell types are inflated ~6-7% on the TeloHAEC side.
+
+**Why it matters**: The read-length dependence was diagnosed from tagAlign entry widths and
+a coverage-scale mismatch; this confirms the diagnosis numerically rather than by argument.
+It also bounds what the fix buys: it removes a technical 2.6x, not the whole gap. TeloHAEC
+really is a shallower library, and that remains a genuine difference to handle when
+transferring models to it.
+
+**Not yet done**: no model uses `atac_5p.bw`. Switching requires retraining every ATAC-input
+model as a set (~35 fold-jobs), which is deferred until the residual grids finish on the
+current input so those comparisons stay internally consistent.
+
+**Tags**: atac, chrombpnet, 5-prime, validation, read-length, telohaec, depth, chrM
+
+**mitigation_type**: structural
+
+**structural_mitigation_candidate**: When rebuilding a track to remove a suspected artifact,
+verify with an arithmetic identity the fix implies (here: old/new ratio == read length), not
+just that the new file opens. `scripts/0.21.validate_atac_5prime.py` encodes that check.
