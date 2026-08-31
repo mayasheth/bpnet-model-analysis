@@ -35,3 +35,25 @@ the comparison is not clean and should be labelled as such.
 DNase-based rE2G run (making all three DNase-derived), or obtain ATAC-based element sets for
 K562/GM12878 (making all three ATAC-derived). Either direction is internally consistent; the
 current state is not.
+
+## Addendum 2026-08-31: an ATAC-derived K562 element set does exist
+
+Found while auditing disk usage, not while looking for it. `K562_ATAC_ChromBPNet/log.sh`
+builds its regions from
+`ENCODE_rE2G/results/2025_0226_ATAC_powerlaw_models/ATAC_H3K27ac_powerlaw/Peaks/macs2_peaks.narrowPeak.sorted.candidateRegions.bed`
+and the converted result sits at `K562_ATAC_ChromBPNet/data/K562_candidate_elements.narrowPeak`
+(~154k regions). That is the **same rE2G model type** TeloHAEC's elements come from
+(`atac_h3k27ac_powerlaw`), so K562 could be made derivation-consistent with TeloHAEC exactly.
+
+**GM12878 has no equivalent** — that results directory contains K562 only.
+
+So the available options are:
+- Leave as is. K562/GM12878 DNase-derived, TeloHAEC ATAC-derived; 1 of 3 matches its input
+  assay; confound stated wherever cell types are compared. **Current course.**
+- Switch K562 to the ATAC-derived set. 2 of 3 consistent, GM12878 still mismatched — a
+  partial fix that would require re-deriving every K562 number in the report and in F-001
+  through F-003. Poor trade unless a specific claim turns out to hinge on it.
+
+Recorded so the option is known rather than rediscovered. The earlier statement that
+K562/GM12878 ATAC element sets were not readily available was correct for GM12878 and wrong
+for K562.
