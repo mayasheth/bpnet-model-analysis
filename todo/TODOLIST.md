@@ -292,3 +292,41 @@ the count.
       results before fixing a storyline. Figures that would carry it, already generated:
       `h3k27ac_signal_vs_distance`, `profile_comparison`, `h3k27ac_model_comparison`,
       `h3k27ac_stratified_eval`, `residual_evaluation`, `h3k27ac_replicate_ceiling`.
+
+- [ ] **Predict the composite ACTIVITY metric directly, rather than H3K27ac alone**
+      (Maya, 2026-08-31). The quantity actually consumed downstream is not H3K27ac — it is
+      **activity = geometric mean(accessibility, H3K27ac)**, and the best-performing form is
+      **geomean(DHS, H3K27ac)** rather than geomean(ATAC, H3K27ac). Question: is that
+      composite *easier* to predict from sequence + accessibility than the two-step route of
+      predicting H3K27ac and then combining it with measured accessibility?
+
+      Why it might be: the composite is smoother and less noisy than either term (a
+      geometric mean damps the component with the larger relative error), and it is the
+      quantity whose errors actually matter downstream. Training directly on it also lets
+      the model allocate capacity by its contribution to activity rather than to H3K27ac.
+
+      **The trap that must be designed around.** If the model's accessibility INPUT is the
+      same assay as the accessibility TERM in the target, the task is partly circular: half
+      of `geomean(ATAC, H3K27ac)` is directly readable off the input, so the model would
+      score well without predicting anything new, and it would beat the two-step baseline
+      for a trivial reason. Two ways out, and they should both be run:
+        1. **ATAC in, DNase in the target** — `geomean(DHS, H3K27ac)` predicted from
+           sequence + ATAC. The accessibility term is then a different measurement from the
+           input, so the circularity is broken while still targeting the preferred metric.
+           This is also the form Maya identifies as best, so it is the primary experiment.
+        2. **Sequence-only input** — no accessibility at all, which removes the shortcut
+           entirely and asks the cleanest version of the question.
+      A `geomean(ATAC, H3K27ac)`-from-sequence+ATAC arm is still worth running, but only as
+      the *upper* reference that quantifies how much of the gain is circular.
+
+      **Fair baseline.** The comparison is against the two-step route evaluated on the SAME
+      composite: take the existing H3K27ac model's prediction, combine it with measured
+      accessibility by the same geometric mean, and score that against observed activity.
+      Comparing a directly-trained composite model against an H3K27ac model scored on
+      H3K27ac would compare two different targets and settle nothing.
+
+      **Prerequisites**: DNase tracks exist for K562/GM12878/H1/H9/Jurkat in
+      `data/panel/*_dnase.bw` (built, then set aside under the ATAC-only rule — they become
+      relevant again here, as the TARGET term rather than as a model input, which does not
+      violate that rule). Needs a composite-target builder and no architecture change: the
+      composite is just a different signal bigwig.
