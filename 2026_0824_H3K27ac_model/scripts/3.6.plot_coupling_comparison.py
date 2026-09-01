@@ -5,6 +5,8 @@ The previous version of this figure showed a single K562 hexbin while the surrou
 made a claim about K562 versus GM12878, so the panel did not support the claim. This plots
 each cell type side by side on identical axes and adds the summary that the claim rests on.
 """
+import argparse
+import hashlib
 import os, sys
 import numpy as np
 import pandas as pd
@@ -62,15 +64,47 @@ def sums(paths, els):
     return out
 
 
-apply_rcparams()
-fig, axes = plt.subplots(1, 4, figsize=figsize(columns=2, aspect=0.30))
-rows = []
-for k, (name, atac, k27, elp) in enumerate(PANELS):
+ap = argparse.ArgumentParser(description=__doc__)
+ap.add_argument("--recompute", action="store_true",
+                help="Ignore the cache and re-read every bigwig.")
+args = ap.parse_args()
+
+CACHE = f"{P}/results/.cache_coupling_panel"
+os.makedirs(CACHE, exist_ok=True)
+
+
+def cache_key(name, atac, k27, elp):
+    """Key on the inputs AND their mtimes, so a rebuilt track invalidates the cache
+    rather than silently serving stale vectors."""
+    parts = [name, atac, *k27, elp, str(HW)]
+    for f in [atac, *k27, elp]:
+        parts.append(str(int(os.path.getmtime(f))) if os.path.exists(f) else "missing")
+    return hashlib.sha1("|".join(parts).encode()).hexdigest()[:16]
+
+
+def load_or_compute(name, atac, k27, elp):
+    key = cache_key(name, atac, k27, elp)
+    path = f"{CACHE}/{name}_{key}.npz"
+    if os.path.exists(path) and not args.recompute:
+        d = np.load(path)
+        print(f"{name}: cache hit ({os.path.basename(path)})", flush=True)
+        return d["a"], d["h"]
     els = load_els(elp)
     a = np.log1p(sums([atac], els))
     h = np.log1p(sums(k27, els))
     ok = np.isfinite(a) & np.isfinite(h)
     a, h = a[ok], h[ok]
+    np.savez_compressed(path, a=a, h=h)
+    print(f"{name}: computed and cached -> {os.path.basename(path)}", flush=True)
+    return a, h
+
+
+apply_rcparams()
+fig, axes = plt.subplots(1, 4, figsize=figsize(columns=2, aspect=0.30))
+rows = []
+for k, (name, atac, k27, elp) in enumerate(PANELS):
+    a, h = load_or_compute(name, atac, k27, elp)
+    ok = np.ones(len(a), bool)
     top = h >= np.quantile(h, 0.8)
     r_all = pearsonr(a, h)[0]
     r_top = pearsonr(a[top], h[top])[0]
