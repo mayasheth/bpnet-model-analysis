@@ -347,6 +347,46 @@ pixi run python scripts/2.2.evaluate_stratified.py \
 Source: `scripts/2.2.evaluate_stratified.py`, `scripts/0.7.make_gm12878_5prime.sh`
 </details>
 
+## Deploying to a new cell type: transfer the multimodal model
+
+**Q:** In the intended application there is ATAC in the new cell type but no H3K27ac — which model should be transferred?
+
+**A:** The multimodal one, not because it predicts better than the residual-objective alternative but because it is indistinguishable from it on the top signal quintile and simpler, with no offset model to ship alongside it.
+
+**Top signal quintile, deployable configuration** (everything transferred; only target ATAC used):
+
+| | ATAC-only | sequence only | multimodal | residual multimodal |
+|---|---|---|---|---|
+| K562 → GM12878 | 0.477 | 0.147 | **0.520** | 0.512 |
+| GM12878 → K562 | 0.541 | 0.317 | **0.602** | 0.600 |
+
+Three things follow.
+
+- **Sequence genuinely adds on transfer.** Every sequence-containing model beats transferred ATAC-only by 0.04–0.06 on the top quintile. That margin, not the choice of objective, is what the sequence component buys.
+- **Accessibility is largely portable, and must be measured locally.** Transferring the ATAC baseline instead of fitting it in the target costs only ~0.017 (0.494 → 0.477), but sequence-only transfer is useless (0.147, 0.317) — the accessibility measurement in the target cell type is doing the heavy lifting either way.
+- **A little target H3K27ac would be worth more than its size suggests.** The residual design *does* beat multimodal when the accessibility baseline is fitted in the target rather than transferred (+0.005 to +0.011 on all elements, *p* < 0.01 both directions). Fitting that baseline needs only an ATAC-only model, i.e. a modest H3K27ac library — not enough to train a full model on. If a shallow H3K27ac library in a new cell type is feasible, the residual architecture becomes preferable.
+
+**Method.**
+
+- Two variants per direction: offset from the target's own ATAC model (an optimistic upper bound, since that model requires target H3K27ac) and offset from the transferred source ATAC model (deployable).
+- Headline metric is correlation with *observed* H3K27ac in the target — the quantity the application needs — reported on the top signal quintile.
+- Paired within fold, since the differences are far below the between-fold spread.
+
+<details>
+<summary>Full methods &amp; code</summary>
+
+**A cautionary result about strata.** On *all elements* the picture looks tidy and significant: residual-multimodal beats multimodal by +0.005 (K562→GM, *p*=0.009) and +0.011 (GM→K562, *p*=0.003) with a locally fitted baseline, and loses by −0.005 (*p*=0.012) and −0.005 (*p*=0.022) when the baseline is transferred — a clean sign flip, all four significant. **On the top quintile none of it is resolvable** (*p* = 0.17, 0.33, 0.65, 0.76). All-elements correlation on this element set is dominated by the dead-versus-active contrast that accessibility already resolves, which is why this report stratifies everywhere. The tidy story lives in that contrast, not in the biology, and is not reported as a finding.
+
+A residual model predicts `observed − atac_pred`, so transferring it requires choosing whose `atac_pred`. Both choices are evaluated because the gap between them is itself informative: it measures what is lost by being unable to fit the accessibility baseline in the target cell type.
+
+```bash
+pixi run bash scripts/2.13.submit_residual_transfer.sh    # upper bound: local offset
+pixi run bash scripts/2.14.submit_deployment_transfer.sh  # deployable: transferred offset
+pixi run bash scripts/2.16.submit_transfer_perfold.sh     # per-fold CIs + paired tests
+```
+Per-fold scoring uses `scripts/2.15.perfold_from_config.py`, which is driven by the same config JSON as `2.4`, so in-cell grids and transfer runs are scored through one code path with identical metric definitions — a difference between cell types cannot come from which evaluator ran.
+</details>
+
 ## Accessibility explains less of H3K27ac in GM12878, which accounts for the ATAC-only transfer drop
 
 **Q:** Is the ATAC-only model's lower score in GM12878 a failure to generalise, or is accessibility simply less coupled to H3K27ac there?
