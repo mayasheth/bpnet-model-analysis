@@ -119,3 +119,6 @@ FIMO/elements_v1/analysis_v1/plot6.1*.png
 
 # Primary model data dir (bed index files)
 2025_0517_official_EP300_K562_model/data/
+
+# derived per-element caches for figure replots (regenerate with the plotting script)
+2026_0824_H3K27ac_model/results/.cache_*/

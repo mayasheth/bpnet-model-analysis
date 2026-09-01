@@ -1,0 +1,6278 @@
+{
+ "analysis": "2026_0824_H3K27ac_model",
+ "generator": "scripts/3.7.build_numbers_manifest.py",
+ "values": [
+  {
+   "name": "contamination_frac_hw250",
+   "value": 0.0,
+   "source": "results/window_tradeoff.tsv",
+   "derived": true,
+   "note": "fraction of elements containing another element"
+  },
+  {
+   "name": "contamination_frac_hw500",
+   "value": 0.0,
+   "source": "results/window_tradeoff.tsv",
+   "derived": true,
+   "note": "fraction of elements containing another element"
+  },
+  {
+   "name": "contamination_frac_hw750",
+   "value": 0.099,
+   "source": "results/window_tradeoff.tsv",
+   "derived": true,
+   "note": "fraction of elements containing another element"
+  },
+  {
+   "name": "contamination_frac_hw750__r2",
+   "value": 0.1,
+   "source": "results/window_tradeoff.tsv",
+   "derived": true,
+   "note": "fraction of elements containing another element (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "contamination_frac_hw1000",
+   "value": 0.199,
+   "source": "results/window_tradeoff.tsv",
+   "derived": true,
+   "note": "fraction of elements containing another element"
+  },
+  {
+   "name": "contamination_frac_hw1000__r2",
+   "value": 0.2,
+   "source": "results/window_tradeoff.tsv",
+   "derived": true,
+   "note": "fraction of elements containing another element (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "contamination_frac_hw1500",
+   "value": 0.331,
+   "source": "results/window_tradeoff.tsv",
+   "derived": true,
+   "note": "fraction of elements containing another element"
+  },
+  {
+   "name": "contamination_frac_hw1500__r2",
+   "value": 0.33,
+   "source": "results/window_tradeoff.tsv",
+   "derived": true,
+   "note": "fraction of elements containing another element (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "contamination_frac_hw1500__r1",
+   "value": 0.3,
+   "source": "results/window_tradeoff.tsv",
+   "derived": true,
+   "note": "fraction of elements containing another element (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "contamination_frac_hw2000",
+   "value": 0.415,
+   "source": "results/window_tradeoff.tsv",
+   "derived": true,
+   "note": "fraction of elements containing another element"
+  },
+  {
+   "name": "contamination_frac_hw2000__r2",
+   "value": 0.41,
+   "source": "results/window_tradeoff.tsv",
+   "derived": true,
+   "note": "fraction of elements containing another element (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "contamination_frac_hw2000__r1",
+   "value": 0.4,
+   "source": "results/window_tradeoff.tsv",
+   "derived": true,
+   "note": "fraction of elements containing another element (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "ceiling_raw_topq_hw250",
+   "value": 0.7291,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": "raw inter-replicate r"
+  },
+  {
+   "name": "ceiling_raw_topq_hw250__r3",
+   "value": 0.729,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": "raw inter-replicate r (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "ceiling_raw_topq_hw250__r2",
+   "value": 0.73,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": "raw inter-replicate r (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "ceiling_raw_topq_hw250__r1",
+   "value": 0.7,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": "raw inter-replicate r (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "ceiling_raw_all_hw250",
+   "value": 0.815,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "ceiling_raw_all_hw250__r2",
+   "value": 0.81,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "ceiling_raw_all_hw250__r1",
+   "value": 0.8,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "ceiling_raw_topq_hw500",
+   "value": 0.7601,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": "raw inter-replicate r"
+  },
+  {
+   "name": "ceiling_raw_topq_hw500__r3",
+   "value": 0.76,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": "raw inter-replicate r (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "ceiling_raw_topq_hw500__r1",
+   "value": 0.8,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": "raw inter-replicate r (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "ceiling_raw_all_hw500",
+   "value": 0.8438,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "ceiling_raw_all_hw500__r3",
+   "value": 0.844,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "ceiling_raw_all_hw500__r2",
+   "value": 0.84,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "ceiling_raw_all_hw500__r1",
+   "value": 0.8,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "ceiling_raw_topq_hw750",
+   "value": 0.7756,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": "raw inter-replicate r"
+  },
+  {
+   "name": "ceiling_raw_topq_hw750__r3",
+   "value": 0.776,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": "raw inter-replicate r (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "ceiling_raw_topq_hw750__r2",
+   "value": 0.78,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": "raw inter-replicate r (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "ceiling_raw_topq_hw750__r1",
+   "value": 0.8,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": "raw inter-replicate r (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "ceiling_raw_all_hw750",
+   "value": 0.856,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "ceiling_raw_all_hw750__r2",
+   "value": 0.86,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "ceiling_raw_all_hw750__r1",
+   "value": 0.9,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "ceiling_raw_topq_hw1000",
+   "value": 0.7846,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": "raw inter-replicate r"
+  },
+  {
+   "name": "ceiling_raw_topq_hw1000__r3",
+   "value": 0.785,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": "raw inter-replicate r (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "ceiling_raw_topq_hw1000__r2",
+   "value": 0.78,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": "raw inter-replicate r (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "ceiling_raw_topq_hw1000__r1",
+   "value": 0.8,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": "raw inter-replicate r (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "ceiling_raw_all_hw1000",
+   "value": 0.8628,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "ceiling_raw_all_hw1000__r3",
+   "value": 0.863,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "ceiling_raw_all_hw1000__r2",
+   "value": 0.86,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "ceiling_raw_all_hw1000__r1",
+   "value": 0.9,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "ceiling_raw_topq_hw1500",
+   "value": 0.7954,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": "raw inter-replicate r"
+  },
+  {
+   "name": "ceiling_raw_topq_hw1500__r3",
+   "value": 0.795,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": "raw inter-replicate r (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "ceiling_raw_topq_hw1500__r2",
+   "value": 0.8,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": "raw inter-replicate r (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "ceiling_raw_all_hw1500",
+   "value": 0.8712,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "ceiling_raw_all_hw1500__r3",
+   "value": 0.871,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "ceiling_raw_all_hw1500__r2",
+   "value": 0.87,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "ceiling_raw_all_hw1500__r1",
+   "value": 0.9,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "ceiling_raw_topq_hw2000",
+   "value": 0.7982,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": "raw inter-replicate r"
+  },
+  {
+   "name": "ceiling_raw_topq_hw2000__r3",
+   "value": 0.798,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": "raw inter-replicate r (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "ceiling_raw_topq_hw2000__r2",
+   "value": 0.8,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": "raw inter-replicate r (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "ceiling_raw_all_hw2000",
+   "value": 0.8759,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "ceiling_raw_all_hw2000__r3",
+   "value": 0.876,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "ceiling_raw_all_hw2000__r2",
+   "value": 0.88,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "ceiling_raw_all_hw2000__r1",
+   "value": 0.9,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "n_elements_ceiling",
+   "value": 150526.0,
+   "source": "results/fiveprime_replicate_ceiling_by_window.tsv",
+   "derived": true,
+   "note": "elements with usable windows"
+  },
+  {
+   "name": "frac_sub_nucleosomal",
+   "value": 0.3031,
+   "source": "results/atac_fragment_length_summary.tsv",
+   "derived": true,
+   "note": "mean over replicates"
+  },
+  {
+   "name": "frac_sub_nucleosomal__r3",
+   "value": 0.303,
+   "source": "results/atac_fragment_length_summary.tsv",
+   "derived": true,
+   "note": "mean over replicates (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "frac_sub_nucleosomal__r2",
+   "value": 0.3,
+   "source": "results/atac_fragment_length_summary.tsv",
+   "derived": true,
+   "note": "mean over replicates (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "frac_mono_nucleosomal",
+   "value": 0.196967,
+   "source": "results/atac_fragment_length_summary.tsv",
+   "derived": true,
+   "note": "mean over replicates"
+  },
+  {
+   "name": "frac_mono_nucleosomal__r3",
+   "value": 0.197,
+   "source": "results/atac_fragment_length_summary.tsv",
+   "derived": true,
+   "note": "mean over replicates (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "frac_mono_nucleosomal__r2",
+   "value": 0.2,
+   "source": "results/atac_fragment_length_summary.tsv",
+   "derived": true,
+   "note": "mean over replicates (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "frac_neither_channel",
+   "value": 0.499933,
+   "source": "results/atac_fragment_length_summary.tsv",
+   "derived": true,
+   "note": "mean over replicates"
+  },
+  {
+   "name": "frac_neither_channel__r3",
+   "value": 0.5,
+   "source": "results/atac_fragment_length_summary.tsv",
+   "derived": true,
+   "note": "mean over replicates (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "atac_median_fragment_bp",
+   "value": 201.0,
+   "source": "results/atac_fragment_length_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "peak_offset_bp_atac",
+   "value": -12.5,
+   "source": "results/profile_comparison_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "center_over_peak_atac",
+   "value": 1.0,
+   "source": "results/profile_comparison_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "peak_offset_bp_h3k27ac",
+   "value": -262.5,
+   "source": "results/profile_comparison_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "center_over_peak_h3k27ac",
+   "value": 0.945,
+   "source": "results/profile_comparison_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "center_over_peak_h3k27ac__r2",
+   "value": 0.94,
+   "source": "results/profile_comparison_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "center_over_peak_h3k27ac__r1",
+   "value": 0.9,
+   "source": "results/profile_comparison_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "frac_of_max_at_2kb_atac",
+   "value": 0.171314,
+   "source": "results/profile_comparison.tsv",
+   "derived": true,
+   "note": "normalised profile at the window edge"
+  },
+  {
+   "name": "frac_of_max_at_2kb_atac__r3",
+   "value": 0.171,
+   "source": "results/profile_comparison.tsv",
+   "derived": true,
+   "note": "normalised profile at the window edge (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "frac_of_max_at_2kb_atac__r2",
+   "value": 0.17,
+   "source": "results/profile_comparison.tsv",
+   "derived": true,
+   "note": "normalised profile at the window edge (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "frac_of_max_at_2kb_atac__r1",
+   "value": 0.2,
+   "source": "results/profile_comparison.tsv",
+   "derived": true,
+   "note": "normalised profile at the window edge (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "frac_of_max_at_2kb_h3k27ac",
+   "value": 0.277839,
+   "source": "results/profile_comparison.tsv",
+   "derived": true,
+   "note": "normalised profile at the window edge"
+  },
+  {
+   "name": "frac_of_max_at_2kb_h3k27ac__r3",
+   "value": 0.278,
+   "source": "results/profile_comparison.tsv",
+   "derived": true,
+   "note": "normalised profile at the window edge (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "frac_of_max_at_2kb_h3k27ac__r2",
+   "value": 0.28,
+   "source": "results/profile_comparison.tsv",
+   "derived": true,
+   "note": "normalised profile at the window edge (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "frac_of_max_at_2kb_h3k27ac__r1",
+   "value": 0.3,
+   "source": "results/profile_comparison.tsv",
+   "derived": true,
+   "note": "normalised profile at the window edge (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "coupling_topq_K562",
+   "value": 0.5102,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "coupling_topq_K562__r3",
+   "value": 0.51,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "coupling_topq_K562__r1",
+   "value": 0.5,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "n_topq_K562",
+   "value": 30104.0,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "coupling_topq_GM12878",
+   "value": 0.4088,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "coupling_topq_GM12878__r3",
+   "value": 0.409,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "coupling_topq_GM12878__r2",
+   "value": 0.41,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "coupling_topq_GM12878__r1",
+   "value": 0.4,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "n_topq_GM12878",
+   "value": 30843.0,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "coupling_topq_TeloHAEC_ctrl",
+   "value": 0.3707,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "coupling_topq_TeloHAEC_ctrl__r3",
+   "value": 0.371,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "coupling_topq_TeloHAEC_ctrl__r2",
+   "value": 0.37,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "coupling_topq_TeloHAEC_ctrl__r1",
+   "value": 0.4,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "n_topq_TeloHAEC_ctrl",
+   "value": 30280.0,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "coupling_topq_TeloHAEC_IL1b",
+   "value": 0.3421,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "coupling_topq_TeloHAEC_IL1b__r3",
+   "value": 0.342,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "coupling_topq_TeloHAEC_IL1b__r2",
+   "value": 0.34,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "coupling_topq_TeloHAEC_IL1b__r1",
+   "value": 0.3,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "n_topq_TeloHAEC_IL1b",
+   "value": 29672.0,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "coupling_topq_TeloHAEC_TNFa",
+   "value": 0.3324,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "coupling_topq_TeloHAEC_TNFa__r3",
+   "value": 0.332,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "coupling_topq_TeloHAEC_TNFa__r2",
+   "value": 0.33,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "coupling_topq_TeloHAEC_TNFa__r1",
+   "value": 0.3,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "n_topq_TeloHAEC_TNFa",
+   "value": 29480.0,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "coupling_topq_TeloHAEC_VEGF",
+   "value": 0.3496,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "coupling_topq_TeloHAEC_VEGF__r3",
+   "value": 0.35,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "coupling_topq_TeloHAEC_VEGF__r1",
+   "value": 0.3,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "n_topq_TeloHAEC_VEGF",
+   "value": 29225.0,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "coupling_all_K562",
+   "value": 0.7249,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "coupling_all_K562__r3",
+   "value": 0.725,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "coupling_all_K562__r2",
+   "value": 0.72,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "coupling_all_K562__r1",
+   "value": 0.7,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "n_usable_windows_K562",
+   "value": 150519.0,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": "elements with a usable window"
+  },
+  {
+   "name": "coupling_all_GM12878",
+   "value": 0.6862,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "coupling_all_GM12878__r3",
+   "value": 0.686,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "coupling_all_GM12878__r2",
+   "value": 0.69,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "coupling_all_GM12878__r1",
+   "value": 0.7,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "n_usable_windows_GM12878",
+   "value": 154215.0,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": "elements with a usable window"
+  },
+  {
+   "name": "coupling_all_TeloHAEC_ctrl",
+   "value": 0.7312,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "coupling_all_TeloHAEC_ctrl__r3",
+   "value": 0.731,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "coupling_all_TeloHAEC_ctrl__r2",
+   "value": 0.73,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "coupling_all_TeloHAEC_ctrl__r1",
+   "value": 0.7,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "n_usable_windows_TeloHAEC_ctrl",
+   "value": 151399.0,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": "elements with a usable window"
+  },
+  {
+   "name": "coupling_all_TeloHAEC_IL1b",
+   "value": 0.6726,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "coupling_all_TeloHAEC_IL1b__r3",
+   "value": 0.673,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "coupling_all_TeloHAEC_IL1b__r2",
+   "value": 0.67,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "coupling_all_TeloHAEC_IL1b__r1",
+   "value": 0.7,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "n_usable_windows_TeloHAEC_IL1b",
+   "value": 148358.0,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": "elements with a usable window"
+  },
+  {
+   "name": "coupling_all_TeloHAEC_TNFa",
+   "value": 0.6769,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "coupling_all_TeloHAEC_TNFa__r3",
+   "value": 0.677,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "coupling_all_TeloHAEC_TNFa__r2",
+   "value": 0.68,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "coupling_all_TeloHAEC_TNFa__r1",
+   "value": 0.7,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "n_usable_windows_TeloHAEC_TNFa",
+   "value": 147397.0,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": "elements with a usable window"
+  },
+  {
+   "name": "coupling_all_TeloHAEC_VEGF",
+   "value": 0.6925,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "coupling_all_TeloHAEC_VEGF__r3",
+   "value": 0.693,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "coupling_all_TeloHAEC_VEGF__r2",
+   "value": 0.69,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "coupling_all_TeloHAEC_VEGF__r1",
+   "value": 0.7,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "n_usable_windows_TeloHAEC_VEGF",
+   "value": 146122.0,
+   "source": "results/atac_vs_h3k27ac_by_celltype.tsv",
+   "derived": true,
+   "note": "elements with a usable window"
+  },
+  {
+   "name": "k562_sequence5p_half_window",
+   "value": 500.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_n_folds",
+   "value": 5.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_pearson_mean",
+   "value": 0.4938,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_pearson_mean__r3",
+   "value": 0.494,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_pearson_mean__r2",
+   "value": 0.49,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_pearson_mean__r1",
+   "value": 0.5,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_pearson_sd",
+   "value": 0.0306,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_pearson_sd__r3",
+   "value": 0.031,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_pearson_sd__r2",
+   "value": 0.03,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_pearson_sd__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_half_width",
+   "value": 0.038,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_ci95_half_width__r2",
+   "value": 0.04,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_half_width__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_lo",
+   "value": 0.4558,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_ci95_lo__r3",
+   "value": 0.456,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_lo__r2",
+   "value": 0.46,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_lo__r1",
+   "value": 0.5,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_hi",
+   "value": 0.5318,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_ci95_hi__r3",
+   "value": 0.532,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_hi__r2",
+   "value": 0.53,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_hi__r1",
+   "value": 0.5,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_half_window",
+   "value": 500.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_n_folds",
+   "value": 5.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_pearson_mean",
+   "value": 0.074,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_pearson_mean__r2",
+   "value": 0.07,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_pearson_mean__r1",
+   "value": 0.1,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_pearson_sd",
+   "value": 0.0141,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_pearson_sd__r3",
+   "value": 0.014,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_pearson_sd__r2",
+   "value": 0.01,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_pearson_sd__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_half_width",
+   "value": 0.0175,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_ci95_half_width__r3",
+   "value": 0.018,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_half_width__r2",
+   "value": 0.02,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_half_width__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_lo",
+   "value": 0.0565,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_ci95_lo__r3",
+   "value": 0.057,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_lo__r2",
+   "value": 0.06,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_lo__r1",
+   "value": 0.1,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_hi",
+   "value": 0.0915,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_ci95_hi__r3",
+   "value": 0.091,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_hi__r2",
+   "value": 0.09,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_hi__r1",
+   "value": 0.1,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_half_window",
+   "value": 500.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_n_folds",
+   "value": 5.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_pearson_mean",
+   "value": 0.0439,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_pearson_mean__r3",
+   "value": 0.044,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_pearson_mean__r2",
+   "value": 0.04,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_pearson_mean__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_pearson_sd",
+   "value": 0.0281,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_pearson_sd__r3",
+   "value": 0.028,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_pearson_sd__r2",
+   "value": 0.03,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_pearson_sd__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_half_width",
+   "value": 0.0348,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_ci95_half_width__r3",
+   "value": 0.035,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_half_width__r2",
+   "value": 0.03,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_half_width__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_lo",
+   "value": 0.0091,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_ci95_lo__r3",
+   "value": 0.009,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_lo__r2",
+   "value": 0.01,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_lo__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_hi",
+   "value": 0.0787,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_ci95_hi__r3",
+   "value": 0.079,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_hi__r2",
+   "value": 0.08,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_hi__r1",
+   "value": 0.1,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_half_window",
+   "value": 500.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_n_folds",
+   "value": 5.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_pearson_mean",
+   "value": 0.0613,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_pearson_mean__r3",
+   "value": 0.061,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_pearson_mean__r2",
+   "value": 0.06,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_pearson_mean__r1",
+   "value": 0.1,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_pearson_sd",
+   "value": 0.0112,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_pearson_sd__r3",
+   "value": 0.011,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_pearson_sd__r2",
+   "value": 0.01,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_pearson_sd__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_half_width",
+   "value": 0.0139,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_ci95_half_width__r3",
+   "value": 0.014,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_half_width__r2",
+   "value": 0.01,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_half_width__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_lo",
+   "value": 0.0473,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_ci95_lo__r3",
+   "value": 0.047,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_lo__r2",
+   "value": 0.05,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_lo__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_hi",
+   "value": 0.0752,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_ci95_hi__r3",
+   "value": 0.075,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_hi__r2",
+   "value": 0.08,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_hi__r1",
+   "value": 0.1,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_half_window",
+   "value": 500.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_n_folds",
+   "value": 5.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_pearson_mean",
+   "value": 0.1033,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_pearson_mean__r3",
+   "value": 0.103,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_pearson_mean__r2",
+   "value": 0.1,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_pearson_sd",
+   "value": 0.0263,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_pearson_sd__r3",
+   "value": 0.026,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_pearson_sd__r2",
+   "value": 0.03,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_pearson_sd__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_half_width",
+   "value": 0.0326,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_ci95_half_width__r3",
+   "value": 0.033,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_half_width__r2",
+   "value": 0.03,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_half_width__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_lo",
+   "value": 0.0707,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_ci95_lo__r3",
+   "value": 0.071,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_lo__r2",
+   "value": 0.07,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_lo__r1",
+   "value": 0.1,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_hi",
+   "value": 0.136,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_ci95_hi__r2",
+   "value": 0.14,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_hi__r1",
+   "value": 0.1,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_half_window",
+   "value": 500.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_n_folds",
+   "value": 5.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_pearson_mean",
+   "value": 0.3798,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_pearson_mean__r3",
+   "value": 0.38,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_pearson_mean__r1",
+   "value": 0.4,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_pearson_sd",
+   "value": 0.0456,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_pearson_sd__r3",
+   "value": 0.046,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_pearson_sd__r2",
+   "value": 0.05,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_pearson_sd__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_half_width",
+   "value": 0.0567,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_ci95_half_width__r3",
+   "value": 0.057,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_half_width__r2",
+   "value": 0.06,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_half_width__r1",
+   "value": 0.1,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_lo",
+   "value": 0.3232,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_ci95_lo__r3",
+   "value": 0.323,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_lo__r2",
+   "value": 0.32,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_lo__r1",
+   "value": 0.3,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_hi",
+   "value": 0.4365,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_ci95_hi__r3",
+   "value": 0.436,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_hi__r2",
+   "value": 0.44,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_hi__r1",
+   "value": 0.4,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_half_window",
+   "value": 500.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_n_folds",
+   "value": 5.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_pearson_mean",
+   "value": 0.3798,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_pearson_mean__r3",
+   "value": 0.38,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_pearson_mean__r1",
+   "value": 0.4,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_pearson_sd",
+   "value": 0.0456,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_pearson_sd__r3",
+   "value": 0.046,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_pearson_sd__r2",
+   "value": 0.05,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_pearson_sd__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_half_width",
+   "value": 0.0567,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_ci95_half_width__r3",
+   "value": 0.057,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_half_width__r2",
+   "value": 0.06,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_half_width__r1",
+   "value": 0.1,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_lo",
+   "value": 0.3232,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_ci95_lo__r3",
+   "value": 0.323,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_lo__r2",
+   "value": 0.32,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_lo__r1",
+   "value": 0.3,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_hi",
+   "value": 0.4365,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_ci95_hi__r3",
+   "value": 0.436,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_hi__r2",
+   "value": 0.44,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_hi__r1",
+   "value": 0.4,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_half_window",
+   "value": 500.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_n_folds",
+   "value": 5.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_pearson_mean",
+   "value": 0.4734,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_pearson_mean__r3",
+   "value": 0.473,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_pearson_mean__r2",
+   "value": 0.47,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_pearson_mean__r1",
+   "value": 0.5,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_pearson_sd",
+   "value": 0.0365,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_pearson_sd__r3",
+   "value": 0.036,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_pearson_sd__r2",
+   "value": 0.04,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_pearson_sd__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_half_width",
+   "value": 0.0453,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_ci95_half_width__r3",
+   "value": 0.045,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_half_width__r2",
+   "value": 0.05,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_half_width__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_lo",
+   "value": 0.4282,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_ci95_lo__r3",
+   "value": 0.428,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_lo__r2",
+   "value": 0.43,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_lo__r1",
+   "value": 0.4,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_hi",
+   "value": 0.5187,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_sequence5p_ci95_hi__r3",
+   "value": 0.519,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_hi__r2",
+   "value": 0.52,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_sequence5p_ci95_hi__r1",
+   "value": 0.5,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_half_window",
+   "value": 500.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_n_folds",
+   "value": 5.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_pearson_mean",
+   "value": 0.8136,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_pearson_mean__r3",
+   "value": 0.814,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_pearson_mean__r2",
+   "value": 0.81,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_pearson_mean__r1",
+   "value": 0.8,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_pearson_sd",
+   "value": 0.0157,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_pearson_sd__r3",
+   "value": 0.016,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_pearson_sd__r2",
+   "value": 0.02,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_pearson_sd__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_half_width",
+   "value": 0.0196,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_ci95_half_width__r3",
+   "value": 0.02,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_half_width__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_lo",
+   "value": 0.7941,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_ci95_lo__r3",
+   "value": 0.794,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_lo__r2",
+   "value": 0.79,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_lo__r1",
+   "value": 0.8,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_hi",
+   "value": 0.8332,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_ci95_hi__r3",
+   "value": 0.833,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_hi__r2",
+   "value": 0.83,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_hi__r1",
+   "value": 0.8,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_half_window",
+   "value": 500.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_n_folds",
+   "value": 5.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_pearson_mean",
+   "value": 0.1979,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_pearson_mean__r3",
+   "value": 0.198,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_pearson_mean__r2",
+   "value": 0.2,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_pearson_sd",
+   "value": 0.0236,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_pearson_sd__r3",
+   "value": 0.024,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_pearson_sd__r2",
+   "value": 0.02,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_pearson_sd__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_half_width",
+   "value": 0.0292,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_ci95_half_width__r3",
+   "value": 0.029,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_half_width__r2",
+   "value": 0.03,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_half_width__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_lo",
+   "value": 0.1686,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_ci95_lo__r3",
+   "value": 0.169,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_lo__r2",
+   "value": 0.17,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_lo__r1",
+   "value": 0.2,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_hi",
+   "value": 0.2271,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_ci95_hi__r3",
+   "value": 0.227,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_hi__r2",
+   "value": 0.23,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_hi__r1",
+   "value": 0.2,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_half_window",
+   "value": 500.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_n_folds",
+   "value": 5.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_pearson_mean",
+   "value": 0.134,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_pearson_mean__r2",
+   "value": 0.13,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_pearson_mean__r1",
+   "value": 0.1,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_pearson_sd",
+   "value": 0.0181,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_pearson_sd__r3",
+   "value": 0.018,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_pearson_sd__r2",
+   "value": 0.02,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_pearson_sd__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_half_width",
+   "value": 0.0224,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_ci95_half_width__r3",
+   "value": 0.022,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_half_width__r2",
+   "value": 0.02,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_half_width__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_lo",
+   "value": 0.1116,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_ci95_lo__r3",
+   "value": 0.112,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_lo__r2",
+   "value": 0.11,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_lo__r1",
+   "value": 0.1,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_hi",
+   "value": 0.1564,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_ci95_hi__r3",
+   "value": 0.156,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_hi__r2",
+   "value": 0.16,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_hi__r1",
+   "value": 0.2,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_half_window",
+   "value": 500.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_n_folds",
+   "value": 5.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_pearson_mean",
+   "value": 0.1836,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_pearson_mean__r3",
+   "value": 0.184,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_pearson_mean__r2",
+   "value": 0.18,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_pearson_mean__r1",
+   "value": 0.2,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_pearson_sd",
+   "value": 0.0156,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_pearson_sd__r3",
+   "value": 0.016,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_pearson_sd__r2",
+   "value": 0.02,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_pearson_sd__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_half_width",
+   "value": 0.0194,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_ci95_half_width__r3",
+   "value": 0.019,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_half_width__r2",
+   "value": 0.02,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_half_width__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_lo",
+   "value": 0.1642,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_ci95_lo__r3",
+   "value": 0.164,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_lo__r2",
+   "value": 0.16,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_lo__r1",
+   "value": 0.2,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_hi",
+   "value": 0.203,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_ci95_hi__r2",
+   "value": 0.2,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_half_window",
+   "value": 500.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_n_folds",
+   "value": 5.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_pearson_mean",
+   "value": 0.3544,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_pearson_mean__r3",
+   "value": 0.354,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_pearson_mean__r2",
+   "value": 0.35,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_pearson_mean__r1",
+   "value": 0.4,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_pearson_sd",
+   "value": 0.0434,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_pearson_sd__r3",
+   "value": 0.043,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_pearson_sd__r2",
+   "value": 0.04,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_pearson_sd__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_half_width",
+   "value": 0.0539,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_ci95_half_width__r3",
+   "value": 0.054,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_half_width__r2",
+   "value": 0.05,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_half_width__r1",
+   "value": 0.1,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_lo",
+   "value": 0.3004,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_ci95_lo__r3",
+   "value": 0.3,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_hi",
+   "value": 0.4083,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_ci95_hi__r3",
+   "value": 0.408,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_hi__r2",
+   "value": 0.41,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_hi__r1",
+   "value": 0.4,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_half_window",
+   "value": 500.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_n_folds",
+   "value": 5.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_pearson_mean",
+   "value": 0.5476,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_pearson_mean__r3",
+   "value": 0.548,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_pearson_mean__r2",
+   "value": 0.55,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_pearson_mean__r1",
+   "value": 0.5,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_pearson_sd",
+   "value": 0.0412,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_pearson_sd__r3",
+   "value": 0.041,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_pearson_sd__r2",
+   "value": 0.04,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_pearson_sd__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_half_width",
+   "value": 0.0511,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_ci95_half_width__r3",
+   "value": 0.051,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_half_width__r2",
+   "value": 0.05,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_half_width__r1",
+   "value": 0.1,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_lo",
+   "value": 0.4965,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_ci95_lo__r3",
+   "value": 0.496,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_lo__r2",
+   "value": 0.5,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_hi",
+   "value": 0.5987,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_ci95_hi__r3",
+   "value": 0.599,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_hi__r2",
+   "value": 0.6,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_half_window",
+   "value": 500.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_n_folds",
+   "value": 5.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_pearson_mean",
+   "value": 0.5476,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_pearson_mean__r3",
+   "value": 0.548,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_pearson_mean__r2",
+   "value": 0.55,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_pearson_mean__r1",
+   "value": 0.5,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_pearson_sd",
+   "value": 0.0412,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_pearson_sd__r3",
+   "value": 0.041,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_pearson_sd__r2",
+   "value": 0.04,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_pearson_sd__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_half_width",
+   "value": 0.0511,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_ci95_half_width__r3",
+   "value": 0.051,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_half_width__r2",
+   "value": 0.05,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_half_width__r1",
+   "value": 0.1,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_lo",
+   "value": 0.4965,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_ci95_lo__r3",
+   "value": 0.496,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_lo__r2",
+   "value": 0.5,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_hi",
+   "value": 0.5987,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_ci95_hi__r3",
+   "value": 0.599,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_hi__r2",
+   "value": 0.6,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_half_window",
+   "value": 500.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_n_folds",
+   "value": 5.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_pearson_mean",
+   "value": 0.7323,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_pearson_mean__r3",
+   "value": 0.732,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_pearson_mean__r2",
+   "value": 0.73,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_pearson_mean__r1",
+   "value": 0.7,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_pearson_sd",
+   "value": 0.0193,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_pearson_sd__r3",
+   "value": 0.019,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_pearson_sd__r2",
+   "value": 0.02,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_pearson_sd__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_half_width",
+   "value": 0.024,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_ci95_half_width__r2",
+   "value": 0.02,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_half_width__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_lo",
+   "value": 0.7083,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_ci95_lo__r3",
+   "value": 0.708,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_lo__r2",
+   "value": 0.71,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_lo__r1",
+   "value": 0.7,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_hi",
+   "value": 0.7563,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_atac5p_ci95_hi__r3",
+   "value": 0.756,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_hi__r2",
+   "value": 0.76,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_atac5p_ci95_hi__r1",
+   "value": 0.8,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_half_window",
+   "value": 500.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_n_folds",
+   "value": 5.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_pearson_mean",
+   "value": 0.8741,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_pearson_mean__r3",
+   "value": 0.874,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_pearson_mean__r2",
+   "value": 0.87,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_pearson_mean__r1",
+   "value": 0.9,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_pearson_sd",
+   "value": 0.0152,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_pearson_sd__r3",
+   "value": 0.015,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_pearson_sd__r2",
+   "value": 0.02,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_pearson_sd__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_half_width",
+   "value": 0.0189,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_ci95_half_width__r3",
+   "value": 0.019,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_half_width__r2",
+   "value": 0.02,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_half_width__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_lo",
+   "value": 0.8552,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_ci95_lo__r3",
+   "value": 0.855,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_lo__r2",
+   "value": 0.86,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_lo__r1",
+   "value": 0.9,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_hi",
+   "value": 0.893,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_ci95_hi__r2",
+   "value": 0.89,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_hi__r1",
+   "value": 0.9,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_half_window",
+   "value": 500.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_n_folds",
+   "value": 5.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_pearson_mean",
+   "value": 0.3233,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_pearson_mean__r3",
+   "value": 0.323,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_pearson_mean__r2",
+   "value": 0.32,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_pearson_mean__r1",
+   "value": 0.3,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_pearson_sd",
+   "value": 0.0352,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_pearson_sd__r3",
+   "value": 0.035,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_pearson_sd__r2",
+   "value": 0.04,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_pearson_sd__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_half_width",
+   "value": 0.0437,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_ci95_half_width__r3",
+   "value": 0.044,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_half_width__r2",
+   "value": 0.04,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_half_width__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_lo",
+   "value": 0.2796,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_ci95_lo__r3",
+   "value": 0.28,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_lo__r1",
+   "value": 0.3,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_hi",
+   "value": 0.3669,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_ci95_hi__r3",
+   "value": 0.367,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_hi__r2",
+   "value": 0.37,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_hi__r1",
+   "value": 0.4,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_half_window",
+   "value": 500.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_n_folds",
+   "value": 5.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_pearson_mean",
+   "value": 0.1887,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_pearson_mean__r3",
+   "value": 0.189,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_pearson_mean__r2",
+   "value": 0.19,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_pearson_mean__r1",
+   "value": 0.2,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_pearson_sd",
+   "value": 0.0267,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_pearson_sd__r3",
+   "value": 0.027,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_pearson_sd__r2",
+   "value": 0.03,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_pearson_sd__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_half_width",
+   "value": 0.0331,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_ci95_half_width__r3",
+   "value": 0.033,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_half_width__r2",
+   "value": 0.03,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_half_width__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_lo",
+   "value": 0.1556,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_ci95_lo__r3",
+   "value": 0.156,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_lo__r2",
+   "value": 0.16,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_lo__r1",
+   "value": 0.2,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_hi",
+   "value": 0.2218,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_ci95_hi__r3",
+   "value": 0.222,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_hi__r2",
+   "value": 0.22,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_hi__r1",
+   "value": 0.2,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_half_window",
+   "value": 500.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_n_folds",
+   "value": 5.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_pearson_mean",
+   "value": 0.2475,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_pearson_mean__r3",
+   "value": 0.247,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_pearson_mean__r2",
+   "value": 0.25,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_pearson_mean__r1",
+   "value": 0.2,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_pearson_sd",
+   "value": 0.0165,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_pearson_sd__r3",
+   "value": 0.017,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_pearson_sd__r2",
+   "value": 0.02,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_pearson_sd__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_half_width",
+   "value": 0.0205,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_ci95_half_width__r3",
+   "value": 0.021,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_half_width__r2",
+   "value": 0.02,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_half_width__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_lo",
+   "value": 0.227,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_ci95_lo__r2",
+   "value": 0.23,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_lo__r1",
+   "value": 0.2,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_hi",
+   "value": 0.2679,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_ci95_hi__r3",
+   "value": 0.268,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_hi__r2",
+   "value": 0.27,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_hi__r1",
+   "value": 0.3,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_half_window",
+   "value": 500.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_n_folds",
+   "value": 5.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_pearson_mean",
+   "value": 0.4137,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_pearson_mean__r3",
+   "value": 0.414,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_pearson_mean__r2",
+   "value": 0.41,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_pearson_mean__r1",
+   "value": 0.4,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_pearson_sd",
+   "value": 0.0521,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_pearson_sd__r3",
+   "value": 0.052,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_pearson_sd__r2",
+   "value": 0.05,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_pearson_sd__r1",
+   "value": 0.1,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_half_width",
+   "value": 0.0647,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_ci95_half_width__r3",
+   "value": 0.065,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_half_width__r2",
+   "value": 0.06,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_half_width__r1",
+   "value": 0.1,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_lo",
+   "value": 0.349,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_ci95_lo__r2",
+   "value": 0.35,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_lo__r1",
+   "value": 0.3,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_hi",
+   "value": 0.4785,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_ci95_hi__r3",
+   "value": 0.478,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_hi__r2",
+   "value": 0.48,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_hi__r1",
+   "value": 0.5,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_half_window",
+   "value": 500.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_n_folds",
+   "value": 5.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_pearson_mean",
+   "value": 0.6852,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_pearson_mean__r3",
+   "value": 0.685,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_pearson_mean__r2",
+   "value": 0.69,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_pearson_mean__r1",
+   "value": 0.7,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_pearson_sd",
+   "value": 0.0147,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_pearson_sd__r3",
+   "value": 0.015,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_pearson_sd__r2",
+   "value": 0.01,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_pearson_sd__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_half_width",
+   "value": 0.0183,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_ci95_half_width__r3",
+   "value": 0.018,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_half_width__r2",
+   "value": 0.02,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_half_width__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_lo",
+   "value": 0.6669,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_ci95_lo__r3",
+   "value": 0.667,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_lo__r2",
+   "value": 0.67,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_lo__r1",
+   "value": 0.7,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_hi",
+   "value": 0.7035,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_ci95_hi__r3",
+   "value": 0.704,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_hi__r2",
+   "value": 0.7,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_half_window",
+   "value": 500.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_n_folds",
+   "value": 5.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_pearson_mean",
+   "value": 0.6852,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_pearson_mean__r3",
+   "value": 0.685,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_pearson_mean__r2",
+   "value": 0.69,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_pearson_mean__r1",
+   "value": 0.7,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_pearson_sd",
+   "value": 0.0147,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_pearson_sd__r3",
+   "value": 0.015,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_pearson_sd__r2",
+   "value": 0.01,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_pearson_sd__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_half_width",
+   "value": 0.0183,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_ci95_half_width__r3",
+   "value": 0.018,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_half_width__r2",
+   "value": 0.02,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_half_width__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_lo",
+   "value": 0.6669,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_ci95_lo__r3",
+   "value": 0.667,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_lo__r2",
+   "value": 0.67,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_lo__r1",
+   "value": 0.7,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_hi",
+   "value": 0.7035,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_ci95_hi__r3",
+   "value": 0.704,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_hi__r2",
+   "value": 0.7,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_half_window",
+   "value": 500.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_n_folds",
+   "value": 5.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_pearson_mean",
+   "value": 0.8071,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_pearson_mean__r3",
+   "value": 0.807,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_pearson_mean__r2",
+   "value": 0.81,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_pearson_mean__r1",
+   "value": 0.8,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_pearson_sd",
+   "value": 0.017,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_pearson_sd__r2",
+   "value": 0.02,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_pearson_sd__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_half_width",
+   "value": 0.0212,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_ci95_half_width__r3",
+   "value": 0.021,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_half_width__r2",
+   "value": 0.02,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_half_width__r1",
+   "value": 0.0,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_lo",
+   "value": 0.7859,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_ci95_lo__r3",
+   "value": 0.786,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_lo__r2",
+   "value": 0.79,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_lo__r1",
+   "value": 0.8,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_hi",
+   "value": 0.8283,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_multimodal5p_ci95_hi__r3",
+   "value": 0.828,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_hi__r2",
+   "value": 0.83,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_multimodal5p_ci95_hi__r1",
+   "value": 0.8,
+   "source": "results/fiveprime_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_sequence5p_residual_pearson",
+   "value": 0.149,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_resgrid_sequence5p_residual_pearson__r2",
+   "value": 0.15,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_sequence5p_residual_pearson__r1",
+   "value": 0.1,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_sequence5p_partial_r",
+   "value": 0.205,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_resgrid_sequence5p_partial_r__r2",
+   "value": 0.2,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_sequence5p_r_out_vs_atac",
+   "value": 0.477,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_resgrid_sequence5p_r_out_vs_atac__r2",
+   "value": 0.48,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_sequence5p_r_out_vs_atac__r1",
+   "value": 0.5,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_sequence5p_overall_pearson",
+   "value": 0.494,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_resgrid_sequence5p_overall_pearson__r2",
+   "value": 0.49,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_sequence5p_overall_pearson__r1",
+   "value": 0.5,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_sequence5p_incremental_r2",
+   "value": -0.418,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_resgrid_sequence5p_incremental_r2__r2",
+   "value": -0.42,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_sequence5p_incremental_r2__r1",
+   "value": -0.4,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_sequence5p_overall_pearson_topq",
+   "value": 0.381,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_resgrid_sequence5p_overall_pearson_topq__r2",
+   "value": 0.38,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_sequence5p_overall_pearson_topq__r1",
+   "value": 0.4,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_sequence5p_incremental_r2_topq",
+   "value": -0.156,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_resgrid_sequence5p_incremental_r2_topq__r2",
+   "value": -0.16,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_sequence5p_incremental_r2_topq__r1",
+   "value": -0.2,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_multimodal5p_residual_pearson",
+   "value": 0.551,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_resgrid_multimodal5p_residual_pearson__r2",
+   "value": 0.55,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_multimodal5p_residual_pearson__r1",
+   "value": 0.6,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_multimodal5p_partial_r",
+   "value": 0.551,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_resgrid_multimodal5p_partial_r__r2",
+   "value": 0.55,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_multimodal5p_partial_r__r1",
+   "value": 0.6,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_multimodal5p_r_out_vs_atac",
+   "value": 0.921,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_resgrid_multimodal5p_r_out_vs_atac__r2",
+   "value": 0.92,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_multimodal5p_r_out_vs_atac__r1",
+   "value": 0.9,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_multimodal5p_overall_pearson",
+   "value": 0.874,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_resgrid_multimodal5p_overall_pearson__r2",
+   "value": 0.87,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_multimodal5p_overall_pearson__r1",
+   "value": 0.9,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_multimodal5p_incremental_r2",
+   "value": 0.102,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_resgrid_multimodal5p_incremental_r2__r2",
+   "value": 0.1,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_multimodal5p_overall_pearson_topq",
+   "value": 0.687,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_resgrid_multimodal5p_overall_pearson_topq__r2",
+   "value": 0.69,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_multimodal5p_overall_pearson_topq__r1",
+   "value": 0.7,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_multimodal5p_incremental_r2_topq",
+   "value": 0.169,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_resgrid_multimodal5p_incremental_r2_topq__r2",
+   "value": 0.17,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_multimodal5p_incremental_r2_topq__r1",
+   "value": 0.2,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_residual_sequence_residual_pearson",
+   "value": 0.459,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_resgrid_residual_sequence_residual_pearson__r2",
+   "value": 0.46,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_residual_sequence_residual_pearson__r1",
+   "value": 0.5,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_residual_sequence_partial_r",
+   "value": 0.459,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_resgrid_residual_sequence_partial_r__r2",
+   "value": 0.46,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_residual_sequence_partial_r__r1",
+   "value": 0.5,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_residual_sequence_r_out_vs_atac",
+   "value": -0.09,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_resgrid_residual_sequence_r_out_vs_atac__r1",
+   "value": -0.1,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_residual_sequence_overall_pearson",
+   "value": 0.856,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_resgrid_residual_sequence_overall_pearson__r2",
+   "value": 0.86,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_residual_sequence_overall_pearson__r1",
+   "value": 0.9,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_residual_sequence_incremental_r2",
+   "value": 0.071,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_resgrid_residual_sequence_incremental_r2__r2",
+   "value": 0.07,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_residual_sequence_incremental_r2__r1",
+   "value": 0.1,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_residual_sequence_overall_pearson_topq",
+   "value": 0.646,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_resgrid_residual_sequence_overall_pearson_topq__r2",
+   "value": 0.65,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_residual_sequence_overall_pearson_topq__r1",
+   "value": 0.6,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_residual_sequence_incremental_r2_topq",
+   "value": 0.115,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_resgrid_residual_sequence_incremental_r2_topq__r2",
+   "value": 0.12,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_residual_sequence_incremental_r2_topq__r1",
+   "value": 0.1,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_residual_multimodal_residual_pearson",
+   "value": 0.514,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_resgrid_residual_multimodal_residual_pearson__r2",
+   "value": 0.51,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_residual_multimodal_residual_pearson__r1",
+   "value": 0.5,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_residual_multimodal_partial_r",
+   "value": 0.518,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_resgrid_residual_multimodal_partial_r__r2",
+   "value": 0.52,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_residual_multimodal_partial_r__r1",
+   "value": 0.5,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_residual_multimodal_r_out_vs_atac",
+   "value": 0.078,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_resgrid_residual_multimodal_r_out_vs_atac__r2",
+   "value": 0.08,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_residual_multimodal_r_out_vs_atac__r1",
+   "value": 0.1,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_residual_multimodal_overall_pearson",
+   "value": 0.867,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_resgrid_residual_multimodal_overall_pearson__r2",
+   "value": 0.87,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_residual_multimodal_overall_pearson__r1",
+   "value": 0.9,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_residual_multimodal_incremental_r2",
+   "value": 0.09,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_resgrid_residual_multimodal_incremental_r2__r1",
+   "value": 0.1,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_residual_multimodal_overall_pearson_topq",
+   "value": 0.67,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_resgrid_residual_multimodal_overall_pearson_topq__r1",
+   "value": 0.7,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_residual_multimodal_incremental_r2_topq",
+   "value": 0.146,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_resgrid_residual_multimodal_incremental_r2_topq__r2",
+   "value": 0.15,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_residual_multimodal_incremental_r2_topq__r1",
+   "value": 0.1,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_residual_atac_residual_pearson",
+   "value": -0.003,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_resgrid_residual_atac_residual_pearson__r2",
+   "value": -0.0,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_residual_atac_partial_r",
+   "value": -0.004,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_resgrid_residual_atac_partial_r__r2",
+   "value": -0.0,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_residual_atac_r_out_vs_atac",
+   "value": -0.62,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_resgrid_residual_atac_r_out_vs_atac__r1",
+   "value": -0.6,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_residual_atac_overall_pearson",
+   "value": 0.813,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_resgrid_residual_atac_overall_pearson__r2",
+   "value": 0.81,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_residual_atac_overall_pearson__r1",
+   "value": 0.8,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_residual_atac_incremental_r2",
+   "value": -0.0,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_resgrid_residual_atac_overall_pearson_topq",
+   "value": 0.546,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_resgrid_residual_atac_overall_pearson_topq__r2",
+   "value": 0.55,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_residual_atac_overall_pearson_topq__r1",
+   "value": 0.5,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "k562_resgrid_residual_atac_incremental_r2_topq",
+   "value": -0.003,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "k562_resgrid_residual_atac_incremental_r2_topq__r2",
+   "value": -0.0,
+   "source": "results/residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_sequence5p_residual_pearson",
+   "value": 0.133,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "gm_resgrid_sequence5p_residual_pearson__r2",
+   "value": 0.13,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_sequence5p_residual_pearson__r1",
+   "value": 0.1,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_sequence5p_partial_r",
+   "value": 0.178,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "gm_resgrid_sequence5p_partial_r__r2",
+   "value": 0.18,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_sequence5p_partial_r__r1",
+   "value": 0.2,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_sequence5p_r_out_vs_atac",
+   "value": 0.486,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "gm_resgrid_sequence5p_r_out_vs_atac__r2",
+   "value": 0.49,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_sequence5p_r_out_vs_atac__r1",
+   "value": 0.5,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_sequence5p_overall_pearson",
+   "value": 0.475,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "gm_resgrid_sequence5p_overall_pearson__r2",
+   "value": 0.47,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_sequence5p_overall_pearson__r1",
+   "value": 0.5,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_sequence5p_incremental_r2",
+   "value": -0.375,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "gm_resgrid_sequence5p_incremental_r2__r2",
+   "value": -0.38,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_sequence5p_incremental_r2__r1",
+   "value": -0.4,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_sequence5p_overall_pearson_topq",
+   "value": 0.221,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "gm_resgrid_sequence5p_overall_pearson_topq__r2",
+   "value": 0.22,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_sequence5p_overall_pearson_topq__r1",
+   "value": 0.2,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_sequence5p_incremental_r2_topq",
+   "value": -0.195,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "gm_resgrid_sequence5p_incremental_r2_topq__r2",
+   "value": -0.2,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_multimodal5p_residual_pearson",
+   "value": 0.449,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "gm_resgrid_multimodal5p_residual_pearson__r2",
+   "value": 0.45,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_multimodal5p_residual_pearson__r1",
+   "value": 0.4,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_multimodal5p_partial_r",
+   "value": 0.45,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "gm_resgrid_multimodal5p_partial_r__r1",
+   "value": 0.5,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_multimodal5p_r_out_vs_atac",
+   "value": 0.921,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "gm_resgrid_multimodal5p_r_out_vs_atac__r2",
+   "value": 0.92,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_multimodal5p_r_out_vs_atac__r1",
+   "value": 0.9,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_multimodal5p_overall_pearson",
+   "value": 0.825,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "gm_resgrid_multimodal5p_overall_pearson__r2",
+   "value": 0.82,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_multimodal5p_overall_pearson__r1",
+   "value": 0.8,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_multimodal5p_incremental_r2",
+   "value": 0.079,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "gm_resgrid_multimodal5p_incremental_r2__r2",
+   "value": 0.08,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_multimodal5p_incremental_r2__r1",
+   "value": 0.1,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_multimodal5p_overall_pearson_topq",
+   "value": 0.58,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "gm_resgrid_multimodal5p_overall_pearson_topq__r1",
+   "value": 0.6,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_multimodal5p_incremental_r2_topq",
+   "value": 0.092,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "gm_resgrid_multimodal5p_incremental_r2_topq__r2",
+   "value": 0.09,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_multimodal5p_incremental_r2_topq__r1",
+   "value": 0.1,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_residual_sequence_residual_pearson",
+   "value": 0.372,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "gm_resgrid_residual_sequence_residual_pearson__r2",
+   "value": 0.37,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_residual_sequence_residual_pearson__r1",
+   "value": 0.4,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_residual_sequence_partial_r",
+   "value": 0.372,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "gm_resgrid_residual_sequence_partial_r__r2",
+   "value": 0.37,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_residual_sequence_partial_r__r1",
+   "value": 0.4,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_residual_sequence_r_out_vs_atac",
+   "value": -0.025,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "gm_resgrid_residual_sequence_r_out_vs_atac__r2",
+   "value": -0.03,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_residual_sequence_r_out_vs_atac__r1",
+   "value": -0.0,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_residual_sequence_overall_pearson",
+   "value": 0.81,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "gm_resgrid_residual_sequence_overall_pearson__r1",
+   "value": 0.8,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_residual_sequence_incremental_r2",
+   "value": 0.055,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "gm_resgrid_residual_sequence_incremental_r2__r2",
+   "value": 0.06,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_residual_sequence_incremental_r2__r1",
+   "value": 0.1,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_residual_sequence_overall_pearson_topq",
+   "value": 0.559,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "gm_resgrid_residual_sequence_overall_pearson_topq__r2",
+   "value": 0.56,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_residual_sequence_overall_pearson_topq__r1",
+   "value": 0.6,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_residual_sequence_incremental_r2_topq",
+   "value": 0.068,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "gm_resgrid_residual_sequence_incremental_r2_topq__r2",
+   "value": 0.07,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_residual_sequence_incremental_r2_topq__r1",
+   "value": 0.1,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_residual_multimodal_residual_pearson",
+   "value": 0.414,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "gm_resgrid_residual_multimodal_residual_pearson__r2",
+   "value": 0.41,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_residual_multimodal_residual_pearson__r1",
+   "value": 0.4,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_residual_multimodal_partial_r",
+   "value": 0.415,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "gm_resgrid_residual_multimodal_partial_r__r2",
+   "value": 0.41,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_residual_multimodal_partial_r__r1",
+   "value": 0.4,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_residual_multimodal_r_out_vs_atac",
+   "value": 0.02,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "gm_resgrid_residual_multimodal_r_out_vs_atac__r1",
+   "value": 0.0,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_residual_multimodal_overall_pearson",
+   "value": 0.819,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "gm_resgrid_residual_multimodal_overall_pearson__r2",
+   "value": 0.82,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_residual_multimodal_overall_pearson__r1",
+   "value": 0.8,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_residual_multimodal_incremental_r2",
+   "value": 0.069,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "gm_resgrid_residual_multimodal_incremental_r2__r2",
+   "value": 0.07,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_residual_multimodal_incremental_r2__r1",
+   "value": 0.1,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_residual_multimodal_overall_pearson_topq",
+   "value": 0.567,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "gm_resgrid_residual_multimodal_overall_pearson_topq__r2",
+   "value": 0.57,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_residual_multimodal_overall_pearson_topq__r1",
+   "value": 0.6,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_residual_multimodal_incremental_r2_topq",
+   "value": 0.077,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "gm_resgrid_residual_multimodal_incremental_r2_topq__r2",
+   "value": 0.08,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_residual_multimodal_incremental_r2_topq__r1",
+   "value": 0.1,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_residual_atac_residual_pearson",
+   "value": 0.01,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "gm_resgrid_residual_atac_residual_pearson__r1",
+   "value": 0.0,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_residual_atac_partial_r",
+   "value": 0.005,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "gm_resgrid_residual_atac_partial_r__r2",
+   "value": 0.01,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_residual_atac_partial_r__r1",
+   "value": 0.0,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_residual_atac_r_out_vs_atac",
+   "value": -0.319,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "gm_resgrid_residual_atac_r_out_vs_atac__r2",
+   "value": -0.32,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_residual_atac_r_out_vs_atac__r1",
+   "value": -0.3,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_residual_atac_overall_pearson",
+   "value": 0.775,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "gm_resgrid_residual_atac_overall_pearson__r2",
+   "value": 0.78,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_residual_atac_overall_pearson__r1",
+   "value": 0.8,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_residual_atac_incremental_r2",
+   "value": 0.0,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "gm_resgrid_residual_atac_overall_pearson_topq",
+   "value": 0.495,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "gm_resgrid_residual_atac_overall_pearson_topq__r2",
+   "value": 0.49,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_residual_atac_overall_pearson_topq__r1",
+   "value": 0.5,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "gm_resgrid_residual_atac_incremental_r2_topq",
+   "value": 0.001,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "gm_resgrid_residual_atac_incremental_r2_topq__r2",
+   "value": 0.0,
+   "source": "results/gm12878_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "n_elements_k562_dnase",
+   "value": 150528.0,
+   "source": "reference/K562_DNase_candidate_elements.narrowPeak",
+   "derived": true,
+   "note": "lines in the narrowPeak"
+  },
+  {
+   "name": "n_elements_gm12878",
+   "value": 154224.0,
+   "source": "2026_0606_GM12878_transferability/reference/GM12878_candidate_elements.narrowPeak",
+   "derived": true,
+   "note": "lines in the narrowPeak"
+  },
+  {
+   "name": "n_element_folds_k562",
+   "value": 58655.0,
+   "source": "results/residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "summed over 5 folds"
+  },
+  {
+   "name": "n_element_folds_gm12878",
+   "value": 57144.0,
+   "source": "results/gm12878_residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "summed over 5 folds"
+  },
+  {
+   "name": "pct_of_ceiling_k562_to_k562_sequence",
+   "value": 40.904198,
+   "source": "results/*_stratified_fold_summary.tsv",
+   "derived": true,
+   "note": "top-quintile r as a percentage of the predicted cell type's corrected ceiling"
+  },
+  {
+   "name": "pct_of_ceiling_k562_to_k562_sequence__r0",
+   "value": 41.0,
+   "source": "results/*_stratified_fold_summary.tsv",
+   "derived": true,
+   "note": "top-quintile r as a percentage of the predicted cell type's corrected ceiling (rounded to 0 dp as quoted)"
+  },
+  {
+   "name": "pct_of_ceiling_k562_to_k562_atac",
+   "value": 58.988159,
+   "source": "results/*_stratified_fold_summary.tsv",
+   "derived": true,
+   "note": "top-quintile r as a percentage of the predicted cell type's corrected ceiling"
+  },
+  {
+   "name": "pct_of_ceiling_k562_to_k562_atac__r0",
+   "value": 59.0,
+   "source": "results/*_stratified_fold_summary.tsv",
+   "derived": true,
+   "note": "top-quintile r as a percentage of the predicted cell type's corrected ceiling (rounded to 0 dp as quoted)"
+  },
+  {
+   "name": "pct_of_ceiling_k562_to_k562_multimodal",
+   "value": 73.735199,
+   "source": "results/*_stratified_fold_summary.tsv",
+   "derived": true,
+   "note": "top-quintile r as a percentage of the predicted cell type's corrected ceiling"
+  },
+  {
+   "name": "pct_of_ceiling_k562_to_k562_multimodal__r0",
+   "value": 74.0,
+   "source": "results/*_stratified_fold_summary.tsv",
+   "derived": true,
+   "note": "top-quintile r as a percentage of the predicted cell type's corrected ceiling (rounded to 0 dp as quoted)"
+  },
+  {
+   "name": "pct_of_ceiling_k562_to_gm_sequence",
+   "value": 15.145228,
+   "source": "results/*_stratified_fold_summary.tsv",
+   "derived": true,
+   "note": "top-quintile r as a percentage of the predicted cell type's corrected ceiling"
+  },
+  {
+   "name": "pct_of_ceiling_k562_to_gm_sequence__r0",
+   "value": 15.0,
+   "source": "results/*_stratified_fold_summary.tsv",
+   "derived": true,
+   "note": "top-quintile r as a percentage of the predicted cell type's corrected ceiling (rounded to 0 dp as quoted)"
+  },
+  {
+   "name": "pct_of_ceiling_k562_to_gm_atac",
+   "value": 49.377593,
+   "source": "results/*_stratified_fold_summary.tsv",
+   "derived": true,
+   "note": "top-quintile r as a percentage of the predicted cell type's corrected ceiling"
+  },
+  {
+   "name": "pct_of_ceiling_k562_to_gm_atac__r0",
+   "value": 49.0,
+   "source": "results/*_stratified_fold_summary.tsv",
+   "derived": true,
+   "note": "top-quintile r as a percentage of the predicted cell type's corrected ceiling (rounded to 0 dp as quoted)"
+  },
+  {
+   "name": "pct_of_ceiling_k562_to_gm_multimodal",
+   "value": 53.838174,
+   "source": "results/*_stratified_fold_summary.tsv",
+   "derived": true,
+   "note": "top-quintile r as a percentage of the predicted cell type's corrected ceiling"
+  },
+  {
+   "name": "pct_of_ceiling_k562_to_gm_multimodal__r0",
+   "value": 54.0,
+   "source": "results/*_stratified_fold_summary.tsv",
+   "derived": true,
+   "note": "top-quintile r as a percentage of the predicted cell type's corrected ceiling (rounded to 0 dp as quoted)"
+  },
+  {
+   "name": "pct_of_ceiling_gm_to_gm_sequence",
+   "value": 22.925311,
+   "source": "results/*_stratified_fold_summary.tsv",
+   "derived": true,
+   "note": "top-quintile r as a percentage of the predicted cell type's corrected ceiling"
+  },
+  {
+   "name": "pct_of_ceiling_gm_to_gm_sequence__r0",
+   "value": 23.0,
+   "source": "results/*_stratified_fold_summary.tsv",
+   "derived": true,
+   "note": "top-quintile r as a percentage of the predicted cell type's corrected ceiling (rounded to 0 dp as quoted)"
+  },
+  {
+   "name": "pct_of_ceiling_gm_to_gm_atac",
+   "value": 51.141079,
+   "source": "results/*_stratified_fold_summary.tsv",
+   "derived": true,
+   "note": "top-quintile r as a percentage of the predicted cell type's corrected ceiling"
+  },
+  {
+   "name": "pct_of_ceiling_gm_to_gm_atac__r0",
+   "value": 51.0,
+   "source": "results/*_stratified_fold_summary.tsv",
+   "derived": true,
+   "note": "top-quintile r as a percentage of the predicted cell type's corrected ceiling (rounded to 0 dp as quoted)"
+  },
+  {
+   "name": "pct_of_ceiling_gm_to_gm_multimodal",
+   "value": 60.062241,
+   "source": "results/*_stratified_fold_summary.tsv",
+   "derived": true,
+   "note": "top-quintile r as a percentage of the predicted cell type's corrected ceiling"
+  },
+  {
+   "name": "pct_of_ceiling_gm_to_gm_multimodal__r0",
+   "value": 60.0,
+   "source": "results/*_stratified_fold_summary.tsv",
+   "derived": true,
+   "note": "top-quintile r as a percentage of the predicted cell type's corrected ceiling (rounded to 0 dp as quoted)"
+  },
+  {
+   "name": "pct_of_ceiling_gm_to_k562_sequence",
+   "value": 34.122713,
+   "source": "results/*_stratified_fold_summary.tsv",
+   "derived": true,
+   "note": "top-quintile r as a percentage of the predicted cell type's corrected ceiling"
+  },
+  {
+   "name": "pct_of_ceiling_gm_to_k562_sequence__r0",
+   "value": 34.0,
+   "source": "results/*_stratified_fold_summary.tsv",
+   "derived": true,
+   "note": "top-quintile r as a percentage of the predicted cell type's corrected ceiling (rounded to 0 dp as quoted)"
+  },
+  {
+   "name": "pct_of_ceiling_gm_to_k562_atac",
+   "value": 58.019376,
+   "source": "results/*_stratified_fold_summary.tsv",
+   "derived": true,
+   "note": "top-quintile r as a percentage of the predicted cell type's corrected ceiling"
+  },
+  {
+   "name": "pct_of_ceiling_gm_to_k562_atac__r0",
+   "value": 58.0,
+   "source": "results/*_stratified_fold_summary.tsv",
+   "derived": true,
+   "note": "top-quintile r as a percentage of the predicted cell type's corrected ceiling (rounded to 0 dp as quoted)"
+  },
+  {
+   "name": "pct_of_ceiling_gm_to_k562_multimodal",
+   "value": 64.585576,
+   "source": "results/*_stratified_fold_summary.tsv",
+   "derived": true,
+   "note": "top-quintile r as a percentage of the predicted cell type's corrected ceiling"
+  },
+  {
+   "name": "pct_of_ceiling_gm_to_k562_multimodal__r0",
+   "value": 65.0,
+   "source": "results/*_stratified_fold_summary.tsv",
+   "derived": true,
+   "note": "top-quintile r as a percentage of the predicted cell type's corrected ceiling (rounded to 0 dp as quoted)"
+  },
+  {
+   "name": "frac_of_max_at_window_edge_atac",
+   "value": 0.177171,
+   "source": "results/profile_comparison.tsv",
+   "derived": true,
+   "note": "mean of both edges, |pos| >= 1900 bp"
+  },
+  {
+   "name": "frac_of_max_at_window_edge_atac__r3",
+   "value": 0.177,
+   "source": "results/profile_comparison.tsv",
+   "derived": true,
+   "note": "mean of both edges, |pos| >= 1900 bp (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "frac_of_max_at_window_edge_atac__r2",
+   "value": 0.18,
+   "source": "results/profile_comparison.tsv",
+   "derived": true,
+   "note": "mean of both edges, |pos| >= 1900 bp (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "frac_of_max_at_window_edge_atac__r1",
+   "value": 0.2,
+   "source": "results/profile_comparison.tsv",
+   "derived": true,
+   "note": "mean of both edges, |pos| >= 1900 bp (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "frac_of_max_at_window_edge_h3k27ac",
+   "value": 0.284966,
+   "source": "results/profile_comparison.tsv",
+   "derived": true,
+   "note": "mean of both edges, |pos| >= 1900 bp"
+  },
+  {
+   "name": "frac_of_max_at_window_edge_h3k27ac__r3",
+   "value": 0.285,
+   "source": "results/profile_comparison.tsv",
+   "derived": true,
+   "note": "mean of both edges, |pos| >= 1900 bp (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "frac_of_max_at_window_edge_h3k27ac__r2",
+   "value": 0.28,
+   "source": "results/profile_comparison.tsv",
+   "derived": true,
+   "note": "mean of both edges, |pos| >= 1900 bp (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "frac_of_max_at_window_edge_h3k27ac__r1",
+   "value": 0.3,
+   "source": "results/profile_comparison.tsv",
+   "derived": true,
+   "note": "mean of both edges, |pos| >= 1900 bp (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "nuclear_reads_K562",
+   "value": 545661218.0,
+   "source": "2026_0529_multimodal_p300_model/data/atac_5p.bw",
+   "derived": true,
+   "note": "5-prime insertion counts, chrM removed"
+  },
+  {
+   "name": "nuclear_reads_GM12878",
+   "value": 571392162.0,
+   "source": "2026_0606_GM12878_transferability/data/atac_5p.bw",
+   "derived": true,
+   "note": "5-prime insertion counts, chrM removed"
+  },
+  {
+   "name": "nuclear_reads_TeloHAEC_ctrl",
+   "value": 102584146.0,
+   "source": "2026_0824_H3K27ac_model/data/panel/TeloHAEC_ctrl_atac_5p.bw",
+   "derived": true,
+   "note": "5-prime insertion counts, chrM removed"
+  },
+  {
+   "name": "nuclear_reads_TeloHAEC_IL1b",
+   "value": 57407742.0,
+   "source": "2026_0824_H3K27ac_model/data/panel/TeloHAEC_IL1b_atac_5p.bw",
+   "derived": true,
+   "note": "5-prime insertion counts, chrM removed"
+  },
+  {
+   "name": "nuclear_reads_TeloHAEC_TNFa",
+   "value": 44527268.0,
+   "source": "2026_0824_H3K27ac_model/data/panel/TeloHAEC_TNFa_atac_5p.bw",
+   "derived": true,
+   "note": "5-prime insertion counts, chrM removed"
+  },
+  {
+   "name": "nuclear_reads_TeloHAEC_VEGF",
+   "value": 44970860.0,
+   "source": "2026_0824_H3K27ac_model/data/panel/TeloHAEC_VEGF_atac_5p.bw",
+   "derived": true,
+   "note": "5-prime insertion counts, chrM removed"
+  },
+  {
+   "name": "depth_ratio_K562_over_GM12878",
+   "value": 0.954968,
+   "source": "bigwig headers",
+   "derived": true,
+   "note": "nuclear read-count ratio"
+  },
+  {
+   "name": "depth_ratio_K562_over_GM12878__r3",
+   "value": 0.955,
+   "source": "bigwig headers",
+   "derived": true,
+   "note": "nuclear read-count ratio (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "depth_ratio_K562_over_GM12878__r2",
+   "value": 0.95,
+   "source": "bigwig headers",
+   "derived": true,
+   "note": "nuclear read-count ratio (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "depth_ratio_K562_over_GM12878__r1",
+   "value": 1.0,
+   "source": "bigwig headers",
+   "derived": true,
+   "note": "nuclear read-count ratio (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "depth_ratio_K562_over_TeloHAEC_ctrl",
+   "value": 5.319157,
+   "source": "bigwig headers",
+   "derived": true,
+   "note": "nuclear read-count ratio"
+  },
+  {
+   "name": "depth_ratio_K562_over_TeloHAEC_ctrl__r3",
+   "value": 5.319,
+   "source": "bigwig headers",
+   "derived": true,
+   "note": "nuclear read-count ratio (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "depth_ratio_K562_over_TeloHAEC_ctrl__r2",
+   "value": 5.32,
+   "source": "bigwig headers",
+   "derived": true,
+   "note": "nuclear read-count ratio (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "depth_ratio_K562_over_TeloHAEC_ctrl__r1",
+   "value": 5.3,
+   "source": "bigwig headers",
+   "derived": true,
+   "note": "nuclear read-count ratio (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "depth_ratio_K562_over_TeloHAEC_IL1b",
+   "value": 9.505011,
+   "source": "bigwig headers",
+   "derived": true,
+   "note": "nuclear read-count ratio"
+  },
+  {
+   "name": "depth_ratio_K562_over_TeloHAEC_IL1b__r3",
+   "value": 9.505,
+   "source": "bigwig headers",
+   "derived": true,
+   "note": "nuclear read-count ratio (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "depth_ratio_K562_over_TeloHAEC_IL1b__r2",
+   "value": 9.51,
+   "source": "bigwig headers",
+   "derived": true,
+   "note": "nuclear read-count ratio (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "depth_ratio_K562_over_TeloHAEC_IL1b__r1",
+   "value": 9.5,
+   "source": "bigwig headers",
+   "derived": true,
+   "note": "nuclear read-count ratio (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "depth_ratio_K562_over_TeloHAEC_TNFa",
+   "value": 12.254541,
+   "source": "bigwig headers",
+   "derived": true,
+   "note": "nuclear read-count ratio"
+  },
+  {
+   "name": "depth_ratio_K562_over_TeloHAEC_TNFa__r3",
+   "value": 12.255,
+   "source": "bigwig headers",
+   "derived": true,
+   "note": "nuclear read-count ratio (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "depth_ratio_K562_over_TeloHAEC_TNFa__r2",
+   "value": 12.25,
+   "source": "bigwig headers",
+   "derived": true,
+   "note": "nuclear read-count ratio (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "depth_ratio_K562_over_TeloHAEC_TNFa__r1",
+   "value": 12.3,
+   "source": "bigwig headers",
+   "derived": true,
+   "note": "nuclear read-count ratio (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "depth_ratio_K562_over_TeloHAEC_VEGF",
+   "value": 12.133662,
+   "source": "bigwig headers",
+   "derived": true,
+   "note": "nuclear read-count ratio"
+  },
+  {
+   "name": "depth_ratio_K562_over_TeloHAEC_VEGF__r3",
+   "value": 12.134,
+   "source": "bigwig headers",
+   "derived": true,
+   "note": "nuclear read-count ratio (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "depth_ratio_K562_over_TeloHAEC_VEGF__r2",
+   "value": 12.13,
+   "source": "bigwig headers",
+   "derived": true,
+   "note": "nuclear read-count ratio (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "depth_ratio_K562_over_TeloHAEC_VEGF__r1",
+   "value": 12.1,
+   "source": "bigwig headers",
+   "derived": true,
+   "note": "nuclear read-count ratio (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "n_folds",
+   "value": 5.0,
+   "source": null,
+   "derived": false,
+   "note": "chromosome-holdout cross-validation folds"
+  },
+  {
+   "name": "ci_level_pct",
+   "value": 95.0,
+   "source": null,
+   "derived": false,
+   "note": "confidence interval level used throughout"
+  },
+  {
+   "name": "half_window_bp",
+   "value": 500.0,
+   "source": null,
+   "derived": false,
+   "note": "counting half-window fixed for all models"
+  },
+  {
+   "name": "n_profile_sample",
+   "value": 30000.0,
+   "source": null,
+   "derived": false,
+   "note": "elements sampled for the meta-profiles (seed 0)"
+  }
+ ]
+}
