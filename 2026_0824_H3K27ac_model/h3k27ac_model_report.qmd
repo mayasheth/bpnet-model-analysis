@@ -391,7 +391,7 @@ Per-fold scoring uses `scripts/2.15.perfold_from_config.py`, which is driven by 
 
 ## Accessibility explains less of H3K27ac in GM12878, which accounts for the ATAC-only transfer drop
 
-**Q:** Is the ATAC-only model's lower score in GM12878 a failure to generalise, or is accessibility simply less coupled to H3K27ac there?
+**Q:** Is the ATAC-only model's lower score in GM12878 a failure to generalise, or is accessibility less coupled to H3K27ac there?
 
 **A:** Accessibility is less coupled there — the model-free ATAC–H3K27ac correlation is 0.409 in GM12878 against 0.510 in K562, while the ATAC-only model extracts a larger fraction of that available signal in GM12878 (ratio 1.14) than in K562 (1.06).
 
@@ -400,7 +400,7 @@ Per-fold scoring uses `scripts/2.15.perfold_from_config.py`, which is driven by 
 <details>
 <summary>Figure 8 legend</summary>
 
-**Figure 8 | Accessibility–H3K27ac coupling weakens outside K562.** **a–c**, log1p summed ATAC against log1p summed H3K27ac over identical ±500 bp element-centred windows, one panel per cell type; colour is element density on a log scale. No model is involved, so these bound what any accessibility-only predictor could reach. Top-quintile Pearson **0.512 (K562), 0.409 (GM12878), 0.371 (TeloHAEC)**, on n = 150,519 / 154,215 / 151,399 elements. The x-range differs in **c** because the TeloHAEC ATAC library is shallower; correlation is unaffected by that scale. **d**, Top-quintile coupling across all six cell types and conditions measured so far, with K562 the outlier at the top of the range. Placing the ATAC-only model against this reference:
+**Figure 8 | Accessibility–H3K27ac coupling weakens outside K562.** **a–c**, log1p summed ATAC against log1p summed H3K27ac over identical ±500 bp element-centred windows, one panel per cell type; colour is element density on a log scale. No model is involved, so these bound what any accessibility-only predictor could reach. Top-quintile Pearson **0.512 (K562), 0.409 (GM12878), 0.371 (TeloHAEC)**, on n = 150,519 / 154,215 / 151,399 elements. The x-range differs in **c** because the TeloHAEC ATAC library is shallower; correlation is unaffected by that scale. **d, e**, Coupling across all six cell types and conditions measured so far, on all elements (**d**) and the top signal quintile (**e**). **The ordering inverts between the two.** On all elements TeloHAEC scores highest (0.73) and every cell type sits within 0.06 of the others, because that stratum is dominated by the dead-versus-active contrast every accessible-element set shares. On the top quintile the range triples and K562 stands clear at 0.51 against 0.33–0.41 elsewhere. The top quintile is the informative stratum, and the contrast between **d** and **e** is why this report stratifies throughout. Placing the ATAC-only model against the top-quintile reference:
 
 | | K562 | GM12878 |
 |---|---|---|

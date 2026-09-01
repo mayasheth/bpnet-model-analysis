@@ -100,7 +100,12 @@ def load_or_compute(name, atac, k27, elp):
 
 
 apply_rcparams()
-fig, axes = plt.subplots(1, 4, figsize=figsize(columns=2, aspect=0.30))
+# row 1: three hexbins (2 grid cols each); row 2: two bar panels (3 grid cols each)
+fig = plt.figure(figsize=figsize(columns=2, aspect=0.62))
+gs = fig.add_gridspec(2, 6, height_ratios=[1.0, 0.85], hspace=0.75, wspace=0.55)
+axes = [fig.add_subplot(gs[0, 0:2]), fig.add_subplot(gs[0, 2:4]),
+        fig.add_subplot(gs[0, 4:6]),
+        fig.add_subplot(gs[1, 0:3]), fig.add_subplot(gs[1, 3:6])]
 rows = []
 for k, (name, atac, k27, elp) in enumerate(PANELS):
     a, h = load_or_compute(name, atac, k27, elp)
@@ -120,27 +125,33 @@ for k, (name, atac, k27, elp) in enumerate(PANELS):
     add_panel_label(ax, "abc"[k])
     print(f"{name}: n={ok.sum():,} r_all={r_all:.4f} r_top={r_top:.4f}", flush=True)
 
-# --- panel d: the summary the claim rests on --------------------------------
-ax = axes[3]
+# --- panels d, e: coupling across cell types, both strata -------------------
+# Both strata are shown because the ordering INVERTS between them: on all elements
+# TeloHAEC is the highest, on the top quintile it is the lowest. The all-elements
+# number is dominated by the dead-versus-active contrast, so the top quintile is the
+# informative one — the same stratification caveat that applies throughout the report.
 cp = pd.read_csv(f"{P}/results/atac_vs_h3k27ac_by_celltype.tsv", sep="\t")
-cp = cp[cp["stratum"] == "top_quintile"].set_index("label")["pearson"]
 ORDER = [("K562", "K562"), ("GM12878", "GM12878"), ("TeloHAEC_ctrl", "TeloHAEC"),
          ("TeloHAEC_IL1b", "+IL1b"), ("TeloHAEC_TNFa", "+TNFa"), ("TeloHAEC_VEGF", "−VEGF")]
-vals = [cp.get(k, np.nan) for k, _ in ORDER]
 # neutral tones: blue/red/purple are reserved for input modality elsewhere in the
 # report, and these bars distinguish cell types, not modalities.
 cols = ["#3A3A3A", "#3A3A3A", "#8C8C8C", "#BDBDBD", "#BDBDBD", "#BDBDBD"]
-ax.bar(range(len(vals)), vals, color=cols, width=0.7)
-for i, v in enumerate(vals):
-    ax.text(i, v + 0.012, f"{v:.2f}", ha="center", fontsize=4.5)
-ax.set_xticks(range(len(ORDER)))
-ax.set_xticklabels([lab for _, lab in ORDER], fontsize=5.5, rotation=40, ha="right")
-ax.set_ylabel("Coupling, top quintile ($r$)")
-ax.set_ylim(0, 0.60)
-ax.set_title("Coupling falls outside K562", fontsize=7)
-add_panel_label(ax, "d")
+for ax, stratum, lab, ttl in [
+        (axes[3], "all", "All elements", "All elements: TeloHAEC highest"),
+        (axes[4], "top_quintile", "Top quintile", "Top quintile: ordering inverts")]:
+    ser = cp[cp["stratum"] == stratum].set_index("label")["pearson"]
+    vals = [ser.get(k, np.nan) for k, _ in ORDER]
+    ax.bar(range(len(vals)), vals, color=cols, width=0.7)
+    for i, v in enumerate(vals):
+        ax.text(i, v + 0.015, f"{v:.2f}", ha="center", fontsize=5)
+    ax.set_xticks(range(len(ORDER)))
+    ax.set_xticklabels([l for _, l in ORDER], fontsize=6, rotation=40, ha="right")
+    ax.set_ylabel(f"Coupling, {lab.lower()} ($r$)")
+    ax.set_ylim(0, 0.85)
+    ax.set_title(ttl, fontsize=7)
+add_panel_label(axes[3], "d")
+add_panel_label(axes[4], "e")
 
-fig.tight_layout()
 out = save_fig(fig, f"{P}/figures/fig8_coupling_across_celltypes.png")
 print("Wrote", out, "and .pdf")
 df = pd.DataFrame(rows)
