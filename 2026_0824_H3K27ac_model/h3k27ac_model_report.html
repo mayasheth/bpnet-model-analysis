@@ -119,6 +119,7 @@ details[open] > summary { margin-bottom: 0.5em; }
 <li><a href="#the-residual-objective-helps-only-a-sequence-blind-input-replicated-in-two-cell-types">The residual objective helps only a sequence-blind input — replicated in two cell types</a></li>
 <li><a href="#a-sharper-accessibility-input-helps-the-atac-only-model-and-nothing-else">A sharper accessibility input helps the ATAC-only model and nothing else</a></li>
 <li><a href="#transfer-is-asymmetric-gm12878-is-the-harder-cell-type-in-both-directions">Transfer is asymmetric: GM12878 is the harder cell type, in both directions</a></li>
+<li><a href="#deploying-to-a-new-cell-type-transfer-the-multimodal-model">Deploying to a new cell type: transfer the multimodal model</a></li>
 <li><a href="#accessibility-explains-less-of-h3k27ac-in-gm12878-which-accounts-for-the-atac-only-transfer-drop">Accessibility explains less of H3K27ac in GM12878, which accounts for the ATAC-only transfer drop</a></li>
 <li><a href="#the-atac-library-supports-fragment-size-stratification">The ATAC library supports fragment-size stratification</a></li>
 <li><a href="#open-questions-next-steps">Open questions / next steps</a></li>
@@ -463,6 +464,60 @@ Full methods &amp; code
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true"></a>    <span class="ex">--fold-json</span> reference/hg38_five_folds.json --outdir results --figdir figures</span></code></pre></div>
 Source: <code>scripts/2.2.evaluate_stratified.py</code>, <code>scripts/0.7.make_gm12878_5prime.sh</code>
 </details>
+<h2 id="deploying-to-a-new-cell-type-transfer-the-multimodal-model">Deploying to a new cell type: transfer the multimodal model</h2>
+<p><strong>Q:</strong> In the intended application there is ATAC in the new cell type but no H3K27ac — which model should be transferred?</p>
+<p><strong>A:</strong> The multimodal one, not because it predicts better than the residual-objective alternative but because it is indistinguishable from it on the top signal quintile and simpler, with no offset model to ship alongside it.</p>
+<p><strong>Top signal quintile, deployable configuration</strong> (everything transferred; only target ATAC used):</p>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th>ATAC-only</th>
+<th>sequence only</th>
+<th>multimodal</th>
+<th>residual multimodal</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>K562 → GM12878</td>
+<td>0.477</td>
+<td>0.147</td>
+<td><strong>0.520</strong></td>
+<td>0.512</td>
+</tr>
+<tr class="even">
+<td>GM12878 → K562</td>
+<td>0.541</td>
+<td>0.317</td>
+<td><strong>0.602</strong></td>
+<td>0.600</td>
+</tr>
+</tbody>
+</table>
+<p>Three things follow.</p>
+<ul>
+<li><strong>Sequence genuinely adds on transfer.</strong> Every sequence-containing model beats transferred ATAC-only by 0.04–0.06 on the top quintile. That margin, not the choice of objective, is what the sequence component buys.</li>
+<li><strong>Accessibility is largely portable, and must be measured locally.</strong> Transferring the ATAC baseline instead of fitting it in the target costs only ~0.017 (0.494 → 0.477), but sequence-only transfer is useless (0.147, 0.317) — the accessibility measurement in the target cell type is doing the heavy lifting either way.</li>
+<li><strong>A little target H3K27ac would be worth more than its size suggests.</strong> The residual design <em>does</em> beat multimodal when the accessibility baseline is fitted in the target rather than transferred (+0.005 to +0.011 on all elements, <em>p</em> &lt; 0.01 both directions). Fitting that baseline needs only an ATAC-only model, i.e. a modest H3K27ac library — not enough to train a full model on. If a shallow H3K27ac library in a new cell type is feasible, the residual architecture becomes preferable.</li>
+</ul>
+<p><strong>Method.</strong></p>
+<ul>
+<li>Two variants per direction: offset from the target’s own ATAC model (an optimistic upper bound, since that model requires target H3K27ac) and offset from the transferred source ATAC model (deployable).</li>
+<li>Headline metric is correlation with <em>observed</em> H3K27ac in the target — the quantity the application needs — reported on the top signal quintile.</li>
+<li>Paired within fold, since the differences are far below the between-fold spread.</li>
+</ul>
+<details>
+<summary>
+Full methods &amp; code
+</summary>
+<p><strong>A cautionary result about strata.</strong> On <em>all elements</em> the picture looks tidy and significant: residual-multimodal beats multimodal by +0.005 (K562→GM, <em>p</em>=0.009) and +0.011 (GM→K562, <em>p</em>=0.003) with a locally fitted baseline, and loses by −0.005 (<em>p</em>=0.012) and −0.005 (<em>p</em>=0.022) when the baseline is transferred — a clean sign flip, all four significant. <strong>On the top quintile none of it is resolvable</strong> (<em>p</em> = 0.17, 0.33, 0.65, 0.76). All-elements correlation on this element set is dominated by the dead-versus-active contrast that accessibility already resolves, which is why this report stratifies everywhere. The tidy story lives in that contrast, not in the biology, and is not reported as a finding.</p>
+<p>A residual model predicts <code>observed − atac_pred</code>, so transferring it requires choosing whose <code>atac_pred</code>. Both choices are evaluated because the gap between them is itself informative: it measures what is lost by being unable to fit the accessibility baseline in the target cell type.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a><span class="ex">pixi</span> run bash scripts/2.13.submit_residual_transfer.sh    # upper bound: local offset</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true"></a><span class="ex">pixi</span> run bash scripts/2.14.submit_deployment_transfer.sh  # deployable: transferred offset</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true"></a><span class="ex">pixi</span> run bash scripts/2.16.submit_transfer_perfold.sh     # per-fold CIs + paired tests</span></code></pre></div>
+Per-fold scoring uses <code>scripts/2.15.perfold_from_config.py</code>, which is driven by the same config JSON as <code>2.4</code>, so in-cell grids and transfer runs are scored through one code path with identical metric definitions — a difference between cell types cannot come from which evaluator ran.
+</details>
 <h2 id="accessibility-explains-less-of-h3k27ac-in-gm12878-which-accounts-for-the-atac-only-transfer-drop">Accessibility explains less of H3K27ac in GM12878, which accounts for the ATAC-only transfer drop</h2>
 <p><strong>Q:</strong> Is the ATAC-only model’s lower score in GM12878 a failure to generalise, or is accessibility simply less coupled to H3K27ac there?</p>
 <p><strong>A:</strong> The latter — the model-free ATAC–H3K27ac correlation is 0.409 in GM12878 against 0.510 in K562, and the ATAC-only model extracts <em>more</em> relative to that available signal in GM12878 (ratio 1.14) than in K562 (1.06).</p>
@@ -510,11 +565,11 @@ The ATAC-only model does not degrade across cell types; it exceeds the raw coupl
 Full methods &amp; code
 </summary>
 <p>This is the model-free reference for the ATAC-only baseline: it separates how much accessibility can explain in principle from how well a network learns it. Both are needed to read a cross-cell-type comparison, because the coupling is the denominator that makes accessibility-based numbers comparable between cell types. Results accumulate one row-set per label into a single TSV, so the panel extends by one invocation per cell type.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a><span class="ex">pixi</span> run python scripts/0.12.atac_vs_h3k27ac.py --label K562 <span class="kw">\</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true"></a>    <span class="ex">--elements</span> reference/K562_DNase_candidate_elements.narrowPeak <span class="kw">\</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true"></a>    <span class="ex">--atac-bw</span> .../atac.bw <span class="kw">\</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true"></a>    <span class="ex">--h3k27ac-bw</span> data/h3k27ac_5p_plus.bw,data/h3k27ac_5p_minus.bw <span class="kw">\</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true"></a>    <span class="ex">--outdir</span> results --figdir figures</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true"></a><span class="ex">pixi</span> run python scripts/0.12.atac_vs_h3k27ac.py --label K562 <span class="kw">\</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true"></a>    <span class="ex">--elements</span> reference/K562_DNase_candidate_elements.narrowPeak <span class="kw">\</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true"></a>    <span class="ex">--atac-bw</span> .../atac.bw <span class="kw">\</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true"></a>    <span class="ex">--h3k27ac-bw</span> data/h3k27ac_5p_plus.bw,data/h3k27ac_5p_minus.bw <span class="kw">\</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true"></a>    <span class="ex">--outdir</span> results --figdir figures</span></code></pre></div>
 Source: <code>scripts/0.12.atac_vs_h3k27ac.py</code>
 </details>
 <h2 id="the-atac-library-supports-fragment-size-stratification">The ATAC library supports fragment-size stratification</h2>
@@ -536,10 +591,10 @@ Figure 9 legend
 <summary>
 Full methods &amp; code
 </summary>
-<div class="sourceCode" id="cb8"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true"></a><span class="ex">pixi</span> run python scripts/0.10.plot_fragment_lengths.py <span class="kw">\</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true"></a>    <span class="ex">--bams</span> <span class="va">$SCRATCH</span>/atac_pe/ENCFF077FBI.pe.bam <span class="va">$SCRATCH</span>/atac_pe/ENCFF128WZG.pe.bam <span class="kw">\</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true"></a>           <span class="va">$SCRATCH</span><span class="ex">/atac_pe/ENCFF534DCE.pe.bam</span> <span class="kw">\</span></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true"></a>    <span class="ex">--outdir</span> results --figdir figures</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true"></a><span class="ex">pixi</span> run python scripts/0.10.plot_fragment_lengths.py <span class="kw">\</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true"></a>    <span class="ex">--bams</span> <span class="va">$SCRATCH</span>/atac_pe/ENCFF077FBI.pe.bam <span class="va">$SCRATCH</span>/atac_pe/ENCFF128WZG.pe.bam <span class="kw">\</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true"></a>           <span class="va">$SCRATCH</span><span class="ex">/atac_pe/ENCFF534DCE.pe.bam</span> <span class="kw">\</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true"></a>    <span class="ex">--outdir</span> results --figdir figures</span></code></pre></div>
 Source: <code>scripts/0.10.plot_fragment_lengths.py</code>, <code>scripts/0.9.make_atac_fragment_channels.sh</code>
 </details>
 <h2 id="open-questions-next-steps">Open questions / next steps</h2>
@@ -577,32 +632,32 @@ Source: <code>scripts/0.10.plot_fragment_lengths.py</code>, <code>scripts/0.9.ma
 <p><code>w = 10</code> was chosen from a single-fold sweep over 1, 3, 10, 100 and 1,000. Only the extremes are resolvable at the measured noise level: 10 clearly beats 1 (0.437) and 1,000 (0.464), while 3, 10 and 100 are within run-to-run variance of one another. <code>w = 10</code> sits in a flat region; a properly powered sweep is listed under next steps. With between-fold <code>sd</code> of 0.041–0.046, a single-fold sweep could not have resolved those differences at all.</p>
 <h3 id="regenerate">Regenerate</h3>
 <pre><code>Environment: pixi env `multimodal`, pixi.lock sha256:069960d36312</code></pre>
-<div class="sourceCode" id="cb10"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true"></a><span class="co"># Target and accessibility tracks</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true"></a><span class="ex">sbatch</span> scripts/0.5.make_5prime_bigwigs.sh                   # K562 H3K27ac 5<span class="st">&#39; ends, merged + per-replicate</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true"></a><span class="st">sbatch scripts/0.7.make_gm12878_5prime.sh                   # GM12878 H3K27ac 5&#39;</span> ends</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true"></a><span class="ex">sbatch</span> scripts/0.9.make_atac_fragment_channels.sh           # fragment-size ATAC channels</span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true"></a></span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true"></a><span class="co"># Characterisation (Figs 2, 3, 7)</span></span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true"></a><span class="ex">pixi</span> run python scripts/0.6.compare_profiles.py   ...       # Fig 2</span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true"></a><span class="ex">pixi</span> run python scripts/0.3.replicate_ceiling_by_window.py ...   # Fig 3</span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true"></a><span class="ex">pixi</span> run python scripts/0.10.plot_fragment_lengths.py ...   # Fig 7</span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true"></a></span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true"></a><span class="co"># Models: 3 modes x 5 folds on the 5&#39; target</span></span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true"></a><span class="kw">for</span> <span class="ex">MODE</span> in atac multimodal sequence<span class="kw">;</span> <span class="kw">do</span> <span class="kw">for</span> <span class="ex">F</span> in 0 1 2 3 4<span class="kw">;</span> <span class="kw">do</span></span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true"></a>    <span class="ex">sbatch</span> scripts/1.4.submit_training_5prime.sh <span class="va">$MODE</span> <span class="va">$F</span></span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true"></a><span class="kw">done</span>; <span class="kw">done</span></span>
-<span id="cb10-15"><a href="#cb10-15" aria-hidden="true"></a></span>
-<span id="cb10-16"><a href="#cb10-16" aria-hidden="true"></a><span class="co"># Evaluation (Figs 1, 4, 5, 6)</span></span>
-<span id="cb10-17"><a href="#cb10-17" aria-hidden="true"></a><span class="ex">sbatch</span> scripts/2.2.submit_evaluate.sh                       # Fig 1</span>
-<span id="cb10-18"><a href="#cb10-18" aria-hidden="true"></a><span class="ex">pixi</span> run python scripts/2.2.evaluate_stratified.py --config-json config/compare_configs.json ...      # Fig 4</span>
-<span id="cb10-19"><a href="#cb10-19" aria-hidden="true"></a><span class="ex">pixi</span> run python scripts/2.7.diagnose_residual_offset.py     # offset semantics check</span>
-<span id="cb10-20"><a href="#cb10-20" aria-hidden="true"></a><span class="ex">pixi</span> run python scripts/2.4.evaluate_residual.py  ...       # residual, pooled</span>
-<span id="cb10-21"><a href="#cb10-21" aria-hidden="true"></a><span class="ex">pixi</span> run python scripts/2.8.residual_perfold_and_artifact.py  # per-fold CIs + artifact controls</span>
-<span id="cb10-22"><a href="#cb10-22" aria-hidden="true"></a><span class="ex">pixi</span> run python scripts/3.3.plot_residual_figure.py         # Fig 5</span>
-<span id="cb10-23"><a href="#cb10-23" aria-hidden="true"></a><span class="ex">pixi</span> run python scripts/2.2.evaluate_stratified.py --config-json config/gm_transfer_configs.json ...  # Fig 6</span>
-<span id="cb10-24"><a href="#cb10-24" aria-hidden="true"></a></span>
-<span id="cb10-25"><a href="#cb10-25" aria-hidden="true"></a><span class="co"># This report</span></span>
-<span id="cb10-26"><a href="#cb10-26" aria-hidden="true"></a><span class="ex">python</span> render_report.py h3k27ac_model_report.qmd</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true"></a><span class="co"># Target and accessibility tracks</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true"></a><span class="ex">sbatch</span> scripts/0.5.make_5prime_bigwigs.sh                   # K562 H3K27ac 5<span class="st">&#39; ends, merged + per-replicate</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true"></a><span class="st">sbatch scripts/0.7.make_gm12878_5prime.sh                   # GM12878 H3K27ac 5&#39;</span> ends</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true"></a><span class="ex">sbatch</span> scripts/0.9.make_atac_fragment_channels.sh           # fragment-size ATAC channels</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true"></a></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true"></a><span class="co"># Characterisation (Figs 2, 3, 7)</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true"></a><span class="ex">pixi</span> run python scripts/0.6.compare_profiles.py   ...       # Fig 2</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true"></a><span class="ex">pixi</span> run python scripts/0.3.replicate_ceiling_by_window.py ...   # Fig 3</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true"></a><span class="ex">pixi</span> run python scripts/0.10.plot_fragment_lengths.py ...   # Fig 7</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true"></a></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true"></a><span class="co"># Models: 3 modes x 5 folds on the 5&#39; target</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true"></a><span class="kw">for</span> <span class="ex">MODE</span> in atac multimodal sequence<span class="kw">;</span> <span class="kw">do</span> <span class="kw">for</span> <span class="ex">F</span> in 0 1 2 3 4<span class="kw">;</span> <span class="kw">do</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true"></a>    <span class="ex">sbatch</span> scripts/1.4.submit_training_5prime.sh <span class="va">$MODE</span> <span class="va">$F</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true"></a><span class="kw">done</span>; <span class="kw">done</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true"></a></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true"></a><span class="co"># Evaluation (Figs 1, 4, 5, 6)</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true"></a><span class="ex">sbatch</span> scripts/2.2.submit_evaluate.sh                       # Fig 1</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true"></a><span class="ex">pixi</span> run python scripts/2.2.evaluate_stratified.py --config-json config/compare_configs.json ...      # Fig 4</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true"></a><span class="ex">pixi</span> run python scripts/2.7.diagnose_residual_offset.py     # offset semantics check</span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true"></a><span class="ex">pixi</span> run python scripts/2.4.evaluate_residual.py  ...       # residual, pooled</span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true"></a><span class="ex">pixi</span> run python scripts/2.8.residual_perfold_and_artifact.py  # per-fold CIs + artifact controls</span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true"></a><span class="ex">pixi</span> run python scripts/3.3.plot_residual_figure.py         # Fig 5</span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true"></a><span class="ex">pixi</span> run python scripts/2.2.evaluate_stratified.py --config-json config/gm_transfer_configs.json ...  # Fig 6</span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true"></a></span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true"></a><span class="co"># This report</span></span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true"></a><span class="ex">python</span> render_report.py h3k27ac_model_report.qmd</span></code></pre></div>
 <p>Per-result provenance, including which processing of the target each result file used, is in <code>results/TARGET_PROVENANCE.md</code>.</p>
 </body>
 </html>
