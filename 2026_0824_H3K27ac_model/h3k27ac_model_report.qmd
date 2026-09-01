@@ -82,9 +82,9 @@ blockquote { border-left: 3px solid #ddd; margin-left: 0; padding-left: 1rem;
 
 - Accessibility does most of the work. On elements carrying the mark, ATAC alone reaches 0.548 [0.497, 0.599] and sequence alone 0.380 [0.323, 0.437]; together 0.685 [0.667, 0.704], so sequence adds +0.137 over accessibility (Fig. 1b).
 - The same comparison for p300 gives sequence a +0.304 margin over accessibility against +0.127 for H3K27ac — a difference of 0.177 ± 0.027, about 6.6 standard errors (Fig. 4). H3K27ac scores higher overall but is the poorer substrate for sequence interpretation.
-- **Transfer asymmetry reflects cell-type difficulty, not a sequence-specific failure.** GM12878-trained models score higher on K562 than in their own cell type for every modality (Fig. 7), and the ATAC-only gap is explained by weaker ATAC–H3K27ac coupling in GM12878 (Fig. 8). Sequence remains weak everywhere (15–41% of ceiling), and its margin over accessibility shrinks on transfer in both directions.
+- **GM12878 is simply the harder cell type, which is most of what the transfer asymmetry measures.** GM12878-trained models score higher on K562 than in their own cell type for every modality (Fig. 7), and the ATAC-only gap is explained by weaker ATAC–H3K27ac coupling in GM12878 (Fig. 8). Sequence remains weak everywhere (15–41% of ceiling), and its margin over accessibility shrinks on transfer in both directions.
 - **Sequence carries an accessibility-independent component, but only a residual objective exposes it.** The same sequence-only input scores 0.149 on the accessibility residual trained against total signal and 0.459 trained against `observed − atac_pred` (Fig. 5). Joint training extracts more still (0.551) and is the better predictor. Overall correlation overstates what any model adds once accessibility is an input: sequence + ATAC reaches 0.874 overall against 0.551 on the residual.
-- **Track construction matters at the resolution level, not the scale level.** ATAC and H3K27ac are spatially offset — ATAC peaks on the element centre, H3K27ac on flanking nucleosomes at ±250 bp and is far broader (Fig. 2). H3K27ac is still at 28% of maximum at ±2 kb, the edge of the profiled window, so its extent exceeds the model's ~1.1 kb receptive field by an unmeasured margin. Relatedly, switching the accessibility input to ChromBPNet-style 5′ insertion counts gains the ATAC-only model +0.032 (K562) and +0.023 (GM12878) on the top quintile while leaving sequence + ATAC unchanged (Fig. 6) — within a cell type the change is resolution, not scale, and only a model without sequence feels it.
+- **Track construction matters at the resolution level.** ATAC and H3K27ac are spatially offset — ATAC peaks on the element centre, H3K27ac on flanking nucleosomes at ±250 bp and is far broader (Fig. 2). H3K27ac is still at 28% of maximum at ±2 kb, the edge of the profiled window, so its extent exceeds the model's ~1.1 kb receptive field by an unmeasured margin. Relatedly, switching the accessibility input to ChromBPNet-style 5′ insertion counts gains the ATAC-only model +0.032 (K562) and +0.023 (GM12878) on the top quintile while leaving sequence + ATAC unchanged (Fig. 6) — within a cell type the change is one of resolution, and only a model without sequence feels it.
 
 ## Goals
 
@@ -117,7 +117,7 @@ All ChIP-seq targets are counted as **5′ read ends** at single-base resolution
 <details>
 <summary>Figure 2 legend</summary>
 
-**Figure 2 | H3K27ac is displaced onto flanking nucleosomes and is much broader than accessibility.** Meta-profiles over the top quintile of elements by H3K27ac signal (n = 30,000 elements sampled with seed 0; profiles computed on the same element set for all tracks so the comparison is not confounded by each track selecting its own strong elements). **a**, Each track normalised to its own maximum, so the comparison is of *location*, not magnitude. **b**, Raw magnitudes, log scale. Tracks: K562 ATAC (teal), K562 H3K27ac as 5′ ends (orange). Dashed vertical line marks the element centre. Summary statistics (`results/profile_comparison_summary.tsv`): peak offset −12.5 bp for ATAC versus −262.5 bp for H3K27ac 5′ ends; centre-to-peak ratio 1.000 for ATAC (no dip) versus 0.944 for H3K27ac. The bimodality is the expected signature of a nucleosome-free element flanked by acetylated nucleosomes. The breadth difference is the more consequential one for modelling: at ±2 kb, the edge of the profiled window, H3K27ac is still at 28% of its maximum where ATAC has fallen to 17%, so its true extent is wider than these profiles measure. Source: `results/profile_comparison.tsv`.
+**Figure 2 | H3K27ac is displaced onto flanking nucleosomes and is much broader than accessibility.** Meta-profiles over the top quintile of elements by H3K27ac signal (n = 30,000 elements sampled with seed 0; profiles computed on the same element set for all tracks so the comparison is not confounded by each track selecting its own strong elements). **a**, Each track normalised to its own maximum, so the comparison is one of *location*. **b**, Raw magnitudes, log scale. Tracks: K562 ATAC (teal), K562 H3K27ac as 5′ ends (orange). Dashed vertical line marks the element centre. Summary statistics (`results/profile_comparison_summary.tsv`): peak offset −12.5 bp for ATAC versus −262.5 bp for H3K27ac 5′ ends; centre-to-peak ratio 1.000 for ATAC (no dip) versus 0.944 for H3K27ac. The bimodality is the expected signature of a nucleosome-free element flanked by acetylated nucleosomes. The breadth difference is the more consequential one for modelling: at ±2 kb, the edge of the profiled window, H3K27ac is still at 28% of its maximum where ATAC has fallen to 17%, so its true extent is wider than these profiles measure. Source: `results/profile_comparison.tsv`.
 </details>
 
 **Method.**
@@ -162,9 +162,9 @@ Source: `scripts/0.6.compare_profiles.py`
 <details>
 <summary>Full methods &amp; code</summary>
 
-Ceilings are reported as the raw inter-replicate *r*. Converting to a bound on model performance requires two corrections, applied wherever a fraction-of-ceiling is quoted in this report: Spearman–Brown for the fact that the model predicts the two-replicate *merge* rather than one replicate (`rel = 2r/(1+r)`), then a square root because a model predicts the expected signal, not a noisy realisation of it. At ±500 bp this converts a raw 0.760 into a bound of 0.929 on the top quintile, and a raw 0.844 into 0.957 over all elements.
+Ceilings are reported as the raw inter-replicate *r*. Converting to a bound on model performance requires two corrections, applied wherever a fraction-of-ceiling is quoted in this report: Spearman–Brown for the fact that the model predicts the two-replicate *merge* rather than one replicate (`rel = 2r/(1+r)`), then a square root, since a model predicts the expected signal while a replicate is one noisy realisation of it. At ±500 bp this converts a raw 0.760 into a bound of 0.929 on the top quintile, and a raw 0.844 into 0.957 over all elements.
 
-A separate test asked whether excluding the nucleosome-free centre sharpens the target, on the reasoning that H3K27ac is deposited on the flanks. It does not: excluding ±125/±250/±375 bp lowers the top-quintile ceiling monotonically (0.760 → 0.747 → 0.729 → 0.717) because the shallow central dip means the centre still carries ~91% of peak signal, so excluding it discards reads rather than noise. The flanking-only count also correlates 0.93–0.99 with the full-window count, so the two targets are barely different. Full symmetric window retained (`results/flanking_vs_full_window.tsv`).
+A separate test asked whether excluding the nucleosome-free centre sharpens the target, on the reasoning that H3K27ac is deposited on the flanks. It does not: excluding ±125/±250/±375 bp lowers the top-quintile ceiling monotonically (0.760 → 0.747 → 0.729 → 0.717) because the shallow central dip means the centre still carries ~91% of peak signal, so excluding it discards real reads. The flanking-only count also correlates 0.93–0.99 with the full-window count, so the two targets are barely different. Full symmetric window retained (`results/flanking_vs_full_window.tsv`).
 
 ```bash
 pixi run python scripts/0.3.replicate_ceiling_by_window.py \
@@ -199,7 +199,7 @@ Source: `scripts/0.3.replicate_ceiling_by_window.py`, `scripts/0.4.flanking_vs_f
 <details>
 <summary>Full methods &amp; code</summary>
 
-The accessibility-only control is what makes this comparison interpretable. Without it, p300 and H3K27ac would be compared on joint-model correlation alone, which ranks them in the opposite order. p300 model directories are `2026_0529_multimodal_p300_model/models/atac` (sequence + ATAC) and `models/atac_only` (ATAC only) — note `atac` there denotes the multimodal model whose accessibility input is ATAC, not the ATAC-only mode.
+The accessibility-only control is what makes this comparison interpretable. Without it, p300 and H3K27ac would be compared on joint-model correlation alone, which ranks them in the opposite order. p300 model directories are `2026_0529_multimodal_p300_model/models/atac` (sequence + ATAC) and `models/atac_only` (ATAC only) — note `atac` there names the multimodal model whose accessibility input is ATAC; the ATAC-only mode lives in `atac_only`.
 
 ```bash
 pixi run python scripts/2.2.evaluate_stratified.py \
@@ -218,39 +218,39 @@ Source: `scripts/2.2.evaluate_stratified.py`
 
 The same switch *costs* a model that already sees accessibility, and both halves reproduce independently in GM12878.
 
-The training objective, not the input, is what limits the sequence-only model: told to predict total signal it spends its capacity on the large accessibility-correlated component and leaves the residual alone.
+The training objective is what limits the sequence-only model: told to predict total signal it spends its capacity on the large accessibility-correlated component and leaves the residual alone.
 
 ![](figures/fig5_residual_grid_both.png)
 
 <details>
 <summary>Figure 5 legend</summary>
 
-**Figure 5 | The residual objective helps a sequence-blind input and costs a multimodal one, in two independent cell types.** Baseline is each cell type's own accessibility-only *model* prediction, not the raw ATAC track, so the residual is what accessibility genuinely cannot explain. Hatching encodes the training objective (hatched = trained on `observed − atac_pred`); shade encodes cell type (solid K562, pale GM12878). Bars sharing colour and shade have **identical inputs** and differ only in objective. **a**, Residual Pearson *r*. K562 / GM12878: sequence-on-total 0.149 / 0.133; sequence-on-residual 0.459 / 0.372; multimodal-on-total 0.551 / 0.449; multimodal-on-residual 0.514 / 0.414; ATAC control −0.003 / +0.010. **b**, Residual *r* by quintile of |true residual| (5 = accessibility most wrong), pooled over folds. Every informative model rises monotonically in both cell types while the ATAC control stays flat at zero across all ten strata. **c**, The paired effect of switching objective, computed within fold. Training on the residual **gains** +0.310 [0.224, 0.395] (K562, *p*=5×10⁻⁴) and +0.239 [0.220, 0.258] (GM12878, *p*<10⁻⁴) for sequence-only input, but **costs** −0.037 [−0.039, −0.034] (*p*<10⁻⁴) and −0.035 [−0.044, −0.026] (*p*=4×10⁻⁴) when accessibility is already an input. The multimodal cost lands within 0.002 of itself across two cell types with different targets, accessibility libraries and element sets, and is negative in all ten folds — that stability is what makes it a property of the objective rather than of a dataset. n = 58,655 (K562) and 57,144 (GM12878) element–fold observations. Source: `results/{,gm12878_}residual_grid_{per_fold,fold_summary,residual_evaluation}.tsv`.
+**Figure 5 | The residual objective helps a sequence-blind input and costs a multimodal one, in two independent cell types.** Baseline is each cell type's own accessibility-only *model* prediction, so the residual is what accessibility genuinely cannot explain. Hatching encodes the training objective (hatched = trained on `observed − atac_pred`); shade encodes cell type (solid K562, pale GM12878). Bars sharing colour and shade have **identical inputs** and differ only in objective. **a**, Residual Pearson *r*. K562 / GM12878: sequence-on-total 0.149 / 0.133; sequence-on-residual 0.459 / 0.372; multimodal-on-total 0.551 / 0.449; multimodal-on-residual 0.514 / 0.414; ATAC control −0.003 / +0.010. **b**, Residual *r* by quintile of |true residual| (5 = accessibility most wrong), pooled over folds. Every informative model rises monotonically in both cell types while the ATAC control stays flat at zero across all ten strata. **c**, The paired effect of switching objective, computed within fold. Training on the residual **gains** +0.310 [0.224, 0.395] (K562, *p*=5×10⁻⁴) and +0.239 [0.220, 0.258] (GM12878, *p*<10⁻⁴) for sequence-only input, but **costs** −0.037 [−0.039, −0.034] (*p*<10⁻⁴) and −0.035 [−0.044, −0.026] (*p*=4×10⁻⁴) when accessibility is already an input. The multimodal cost lands within 0.002 of itself across two cell types with different targets, accessibility libraries and element sets, and is negative in all ten folds — that stability is what makes it a property of the objective. n = 58,655 (K562) and 57,144 (GM12878) element–fold observations. Source: `results/{,gm12878_}residual_grid_{per_fold,fold_summary,residual_evaluation}.tsv`.
 </details>
 
-**Sequence is not redundant with accessibility.** A sequence model scoring 0.149 on the residual reflects what it was trained to predict, not what its input contains: the identical input trained on the residual reaches 0.459.
+**Sequence is not redundant with accessibility.** A sequence model scoring 0.149 on the residual reflects its training objective: the identical input trained on the residual reaches 0.459.
 
 **The objective helps only where the input is blind to accessibility.** It triples the sequence-only score but **costs** the multimodal model 0.037 residual *r* — small, but present in all five folds, paired interval [−0.039, −0.034]. A multimodal model can already learn whatever transform of ATAC it needs; a fixed offset it cannot adjust only removes that freedom. Joint training therefore remains the best predictor, beating residual-trained sequence by +0.093 [0.072, 0.113].
 
 **The metric is not manufacturing the effect.** An ATAC-input model trained on the residual — asked to predict an ATAC model's own errors from the same ATAC input — scores −0.003 [−0.065, 0.060], incremental *R²* −0.000, flat across all |residual| quintiles. A clearly positive control here would have made the sequence result an artifact.
 
-**The effect belongs to the objective, not to K562.** It reproduces in GM12878, where weaker ATAC–H3K27ac coupling (0.409 vs 0.510) and a higher ceiling (0.832 vs 0.760) pull in opposite directions; the multimodal cost lands within 0.002 of itself. Absolute levels are lower throughout, consistent with GM12878 being harder to predict (Fig. 7), but every ordering and sign holds.
+**The effect belongs to the training objective and holds across cell types.** It reproduces in GM12878, where weaker ATAC–H3K27ac coupling (0.409 vs 0.510) and a higher ceiling (0.832 vs 0.760) pull in opposite directions; the multimodal cost lands within 0.002 of itself. Absolute levels are lower throughout, consistent with GM12878 being harder to predict (Fig. 7), but every ordering and sign holds.
 
-Residual training is therefore an interpretability tool, not a predictive one. Its attributions are forced onto signal accessibility cannot supply — what the motif work needs, and what multimodal attributions cannot cleanly separate — and being a property of the objective, it needs no per-cell-type re-testing.
+Residual training is therefore an interpretability tool. Its attributions are forced onto signal accessibility cannot supply — what the motif work needs, and what multimodal attributions cannot cleanly separate — and being a property of the objective, it needs no per-cell-type re-testing.
 
 **Method.**
 
-- Baseline is the accessibility-only model's held-out prediction, not the raw ATAC track.
-- Stratified by |true residual| so performance is scored where accessibility fails, and reported as mean ± 95% CI over folds rather than pooled, since between-fold sd here is 0.041–0.046.
+- Baseline is the accessibility-only model's held-out prediction.
+- Stratified by |true residual| so performance is scored where accessibility fails, and reported as mean ± 95% CI over folds, since between-fold sd here is 0.041–0.046.
 
 <details>
 <summary>Full methods &amp; code</summary>
 
 **A suspected artifact turned out to be largely closed by construction.** Because `true_resid = obs − atac_pred`, anything merely anti-correlated with `atac_pred` might earn positive residual *r* for free. It does not: `obs − atac_pred` is near-orthogonal to `atac_pred` by the least-squares residual property, so that correlation cannot leak in. The ATAC control demonstrates it — its output correlates −0.620 with `atac_pred`, the channel wide open, and it still scores −0.003. Three checks bound the risk for the residual-trained sequence model: its output correlates only −0.090 with `atac_pred`; partialling `atac_pred` out of both sides leaves 0.459 unchanged (against 0.149 → 0.205 for the more entangled sequence-on-total model, at +0.477); and panel **c**'s incremental *R²* is scored against the observed signal, which cannot be faked out of sample. The controls were worth running and the negative control is load-bearing, but the alarm was disproportionate.
 
-**A trap for anyone re-running this.** `MultiModalBPNet.forward()` does **not** add the count offset — that happens only inside `fit()` when scoring the loss — so an offset-trained model's raw output *is* the residual, not logcounts. `2.4.evaluate_residual.py` originally subtracted `atac_pred` anyway, double-counting the baseline and correlating a residual against observed signal for `overall_pearson`; both produced plausible wrong numbers rather than errors. The fix sits behind a `"residual": true` config key so earlier results stay reproducible, and `2.7.diagnose_residual_offset.py` verifies the semantics empirically first: a residual predictor's output centres near 0 (measured −0.044), a logcounts predictor near the observed mean (2.835 vs 2.786), with the plain sequence model as a control proving the test discriminates.
+**A trap for anyone re-running this.** `MultiModalBPNet.forward()` does **not** add the count offset — that happens only inside `fit()` when scoring the loss — so an offset-trained model's raw output *is* the residual. `2.4.evaluate_residual.py` originally subtracted `atac_pred` anyway, double-counting the baseline and correlating a residual against observed signal for `overall_pearson`; both produced plausible wrong numbers instead of failing. The fix sits behind a `"residual": true` config key so earlier results stay reproducible, and `2.7.diagnose_residual_offset.py` verifies the semantics empirically first: a residual predictor's output centres near 0 (measured −0.044), a logcounts predictor near the observed mean (2.835 vs 2.786), with the plain sequence model as a control proving the test discriminates.
 
-The same metric applied to p300 gives residual *r* = 0.654 and incremental *R²* = +0.265, versus 0.551 and +0.102 for H3K27ac's multimodal model, reinforcing Fig. 4 on a second statistic. p300's residual *r* is also high (0.260) in the quintile where accessibility is nearly right, against 0.091 for H3K27ac, so p300's sequence contribution is broadly useful rather than confined to the elements accessibility gets wrong. The p300 side has **not** been re-run with the residual objective — that comparison is open.
+The same metric applied to p300 gives residual *r* = 0.654 and incremental *R²* = +0.265, versus 0.551 and +0.102 for H3K27ac's multimodal model, reinforcing Fig. 4 on a second statistic. p300's residual *r* is also high (0.260) in the quintile where accessibility is nearly right, against 0.091 for H3K27ac, so p300's sequence contribution is broadly useful across strata. The p300 side has **not** been re-run with the residual objective — that comparison is open.
 
 The evaluator refuses to run when the baseline and comparison models use different windows, since a residual across mismatched geometries is not meaningful, and refuses folds lacking `training_complete.json`.
 
@@ -285,14 +285,14 @@ Source: `scripts/2.4.evaluate_residual.py`, `scripts/2.7.diagnose_residual_offse
 <details>
 <summary>Figure 6 legend</summary>
 
-**Figure 6 | Sharpening the accessibility input helps only a model with no other input.** Every ATAC-input model was retrained on `bedtools genomecov -bg -5` single-base insertion counts and paired within fold against its counterpart on full-interval coverage. The training scripts are byte-identical copies apart from the accessibility path and the output directory, and both arms are scored in one run with each reading its own input and its own saved normalisation statistics, so the only difference is the input definition. **a**, Top signal quintile. ATAC-only: K562 **+0.032** [0.012, 0.053] *p*=0.011; GM12878 **+0.023** [0.006, 0.039] *p*=0.019; p300 +0.019 [−0.054, 0.092] *p*=0.51. Sequence + ATAC: +0.003, −0.001, +0.009, none significant. **b**, All elements — the same split, ATAC-only +0.016 (*p*=0.001) and +0.015 (*p*<0.001), multimodal +0.001 in both. p300 is underpowered rather than null: 11,412 elements pooled against 57,144 for H3K27ac, giving intervals roughly 5× wider, with point estimates trending the same way. Source: `results/accs5p_{k562,gm12878,p300}_stratified_per_fold.tsv`.
+**Figure 6 | Sharpening the accessibility input helps only a model with no other input.** Every ATAC-input model was retrained on `bedtools genomecov -bg -5` single-base insertion counts and paired within fold against its counterpart on full-interval coverage. The training scripts are byte-identical copies apart from the accessibility path and the output directory, and both arms are scored in one run with each reading its own input and its own saved normalisation statistics, so the only difference is the input definition. **a**, Top signal quintile. ATAC-only: K562 **+0.032** [0.012, 0.053] *p*=0.011; GM12878 **+0.023** [0.006, 0.039] *p*=0.019; p300 +0.019 [−0.054, 0.092] *p*=0.51. Sequence + ATAC: +0.003, −0.001, +0.009, none significant. **b**, All elements — the same split, ATAC-only +0.016 (*p*=0.001) and +0.015 (*p*<0.001), multimodal +0.001 in both. p300 is underpowered: 11,412 elements pooled against 57,144 for H3K27ac, giving intervals roughly 5× wider, with point estimates trending the same way. Source: `results/accs5p_{k562,gm12878,p300}_stratified_per_fold.tsv`.
 </details>
 
 **Method.**
 
 - Each model retrained on `genomecov -bg -5` and paired within fold against its full-interval counterpart; training scripts differ only in the accessibility path and output directory.
 - Both arms scored in one run, each reading its own input and its own saved normalisation statistics.
-- Reported as the paired within-fold difference, not as two independent means — the effects are smaller than the between-fold spread.
+- Reported as the paired within-fold difference, since the effects are smaller than the between-fold spread.
 
 **Why the split.** Within a cell type read length is constant, so the switch is not a change of scale and z-normalisation has nothing to absorb. What it does change is **resolution**: a 94–95 bp interval smears each insertion across ~95 bases. A model with only accessibility feels that blur directly. A model that also sees sequence does not, because sequence already supplies the fine positional detail the smeared track lacked — the sharper input is redundant with what it had. This is the same shape as the residual result in Fig. 5: joint training already extracts what is available, and improving one input does not add to it.
 
@@ -301,7 +301,7 @@ Source: `scripts/2.4.evaluate_residual.py`, `scripts/2.7.diagnose_residual_offse
 
 **Where the convention actually matters is across cell types, which this comparison does not test.** Read length is constant within a cell type, so the smear is a constant there; it becomes a confound when cell types differ. Our K562 and GM12878 tagAligns are both 94–95 bp — which is why their transfer results were never affected — but TeloHAEC's are 35–36 bp, making its full-interval coverage a different quantity from theirs. The 5′ tracks are read-length independent by construction and remove that confound.
 
-Verified by an arithmetic identity rather than by inspection: `sum(full-interval) / sum(5′)` must equal the mean read length, since full-interval coverage counts `read_length` bases per read and 5′ counting counts exactly one. Measured 84.5 and 85.6 for K562/GM12878 (94–95 bp reads) and 30.9–35.5 for the four TeloHAEC conditions (35–36 bp). With read length removed, the K562-vs-TeloHAEC gap falls from 13–27× to 5.3–12.3× nuclear depth, which is genuine sequencing depth.
+Verified by an arithmetic identity: `sum(full-interval) / sum(5′)` must equal the mean read length, since full-interval coverage counts `read_length` bases per read and 5′ counting counts exactly one. Measured 84.5 and 85.6 for K562/GM12878 (94–95 bp reads) and 30.9–35.5 for the four TeloHAEC conditions (35–36 bp). With read length removed, the K562-vs-TeloHAEC gap falls from 13–27× to 5.3–12.3× nuclear depth, which is genuine sequencing depth.
 
 ChromBPNet's convention, from `chrombpnet/helpers/preprocessing/reads_to_bigwig.py`: `bedtools genomecov -bg -5`, unstranded, with ATAC shift `4-plus_shift, -4-minus_shift` and DNase `-plus_shift, 1-minus_shift`, the shift applied before `-5`. Our tagAligns are already Tn5-shifted, so the deltas are zero and the correct build reduces to adding `-5`; applying the shift again would double-shift.
 
@@ -327,13 +327,13 @@ Source: `scripts/0.20`, `0.21`, `2.10`, `3.5`; training scripts `1.11`, `1.12` (
 <details>
 <summary>Figure 7 legend</summary>
 
-**Figure 7 | Both transfer directions, each scored against the ceiling of the cell type being predicted.** Top-quintile Pearson as a percentage of that cell type's corrected ceiling. Solid = evaluated in the training cell type, hatched = transferred. **a**, Trained on K562. **b**, Trained on GM12878 with identical settings — same architecture, window, count-loss weight, negative cap, folds and 5′ target processing — so the directions are comparable. Absolute top-quintile values (sequence / ATAC / both): K562→K562 0.380 / 0.548 / 0.685; K562→GM12878 0.146 / 0.476 / 0.519; GM→GM 0.221 / 0.493 / 0.579; GM→K562 0.317 / 0.539 / 0.600; as a percentage of the relevant ceiling, 41/59/74, 15/50/54, 23/52/61, 34/58/65. **Every GM-trained model does better on K562 than in GM12878**, so much of what a one-directional analysis reads as failed transfer is that GM12878 is harder to predict — which the inter-replicate ceiling cannot capture, since it measures how reproducibly the target is *measured*, not how strongly the inputs *determine* it. Two conclusions survive the reciprocal: sequence is weak in all four settings (15–41% of ceiling against 50–59% for accessibility), and its margin over accessibility shrinks on transfer in both directions (+0.138 → +0.044; +0.086 → +0.061). Sources: `results/{fiveprime,k562_to_gm_5p,gm_incell,gm_to_k562}_stratified_fold_summary.tsv`.
+**Figure 7 | Both transfer directions, each scored against the ceiling of the cell type being predicted.** Top-quintile Pearson as a percentage of that cell type's corrected ceiling. Solid = evaluated in the training cell type, hatched = transferred. **a**, Trained on K562. **b**, Trained on GM12878 with identical settings — same architecture, window, count-loss weight, negative cap, folds and 5′ target processing — so the directions are comparable. Absolute top-quintile values (sequence / ATAC / both): K562→K562 0.380 / 0.548 / 0.685; K562→GM12878 0.146 / 0.476 / 0.519; GM→GM 0.221 / 0.493 / 0.579; GM→K562 0.317 / 0.539 / 0.600; as a percentage of the relevant ceiling, 41/59/74, 15/50/54, 23/52/61, 34/58/65. **Every GM-trained model does better on K562 than in GM12878**, so much of what a one-directional analysis reads as failed transfer is that GM12878 is harder to predict — which the inter-replicate ceiling cannot capture, since it measures how reproducibly the target can be measured, which is a different quantity from how strongly the inputs determine it. Two conclusions survive the reciprocal: sequence is weak in all four settings (15–41% of ceiling against 50–59% for accessibility), and its margin over accessibility shrinks on transfer in both directions (+0.138 → +0.044; +0.086 → +0.061). Sources: `results/{fiveprime,k562_to_gm_5p,gm_incell,gm_to_k562}_stratified_fold_summary.tsv`.
 </details>
 
 **Method.**
 
 - Four evaluations: both transfer directions and both in-cell-type references.
-- Each scored against the ceiling of the cell type being predicted, not the training one.
+- Each scored against the ceiling of the cell type being predicted.
 
 <details>
 <summary>Full methods &amp; code</summary>
@@ -353,7 +353,7 @@ Source: `scripts/2.2.evaluate_stratified.py`, `scripts/0.7.make_gm12878_5prime.s
 
 **Q:** In the intended application there is ATAC in the new cell type but no H3K27ac — which model should be transferred?
 
-**A:** The multimodal one — not because it predicts better, but because it is indistinguishable from the residual alternative on the top signal quintile and simpler, with no offset model to ship alongside it.
+**A:** The multimodal one — it matches the residual alternative on the top signal quintile and is simpler, with no offset model to ship alongside it.
 
 **Top signal quintile, deployable configuration** (everything transferred; only target ATAC used):
 
@@ -362,11 +362,11 @@ Source: `scripts/2.2.evaluate_stratified.py`, `scripts/0.7.make_gm12878_5prime.s
 | K562 → GM12878 | 0.477 | 0.147 | **0.520** | 0.512 |
 | GM12878 → K562 | 0.541 | 0.317 | **0.602** | 0.600 |
 
-**Sequence adds on transfer.** Every sequence-containing model beats transferred ATAC-only by 0.04–0.06 on the top quintile. That margin, not the choice of objective, is what sequence buys.
+**Sequence adds on transfer.** Every sequence-containing model beats transferred ATAC-only by 0.04–0.06 on the top quintile. That margin is what sequence buys.
 
-**Accessibility is portable but must be measured locally.** Transferring the ATAC baseline rather than fitting it in the target costs only ~0.017 (0.494 → 0.477), while sequence-only transfer is useless (0.147, 0.317).
+**Accessibility is portable but must be measured locally.** Transferring the ATAC baseline costs only ~0.017 against fitting it in the target (0.494 → 0.477), while sequence-only transfer is useless (0.147, 0.317).
 
-**A shallow target H3K27ac library would be worth more than its size suggests.** The residual design beats multimodal when the accessibility baseline is fitted in the target rather than transferred (+0.005 to +0.011 on all elements, *p* < 0.01 both directions). Fitting that baseline needs only an ATAC-only model — far less data than training a full model — so even a modest H3K27ac library in a new cell type would make the residual architecture preferable.
+**A shallow target H3K27ac library would be worth more than its size suggests.** The residual design beats multimodal once the accessibility baseline is fitted in the target (+0.005 to +0.011 on all elements, *p* < 0.01 both directions). Fitting that baseline needs only an ATAC-only model — far less data than training a full model — so even a modest H3K27ac library in a new cell type would make the residual architecture preferable.
 
 **Method.**
 
@@ -377,7 +377,7 @@ Source: `scripts/2.2.evaluate_stratified.py`, `scripts/0.7.make_gm12878_5prime.s
 <details>
 <summary>Full methods &amp; code</summary>
 
-**The all-elements stratum tells a different and misleading story.** There, residual-multimodal beats multimodal by +0.005 (K562→GM, *p*=0.009) and +0.011 (GM→K562, *p*=0.003) with a locally fitted baseline and loses by −0.005 (*p*=0.012, 0.022) when it is transferred — a clean sign flip, all four significant. None of it is resolvable on the top quintile (*p* = 0.17–0.76). All-elements correlation here is dominated by the dead-versus-active contrast accessibility already resolves, so that effect sits in the contrast rather than the biology and is not reported as a finding.
+**The all-elements stratum tells a different and misleading story.** There, residual-multimodal beats multimodal by +0.005 (K562→GM, *p*=0.009) and +0.011 (GM→K562, *p*=0.003) with a locally fitted baseline and loses by −0.005 (*p*=0.012, 0.022) when it is transferred — a clean sign flip, all four significant. None of it is resolvable on the top quintile (*p* = 0.17–0.76). All-elements correlation here is dominated by the dead-versus-active contrast accessibility already resolves, so that effect sits in the contrast and is not reported as a finding.
 
 A residual model predicts `observed − atac_pred`, so transferring it requires choosing whose `atac_pred`. Both choices are evaluated because the gap between them is itself informative: it measures what is lost by being unable to fit the accessibility baseline in the target cell type.
 
@@ -393,14 +393,14 @@ Per-fold scoring uses `scripts/2.15.perfold_from_config.py`, which is driven by 
 
 **Q:** Is the ATAC-only model's lower score in GM12878 a failure to generalise, or is accessibility simply less coupled to H3K27ac there?
 
-**A:** The latter — the model-free ATAC–H3K27ac correlation is 0.409 in GM12878 against 0.510 in K562, and the ATAC-only model extracts *more* relative to that available signal in GM12878 (ratio 1.14) than in K562 (1.06).
+**A:** Accessibility is less coupled there — the model-free ATAC–H3K27ac correlation is 0.409 in GM12878 against 0.510 in K562, while the ATAC-only model extracts a larger fraction of that available signal in GM12878 (ratio 1.14) than in K562 (1.06).
 
-![](figures/atac_vs_h3k27ac_K562.png)
+![](figures/fig8_coupling_across_celltypes.png)
 
 <details>
 <summary>Figure 8 legend</summary>
 
-**Figure 8 | Model-free coupling between accessibility and H3K27ac, and what it implies for transfer.** Hexbin of log1p summed ATAC against log1p summed H3K27ac over identical ±500 bp element-centred windows in K562 (n = 150,519); colour is element density, log scale. No model involved — the direct correlation between the two assays, and therefore a reference for what any accessibility-only predictor could reach. Top-quintile Pearson: **K562 0.510, GM12878 0.409**. Against that reference:
+**Figure 8 | Accessibility–H3K27ac coupling weakens outside K562.** **a–c**, log1p summed ATAC against log1p summed H3K27ac over identical ±500 bp element-centred windows, one panel per cell type; colour is element density on a log scale. No model is involved, so these bound what any accessibility-only predictor could reach. Top-quintile Pearson **0.512 (K562), 0.409 (GM12878), 0.371 (TeloHAEC)**, on n = 150,519 / 154,215 / 151,399 elements. The x-range differs in **c** because the TeloHAEC ATAC library is shallower; correlation is unaffected by that scale. **d**, Top-quintile coupling across all six cell types and conditions measured so far, with K562 the outlier at the top of the range. Placing the ATAC-only model against this reference:
 
 | | K562 | GM12878 |
 |---|---|---|
@@ -408,7 +408,7 @@ Per-fold scoring uses `scripts/2.15.perfold_from_config.py`, which is driven by 
 | ATAC-only model | 0.542 | 0.467 |
 | model / coupling | 1.06 | 1.14 |
 
-The ATAC-only model does not degrade across cell types — it exceeds the raw coupling in both, by a wider margin in GM12878 — so its lower absolute score there is a property of the assay pair, not the model. Sequence-only falls 0.360 → 0.146 with no analogous denominator to absorb it. This sharpens the transfer conclusion rather than weakening it: accessibility transfers, only sequence collapses. Both cell types use the same 5′ target processing and window. Source: `results/atac_vs_h3k27ac_by_celltype.tsv`.
+The ATAC-only model does not degrade across cell types — it exceeds the raw coupling in both, by a wider margin in GM12878 — so its lower absolute score there is a property of the assay pair. Sequence-only falls 0.360 → 0.146 with no analogous denominator to absorb it. This sharpens the transfer conclusion: accessibility transfers, only sequence collapses. K562 and GM12878 use the same 5′ target processing and window; TeloHAEC uses its read-1-only equivalent. Sources: `results/atac_vs_h3k27ac_by_celltype.tsv`, `results/coupling_panel_recomputed.tsv`.
 </details>
 
 **Method.**
@@ -472,7 +472,7 @@ Source: `scripts/0.10.plot_fragment_lengths.py`, `scripts/0.9.make_atac_fragment
 
 - **TeloHAEC is the one new cell type available without new data processing.** Endothelial, so a more distant lineage from K562/GM12878 than H1/H9 would have been. Tracks are built (5′ target, read-1-only for its paired-end ChIP) and its model-free coupling is measured: top-quintile 0.33–0.37 across the four conditions, below GM12878's 0.409 and K562's 0.510.
 - **Its ±IL1b / ±TNFa / ±no-VEGF conditions are a sharper, cheaper test** — same genome and cell line, genuinely different regulatory state, no input-domain shift and no change in element definition. Weak evidence for cross-cell-type transfer, strong evidence for whether the model tracks condition-specific change.
-- **Element derivation is a stated confound, not a fixed one** (`reference/ELEMENT_DERIVATION.md`). K562 and GM12878 sets are DNase-derived and TeloHAEC's ATAC-derived, so TeloHAEC is the one matching its input assay. An ATAC-derived K562 set exists (`K562_ATAC_ChromBPNet/data/`, same rE2G model type as TeloHAEC's); adopting it would make two of three consistent at the cost of re-deriving every K562 number.
+- **Element derivation is documented as a confound** (`reference/ELEMENT_DERIVATION.md`). K562 and GM12878 sets are DNase-derived and TeloHAEC's ATAC-derived, so TeloHAEC is the one matching its input assay. An ATAC-derived K562 set exists (`K562_ATAC_ChromBPNet/data/`, same rE2G model type as TeloHAEC's); adopting it would make two of three consistent at the cost of re-deriving every K562 number.
 - **Run the model-free coupling (Fig. 8) before any model in a new cell type.** Minutes of CPU, and a transfer number cannot be interpreted without it — the ATAC-only "transfer drop" into GM12878 turned out to be entirely explained by coupling.
 
 **Also open**
@@ -490,13 +490,13 @@ Source: `scripts/0.10.plot_fragment_lengths.py`, `scripts/0.9.make_atac_fragment
 **Standing cautions**
 
 - **Stratify.** Most elements carry no H3K27ac, so all-element correlations are dominated by the dead-versus-active contrast — three misleading readings so far, most recently a significant all-elements transfer effect that vanished on the top quintile.
-- **Score architecture changes on transfer, not held-out chromosomes** — Fig. 7 shows in-cell-type performance is a poor guide to generalisation here.
-- **Between-fold variability dominates.** Fold `sd` is 0.041–0.046 for single-input models, giving CI half-widths near 0.05 against a run-to-run variance of 0.018. Differences under ~0.05 need more folds or elements, not more seeds — and paired within-fold comparison where the models see identical held-out chromosomes.
+- **Score architecture changes on transfer** — Fig. 7 shows in-cell-type performance is a poor guide to generalisation here.
+- **Between-fold variability dominates.** Fold `sd` is 0.041–0.046 for single-input models, giving CI half-widths near 0.05 against a run-to-run variance of 0.018. Differences under ~0.05 need more folds or elements, and paired within-fold comparison where the models see identical held-out chromosomes.
 - **[Q for Maya]** Is a model that mostly reads accessibility useful for the intended application, or does the goal require the sequence component specifically? That decides whether the architecture list is worth the GPU time.
 
 ## Methods
 
-Model is `MultiModalBPNet` (`scripts/multimodal_bpnet.py`), a BPNet variant with a dilated-convolution trunk, a profile head trained with multinomial negative log-likelihood, and a counts head trained with log1p mean-squared error; total loss is `profile_loss + w · count_loss`. All results here concern the counts head. Training uses `n_layers = 8` (a ~1.1 kb receptive field), a ±500 bp counting window with the required 2,114 bp input window, `w = 10`, reverse-complement augmentation, chromosome-holdout 5-fold cross-validation, and a 50,000-window cap on the GC-matched negative pool. Windows are centred on candidate-element midpoints rather than ChIP peak summits, because the H3K27ac summit sits on a flanking nucleosome rather than on the element (Fig. 2).
+Model is `MultiModalBPNet` (`scripts/multimodal_bpnet.py`), a BPNet variant with a dilated-convolution trunk, a profile head trained with multinomial negative log-likelihood, and a counts head trained with log1p mean-squared error; total loss is `profile_loss + w · count_loss`. All results here concern the counts head. Training uses `n_layers = 8` (a ~1.1 kb receptive field), a ±500 bp counting window with the required 2,114 bp input window, `w = 10`, reverse-complement augmentation, chromosome-holdout 5-fold cross-validation, and a 50,000-window cap on the GC-matched negative pool. Windows are centred on candidate-element midpoints, because the H3K27ac summit sits on a flanking nucleosome (Fig. 2).
 
 All correlations are reported as the **mean across the five chromosome-holdout folds with a t-based 95% confidence interval**, with individual fold values shown as points. Each fold is an independent replicate of the train-and-evaluate procedure, so between-fold spread is the only uncertainty estimate available; a single pooled correlation over concatenated folds gives no error bar and can be biased when folds differ in mean or scale. Per-fold tables are in `results/*_stratified_per_fold.tsv`, summaries in `results/*_stratified_fold_summary.tsv`.
 

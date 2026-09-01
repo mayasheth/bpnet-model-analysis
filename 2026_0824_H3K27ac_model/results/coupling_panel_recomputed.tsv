@@ -1,0 +1,4 @@
+cell_type	n	pearson_all	pearson_top_quintile
+K562	150519	0.7249	0.5117
+GM12878	154215	0.6862	0.4094
+TeloHAEC	151399	0.7312	0.371
