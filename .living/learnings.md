@@ -873,3 +873,44 @@ paired-test, prediction-was-wrong
 on the top quintile, the default reading is that it lives in the dead-vs-active contrast, not
 in the biology of interest. Report the top quintile first and the all-elements number second,
 even when — especially when — the all-elements number is the significant one.
+
+### [2026-09-01] A generated numbers manifest caught three wrong figures that proofreading missed
+
+**Category**: tooling
+
+**What happened**: Added `scripts/3.7.build_numbers_manifest.py`, which derives
+`outputs/numbers.json` from the result TSVs at build time (896 values, 892 derived);
+`render_report.py` then checks every number in the prose against it. On the first run it
+flagged three claims that no result file supported:
+
+| prose said | actual | source |
+|---|---|---|
+| centre carries ~91% of peak signal | **94%** | `center_over_peak = 0.945` |
+| 49.8% of fragments in neither channel | **50.0%** | 30.3% + 19.7% sum to 50.0 |
+| contamination rises to 42% | **41.5%** | `window_tradeoff.tsv` |
+
+Two of the three contradicted a figure legend **in the same section** of the report —
+Fig 2's legend already said 0.944 while the prose said 91%, and Fig 3's said 41.5% while the
+prose said 42%.
+
+**Why it matters**: Those two survived several deliberate editing passes, because
+proofreading compares prose against prose. Only a check against the data catches them. The
+manifest registers rounded variants alongside exact values, since prose legitimately writes
+0.415 as "42%"; a genuine shift in an underlying number still matches nothing at any
+precision and fails.
+
+**Also**: `3.6` now caches per-element vectors keyed on input paths AND mtimes, taking a
+replot from 3m33s to 3.5s. It previously saved only summary correlations, so changing a bar
+colour cost a full recompute plus queue time. Keying on mtime means a rebuilt track
+invalidates the cache instead of silently serving stale vectors.
+
+**Resolution**: Re-run `3.7` after any pipeline change, then re-render; the linter reports
+"Lint clean" only when every quoted number traces to a file.
+
+**Tags**: tooling, reproducibility, report, numbers-manifest, caching, drift
+
+**mitigation_type**: structural
+
+**structural_mitigation_candidate**: Shipped. Generalises to any analysis with a Quarto
+report — derive the manifest from result files rather than hand-registering values, or it
+becomes another thing that drifts.
