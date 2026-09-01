@@ -813,3 +813,63 @@ paired-test, generalization
 partly a property of that cell type (F-003's transfer asymmetry; the ATAC-H3K27ac coupling
 difference). Replicating in a second cell type before generalising is cheap relative to how
 often it has changed the reading — 15 fold-jobs and one evaluation in this case.
+
+### [2026-09-01] Residual and multimodal transfer equivalently; the significant difference is in the stratum we distrust
+
+**Category**: insight
+
+**What happened**: Tested cross-cell-type transfer of residual-objective vs total-target
+models, both directions, in two variants that differ in where the offset comes from:
+
+- **upper bound** — offset from the TARGET cell type's own ATAC model. Optimistic: that model
+  is trained on target H3K27ac, which the deployment scenario lacks.
+- **deployable** — offset from the SOURCE ATAC model, transferred. Only target ATAC is used,
+  which is the real application (Maya: "we have ATAC-seq data for the target cell type but
+  not H3K27ac").
+
+Paired within fold, residual-multimodal minus multimodal:
+
+| | all elements | top quintile |
+|---|---|---|
+| transfer K562->GM (local offset) | **+0.0051**, p=0.009 | +0.012, p=0.17 |
+| deploy K562->GM | **-0.0054**, p=0.012 | -0.008, p=0.33 |
+| transfer GM->K562 (local offset) | **+0.0111**, p=0.003 | +0.005, p=0.65 |
+| deploy GM->K562 | **-0.0052**, p=0.022 | -0.002, p=0.76 |
+
+**Why it matters**: The all-elements column tells a tidy story — the residual design wins
+when the accessibility baseline is fitted locally and loses when it must be transferred, sign
+flipping, all four significant. The top-quintile column says none of it is resolvable. The
+all-elements stratum is the one this project has three times recorded as misleading, because
+it is dominated by the dead-vs-active contrast that accessibility already resolves. **The
+honest conclusion is that residual and multimodal transfer equivalently**, and the tidy story
+was an artifact of reading the wrong stratum. Recording this because the temptation to lead
+with the significant number was strong and nearly won.
+
+What survives on the top quintile, deployable variant:
+
+| | ATAC-only | multimodal | residual MM | sequence-only |
+|---|---|---|---|---|
+| K562 -> GM12878 | 0.477 | 0.520 | 0.512 | 0.147 |
+| GM12878 -> K562 | 0.541 | 0.602 | 0.600 | 0.317 |
+
+- Sequence genuinely adds on transfer: every sequence-containing model beats transferred
+  ATAC-only by 0.04-0.06.
+- Transferring the ATAC baseline rather than fitting it locally costs only ~0.017
+  (0.494 -> 0.477), so the accessibility component is largely portable.
+- Sequence-only transfer remains useless; accessibility must be measured in the target.
+
+**Resolution**: For deployment into a cell type with ATAC but no H3K27ac, transfer the
+MULTIMODAL model — not because it is better, but because it is equal on the stratum that
+matters and simpler, with no offset model to ship and version alongside it. The residual
+design's apparent transfer advantage requires a locally fitted accessibility baseline, which
+requires the target H3K27ac that the scenario lacks.
+
+**Tags**: h3k27ac, transferability, residual, deployment, gm12878, k562, stratification,
+paired-test, prediction-was-wrong
+
+**mitigation_type**: convention
+
+**structural_mitigation_candidate**: When a difference is significant on all elements and not
+on the top quintile, the default reading is that it lives in the dead-vs-active contrast, not
+in the biology of interest. Report the top quintile first and the all-elements number second,
+even when — especially when — the all-elements number is the significant one.
