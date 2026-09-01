@@ -757,3 +757,59 @@ prediction-was-wrong, input-definition
 "just a scale change that normalisation absorbs", check whether it also changes RESOLUTION.
 Scale and blur are separable, normalisation only handles the first, and only models with a
 single input feel the second.
+
+### [2026-09-01] The residual-objective result reproduces in GM12878, so it is the objective and not K562
+
+**Category**: insight
+
+**What happened**: Repeated the full residual grid in GM12878 (Maya's suggestion, on the
+grounds that it is the harder problem). All 15 folds trained; evaluated with the K562
+evaluator copied and altered only in its four cell-type paths, asserted free of K562 paths,
+so any difference is data rather than method.
+
+Residual *r*, mean over 5 folds:
+
+| input | trained on total | trained on residual | | K562 equivalents |
+|---|---|---|---|---|
+| sequence | 0.133 [0.090, 0.176] | **0.372** [0.334, 0.410] | | 0.149 -> 0.459 |
+| sequence + ATAC | **0.449** [0.414, 0.485] | 0.414 [0.378, 0.451] | | 0.551 -> 0.514 |
+| ATAC (control) | — | **0.010** [-0.019, 0.040] | | -0.003 |
+
+Paired over folds, both cell types, all significant:
+
+| difference | K562 | GM12878 |
+|---|---|---|
+| residual_sequence - sequence5p | +0.310, p=5e-4 | +0.239, p<1e-4 |
+| residual_multimodal - multimodal5p | **-0.0369**, p<1e-4 | **-0.0350**, p=4e-4 |
+| multimodal5p - residual_sequence | +0.093, p=2e-4 | +0.077, p<1e-4 |
+
+**Why it matters**: The multimodal COST replicates to within 0.002 across two cell types with
+different targets, different accessibility libraries and different element sets — -0.0369 vs
+-0.0350, and -0.029 to -0.043 in every one of the ten folds. A number that stable across
+that much variation is a property of the training objective, not of a dataset. Before this,
+the K562 result was one cell type and the tight ATAC-H3K27ac coupling there (0.510 vs
+GM12878's 0.409) was a live alternative explanation. It is now ruled out.
+
+The negative control passes in both (CI includes zero), so neither result is an artifact of
+the residual metric.
+
+**The one difference is scale, not direction.** GM12878's sequence gain is smaller (+0.239 vs
++0.310) and every absolute level is lower (residual-trained sequence 0.372 vs 0.459;
+multimodal 0.449 vs 0.551). That is consistent with F-003: GM12878 is the harder cell type to
+predict. Ordering and sign of every effect are unchanged.
+
+**Resolution**: Settled. Use joint (multimodal) training for prediction in both cell types —
+residual training costs ~0.035 residual *r* when accessibility is already an input, reliably.
+Reserve residual training for attribution, where forcing the model onto
+accessibility-independent signal is the goal. The finding generalises across cell types and
+should not need re-testing per cell type.
+
+**Tags**: h3k27ac, residual, training-objective, gm12878, k562, replication, negative-control,
+paired-test, generalization
+
+**mitigation_type**: none
+
+**structural_mitigation_candidate**: A result measured in one cell type here has twice been
+partly a property of that cell type (F-003's transfer asymmetry; the ATAC-H3K27ac coupling
+difference). Replicating in a second cell type before generalising is cheap relative to how
+often it has changed the reading — 15 fold-jobs and one evaluation in this case.
