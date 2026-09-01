@@ -6,7 +6,7 @@ Last audit: 2026-09-01
 |------|---------|--------------|------------|
 | conventions.md | 12 sections | 2026-08-31 | Layout: analyses live at the repo root, not under `analysis/`, Reports, Figures, Environments, SLURM submit scripts (mandatory) |
 | decisions.md | 6 entries | 2026-08-30 | Center H3K27ac training windows on candidate elements, not ChIP peaks, Counting window is a trade-off between signal and neighbour contamination, Keep the profile head, down-weighted, rather than removing it, Residual correlation beyond ATAC becomes the headline metric, Paired-end H3K27ac targets use read 1 only, not both mates |
-| learnings.md | 31 entries (large — read selectively) | 2026-09-01 | count_loss_weight must be calibrated to the actual loss magnitudes, not copied, Inter-replicate r is not a model performance ceiling without two corrections, bpnetlite's count target sums ALL channels, not one strand, Three Sherlock/SLURM traps that cost a job each, Peak count scales the negative pool, which can OOM by 50x |
+| learnings.md | 32 entries (large — read selectively) | 2026-09-01 | count_loss_weight must be calibrated to the actual loss magnitudes, not copied, Inter-replicate r is not a model performance ceiling without two corrections, bpnetlite's count target sums ALL channels, not one strand, Three Sherlock/SLURM traps that cost a job each, Peak count scales the negative pool, which can OOM by 50x |
 | findings/ | 3 findings across 4 topics | 2026-09-01 | predicting-regulatory-element-function-at-scale, linking-noncoding-variation-to-molecular-function, mapping-regulatory-perturbations-to-phenotype, how-enhancers-control-gene-expression |
 
 ## Local skills
@@ -29,6 +29,7 @@ Last summarized: 2026-09-01 (heuristic)
 
 - [2026-09-01] L-30: The residual-objective result reproduces in GM12878, so it is the objective and not K562
 - [2026-09-01] L-31: Residual and multimodal transfer equivalently; the significant difference is in the stratum we distrust
+- [2026-09-01] L-32: A generated numbers manifest caught three wrong figures that proofreading missed
 - [2026-08-31] L-28: The 5' ATAC rebuild works, and the read-length artifact is confirmed quantitatively
 - [2026-08-31] L-29: The 5' ATAC input helps the ATAC-only model and does nothing for multimodal
 - [2026-08-30] L-27: The residual objective helps only when the input is blind to accessibility
@@ -36,7 +37,6 @@ Last summarized: 2026-09-01 (heuristic)
 - [2026-08-29] L-25: ATAC-only is the right rule, and it cuts the panel from five new cell types to one
 - [2026-08-29] L-26: TeloHAEC's recorded blocker was the wrong blocker — the real one is a second cell line in the directory
 - [2026-08-29] D-5: Paired-end H3K27ac targets use read 1 only, not both mates
-- [2026-08-27] L-22: The ATAC-only model transfers fine; only sequence collapses
 
 ## By tag
 
@@ -50,6 +50,7 @@ Last summarized: 2026-09-01 (heuristic)
 - `residual`: L-15, L-27, L-30, L-31, D-4
 - `silent-failure`: L-6, L-15, L-19, L-20, L-21
 - `target-definition`: L-8, L-9, L-10, D-5
+- `tooling`: L-4, L-6, L-20, L-32
 - `transferability`: L-14, L-22, L-24, L-31
 - `chrombpnet`: L-28, L-29, D-6
 - `evaluation`: L-2, L-3, D-4
@@ -60,7 +61,6 @@ Last summarized: 2026-09-01 (heuristic)
 - `slurm`: L-4, L-19, L-21
 - `stratification`: L-17, L-18, L-31
 - `telohaec`: L-26, L-28, D-5
-- `tooling`: L-4, L-6, L-20
 - `variance`: L-16, L-18, L-23
 - `window-selection`: L-7, D-1, D-2
 - `accessibility`: L-29, D-6
@@ -77,6 +77,7 @@ Last summarized: 2026-09-01 (heuristic)
 - `panel`: L-25, D-5
 - `profile-head`: L-11, D-3
 - `read-length`: L-28, D-6
+- `reproducibility`: L-16, L-32
 - `sherlock`: L-4, L-21
 - `statistics`: L-2, L-23
 - `testing`: L-19, L-20
@@ -89,6 +90,7 @@ Last summarized: 2026-09-01 (heuristic)
 - `bash`: L-4
 - `bigwig`: L-8
 - `buffering`: L-4
+- `caching`: L-32
 - `cell-line-contamination`: L-26
 - `channels`: L-12
 - `checkpoints`: L-21
@@ -106,6 +108,7 @@ Last summarized: 2026-09-01 (heuristic)
 - `deployment`: L-31
 - `depth`: L-28
 - `dnase`: L-25
+- `drift`: L-32
 - `element-centric`: D-1
 - `encode`: L-25
 - `fragment-length`: L-12
@@ -120,6 +123,7 @@ Last summarized: 2026-09-01 (heuristic)
 - `mycelium`: L-6
 - `negatives`: L-5
 - `normalization`: L-14
+- `numbers-manifest`: L-32
 - `off-by-factor`: L-3
 - `offset`: L-15
 - `oom`: L-5
@@ -132,8 +136,8 @@ Last summarized: 2026-09-01 (heuristic)
 - `reliability`: L-2
 - `replicates`: L-2
 - `replication`: L-30
+- `report`: L-32
 - `reporting-standard`: L-23
-- `reproducibility`: L-16
 - `sample-definition`: L-26
 - `scaling`: L-5
 - `scope`: L-25

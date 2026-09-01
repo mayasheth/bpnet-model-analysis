@@ -1,332 +1,88 @@
 # Todo List
 
-Master list of future work items. Each item can have a detailed writeup
-in a separate `.md` file in this directory.
+Open work only. Completed items live in the git history and in `.living/`; the analysis
+narrative is in `2026_0824_H3K27ac_model/h3k27ac_model_report.html`.
 
-## Items
+## Settled (do not redo)
 
-### H3K27ac model — `h3k27ac-model.md`
+Target = 5′ ends, ±500 bp window, `count_loss_weight = 10`. Panel is **ATAC-only** (DNase
+and ATAC are not interchangeable inputs). PE H3K27ac targets use **read 1 only**.
+Accessibility inputs should be ChromBPNet-style 5′ insertion counts; tracks are built and
+validated but **no model uses them yet**. Residual-objective training helps only a
+sequence-blind input and costs a multimodal one — replicated in K562 and GM12878, so it is
+a property of the objective and needs no further per-cell-type testing.
 
-Detailed writeup: [`h3k27ac-model.md`](h3k27ac-model.md). Ordered into waves by
-dependency; everything inside a wave can run at the same time.
+## Highest value
 
-**Gate — DONE 2026-08-25.** 5′ and fragment-extended ceilings are *identical* on the
-top quintile (0.760 vs 0.761 at ±500). Switched to 5′ on principle — MNLL well-posed, no
-neighbour bleed — not for an accuracy gain. See `.living/learnings.md`.
+- [ ] **W4. Motif syntax (SHAP / TF-MoDISco / FiNeMo).** Not started; the actual scientific
+      goal. Run on the **residual-trained** model — its attributions are forced onto
+      accessibility-independent signal, which multimodal attributions cannot separate. Use
+      the ±500 bp window (zero neighbour contamination). Expect less signal than p300.
 
-- [x] **G1. Inter-replicate ceiling on the 5′ target** — decides whether 5′ ends or the
-      250 bp fragment track is the model target. Every later training decision inherits
-      this. ~10 min CPU. `0.3.replicate_ceiling_by_window.py` with the new
-      `h3k27ac_rep{1,2}_5p_{plus,minus}.bw`. The 5′ track is sparse (max 27, ~6 reads per
-      kb at background), so the ceiling could fall; if it does, test unextended 36 bp
-      read coverage as a middle option.
+- [ ] **TeloHAEC training + transfer.** The only new cell type available under the ATAC-only
+      rule. Tracks, elements and model-free coupling (0.33–0.37 top quintile) are all ready.
+      3 modes × 5 folds, then the four-evaluation transfer set against K562 and GM12878.
+- [ ] **TeloHAEC ±IL1b / ±TNFa / −VEGF.** Same genome and cell line, different regulatory
+      state, no input-domain shift — a sharp and cheap test of whether the model tracks
+      condition-specific change. Inference only if trained on ctrl.
 
-**Wave 1 — independent of G1, all parallel**
+## Open questions
 
-- [x] **W1a. Residual EVALUATION** — done (jobs 40799753, 40803766). Residual metric
-      is now the headline; it reverses the p300/H3K27ac ranking (F-002). Residual
-      *training* is now item W2e below, promoted by that result.
-- [x] **W1a-bis. Residual / difference-from-ATAC model + evaluation — DONE 2026-08-29**
-      (jobs 41232315, 41233130). Residual r 0.459 [0.421, 0.496] vs 0.149 [0.076, 0.222]
-      for the independently-trained sequence model; multimodal 0.551 [0.510, 0.592].
-      Results: `results/residual5p_{residual_evaluation,per_fold,fold_summary}.tsv`.
-      Required fixing `2.4.evaluate_residual.py`, which double-subtracted `atac_pred`
-      from offset-trained models — `forward()` never adds the offset, so their output
-      already IS the residual. Gated behind a `residual` config flag;
-      `2.7.diagnose_residual_offset.py` confirms the semantics empirically before scoring.
-- [ ] **W1b. GM12878 cross-cell-type transfer** — separates model capacity from
-      "H3K27ac is not sequence-determinable". Inference only on existing K562 models.
-      ~0.5 GPU-h. Data all present (`ENCFF645BAL`, `ENCFF865OOP`).
-- [x] **W1c-i. PE ATAC BAMs downloaded** to `$SCRATCH/atac_pe` (24.5 GB, 165M/153M/229M
-      paired reads). Channels building: job 40808663.
-- [ ] **W1c. Download paired-end ATAC BAMs → fragment-stratified channels** — unblocks
-      the nucleosome-positioning input. `K562/log.sh:9` has the curl commands
-      (commented). **Download to `$SCRATCH`, not Oak — Oak is at 97%.**
-- [ ] **W1d. Implement nucleosome-resolution (binned) profile target** — code only, no
-      compute. Touches `multimodal_bpnet.py` and `train_multimodal_bpnet.py`, both shared
-      with the p300 models, so it needs the same backward-compatibility care and
-      regression test as the unstranded change.
+- [ ] **Repeat the residual comparison for p300.** Resolved only for H3K27ac; p300's
+      residual *r* is already 0.654 so the headroom may be smaller.
+- [ ] **Predict the composite activity metric directly.** Downstream uses
+      `geomean(accessibility, H3K27ac)`, best as `geomean(DHS, H3K27ac)`. Is the composite
+      easier to predict than predicting H3K27ac and combining afterwards?
+      **Design caution:** if the accessibility input is the same assay as the accessibility
+      term in the target, half the target is readable off the input and the comparison is
+      circular. Predict `geomean(DHS, H3K27ac)` from sequence + ATAC, and baseline against
+      the two-step route scored on the *same* composite.
+- [ ] **[Q for Maya] Is a mostly-accessibility model useful for the intended application,**
+      or does the goal require the sequence component? Decides whether the architecture list
+      below is worth the GPU time.
 
-**Wave 2 — needs its Wave 1 / gate input**
+## Architecture, in expected order of value
 
-- [~] **W2a. Re-sweep `count_loss_weight` on the 5′ target** — RUNNING (jobs 40808673/6/8,
-      weights 10/100/1000). Expect the optimum to fall far below 1000 now that MNLL
-      sees real read counts. Was: (needs G1) — expect it
-      to fall a long way from 1000 once MNLL sees real read counts. 2–3 GPU jobs.
-- [ ] **W2b. Train with fragment-size ATAC channels** (needs W1c) — 5–10 GPU jobs.
-      **Revisit the split first.** The fragment distribution is a clean nucleosomal
-      ladder (sub-nucleosomal mode ~42 bp, mono ~205 bp, di ~400 bp, tri ~600 bp; see
-      `figures/atac_fragment_lengths.pdf`), but the current two channels capture only
-      30% (sub 1–99) and 20% (mono 180–247) of fragments — **50% fall in neither**,
-      including both higher-order peaks and the 100–180 bp trough.
-      Preferred design: **[all, sub, mono, di]** — keep an all-fragments channel so the
-      input is a strict superset of the current flat-ATAC baseline and cannot regress,
-      plus a di-nucleosomal channel (~350–450 bp) for higher-order structure. Coverage
-      fractions per replicate are in `results/atac_fragment_length_summary.tsv`.
-      Architecture support landed 2026-08-25: `MultiModalBPNet(n_acc_channels=N)`; the
-      forward pass already slices `X[:, 4:, :]` generically, so only the `acc_conv`
-      in-channels needed changing. Still to do: multi-BigWig accessibility input in
-      `extract_windows` / `--accessibility-bw`, which currently accepts one track.
-- [ ] **W2c. Validate the binned profile target** (needs W1d) — 5–10 GPU jobs, ~4–8 GPU-h.
-- [ ] **W2d. Re-check the ±500 vs ±1000 window on the 5′ target** (needs G1) — less
-      smearing means less neighbour bleed, so the contamination penalty may differ.
+- [ ] **Wider receptive field** (`--n-layers 10`, ~4.2 kb): H3K27ac is still at 28% of
+      maximum at ±2 kb against a ~1.1 kb receptive field. ~30–60 GPU-h, the most expensive
+      item — defer until motif work shows the sequence component justifies it.
+- [ ] **Nucleosome-resolution binned profile target** (~50–150 bp). Code only. Touches
+      `multimodal_bpnet.py` and `train_multimodal_bpnet.py`, both shared with p300, so it
+      needs the same backward-compatibility regression test as the unstranded change.
+- [ ] **Fragment-size ATAC channels** `[all, sub, mono, di]`. Sub and mono channels built;
+      the two cover only 50% of fragments. A superset of the current flat input, so it
+      cannot regress.
+- [ ] **Switch the accessibility input to 5′ counts, as a set.** ~35 fold-jobs. Within a
+      cell type this moves only the ATAC-only model; across cell types it removes a
+      read-length confound (TeloHAEC 36 bp vs K562 95 bp). Mixing the two inputs is invalid.
+- [ ] **Re-check ±500 vs ±1000** on the 5′ target once a retrain happens anyway.
 
-- [x] **W2e. Residual TRAINING — DONE, and it overturned the premise.** The item was
-      written on the reading that sequence is *redundant* with accessibility. That was
-      wrong: it is a property of the training objective, not of sequence. Trained on
-      `observed − atac_pred`, the same sequence input reaches residual r 0.459 vs 0.149.
-      Artifact excluded — `r(output, atac_pred) = -0.090` and partialling `atac_pred` out
-      of both sides leaves 0.459 unchanged; incremental R^2 over ATAC-only is
-      +0.071 [0.058, 0.085] against the observed signal, +0.115 on the top quintile.
-      **But the jointly-trained multimodal model captures MORE of the residual (0.551)
-      than explicit residual training does**, so residual training is not the better
-      predictor — its value is diagnostic and interpretive.
-- [ ] **W2e-bis. Decide what residual training is FOR, now that multimodal beats it.**
-      Candidate: run SHAP/MoDISCo on the residual model rather than the multimodal one,
-      since its attributions are forced onto accessibility-independent signal — which is
-      exactly what the motif-syntax question wants and what the multimodal model's
-      attributions cannot cleanly separate.
-- [ ] **W2e-quater. Fill in the residual-objective grid — only one cell exists.** Just ONE
-      residual model was ever trained: `residual5pFIXED_hw500_clw10`, mode=sequence, offset
-      from `atac5p_hw500_clw10`. So we currently cannot separate "the residual is
-      sequence-predictable" from "residual training helps". Missing cells:
-      - **multimodal residual** (sequence + ATAC -> `observed - atac_pred`): the genuinely
-        informative one. If it beats the jointly-trained multimodal model's 0.551 residual r,
-        the objective matters even when ATAC is an input; if not, joint training is already
-        optimal and residual training is purely an interpretability tool. ~4 GPU-h.
-      - **ATAC-only residual** (ATAC -> `observed - atac_pred`): expected ~0 by construction,
-        since it would predict an ATAC model's own errors from the same ATAC input. Worth
-        running only as a negative control for the residual metric. ~4 GPU-h.
-- [ ] **W2e-ter. Repeat the residual comparison for p300.** F-002's open question was
-      posed "for either target" and is resolved only for H3K27ac. p300's residual r is
-      already much higher (0.654), so the headroom may be smaller.
-- [ ] **W2f. GM12878 transfer evaluation** — GM12878 fragment-extended target building
-      (job 40808659); ATAC (`2026_0606_GM12878_transferability/data/atac.bw`) and
-      elements already exist. Must match the target definition the models were trained
-      on, so this runs against the fragment target until the 5′ retrain lands.
+## Panel data caveats
 
-**Wave 3 — only once the target and weight are settled, so it is not redone**
+- [ ] **Element derivation is not uniform** (`reference/ELEMENT_DERIVATION.md`): K562 and
+      GM12878 DNase-derived, TeloHAEC ATAC-derived. An ATAC-derived K562 set exists in
+      `K562_ATAC_ChromBPNet/data/`; adopting it makes two of three consistent at the cost of
+      re-deriving every K562 number.
+- [ ] **HCT116** has ENCODE ATAC but its H3K27ac replicates differ in run type, so no
+      inter-replicate ceiling is computable. Trainable, not normalisable.
+- [ ] **H1, H9, Jurkat, THP-1 have no ENCODE ATAC at all** (all 559 released experiments
+      checked). Reaching them means GEO/SRA fastqs through
+      `Data/scripts/sra_paired_fastq_to_bam.sh` — a separate decision.
+- [ ] **TeloHAEC_ctrl/ATAC holds 3 EA.hy926 files** (`SRR20809434/435/436`) under the same
+      sample name. Always use explicit accession lists, never a directory glob.
 
-- [ ] **W3a. Full retrain grid on the final target + weight** — 15–30 GPU jobs.
-- [ ] **W3b. Wider receptive field (`--n-layers 10`)** — best single architecture bet, and
-      the most expensive: `in_window` 2114 → 5186, ~3.1× FLOPs/epoch, 2–4 h per job,
-      ~30–35 GB RSS. 30–60 GPU-h. Deliberately last of the training items.
+## Statistical power
 
-**Wave 4**
+- [ ] **Re-run the `count_loss_weight` sweep with ≥3 folds and ≥2 seeds.** The current pick
+      (10) came from single folds; 3/10/100 are within noise of each other.
+- [ ] **Quantify run-to-run variance properly** — one config × 5 seeds.
+- [ ] **Make submit scripts refuse to overwrite a completed fold directory.** A grid once
+      silently overwrote a sweep result that shared an `OUT_DIR`.
 
-- [ ] **W4. Motif syntax (SHAP / MoDISCo / FiNeMo)** on the final chosen model. Per F-001,
-      expect less sequence signal to attribute here than for p300.
+## Housekeeping
 
-### Multi-cell-type generalization (promoted — supersedes the single GM12878 pair)
-
-Inventory built from `2023_0701 Maya's sequences.xlsx` ("ENCODE data" sheet) into
-`2026_0824_H3K27ac_model/results/celltype_inventory.tsv`, under two standing rules:
-
-1. **Mint-ChIP is excluded** — different assay chemistry, not comparable to standard ChIP.
-   This drops **WTC11** from the H3K27ac panel entirely (ENCSR146DPQ is its only H3K27ac
-   experiment), and also its H3K27me3 and H3K4me1.
-2. **Each (experiment, processing) pair is a separate SAMPLE.** Replicates may only be
-   pooled, or compared as an inter-replicate ceiling, within one experiment and one
-   processing. Two consequences below.
-
-3. **ATAC only — DNase is not an acceptable substitute** (Maya, 2026-08-29). DNase I
-   cutting and Tn5 insertion have different sequence biases and footprint structure, and
-   every model here is ATAC-trained. Swapping in DNase for the cell types that lack ATAC
-   would confound assay with cell type inside the very comparison the panel exists to
-   make, invisibly — it would surface as a cell-type effect.
-
-After exclusions: **11 biosamples with H3K27ac**, of which 6 have ATAC (K562, GM12878, and
-the 4 TeloHAEC conditions) and 7 have DNase (K562, GM12878, H1, H9, HCT116, Jurkat, THP-1).
-Under rule 3 only the ATAC set is usable, so the panel is **K562, GM12878 and TeloHAEC x4**
-— three distinct cell types, two of them already trained. The structure matters more than
-the count.
-
-- [~] **Model-free ATAC-vs-H3K27ac correlation across the panel — cheap, do first.**
-      Correlate summed ATAC against summed H3K27ac over the same element windows, no model
-      involved. This is the model-free reference for the ATAC-only baseline: it separates
-      "how much accessibility can explain in principle" from "how well a network learns
-      it". If accessibility explains less of H3K27ac in other cell types, then the
-      ATAC-only model's strength in K562 is partly a property of K562 rather than of the
-      assay pair — which would also mean the sequence margin is not directly comparable
-      across cell types. Needs no GPU and no training; it is bigwig reads plus a
-      correlation. `scripts/0.12.atac_vs_h3k27ac.py`, accumulating into
-      `results/atac_vs_h3k27ac_by_celltype.tsv` one row-set per label.
-      **K562 and GM12878 reference points running now (job 41010962).** Remaining cell
-      types are blocked only on candidate elements (below).
-- [x] **UNBLOCKED: candidate element sets built for all 11 panel cell types.** Converted
-      from ENCODE_rE2G `Neighborhoods/EnhancerList.bed` by
-      `scripts/0.13.make_candidate_elements.py` into
-      `reference/celltype_elements/<label>_<assay>_candidate_elements.narrowPeak`, each with
-      a `.provenance.txt` sidecar. EnhancerList.bed is BED4 with no summit column, so the
-      conversion writes `summit = width // 2` to preserve element-centred windows.
-      Verified: EnhancerList.bed is byte-identical between the `*_H3K27ac_megamap` and
-      `*_megamap` variants, so that choice does not matter.
-      Sources: `2025_0227_validation_new_inputs` (K562, GM12878, HCT116, Jurkat),
-      `2025_0219_ESC` (H1, H9), `Projects/E2G/THP1/ENCODE_rE2G_results` (THP-1),
-      `Projects/E2G/endothelial_cells/.../ENCODE_rE2G_results` (TeloHAEC x4).
-      WTC11 is present in both rE2G dirs but stays excluded on the Mint-ChIP rule.
-
-- [ ] **Element derivation is NOT uniform across the panel — manage as a confound.**
-      DNase/DHS-derived (`dhs_*` model dirs): K562, GM12878, HCT116, Jurkat, H1, H9, THP-1.
-      **ATAC-derived** (`atac_h3k27ac_powerlaw`): all four TeloHAEC conditions. So TeloHAEC
-      differs from the rest in how its elements were called, not only in cell type. Either
-      restrict cross-cell-type claims to the DNase-derived subset, or derive DNase-based
-      TeloHAEC elements, or state the confound wherever TeloHAEC is compared to the others.
-      **DECIDED 2026-08-29: PE H3K27ac targets use read 1 only** (`-f 64`), so each
-      fragment contributes one 5' end, matching the SE convention in K562/GM12878. Both
-      variants are on disk; `*_both_5p_*` must not be mixed with `*_r1_5p_*`. See
-      `.living/decisions.md`.
-
-      **Note rule 3 inverts this.** With the panel restricted to ATAC, TeloHAEC's
-      ATAC-derived elements are the ones consistent with the input assay and the
-      DNase-derived K562/GM12878 sets are the odd ones out. Element derivation and
-      accessibility assay should be made to agree; decide which way before training.
-      Also note H9's elements are much wider (mean 798 bp vs ~570-600 for the rest), which
-      will change its neighbour-contamination profile at any given window.
-
-- [ ] **Decide whether to re-derive the K562 analysis on its rE2G EnhancerList.** GM12878's
-      in-use element set IS its EnhancerList (154,224 / 154,224 exact). K562's is not — it
-      is a separate derivation. The two K562 sets are largely the same loci with different
-      boundaries: of 150,528 in-use elements, 144,194 (96%) overlap an EnhancerList element
-      and 142,536 (95%) at 50% reciprocal overlap, with only 6,334 (4%) having no overlap.
-      So this is a boundary difference, not a different set of loci — but it does mean K562
-      is currently the odd one out in the panel, and every window is centred slightly
-      differently there. Cheap to resolve by re-running the K562 evaluations on
-      `reference/celltype_elements/K562_DNase_candidate_elements.narrowPeak`.
-      (An earlier exact-interval count of 25,550 shared was an artifact of comparing files
-      that were not lexicographically sorted; the bedtools overlap figures above supersede
-      it.)
-- [x] **DROPPED: train a DNase-input model.** This was previously the "enabling step" on
-      the reasoning that DNase is the common denominator across 7 cell types. Rejected
-      under rule 3 — it trades a known confound (assay) for a coverage gain, in the one
-      comparison where assay must be held fixed. The 5 DNase bigwigs already built in
-      `2026_0824_H3K27ac_model/data/panel/` (K562, GM12878, H1, H9, Jurkat) are validated
-      and complete but now unused; kept, not deleted.
-- [ ] **Acquire ATAC where it exists, rather than substituting DNase.** Scanned all 559
-      released ENCODE ATAC-seq experiments (matching biosample term names locally — a
-      one-at-a-time term query 404s on a miss, indistinguishable from "assay absent"):
-      **HCT116 has 17**, K562 64, GM12878 2. **H1, H9, Jurkat and THP-1 have none.**
-      So downloading from ENCODE rescues HCT116 only; the other four would need GEO/SRA
-      fastqs through `Data/scripts/sra_paired_fastq_to_bam.sh`, which is a separate
-      decision rather than a track rebuild. Processing pattern is in
-      `Data/ENCODE/<cell_type>/log.sh`: wget the BAM, then
-      `process_filtered_paired_ended_bam.sh` (ATAC is paired-end throughout), with
-      `Data/scripts/filter_ATAC_bam_pe.sh` for ATAC-specific filtering.
-      **HCT116 caveat is on the target side, not the input:** its H3K27ac experiment
-      ENCSR661KMA is `run_type = "se, pe"`, so under rule 2 the replicates are not
-      interchangeable and no inter-replicate ceiling is computable — and every
-      cross-cell-type number so far is ceiling-normalised. Trainable, not normalisable.
-- [ ] **Cross-cell-type matrix: train on each, evaluate on all others.** Currently every
-      conclusion assumes K562 is representative, and it may well not be — it is a cancer
-      line with an atypical chromatin landscape. If sequence transfers better *out of*
-      GM12878 or an untransformed line than out of K562, the story changes from "H3K27ac
-      has little sequence signal" to "K562 is a poor training cell type". This is the test
-      that decides which.
-- [x] **Checked: the existing K562 and GM12878 ceilings are unaffected by rule 2.**
-      ENCSR000AKP and ENCSR000AKC are each a single experiment, `run_type = se`, with two
-      replicates processed identically (`.filtered.sorted.bam`), so every ceiling and
-      transfer number reported so far is computed within one experiment and one processing.
-      No correction needed.
-- [ ] **TeloHAEC ±IL1b / ±TNFa / ±VEGF is a different and sharper test.** Those four rows
-      are *conditions of one cell type*, not four cell types, so they are weak evidence
-      for cross-cell-type transfer — but they are strong evidence for something else:
-      whether the model tracks condition-specific H3K27ac changes *within* a cell type,
-      with no input-domain shift and no element-definition change. Worth running early
-      because it is cheap and the interpretation is clean.
-- [ ] **Split the TeloHAEC rows before use — each pools 2 experiments.** All four
-      TeloHAEC rows list `GSE210489,GSE210491`, so under rule 2 each row is at least two
-      samples, not one. The ctrl row has 4 replicate files (SRR20810532/533/544/545),
-      likely 2 per experiment, but the sheet does not say which SRR belongs to which GSE —
-      that needs SRA metadata before any ceiling is computed. Computing a single
-      4-replicate ceiling across both experiments would fold batch effect into what is
-      reported as biological reproducibility. Upside: once split, the same-condition
-      cross-experiment pair is a clean estimate of experiment-level batch effect.
-- [ ] **HCT116 cannot yield an inter-replicate ceiling as catalogued.** ENCSR661KMA is
-      `run_type = "se, pe"`, so its two replicates differ in run type and are separate
-      samples under rule 2. Their correlation would conflate a run-type difference with
-      biological noise and understate the ceiling. Either use one run type only (and then
-      there is a single replicate, so no ceiling), or find additional same-processing
-      replicates. Same caution applies to HCT116's DNase, CTCF, H3K27me3 and H3K4me1 rows,
-      which are all `"se, pe"`.
-- [ ] **Watch two confounds when comparing absolute numbers across the panel.** Run type
-      is mixed (K562 is 36 bp SE; THP-1, TeloHAEC, WTC11 are PE), and provenance is mixed
-      (ENCODE versus GEO/SRA with different processing, some deduplicated). Within-cell-type
-      ceilings are unaffected; cross-cell-type absolute correlations are not, which is
-      another reason to report every transfer number as a fraction of that cell type's own
-      inter-replicate ceiling rather than raw.
-
-### Revisit with proper statistical power
-
-- [ ] **Re-run the `count_loss_weight` sweep with >=3 folds and >=2 seeds.** The current
-      choice of 10 rests on single-fold runs, and measured run-to-run variance is ~0.018
-      (same config gave 0.4962 and 0.4785 on separate runs). Only the extremes are
-      resolvable at that noise level: 10 clearly beats 1 and 1000, but 3 / 10 / 100 are
-      indistinguishable. Weight 10 sits in a flat region so nothing is currently wrong —
-      revisit if the weight is ever suspected of mattering, or after the profile target is
-      binned (which changes MNLL's magnitude and so moves the optimum).
-- [ ] **Quantify run-to-run variance properly.** One config x 5 seeds would give an error
-      bar for every comparison in this project. Several conclusions so far rest on
-      differences of 0.01-0.05 between single runs, which may or may not clear it.
-- [ ] **Make submit scripts refuse to overwrite a completed fold directory** (or add a run
-      tag to the path). The 5-prime grid silently destroyed the weight sweep's clw10 run
-      because both wrote to `models/sequence5p_hw500_clw10/fold0`.
-
-### Housekeeping
-
-- [ ] Delete the local git tag `backup-pre-msg-rewrite` on Oak once the rewritten history
-      is confirmed good.
-- [ ] `$OAK/Users/sheth/Data/ENCODE/K562/interm_ENCFF790GFL.se.filtered.sorted.bam/` is a
-      **1.3 GB leftover** intermediate from `bam_to_bigWig.sh` (its cleanup did not run).
-      Oak is at 97%, so worth removing — owner's call, not deleted automatically.
+- [ ] Delete the local git tag `backup-pre-msg-rewrite` on Oak once the rewritten history is
+      confirmed good.
+- [ ] `Data/ENCODE/K562/interm_ENCFF790GFL.se.filtered.sorted.bam/` is a stray directory.
 - [ ] `scripts/0.3.make_training_bw.sh` does not sort its experiment bedGraphs before
-      `bedGraphToBigWig`, which requires chrom+start order. It has worked so far because
-      `genomecov` follows BAM header order, but that is not guaranteed to match
-      `chrom.sizes`. `0.5.make_5prime_bigwigs.sh` sorts explicitly; consider backporting.
-
-### Report (do not build yet)
-
-- [ ] **Write up this analysis path** via `/engreitzlab-report` → `/analysis-report`
-      (Quarto → self-contained HTML), once the story settles. Deliberately deferred: the
-      narrative has already reversed twice (flanking-window idea rejected; residual metric
-      flipping the p300/H3K27ac ranking), so wait for the residual-training and transfer
-      results before fixing a storyline. Figures that would carry it, already generated:
-      `h3k27ac_signal_vs_distance`, `profile_comparison`, `h3k27ac_model_comparison`,
-      `h3k27ac_stratified_eval`, `residual_evaluation`, `h3k27ac_replicate_ceiling`.
-
-- [ ] **Predict the composite ACTIVITY metric directly, rather than H3K27ac alone**
-      (Maya, 2026-08-31). The quantity actually consumed downstream is not H3K27ac — it is
-      **activity = geometric mean(accessibility, H3K27ac)**, and the best-performing form is
-      **geomean(DHS, H3K27ac)** rather than geomean(ATAC, H3K27ac). Question: is that
-      composite *easier* to predict from sequence + accessibility than the two-step route of
-      predicting H3K27ac and then combining it with measured accessibility?
-
-      Why it might be: the composite is smoother and less noisy than either term (a
-      geometric mean damps the component with the larger relative error), and it is the
-      quantity whose errors actually matter downstream. Training directly on it also lets
-      the model allocate capacity by its contribution to activity rather than to H3K27ac.
-
-      **The trap that must be designed around.** If the model's accessibility INPUT is the
-      same assay as the accessibility TERM in the target, the task is partly circular: half
-      of `geomean(ATAC, H3K27ac)` is directly readable off the input, so the model would
-      score well without predicting anything new, and it would beat the two-step baseline
-      for a trivial reason. Two ways out, and they should both be run:
-        1. **ATAC in, DNase in the target** — `geomean(DHS, H3K27ac)` predicted from
-           sequence + ATAC. The accessibility term is then a different measurement from the
-           input, so the circularity is broken while still targeting the preferred metric.
-           This is also the form Maya identifies as best, so it is the primary experiment.
-        2. **Sequence-only input** — no accessibility at all, which removes the shortcut
-           entirely and asks the cleanest version of the question.
-      A `geomean(ATAC, H3K27ac)`-from-sequence+ATAC arm is still worth running, but only as
-      the *upper* reference that quantifies how much of the gain is circular.
-
-      **Fair baseline.** The comparison is against the two-step route evaluated on the SAME
-      composite: take the existing H3K27ac model's prediction, combine it with measured
-      accessibility by the same geometric mean, and score that against observed activity.
-      Comparing a directly-trained composite model against an H3K27ac model scored on
-      H3K27ac would compare two different targets and settle nothing.
-
-      **Prerequisites**: DNase tracks exist for K562/GM12878/H1/H9/Jurkat in
-      `data/panel/*_dnase.bw` (built, then set aside under the ATAC-only rule — they become
-      relevant again here, as the TARGET term rather than as a model input, which does not
-      violate that rule). Needs a composite-target builder and no architecture change: the
-      composite is just a different signal bigwig.
+      merging; works today only because inputs happen to be sorted.

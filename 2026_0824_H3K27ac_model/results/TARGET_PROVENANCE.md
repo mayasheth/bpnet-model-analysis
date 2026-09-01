@@ -55,3 +55,26 @@ twice and report a plausible wrong number rather than failing.
 `2.7.diagnose_residual_offset.py` checks the semantics empirically (a residual predictor's
 output centres near 0, a logcounts predictor near the mean observed logcount) with the plain
 sequence model as a control, and should be re-run if the trainer's offset handling changes.
+
+## Added since the 5-prime switch
+
+All on the 5-prime H3K27ac target and the ORIGINAL full-interval `atac.bw` input.
+
+| File | What |
+|---|---|
+| `residual_grid_{residual_evaluation,per_fold,fold_summary}.tsv` | K562 residual grid: 3 standard + 3 residual-objective models against the ATAC-only baseline. Supersedes `residual5p_*`. |
+| `gm12878_residual_grid_*.tsv` | The same grid in GM12878. |
+| `{transfer,deploy}_{k562_to_gm,gm_to_k562}_*.tsv` | Cross-cell-type transfer. `transfer_*` uses the TARGET cell type's own ATAC model as the offset (optimistic — needs target H3K27ac); `deploy_*` transfers the source ATAC model (the real application). |
+| `accs5p_{k562,gm12878,p300}_stratified_*.tsv` | Paired comparison of the ChromBPNet 5-prime accessibility INPUT against full-interval coverage. The only results here whose accessibility input is `atac_5p.bw`. |
+| `atac_vs_h3k27ac_by_celltype.tsv` | Model-free coupling, now 6 cell types/conditions. |
+| `coupling_panel_recomputed.tsv` | Coupling recomputed for Fig 8; agrees with the above to 0.002. |
+
+**Two accessibility inputs now exist and must never be mixed.** `atac.bw` is
+`genomecov -bg` over the full tagAlign interval, so coverage scales with read length;
+`atac_5p.bw` is `genomecov -bg -5`, single-base insertion counts, read-length independent
+(the ChromBPNet convention). Every result except `accs5p_*` uses `atac.bw`.
+
+**Number traceability.** `outputs/numbers.json` is generated from these files by
+`scripts/3.7.build_numbers_manifest.py`; `render_report.py` checks every quoted number
+against it. Re-run the generator after any pipeline change, then re-render — prose that no
+longer matches its source is flagged.
