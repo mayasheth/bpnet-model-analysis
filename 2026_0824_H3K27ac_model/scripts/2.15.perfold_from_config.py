@@ -13,6 +13,15 @@ Emits, for every compare entry against the config's baseline:
   residual_pearson      r(observed - atac_pred, model_pred - atac_pred), the mechanistic
                         readout of what the model adds beyond the baseline.
   incremental_r2        R2(model) - R2(baseline) against the observed signal.
+  profile_pearson       mean over elements of the correlation between the observed base-
+                        resolution profile and the predicted probabilities, via bpnetlite's
+                        calculate_performance_measures with the same arguments the training
+                        loop uses, so it is comparable to the Validation Profile Pearson
+                        column in the training logs. Every metric above uses only the counts
+                        head; this is the first thing here that scores the profile head at
+                        all.
+  profile_jsd           Jensen-Shannon distance between observed and predicted profiles.
+                        LOWER IS BETTER, unlike every other column.
 
 Residual-objective models are handled via `"residual": true` in the config entry: their
 forward() emits the residual, so the baseline prediction is added back before scoring.
@@ -41,6 +50,7 @@ R = "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/scripts"
 P = "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model"
 sys.path.insert(0, R)
 from train_multimodal_bpnet import extract_windows, load_peaks, normalize_accessibility
+from bpnetlite.performance import calculate_performance_measures
 
 GEN = "/oak/stanford/groups/engreitz/Users/sheth/hg38_resources/hg38.fa"
 FOLDS = "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/reference/hg38_five_folds.json"
@@ -52,6 +62,10 @@ dev = "cuda" if torch.cuda.is_available() else "cpu"
 ap = argparse.ArgumentParser()
 ap.add_argument("config"); ap.add_argument("out_prefix"); ap.add_argument("elements")
 ap.add_argument("--pair", nargs=2, action="append", default=[])
+ap.add_argument("--rc-average", action="store_true",
+                help="Average each prediction with its reverse-complement. Off by "
+                     "default so stored numbers stay comparable; turn on to measure "
+                     "what test-time RC averaging is worth.")
 a = ap.parse_args()
 spec = json.load(open(a.config))
 entries = [spec["baseline"]] + spec["compare"]
@@ -105,13 +119,65 @@ def predict(cfg, fold, seqs_max, accs_by_spec):
     if not hasattr(m, "mode"):
         m.mode = mode
     m = m.to(dev).eval()
-    out = []
+
+    n_seq = 4 if mode in ("multimodal", "sequence") else 0
+
+    def rc_input(xb):
+        """Reverse-complement a batch, respecting the channel layout.
+
+        One-hot channels are ACGT, so reversing the channel axis maps A<->T and C<->G;
+        reversing the length axis completes the reverse complement. Accessibility channels
+        are strand-agnostic coverage, so they are only reversed along length. This mirrors
+        exactly what the training-time augmentation in ChIPSeqDataset does.
+        """
+        if n_seq:
+            seq_part = torch.flip(xb[:, :n_seq], dims=[1, 2])
+            if xb.shape[1] > n_seq:
+                acc_part = torch.flip(xb[:, n_seq:], dims=[2])
+                return torch.cat([seq_part, acc_part], dim=1)
+            return seq_part
+        return torch.flip(xb, dims=[2])
+
+    def rc_profile(pr):
+        """Undo the RC transform on a profile: reverse positions and swap strands."""
+        return torch.flip(pr, dims=[1, 2])
+
+    lcs, profs = [], []
     with torch.no_grad():
         for i in range(0, len(X), 256):
-            _, lc = m(torch.from_numpy(X[i:i + 256]).to(dev))
-            out.append(lc.squeeze(-1).cpu().numpy())
+            xb = torch.from_numpy(X[i:i + 256]).to(dev)
+            pr, lc = m(xb)
+            if a.rc_average:
+                pr_rc, lc_rc = m(rc_input(xb))
+                lc = (lc + lc_rc) / 2
+                # Average in probability space over the flattened strand+position
+                # multinomial, which is the space the loss is defined in, then return to
+                # log space. Log-probabilities are valid logits for the metric call.
+                sh = pr.shape
+                p1 = torch.softmax(pr.reshape(sh[0], -1), dim=-1)
+                p2 = torch.softmax(rc_profile(pr_rc).reshape(sh[0], -1), dim=-1)
+                pr = torch.log(((p1 + p2) / 2).clamp_min(1e-12)).reshape(sh)
+            lcs.append(lc.squeeze(-1).cpu().numpy())
+            profs.append(pr.cpu().numpy())
     m.to("cpu"); del X
-    return np.concatenate(out)
+    return np.concatenate(lcs), np.concatenate(profs)
+
+
+def profile_metrics(logits, sigs, logcounts, top):
+    """Profile metrics via bpnetlite, called exactly as the training loop calls it."""
+    t = lambda z: torch.from_numpy(np.ascontiguousarray(z)).float()
+    out = {}
+    for suffix, mask in (("", slice(None)), ("_topq", top)):
+        msr = calculate_performance_measures(
+            t(logits[mask]), t(sigs[mask]), t(logcounts[mask]).reshape(-1, 1),
+            kernel_sigma=7, kernel_width=81,
+            measures=["profile_pearson", "profile_jsd"])
+        out["profile_pearson" + suffix] = float(
+            np.nan_to_num(np.asarray(msr["profile_pearson"], dtype=float)).mean())
+        if not suffix:
+            out["profile_jsd"] = float(
+                np.nan_to_num(np.asarray(msr["profile_jsd"], dtype=float)).mean())
+    return out
 
 
 rows = []
@@ -134,26 +200,30 @@ for fold in range(5):
                 f"({valid.sum()} vs {ref_valid.sum()})")
             del sq, sg
         accs_by_spec[acc_spec] = ac
-    obs = np.log1p(sigs.sum(axis=(1, 2))); del sigs
-    base = predict(b, fold, seqs, accs_by_spec)
+    obs = np.log1p(sigs.sum(axis=(1, 2)))
+    base, base_prof = predict(b, fold, seqs, accs_by_spec)
     true_resid = obs - base
     top = obs >= np.quantile(obs, 0.8)
     r2b, r2bt = pearsonr(obs, base)[0] ** 2, pearsonr(obs[top], base[top])[0] ** 2
     for cfg in spec["compare"]:
-        raw = predict(cfg, fold, seqs, accs_by_spec)
+        raw, prof = predict(cfg, fold, seqs, accs_by_spec)
         full = raw + base if cfg.get("residual") else raw
         mres = raw if cfg.get("residual") else raw - base
-        rows.append({"fold": fold, "config": cfg["label"], "n": len(obs),
-                     "overall_pearson": pearsonr(obs, full)[0],
-                     "overall_pearson_topq": pearsonr(obs[top], full[top])[0],
-                     "residual_pearson": pearsonr(true_resid, mres)[0],
-                     "incremental_r2": pearsonr(obs, full)[0] ** 2 - r2b,
-                     "incremental_r2_topq": pearsonr(obs[top], full[top])[0] ** 2 - r2bt})
-    rows.append({"fold": fold, "config": b["label"], "n": len(obs),
-                 "overall_pearson": pearsonr(obs, base)[0],
-                 "overall_pearson_topq": pearsonr(obs[top], base[top])[0],
-                 "residual_pearson": np.nan, "incremental_r2": 0.0,
-                 "incremental_r2_topq": 0.0})
+        row = {"fold": fold, "config": cfg["label"], "n": len(obs),
+               "overall_pearson": pearsonr(obs, full)[0],
+               "overall_pearson_topq": pearsonr(obs[top], full[top])[0],
+               "residual_pearson": pearsonr(true_resid, mres)[0],
+               "incremental_r2": pearsonr(obs, full)[0] ** 2 - r2b,
+               "incremental_r2_topq": pearsonr(obs[top], full[top])[0] ** 2 - r2bt}
+        row.update(profile_metrics(prof, sigs, full, top))
+        rows.append(row); del prof
+    row = {"fold": fold, "config": b["label"], "n": len(obs),
+           "overall_pearson": pearsonr(obs, base)[0],
+           "overall_pearson_topq": pearsonr(obs[top], base[top])[0],
+           "residual_pearson": np.nan, "incremental_r2": 0.0,
+           "incremental_r2_topq": 0.0}
+    row.update(profile_metrics(base_prof, sigs, base, top))
+    rows.append(row); del base_prof, sigs
     del seqs, accs_by_spec
     print(f"fold{fold}: n={len(obs):,}", flush=True)
 
@@ -163,7 +233,8 @@ df.round(4).to_csv(p1, sep="\t", index=False)
 print("\nWrote", p1)
 
 METRICS = ["overall_pearson", "overall_pearson_topq", "residual_pearson",
-           "incremental_r2", "incremental_r2_topq"]
+           "incremental_r2", "incremental_r2_topq",
+           "profile_pearson", "profile_pearson_topq", "profile_jsd"]
 srows = []
 for label, g in df.groupby("config", sort=False):
     r = {"config": label}
@@ -185,7 +256,8 @@ if a.pair:
     print("\n--- paired differences (A - B), within fold ---")
     piv = {m: df.pivot(index="fold", columns="config", values=m) for m in METRICS}
     for A, B in a.pair:
-        for m in ["overall_pearson", "overall_pearson_topq"]:
+        for m in ["overall_pearson", "overall_pearson_topq",
+                  "profile_pearson", "profile_pearson_topq"]:
             d = (piv[m][A] - piv[m][B]).to_numpy()
             mu = d.mean(); half = TC * d.std(ddof=1) / np.sqrt(len(d))
             p = ttest_rel(piv[m][A], piv[m][B]).pvalue

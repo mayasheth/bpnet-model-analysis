@@ -11,7 +11,9 @@ Split the invariant by what is actually deterministic:
   EXACT   the set of folds, the set of config labels, and n per fold. These come from window
           extraction and bounds checking, which is pure numpy on file contents. This is
           precisely what a geometry or region-set change would break, so it must match
-          exactly.
+          exactly. Also exact: every column in the reference must still exist. Columns the
+          new table ADDS are reported and skipped, since the evaluator gains metrics over
+          time and an older reference is still valid for what it covers.
   TOLERANT  every metric, to --tol (default 1e-3). Well below this project's between-fold sd
           of 0.041-0.046 and below any effect size under discussion, so a real behavioural
           change -- scoring the wrong input, cropping off-centre, misaligning rows -- moves
@@ -33,9 +35,17 @@ new = pd.read_csv(a.new, sep="\t")
 ref = pd.read_csv(a.ref, sep="\t")
 fail = []
 
-if list(new.columns) != list(ref.columns):
-    fail.append(f"columns differ: {list(new.columns)} vs {list(ref.columns)}")
-    print("FAIL:", fail[0]); sys.exit(1)
+# Added columns are fine -- the evaluator gains metrics over time and a reference table
+# written before profile metrics existed is still a valid reference for the columns it has.
+# A MISSING column is a real regression: coverage went backwards.
+missing = [c for c in ref.columns if c not in new.columns]
+if missing:
+    print(f"FAIL: columns present in reference but missing from new table: {missing}")
+    sys.exit(1)
+added = [c for c in new.columns if c not in ref.columns]
+if added:
+    print(f"note: new table adds columns not in the reference (not compared): {added}")
+new = new[list(ref.columns)]
 
 key = ["fold", "config"]
 new = new.sort_values(key).reset_index(drop=True)
