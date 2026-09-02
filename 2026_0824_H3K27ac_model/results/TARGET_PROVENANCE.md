@@ -78,3 +78,34 @@ All on the 5-prime H3K27ac target and the ORIGINAL full-interval `atac.bw` input
 `scripts/3.7.build_numbers_manifest.py`; `render_report.py` checks every quoted number
 against it. Re-run the generator after any pipeline change, then re-render — prose that no
 longer matches its source is flagged.
+
+## Accessibility input inventory
+
+Three generations of ATAC input now exist. Channels within one model must all come from the
+same generation.
+
+| File | Convention | Status |
+|---|---|---|
+| `2026_0529.../data/atac.bw`, `2026_0606.../data/atac.bw` | `genomecov -bg` over the full tagAlign interval; scales with read length | Original. Every result except `accs5p_*` and later. |
+| `2026_0529.../data/atac_5p.bw`, `2026_0606.../data/atac_5p.bw` | `genomecov -bg -5`, single-base insertion counts (ChromBPNet) | **Current standard.** |
+| `data/atac_sub.bw`, `data/atac_mono.bw` | Full-fragment coverage, bins <100 and 180-247 | **Superseded, do not use.** Wrong convention for a 5-prime model, and the two bins cover only half the fragments. |
+| `data/atac_{sub,mono,di,poly}5p.bw` | Single-base insertion counts, exhaustive length bins <=139 / 140-329 / 330-620 / >=621 | Current, fragment-stratified. Built by `0.23.make_atac_fragment_5p_channels.sh`. |
+
+The stratified channels are built from the PE BAMs on `$SCRATCH/atac_pe` (fragment length is
+in TLEN, which the per-read tagAligns discard). Those alignments are unshifted, so the Tn5
+offset was measured rather than assumed: `0.22.calibrate_tn5_shift.sh` scores every
+(plus, minus) delta in -8..+8 on chr20 against `atac_5p.bw` and finds r = 1.0000 at
+(+4, -5), versus 0.77 for the next-best shift and 0.31 at no shift. r = 1.0 also proves the
+BAM and tagAlign read sets are identical, so `all` equals the sum of the four bins.
+
+## Training runs in flight
+
+| Model dir | What |
+|---|---|
+| `{sequence,multimodal,atac}5p_accs5p_wide_hw500_clw10`, `gm12878_*_wide_*` | `n_layers` 10 (trimming 2093, in-window 5186, ~4.2 kb receptive field). Matched baseline is the same mode/fold in `*_accs5p_hw500_clw10`. |
+| `{multimodal,atac}5p_fragchan_hw500_clw10` | Five accessibility channels `[all, sub, mono, di, poly]`. Matched baseline is `*5p_accs5p_hw500_clw10`. |
+
+**Compare the wide models on the intersection of valid regions.** A 5186 bp input window
+drops peaks within 2593 bp of a chromosome end that the 2114 bp window keeps, so each model
+has a slightly different region set and an unmatched comparison confounds the receptive
+field with which regions were scorable.
