@@ -91,9 +91,36 @@ a property of the objective and needs no further per-cell-type testing.
       classification. Results in `wide_seqonly_{k562,gm12878}_*.tsv`.
       Multimodal arm still training; expected to show less, since ATAC already supplies the
       long-range signal. ATAC-only arm never submitted and no longer worth it.
-- [ ] **Nucleosome-resolution binned profile target** (~50–150 bp). Code only. Touches
+- [ ] **Decide what to do with the profile head — one decision, three options.** The 1 bp
+      profile task is close to unlearnable: measured inter-replicate ceiling is 0.21 (K562)
+      and 0.18 (GM12878) on the top quintile, rising to 0.72 and 0.70 at 50 bp binning
+      (`profile_ceiling_binsize_*.tsv`, report Fig. 11). The options are (a) drop the profile
+      loss entirely, (b) keep 1 bp, (c) bin to ~50 bp.
+
+      **Test by hyperparameter before touching the architecture.** `loss = profile_loss +
+      w · count_loss`, so a large `w` already approximates dropping the profile term, and the
+      recorded sweep points AGAINST dropping it: `w` = 10 gave 0.496 while 100 gave 0.467 and
+      1000 gave 0.464 (header of `1.11.submit_training_5prime_accs5p.sh`). Down-weighting the
+      profile loss made the COUNTS worse. A head can be a poor predictor and still be a
+      useful auxiliary task on the shared trunk, and those numbers are single-fold, so this
+      is weak evidence pointing the opposite way from removal rather than a settled answer.
+      The properly powered `count_loss_weight` sweep already listed under Statistical power
+      answers it at zero architecture risk — run it jointly with bin size, since the two
+      interact: binning changes how learnable the profile term is and therefore its optimal
+      weight.
+
+      **Gate on the real numbers.** Everything above about what the head achieves rests on a
+      256-element smoke test (`profile_pearson` ~ 0.053 against a 0.21 ceiling). Job for the
+      full 5-fold measurement is queued; use `prof_residual_grid_*.tsv` when it lands.
+
+      **Cost of actual removal** (option a): it changes the model class, so every existing
+      checkpoint becomes non-comparable and the whole grid needs retraining. It touches
       `multimodal_bpnet.py` and `train_multimodal_bpnet.py`, both shared with p300, so it
-      needs the same backward-compatibility regression test as the unstranded change.
+      needs a backward-compatibility regression — use the `2.18` pattern, exact on region
+      counts and tolerant on metrics.
+      **Payoff if it holds:** removes a term that is largely fitting Poisson noise, frees
+      trunk capacity, and roughly halves the output tensor, buying a larger batch or a wider
+      window at the same memory.
 - [~] **Fragment-size ATAC channels** — tracks BUILDING, training not yet submitted.
       Five channels `[all, sub(≤139), mono(140–329), di(330–620), poly(≥621)]`, all
       single-base insertion counts, so they are a strict superset of the accs5p input and
