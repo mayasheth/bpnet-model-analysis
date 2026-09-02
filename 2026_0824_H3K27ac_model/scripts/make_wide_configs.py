@@ -53,6 +53,16 @@ for cell, c in CELLS.items():
     json.dump(spec, open(out, "w"), indent=1)
     print("wrote", out)
 
+    # Sequence arm alone, so the sequence question can be answered before the multimodal
+    # folds finish. Same baseline and same entries, so the numbers are identical to the
+    # sequence rows of the full run.
+    seq_only = {"baseline": spec["baseline"],
+                "compare": [e for e in spec["compare"]
+                            if e["label"].startswith("sequence")]}
+    out = f"{CFG}/wide_seqonly_{cell}_configs.json"
+    json.dump(seq_only, open(out, "w"), indent=1)
+    print("wrote", out)
+
 # Fragment channels: K562 only, since fragment length needs the PE BAMs.
 c = CELLS["k562"]
 spec = {
@@ -68,6 +78,7 @@ json.dump(spec, open(out, "w"), indent=1)
 print("wrote", out)
 
 for f in ("wide_k562_configs.json", "wide_gm12878_configs.json",
+          "wide_seqonly_k562_configs.json", "wide_seqonly_gm12878_configs.json",
           "fragchan_k562_configs.json"):
     s = json.load(open(f"{CFG}/{f}"))
     for e in [s["baseline"]] + s["compare"]:
