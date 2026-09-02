@@ -17,6 +17,18 @@ Emits, for every compare entry against the config's baseline:
 Residual-objective models are handled via `"residual": true` in the config entry: their
 forward() emits the residual, so the baseline prediction is added back before scoring.
 
+MODELS MAY HAVE DIFFERENT RECEPTIVE FIELDS. Each entry's input window is read from its own
+saved model (`model.trimming`), not assumed. Windows are extracted once at the LARGEST
+in-window across entries and cropped centrally per model. That is also what makes a
+wide-vs-narrow comparison fair: extracting at the largest window means every model is
+scored on the same regions -- the intersection of what each could accept -- so the
+receptive field is not confounded with which regions near chromosome ends were scorable.
+
+ENTRIES MAY HAVE DIFFERENT ACCESSIBILITY INPUTS. An entry may override
+`accessibility_bw` (e.g. a comma-separated list of fragment-size channels); it defaults to
+the baseline's. Distinct inputs are extracted separately and asserted to yield the same
+valid-region mask, so rows stay aligned across entries.
+
 Usage: 2.15.perfold_from_config.py CONFIG_JSON OUT_PREFIX ELEMENTS [--pair A B]...
 """
 import argparse, json, os, sys
@@ -32,9 +44,8 @@ from train_multimodal_bpnet import extract_windows, load_peaks, normalize_access
 
 GEN = "/oak/stanford/groups/engreitz/Users/sheth/hg38_resources/hg38.fa"
 FOLDS = "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/reference/hg38_five_folds.json"
-TRIM, HW = 557, 500
+HW = 500
 OUT_W = 2 * HW
-IN_W = OUT_W + 2 * TRIM
 TC = tdist.ppf(0.975, df=4)
 dev = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -46,11 +57,43 @@ spec = json.load(open(a.config))
 entries = [spec["baseline"]] + spec["compare"]
 
 
-def predict(cfg, fold, seqs, accs_raw):
+def model_path(cfg, fold):
+    return f'{cfg["model_dir"]}/fold{fold}/multimodal_bpnet.torch'
+
+
+# Resolve each entry's input window from its own fold0 checkpoint. Deriving it from
+# model.trimming rather than a config key means the geometry can never disagree with the
+# weights being scored.
+for cfg in entries:
+    m0 = torch.load(model_path(cfg, 0), map_location="cpu", weights_only=False)
+    cfg["_in_window"] = OUT_W + 2 * m0.trimming
+    cfg["_trimming"] = m0.trimming
+    cfg.setdefault("accessibility_bw", spec["baseline"]["accessibility_bw"])
+    del m0
+IN_W_MAX = max(c["_in_window"] for c in entries)
+for cfg in entries:
+    print(f'{cfg["label"]:<34} trimming={cfg["_trimming"]:>5} '
+          f'in_window={cfg["_in_window"]:>5}')
+print(f'extracting at in_window={IN_W_MAX} (regions valid for every entry)\n')
+ACC_SPECS = sorted({c["accessibility_bw"] for c in entries})
+
+
+def crop(arr, in_w):
+    """Centre-crop an (N, C, IN_W_MAX) array to (N, C, in_w)."""
+    if arr.shape[2] == in_w:
+        return arr
+    off = (arr.shape[2] - in_w) // 2
+    return arr[:, :, off:off + in_w]
+
+
+def predict(cfg, fold, seqs_max, accs_by_spec):
     md, mode = cfg["model_dir"], cfg["mode"]
     marker = f"{md}/fold{fold}/training_complete.json"
     if not os.path.exists(marker):
         raise SystemExit(f"error: {marker} missing; refusing to score an unfinished fold.")
+    in_w = cfg["_in_window"]
+    seqs = crop(seqs_max, in_w)
+    accs_raw = crop(accs_by_spec[cfg["accessibility_bw"]], in_w)
     x = accs_raw
     if mode in ("multimodal", "atac"):
         st = json.load(open(f"{md}/fold{fold}/acc_normalization_stats.json"))
@@ -76,16 +119,28 @@ folds_json = json.load(open(FOLDS))
 for fold in range(5):
     els = load_peaks(a.elements, folds_json[str(fold)]["val"])
     b = spec["baseline"]
-    seqs, sigs, accs, _ = extract_windows(
-        els, GEN, b["signal_plus_bw"], b.get("signal_minus_bw"),
-        b["accessibility_bw"], IN_W, OUT_W, 0, is_peak=True)
+    accs_by_spec, seqs, sigs, ref_valid = {}, None, None, None
+    for acc_spec in ACC_SPECS:
+        sq, sg, ac, valid = extract_windows(
+            els, GEN, b["signal_plus_bw"], b.get("signal_minus_bw"),
+            acc_spec, IN_W_MAX, OUT_W, 0, is_peak=True)
+        if ref_valid is None:
+            seqs, sigs, ref_valid = sq, sg, valid
+        else:
+            # Rows must line up across accessibility inputs or every metric silently
+            # compares different elements.
+            assert np.array_equal(valid, ref_valid), (
+                f"fold{fold}: accessibility input {acc_spec} kept a different region set "
+                f"({valid.sum()} vs {ref_valid.sum()})")
+            del sq, sg
+        accs_by_spec[acc_spec] = ac
     obs = np.log1p(sigs.sum(axis=(1, 2))); del sigs
-    base = predict(b, fold, seqs, accs)
+    base = predict(b, fold, seqs, accs_by_spec)
     true_resid = obs - base
     top = obs >= np.quantile(obs, 0.8)
     r2b, r2bt = pearsonr(obs, base)[0] ** 2, pearsonr(obs[top], base[top])[0] ** 2
     for cfg in spec["compare"]:
-        raw = predict(cfg, fold, seqs, accs)
+        raw = predict(cfg, fold, seqs, accs_by_spec)
         full = raw + base if cfg.get("residual") else raw
         mres = raw if cfg.get("residual") else raw - base
         rows.append({"fold": fold, "config": cfg["label"], "n": len(obs),
@@ -99,7 +154,7 @@ for fold in range(5):
                  "overall_pearson_topq": pearsonr(obs[top], base[top])[0],
                  "residual_pearson": np.nan, "incremental_r2": 0.0,
                  "incremental_r2_topq": 0.0})
-    del seqs, accs
+    del seqs, accs_by_spec
     print(f"fold{fold}: n={len(obs):,}", flush=True)
 
 df = pd.DataFrame(rows)
