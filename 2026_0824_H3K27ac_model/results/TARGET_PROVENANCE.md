@@ -109,3 +109,15 @@ BAM and tagAlign read sets are identical, so `all` equals the sum of the four bi
 drops peaks within 2593 bp of a chromosome end that the 2114 bp window keeps, so each model
 has a slightly different region set and an unmatched comparison confounds the receptive
 field with which regions were scorable.
+
+**Baseline for the wide sequence models.** `sequence5p_accs5p_wide_hw500_clw10` carries
+`accs5p` only because it was generated from the accs5p script; `sequence` mode never reads
+the accessibility input, so its matched baseline is `sequence5p_hw500_clw10` and NOT any
+`_accs5p` directory. The multimodal wide models do baseline against
+`multimodal5p_accs5p_hw500_clw10`.
+
+**Fragment channels validated exactly.** `0.24.validate_atac_fragment_channels.py` confirms
+`sub + mono + di + poly == atac_5p.bw`: discrepancy 0 of 545,661,218 insertions genome-wide,
+and largest single-base difference 0 over 200 x 10 kb windows. Shares: sub 29.9%, mono
+33.9%, di 22.1%, poly 14.2%. The bins are derived from the PE BAMs and `all` from the
+tagAligns, so this is agreement between two independent derivations.
