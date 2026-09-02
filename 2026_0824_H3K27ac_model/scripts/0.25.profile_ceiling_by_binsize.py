@@ -32,7 +32,9 @@ import pandas as pd
 import pyBigWig
 
 P = "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model"
-BINS = [1, 5, 10, 25, 50, 100, 250, 500]
+BINS = [1, 5, 10, 25, 50, 100, 250]
+# 500 bp is excluded on purpose: a 1000 bp window gives only 2 bins, below the
+# 3-bin floor in shape_corr, so a within-element correlation is not defined.
 HW = 500
 
 ap = argparse.ArgumentParser()
@@ -110,6 +112,21 @@ def shape_corr(x, y, b):
     return float((num[good] / den[good]).mean()), int(good.sum())
 
 
+def pooled_ceiling(r):
+    """Ceiling on predicting the POOLED profile, from replicate-vs-replicate agreement.
+
+    Raw replicate agreement understates what a model can reach. If each replicate is
+    signal + independent noise, then r(rep1, rep2) = var(sig)/(var(sig)+var(noise)), while a
+    smooth predictor is scored against the pooled track, whose noise variance is halved.
+    The Spearman-Brown reliability of a 2-replicate mean is 2r/(1+r), and correlation with
+    it goes as the square root -- the same correction 0.3 applies to the count ceiling. So a
+    1 bp replicate agreement of 0.02 does NOT mean a model can only reach 0.02.
+    """
+    if not np.isfinite(r) or r <= 0:
+        return np.nan
+    return float(np.sqrt(2 * r / (1 + r)))
+
+
 out = []
 for b in BINS:
     for strat, mask in (("all", np.ones(len(tot), bool)), ("topq", quint == 4)):
@@ -119,9 +136,14 @@ for b in BINS:
         out.append({"bin_bp": b, "stratum": strat, "n_elements": n_uns,
                     "shape_r_unstranded": r_uns,
                     "shape_r_plus": r_pls, "shape_r_minus": r_min,
+                    "ceiling_unstranded": pooled_ceiling(r_uns),
+                    "ceiling_plus": pooled_ceiling(r_pls),
+                    "ceiling_minus": pooled_ceiling(r_min),
                     "n_bins": (2 * HW) // b})
-        print(f"  bin={b:>4} {strat:<5} n={n_uns:>6,} "
-              f"unstranded r={r_uns:.4f}  plus={r_pls:.4f}  minus={r_min:.4f}", flush=True)
+        print(f"  bin={b:>4} {strat:<5} n={n_uns:>6,} rep-vs-rep r={r_uns:.4f}  "
+              f"-> pooled ceiling {pooled_ceiling(r_uns):.4f}  "
+              f"(plus {pooled_ceiling(r_pls):.4f} minus {pooled_ceiling(r_min):.4f})",
+              flush=True)
 
 df = pd.DataFrame(out)
 p1 = f"{P}/results/profile_ceiling_binsize_{a.label}.tsv"

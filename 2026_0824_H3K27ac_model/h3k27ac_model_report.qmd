@@ -84,7 +84,7 @@ blockquote { border-left: 3px solid #ddd; margin-left: 0; padding-left: 1rem;
 - The same comparison for p300 gives sequence a +0.304 margin over accessibility against +0.127 for H3K27ac — a difference of 0.177 ± 0.027, about 6.6 standard errors (Fig. 4). H3K27ac scores higher overall but is the poorer substrate for sequence interpretation.
 - **GM12878 is simply the harder cell type, which is most of what the transfer asymmetry measures.** GM12878-trained models score higher on K562 than in their own cell type for every modality (Fig. 7), and the ATAC-only gap is explained by weaker ATAC–H3K27ac coupling in GM12878 (Fig. 8). Sequence remains weak everywhere (15–41% of ceiling), and its margin over accessibility shrinks on transfer in both directions.
 - **Sequence carries an accessibility-independent component, but only a residual objective exposes it.** The same sequence-only input scores 0.149 on the accessibility residual trained against total signal and 0.459 trained against `observed − atac_pred` (Fig. 5). Joint training extracts more still (0.551) and is the better predictor. Overall correlation overstates what any model adds once accessibility is an input: sequence + ATAC reaches 0.874 overall against 0.551 on the residual.
-- **Track construction matters at the resolution level.** ATAC and H3K27ac are spatially offset — ATAC peaks on the element centre, H3K27ac on flanking nucleosomes at ±250 bp and is far broader (Fig. 2). H3K27ac is still at 28% of maximum at ±2 kb, the edge of the profiled window, so its extent exceeds the model's ~1.1 kb receptive field by an unmeasured margin. Relatedly, switching the accessibility input to ChromBPNet-style 5′ insertion counts gains the ATAC-only model +0.032 (K562) and +0.023 (GM12878) on the top quintile while leaving sequence + ATAC unchanged (Fig. 6) — within a cell type the change is one of resolution, and only a model without sequence feels it.
+- **Track construction matters at the resolution level.** ATAC and H3K27ac are spatially offset — ATAC peaks on the element centre, H3K27ac on flanking nucleosomes at ±250 bp and is far broader (Fig. 2). H3K27ac is still at 28% of maximum at ±2 kb, the edge of the profiled window, so its extent exceeds the model's ~1.1 kb receptive field by an unmeasured margin. Relatedly, switching the accessibility input to ChromBPNet-style 5′ insertion counts gains the ATAC-only model +0.032 (K562) and +0.023 (GM12878) on the top quintile while leaving sequence + ATAC unchanged (Fig. 6) — within a cell type the change is one of resolution, and only a model without sequence feels it. Widening the receptive field to ~4.2 kb closes that margin without helping: +0.043 (K562) and +0.045 (GM12878) on all elements and nothing on the elements carrying the mark, in both cell types (Fig. 10). At the other end of the resolution scale, the base-resolution profile target has a ceiling of 0.21, rising to 0.72 once binned to 50 bp (Fig. 11), so the 1 bp multinomial term is largely fitting Poisson noise.
 
 ## Goals
 
@@ -462,6 +462,68 @@ pixi run python scripts/0.10.plot_fragment_lengths.py \
 Source: `scripts/0.10.plot_fragment_lengths.py`, `scripts/0.9.make_atac_fragment_channels.sh`
 </details>
 
+## A wider receptive field separates dead from active elements and adds nothing among active ones
+
+**Q:** Does widening the receptive field from ~1.1 kb to ~4.2 kb improve H3K27ac prediction, given that the mark extends well past ~1.1 kb (Fig. 2)?
+
+**A:** It gains +0.043 in K562 and +0.045 in GM12878 on all elements and nothing on the elements carrying the mark (−0.006 and +0.010, p = 0.53 in both, sign flipping between cell types), so the extra context resolves whether a region is active rather than how active it is.
+
+![](figures/fig10_wide_receptive_field.png)
+
+<details>
+<summary>Figure 10 legend</summary>
+
+**Figure 10 | Quadrupling the receptive field moves the all-element correlation and leaves the top quintile flat.** Sequence-only models, `n_layers` 8 (trimming 557, 2,114 bp input, ~1.1 kb receptive field) against `n_layers` 10 (trimming 2,093, 5,186 bp input, ~4.2 kb). Grey lines are individual folds, red the mean; the comparison is paired within fold because fold `sd` here is 0.041–0.046, several times the effect. **a**, K562: all elements 0.494 → 0.537 (paired +0.043, p = 0.003), top quintile 0.381 → 0.375 (paired −0.006, p = 0.53, n.s.). **b**, GM12878: all elements 0.475 → 0.520 (paired +0.045, p = 0.005), top quintile 0.221 → 0.232 (paired +0.010, p = 0.53, n.s.). Both models are scored on the intersection of regions each could accept, since the 5,186 bp window drops elements within 2,593 bp of a chromosome end that the narrower one keeps. Everything except `n_layers` and the derived window geometry is byte-identical between the two arms. Source: `results/wide_seqonly_{k562,gm12878}_per_fold.tsv`.
+</details>
+
+**Method.**
+
+- Scripts generated from the existing submit scripts with exactly three edits — `n_layers`, the derived trimming sum, and the output directory — so the narrow models are a matched baseline.
+- Scored on the intersection of valid regions, so the receptive field is not confounded with which regions near chromosome ends were scorable.
+
+<details>
+<summary>Full methods &amp; code</summary>
+
+```bash
+pixi run python scripts/make_wide_scripts.py
+for M in sequence multimodal; do for F in 0 1 2 3 4; do
+    sbatch scripts/1.13.submit_training_5prime_wide.sh $M $F
+    sbatch scripts/1.14.submit_training_gm12878_wide.sh $M $F
+done; done
+sbatch scripts/2.17.submit_regression_and_wide.sh wide_seqonly
+```
+Source: `scripts/make_wide_scripts.py`, `scripts/2.17.submit_regression_and_wide.sh`
+</details>
+
+## H3K27ac has no reproducible base-resolution profile
+
+**Q:** Is there base-resolution structure in the H3K27ac profile for the 1 bp profile head to learn, and if not, at what bin size does reproducible structure appear?
+
+**A:** A perfect model caps at *r* = 0.21 in K562 and 0.18 in GM12878 on the top quintile at 1 bp, rising to 0.72 and 0.70 when binned to 50 bp and 0.79 and 0.78 at 100 bp, so the base-resolution multinomial term is largely fitting Poisson noise.
+
+![](figures/fig11_profile_ceiling.png)
+
+<details>
+<summary>Figure 11 legend</summary>
+
+**Figure 11 | The reproducible part of the H3K27ac profile appears only after coarse binning.** Two replicates of the same experiment, correlated *within* each element across positions so the element's total count drops out and only shape remains; 16,148 K562 and 15,589 GM12878 elements, ±500 bp windows, strands summed. **a**, Raw replicate-vs-replicate agreement: 0.023 and 0.016 at 1 bp on the top quintile. **b**, The corresponding ceiling on the pooled track. Raw agreement understates what a model can reach — each replicate is signal plus independent noise, while the model is scored against the pooled track whose noise variance is halved, so the reachable value is `sqrt(2r/(1+r))`, the same correction applied to the count ceiling. Solid lines top quintile, dashed all elements; K562 dark, GM12878 light. The curve is close to log-linear in bin size and still rising at 250 bp, so it identifies no preferred resolution; in particular there is no step near the ~180 bp nucleosome repeat, indicating a broad envelope rather than sharply phased peaks. Source: `results/profile_ceiling_binsize_{k562,gm12878}.tsv`.
+</details>
+
+**Method.**
+
+- Within-element correlation across positions removes the count signal, which the count ceiling already covers.
+- Elements flat in either replicate are excluded rather than scored as 0, which would conflate unreproducible with no-shape-to-reproduce.
+- 500 bp is omitted: a 1 kb window gives 2 bins, too few for a within-element correlation.
+
+<details>
+<summary>Full methods &amp; code</summary>
+
+```bash
+sbatch scripts/0.25.submit.sh
+```
+Source: `scripts/0.25.profile_ceiling_by_binsize.py`
+</details>
+
 ## Open questions / next steps
 
 **The panel is ATAC-only.** DNase and ATAC are not interchangeable inputs, so substituting one would confound assay with cell type inside the comparison the panel exists to make. A DNase-input model is therefore not on this list, despite being the only route to four of the cell types below.
@@ -483,20 +545,20 @@ Source: `scripts/0.10.plot_fragment_lengths.py`, `scripts/0.9.make_atac_fragment
 
 **Architecture, in expected order of value**
 
-- **Wider receptive field.** `n_layers = 8` gives ~1.1 kb against an H3K27ac extent of at least several kilobases (Fig. 2); `n_layers = 10` gives ~4.2 kb for a 5,186 bp input window. ~30–60 GPU-hours, the most expensive item — worth deferring until motif work shows whether the sequence component justifies it.
-- **Nucleosome-resolution profile target.** H3K27ac has no meaningful single-base structure; binning to ~50–150 bp matches the biology and makes the multinomial profile loss appropriate at the scale where signal exists.
-- **Fragment-size-stratified accessibility channels.** Current input is flat coverage, discarding the fragment length that distinguishes nucleosome-free from nucleosome-occupied. The library supports it (Fig. 9) and an `[all, sub, mono, di]` design keeps the input a strict superset of the present baseline, so it cannot regress.
+- **Wider receptive field — answered, and not worth the GPU time for this target.** ~4.2 kb gains +0.043 and +0.045 on all elements and nothing on the top quintile, replicated in two cell types (Fig. 10). Revisit only if the application becomes on/off classification, where the all-element gain is real. The multimodal arm is still training and is expected to gain less, since accessibility already supplies long-range context.
+- **Nucleosome-resolution profile target — now supported by a measured ceiling.** At 1 bp a perfect model caps at 0.21; binning to 50 bp raises the ceiling to 0.72 (Fig. 11). The choice of width is a judgement call rather than a data-determined one, since the curve has no elbow; 50 bp keeps 20 bins across the window while capturing most of the available gain. Note that every metric in this report comes from the counts head, so binning changes the reported numbers only through the shared trunk.
+- **Fragment-size-stratified accessibility channels — tracks built, training queued.** Five channels `[all, sub ≤139, mono 140–329, di 330–620, poly ≥621]`, all single-base insertion counts, which sum to the flat track exactly (0 discrepancy in 545.7 million insertions), so the input is a strict superset of the present baseline and cannot regress. The Tn5 shift was measured against the existing track rather than assumed (*r* = 1.0000 at +4/−5). The bins in Fig. 9 are superseded: they were full-fragment coverage, the wrong convention for a 5′ model, and covered half the fragments.
 
 **Standing cautions**
 
-- **Stratify.** Most elements carry no H3K27ac, so all-element correlations are dominated by the dead-versus-active contrast — three misleading readings so far, most recently a significant all-elements transfer effect that vanished on the top quintile.
+- **Stratify.** Most elements carry no H3K27ac, so all-element correlations are dominated by the dead-versus-active contrast — four misleading readings so far, most recently the receptive-field result in Fig. 10, where a significant +0.043 on all elements is a null on the elements that carry the mark.
 - **Score architecture changes on transfer** — Fig. 7 shows in-cell-type performance is a poor guide to generalisation here.
 - **Between-fold variability dominates.** Fold `sd` is 0.041–0.046 for single-input models, giving CI half-widths near 0.05 against a run-to-run variance of 0.018. Differences under ~0.05 need more folds or elements, and paired within-fold comparison where the models see identical held-out chromosomes.
 - **[Q for Maya]** Is a model that mostly reads accessibility useful for the intended application, or does the goal require the sequence component specifically? That decides whether the architecture list is worth the GPU time.
 
 ## Methods
 
-Model is `MultiModalBPNet` (`scripts/multimodal_bpnet.py`), a BPNet variant with a dilated-convolution trunk, a profile head trained with multinomial negative log-likelihood, and a counts head trained with log1p mean-squared error; total loss is `profile_loss + w · count_loss`. All results here concern the counts head. Training uses `n_layers = 8` (a ~1.1 kb receptive field), a ±500 bp counting window with the required 2,114 bp input window, `w = 10`, reverse-complement augmentation, chromosome-holdout 5-fold cross-validation, and a 50,000-window cap on the GC-matched negative pool. Windows are centred on candidate-element midpoints, because the H3K27ac summit sits on a flanking nucleosome (Fig. 2).
+Model is `MultiModalBPNet` (`scripts/multimodal_bpnet.py`), a BPNet variant with a dilated-convolution trunk, a profile head trained with multinomial negative log-likelihood, and a counts head trained with log1p mean-squared error; total loss is `profile_loss + w · count_loss`. All results here concern the counts head. Training uses `n_layers = 8` (a ~1.1 kb receptive field), a ±500 bp counting window with the required 2,114 bp input window, `w = 10`, reverse-complement augmentation, chromosome-holdout 5-fold cross-validation, and a 50,000-window cap on the GC-matched negative pool. Figure 10 additionally uses `n_layers = 10`, whose trimming of 2,093 requires a 5,186 bp input window for the same ±500 bp output. Windows are centred on candidate-element midpoints, because the H3K27ac summit sits on a flanking nucleosome (Fig. 2).
 
 All correlations are reported as the **mean across the five chromosome-holdout folds with a t-based 95% confidence interval**, with individual fold values shown as points. Each fold is an independent replicate of the train-and-evaluate procedure, so between-fold spread is the only uncertainty estimate available; a single pooled correlation over concatenated folds gives no error bar and can be biased when folds differ in mean or scale. Per-fold tables are in `results/*_stratified_per_fold.tsv`, summaries in `results/*_stratified_fold_summary.tsv`.
 

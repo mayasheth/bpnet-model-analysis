@@ -117,7 +117,11 @@ if d is not None:
 
 # --- model performance, per stratum -----------------------------------------
 for pref, tag in [("fiveprime_", "k562"), ("residual_grid_", "k562_resgrid"),
-                  ("gm12878_residual_grid_", "gm_resgrid")]:
+                  ("gm12878_residual_grid_", "gm_resgrid"),
+                  ("wide_seqonly_k562_", "wide_k562"),
+                  ("wide_seqonly_gm12878_", "wide_gm"),
+                  ("prof_residual_grid_", "prof_k562"),
+                  ("prof_rc_residual_grid_", "profrc_k562")]:
     d = tsv(f"{pref}stratified_fold_summary.tsv")
     if d is None:
         d = tsv(f"{pref}fold_summary.tsv")
@@ -135,6 +139,45 @@ for pref, tag in [("fiveprime_", "k562"), ("residual_grid_", "k562_resgrid"),
                 add(f"{tag}_{lab}_{col}", float(v), f"results/{pref}fold_summary.tsv")
             except (TypeError, ValueError):
                 pass
+
+
+# --- wide receptive field: paired within-fold differences -------------------
+# The claim is about the PAIRED difference, so register it rather than leaving the reader
+# to subtract two means that were never the thing tested.
+from scipy.stats import ttest_rel as _ttest_rel
+for cell in ("k562", "gm12878"):
+    d = tsv(f"wide_seqonly_{cell}_per_fold.tsv")
+    if d is None:
+        continue
+    src = f"results/wide_seqonly_{cell}_per_fold.tsv"
+    for metric, mtag in (("overall_pearson", "all"), ("overall_pearson_topq", "topq")):
+        w = d[d["config"] == "sequence_WIDE"].sort_values("fold")[metric].to_numpy(float)
+        n = d[d["config"] == "sequence_narrow"].sort_values("fold")[metric].to_numpy(float)
+        if len(w) != len(n) or len(w) == 0:
+            continue
+        diff = w - n
+        add(f"wide_delta_{cell}_{mtag}", diff.mean(), src,
+            "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field")
+        add(f"wide_p_{cell}_{mtag}", _ttest_rel(w, n).pvalue, src, "paired t-test",
+            roundings=(4, 3, 2))
+        add(f"wide_narrow_{cell}_{mtag}", n.mean(), src)
+        add(f"wide_wide_{cell}_{mtag}", w.mean(), src)
+
+# --- profile-shape ceiling by bin size --------------------------------------
+for cell in ("k562", "gm12878"):
+    d = tsv(f"profile_ceiling_binsize_{cell}.tsv")
+    if d is None:
+        continue
+    src = f"results/profile_ceiling_binsize_{cell}.tsv"
+    for _, r in d.iterrows():
+        b, st = int(r["bin_bp"]), r["stratum"]
+        add(f"profceil_{cell}_{st}_{b}bp", r["ceiling_unstranded"], src,
+            "ceiling on the pooled track, sqrt(2r/(1+r))")
+        add(f"profrep_{cell}_{st}_{b}bp", r["shape_r_unstranded"], src,
+            "raw replicate-vs-replicate shape agreement")
+    add(f"profceil_n_elements_{cell}",
+        int(d[(d["stratum"] == "all") & (d["bin_bp"] == 1)]["n_elements"].iloc[0]), src,
+        "elements with usable windows in the shape-ceiling sample", roundings=())
 
 # --- element counts quoted as "n = ..." -------------------------------------
 import subprocess
