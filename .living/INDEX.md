@@ -1,12 +1,12 @@
 <!-- BEGIN QUICK REFERENCE -->
 # .living/ Index
-Last audit: 2026-09-01
+Last audit: 2026-09-02
 
 | File | Entries | Last updated | Key topics |
 |------|---------|--------------|------------|
 | conventions.md | 12 sections | 2026-08-31 | Layout: analyses live at the repo root, not under `analysis/`, Reports, Figures, Environments, SLURM submit scripts (mandatory) |
 | decisions.md | 6 entries | 2026-08-30 | Center H3K27ac training windows on candidate elements, not ChIP peaks, Counting window is a trade-off between signal and neighbour contamination, Keep the profile head, down-weighted, rather than removing it, Residual correlation beyond ATAC becomes the headline metric, Paired-end H3K27ac targets use read 1 only, not both mates |
-| learnings.md | 33 entries (large — read selectively) | 2026-09-01 | count_loss_weight must be calibrated to the actual loss magnitudes, not copied, Inter-replicate r is not a model performance ceiling without two corrections, bpnetlite's count target sums ALL channels, not one strand, Three Sherlock/SLURM traps that cost a job each, Peak count scales the negative pool, which can OOM by 50x |
+| learnings.md | 34 entries (large — read selectively) | 2026-09-02 | count_loss_weight must be calibrated to the actual loss magnitudes, not copied, Inter-replicate r is not a model performance ceiling without two corrections, bpnetlite's count target sums ALL channels, not one strand, Three Sherlock/SLURM traps that cost a job each, Peak count scales the negative pool, which can OOM by 50x |
 | findings/ | 3 findings across 4 topics | 2026-09-01 | predicting-regulatory-element-function-at-scale, linking-noncoding-variation-to-molecular-function, mapping-regulatory-perturbations-to-phenotype, how-enhancers-control-gene-expression |
 
 ## Local skills
@@ -14,7 +14,7 @@ See `.living/skills/` for project-specific skill packs.
 <!-- END QUICK REFERENCE -->
 
 <!-- BEGIN KNOWLEDGE SUMMARY -->
-Last summarized: 2026-09-01 (heuristic)
+Last summarized: 2026-09-02 (heuristic)
 
 ## Tag clusters
 
@@ -27,6 +27,7 @@ Last summarized: 2026-09-01 (heuristic)
 
 ## Most recent (10)
 
+- [2026-09-02] L-34: Byte-identity is the wrong regression invariant for GPU inference
 - [2026-09-01] L-30: The residual-objective result reproduces in GM12878, so it is the objective and not K562
 - [2026-09-01] L-31: Residual and multimodal transfer equivalently; the significant difference is in the stratum we distrust
 - [2026-09-01] L-32: A generated numbers manifest caught three wrong figures that proofreading missed
@@ -36,7 +37,6 @@ Last summarized: 2026-09-01 (heuristic)
 - [2026-08-30] L-27: The residual objective helps only when the input is blind to accessibility
 - [2026-08-30] D-6: Accessibility inputs should be 5'-end insertion counts (ChromBPNet convention), and ours are not
 - [2026-08-29] L-25: ATAC-only is the right rule, and it cuts the panel from five new cell types to one
-- [2026-08-29] L-26: TeloHAEC's recorded blocker was the wrong blocker — the real one is a second cell line in the directory
 
 ## By tag
 
@@ -50,10 +50,10 @@ Last summarized: 2026-09-01 (heuristic)
 - `residual`: L-15, L-27, L-30, L-31, D-4
 - `silent-failure`: L-6, L-15, L-19, L-20, L-21
 - `chrombpnet`: L-28, L-29, L-33, D-6
+- `evaluation`: L-2, L-3, L-34, D-4
 - `target-definition`: L-8, L-9, L-10, D-5
 - `tooling`: L-4, L-6, L-20, L-32
 - `transferability`: L-14, L-22, L-24, L-31
-- `evaluation`: L-2, L-3, D-4
 - `hyperparameters`: L-1, L-13, L-16
 - `k562`: L-24, L-30, L-31
 - `mnll`: L-8, L-11, L-13
@@ -61,6 +61,7 @@ Last summarized: 2026-09-01 (heuristic)
 - `slurm`: L-4, L-19, L-21
 - `stratification`: L-17, L-18, L-31
 - `telohaec`: L-26, L-28, D-5
+- `testing`: L-19, L-20, L-34
 - `validation`: L-19, L-28, L-33
 - `variance`: L-16, L-18, L-23
 - `window-selection`: L-7, D-1, D-2
@@ -82,7 +83,6 @@ Last summarized: 2026-09-01 (heuristic)
 - `reproducibility`: L-16, L-32
 - `sherlock`: L-4, L-21
 - `statistics`: L-2, L-23
-- `testing`: L-19, L-20
 - `training`: L-1, L-5
 - `training-objective`: L-27, L-30
 - `all-elements-artifact`: L-17
@@ -109,14 +109,17 @@ Last summarized: 2026-09-01 (heuristic)
 - `denominator`: L-22
 - `deployment`: L-31
 - `depth`: L-28
+- `determinism`: L-34
 - `dnase`: L-25
 - `drift`: L-32
 - `element-centric`: D-1
 - `encode`: L-25
 - `generalization`: L-25
 - `geo`: L-26
+- `gpu`: L-34
 - `index`: L-6
 - `input-definition`: D-6
+- `latent-bug`: L-34
 - `learnability`: L-10
 - `memory`: L-5
 - `metric-choice`: D-4
@@ -134,6 +137,7 @@ Last summarized: 2026-09-01 (heuristic)
 - `preemption`: L-21
 - `profile-loss`: D-5
 - `reciprocal`: L-24
+- `regression`: L-34
 - `reliability`: L-2
 - `replicates`: L-2
 - `replication`: L-30
@@ -151,6 +155,7 @@ Last summarized: 2026-09-01 (heuristic)
 - `target-mismatch`: L-15
 - `template-mismatch`: L-6
 - `tn5`: L-33
+- `tolerance`: L-34
 - `trade-off`: D-2
 - `training-design`: D-1
 

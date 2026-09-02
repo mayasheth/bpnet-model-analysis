@@ -954,3 +954,46 @@ than an existing one, calibrate the coordinate convention against the existing t
 grid of candidate offsets before building genome-wide. It costs one chromosome of IO, it
 fails loudly when the sources disagree, and the correlation at the argmax doubles as a check
 that the two sources contain the same reads.
+
+### [2026-09-02] Byte-identity is the wrong regression invariant for GPU inference
+
+**Category**: process
+
+**What happened**: `2.15` was generalised to score models with different receptive fields.
+Because it is shared with the transfer and residual-grid results, the wide evaluation was
+gated behind a regression: re-score an existing all-8-layer config and require the per-fold
+table to be byte-identical to the stored one. The gate fired and blocked the run. The
+differences were all last-digit at 4 dp -- 0.3284 vs 0.3283, 0.2625 vs 0.2626 -- and the
+region counts matched exactly in all five folds. The config turned out to have exactly one
+distinct accessibility input, so the new code path collapsed to the old one: a single
+extraction pass and a centre-crop that is a no-op at in_window 2114. The code was
+functionally identical, and cuDNN convolution is not bit-reproducible across GPU models, so
+re-scoring on a different node moves the 4th decimal place on its own.
+
+**Why it matters**: The gate worked in the sense of stopping the pipeline, but it stopped it
+for a reason unrelated to the change, and a `diff` gate that cries wolf gets deleted rather
+than fixed. The fix is to split the invariant by what is actually deterministic:
+
+| | invariant | why |
+|---|---|---|
+| fold set, config labels, `n` per fold | EXACT | pure numpy over file contents; this is exactly what a geometry or region-set bug breaks |
+| every metric | within 1e-3 | absorbs GPU float noise (~1e-4 observed) while staying far below the between-fold sd of 0.041-0.046 |
+
+`2.18.compare_perfold_tables.py` implements this. Re-run: largest metric difference 1.0e-4,
+region counts identical, PASS.
+
+**Also**: the same generalisation fixed a latent bug. `2.15` used the BASELINE entry's
+`accessibility_bw` for every entry and ignored per-entry values. The `accs5p_*` configs
+already carry differing accessibility per entry, so any input-definition comparison routed
+through `2.15` would have silently scored both arms on the same input. Entries can now
+override it, with an assertion that distinct inputs yield identical valid-region masks.
+
+**Tags**: testing, regression, gpu, determinism, tolerance, evaluation, latent-bug
+
+**mitigation_type**: structural
+
+**structural_mitigation_candidate**: When gating a refactor of an inference pipeline, assert
+exact equality only on quantities computed deterministically (region counts, labels, shapes)
+and compare model outputs within a tolerance chosen from the noise floor of the science, not
+from float precision. State the tolerance and its justification in the comparator itself so
+the next person does not tighten it back to zero.
