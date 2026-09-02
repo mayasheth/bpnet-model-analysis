@@ -914,3 +914,43 @@ invalidates the cache instead of silently serving stale vectors.
 **structural_mitigation_candidate**: Shipped. Generalises to any analysis with a Quarto
 report — derive the manifest from result files rather than hand-registering values, or it
 becomes another thing that drifts.
+
+### [2026-09-01] Measure a coordinate shift by correlation instead of trusting the documented one
+
+**Category**: verification
+
+**What happened**: The fragment-size ATAC channels have to come from the paired-end BAMs,
+because fragment length lives in TLEN and the per-read tagAligns discard it. But
+`atac_5p.bw` was built from tagAligns that were already Tn5-shifted, while the BAMs are
+unshifted alignments. The conventional answer is +4 on the plus strand and -5 on the minus
+strand, and ENCODE's pipeline documents that. Rather than assume it,
+`0.22.calibrate_tn5_shift.sh` dumps chr20 5' ends by strand from the BAMs and scores every
+(plus_delta, minus_delta) in -8..+8 by Pearson r against `atac_5p.bw`.
+
+| | plus | minus | r |
+|---|---|---|---|
+| best | +4 | -5 | **1.0000** |
+| runner-up | +3 | -4 | 0.7705 |
+| no shift | 0 | 0 | 0.3148 |
+
+**Why it matters**: Two things fall out that an assumption could not have given. The offset
+is confirmed against the actual file rather than against documentation, and r = 1.0000
+rather than 0.99-something proves the BAM and tagAlign read sets are *identical* -- same
+filtering, same duplicates removed. That is what licenses treating the flat channel as the
+exact sum of the four length bins, which is the whole basis for calling the stratified input
+a strict superset that cannot regress. Had filtering differed, `all` and `sub+mono+di+poly`
+would disagree and the superset argument would quietly fail.
+
+**Also**: a wrong shift here would not have crashed anything. The stratified channels would
+have sat a few bp out of phase with the flat channel, and the model would have seen a phase
+artifact that looks like nucleosome positioning.
+
+**Tags**: atac, tn5, coordinates, validation, fragment-length, chrombpnet, superset
+
+**mitigation_type**: structural
+
+**structural_mitigation_candidate**: When deriving a new track from a different source file
+than an existing one, calibrate the coordinate convention against the existing track over a
+grid of candidate offsets before building genome-wide. It costs one chromosome of IO, it
+fails loudly when the sources disagree, and the correlation at the argmax doubles as a check
+that the two sources contain the same reads.
