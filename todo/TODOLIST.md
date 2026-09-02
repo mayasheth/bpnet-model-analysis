@@ -26,6 +26,42 @@ a property of the objective and needs no further per-cell-type testing.
       state, no input-domain shift — a sharp and cheap test of whether the model tracks
       condition-specific change. Inference only if trained on ctrl.
 
+## Downstream utility — decides whether the correlation metrics are the right target
+
+- [ ] **Plug predicted H3K27ac into ABC and benchmark it.** The end-to-end test of whether
+      this model is useful, and the concrete form of the standing question below. ABC's
+      activity term is `geomean(accessibility, H3K27ac)`, so substitute the prediction for
+      the observed mark, run ABC, and score against the CRISPR benchmark.
+      **Three arms, or the result is uninterpretable:** observed H3K27ac (upper bound),
+      predicted H3K27ac, accessibility alone (floor). If predicted lands near observed, the
+      model is useful even at a top-quintile *r* of 0.69; if it lands near accessibility
+      alone, it adds nothing downstream and the correlation gains we have been chasing do
+      not matter.
+      **Leakage trap:** ABC runs genome-wide but each fold model has seen four fifths of the
+      genome. Assemble the genome-wide prediction from the 5 fold models, each applied only
+      to its own held-out chromosomes, or the benchmark is contaminated.
+      Repos: `~/Documents/ABC-Enhancer-Gene-Prediction`, CRISPR benchmark via
+      `~/Documents/DC_TAP_Paper`.
+
+- [ ] **ATAC → DNase converter.** DNase tracks H3K27ac and enhancer activity better than
+      ATAC, so a converter would give DNase-like input in the cell types that only have ATAC.
+      **Cheap gate first, before building anything:** measure model-free coupling of DNase
+      vs ATAC against H3K27ac in K562 and GM12878 using the existing machinery
+      (`0.12.atac_vs_h3k27ac.py`, `3.6`). Minutes of CPU, and it bounds what a perfect
+      converter could buy. No DNase bigwigs exist in this project yet; the DNase used to
+      call the element sets came from the rE2G runs (`reference/ELEMENT_DERIVATION.md`).
+      **Confound in that gate:** the K562 and GM12878 element sets are DNase-derived, which
+      favours DNase on element definition alone. Repeat on the ATAC-derived K562 set in
+      `K562_ATAC_ChromBPNet/data/` before believing the gap.
+      **If the gap is real:** train ATAC → DNase where both assays exist (K562, GM12878),
+      then score H3K27ac prediction three ways — raw ATAC (floor), converted DNase, real
+      DNase (ceiling). Without the real-DNase arm, a gain cannot be separated from the extra
+      capacity the converter adds.
+      This does not contradict the ATAC-only panel rule. That rule exists because ATAC and
+      DNase are not interchangeable as *inputs*; a converter is the principled way to get a
+      DNase-like input everywhere without mixing assays across cell types.
+      Also unblocks the composite-metric item below, whose best form needs DHS.
+
 ## Open questions
 
 - [ ] **Repeat the residual comparison for p300.** Resolved only for H3K27ac; p300's
@@ -38,9 +74,11 @@ a property of the objective and needs no further per-cell-type testing.
       circular. Predict `geomean(DHS, H3K27ac)` from sequence + ATAC, and baseline against
       the two-step route scored on the *same* composite.
 - [ ] **[Q for Maya] Is a mostly-accessibility model useful for the intended application,**
-      or does the goal require the sequence component? Now also decides whether the
-      +0.043 all-elements receptive-field gain matters: it is real, but it is entirely
-      dead-vs-active separation, so it pays off only for an on/off task.
+      or does the goal require the sequence component? The ABC benchmark above is the
+      empirical form of this question and would settle it without needing an answer in
+      advance. Also decides whether the +0.043 all-elements receptive-field gain matters:
+      it is real, but it is entirely dead-vs-active separation, so it pays off only for an
+      on/off task.
 
 ## Architecture, in expected order of value
 
