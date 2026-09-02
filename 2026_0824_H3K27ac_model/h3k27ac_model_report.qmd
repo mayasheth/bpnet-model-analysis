@@ -1,6 +1,6 @@
 ---
 title: "Chromatin accessibility carries most of the predictable H3K27ac signal, and sequence adds a real but small complement"
-date: "2026-09-01"
+date: "2026-09-02"
 status: "draft"
 format:
   html:
