@@ -1,0 +1,16 @@
+fold	config	n	overall_pearson	overall_pearson_topq	residual_pearson	incremental_r2	incremental_r2_topq
+0	sequence_narrow	10143	0.4785	0.343	0.0524	-0.4702	-0.2086
+0	sequence_WIDE	10143	0.5374	0.3217	0.0786	-0.4104	-0.2228
+0	atac_narrow	10143	0.8361	0.5712		0.0	0.0
+1	sequence_narrow	14392	0.5477	0.4083	0.1466	-0.3908	-0.1118
+1	sequence_WIDE	14392	0.5837	0.3738	0.1522	-0.3501	-0.1387
+1	atac_narrow	14392	0.8311	0.5277		0.0	0.0
+2	sequence_narrow	12801	0.4848	0.4059	0.2376	-0.4068	-0.193
+2	sequence_WIDE	12801	0.51	0.4093	0.2374	-0.3817	-0.1903
+2	atac_narrow	12801	0.8011	0.5982		0.0	0.0
+3	sequence_narrow	12021	0.4855	0.4257	0.13	-0.4849	-0.1899
+3	sequence_WIDE	12021	0.5223	0.4334	0.1709	-0.4479	-0.1833
+3	atac_narrow	12021	0.8489	0.6092		0.0	0.0
+4	sequence_narrow	9298	0.4724	0.3231	0.1031	-0.471	-0.2561
+4	sequence_WIDE	9298	0.5307	0.3361	0.1221	-0.4124	-0.2475
+4	atac_narrow	9298	0.8331	0.6004		0.0	0.0
