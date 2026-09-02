@@ -997,3 +997,48 @@ exact equality only on quantities computed deterministically (region counts, lab
 and compare model outputs within a tolerance chosen from the noise floor of the science, not
 from float precision. State the tolerance and its justification in the comparator itself so
 the next person does not tighten it back to zero.
+
+### [2026-09-02] A 4.2 kb receptive field buys dead-vs-active separation and nothing within active elements
+
+**Category**: result
+
+**What happened**: Trained `n_layers = 10` (trimming 2093, in-window 5186, ~4.2 kb receptive
+field) against the matched 8-layer models (~1.1 kb), sequence mode, 5 folds, K562 and
+GM12878. Scored on the intersection of valid regions so the receptive field is not
+confounded with which regions near chromosome ends were scorable.
+
+| | all elements | top quintile |
+|---|---|---|
+| K562 narrow / wide | 0.494 / 0.537 | 0.381 / 0.375 |
+| K562 paired difference | **+0.0430** [+0.0245, +0.0616] p=0.0030 | −0.0063 [−0.0318, +0.0191] p=0.53 |
+| GM12878 narrow / wide | 0.475 / 0.520 | 0.221 / 0.232 |
+| GM12878 paired difference | **+0.0446** [+0.0222, +0.0670] p=0.0053 | +0.0101 [−0.0307, +0.0508] p=0.53 |
+
+The all-elements gain replicates almost exactly across cell types (+0.043, +0.045) and is
+significant in both. The top-quintile effect is null in both and FLIPS SIGN between them,
+which is what a null looks like. The CIs exclude a top-quintile gain beyond about ±0.03, so
+this is not a power problem.
+
+**Interpretation**: 4.2 kb of context carries broad domain information. That is informative
+about whether a region is active at all, and uninformative about how active an already-active
+enhancer is. On the project reporting standard the wider receptive field does not help.
+
+**Why it matters**: This is the FOURTH time an all-elements metric has pointed the opposite
+way from the top quintile in this project, and the first time I generated the misleading
+read myself. Ten folds of validation count Pearson showed +0.031 to +0.064, all positive,
+and I reported it as promising. Validation count Pearson is computed over ALL validation
+elements, so it is an all-elements metric; it reproduced as the +0.043 all-elements number
+and evaporated under stratification. The gain was real, the attribution was wrong.
+
+**Resolution**: Do not spend the 30-60 GPU-h on a wider receptive field for the graded
+activity task. Revisit only if the application turns out to be on/off classification, where
++0.043 all-elements is a genuine improvement.
+
+**Tags**: architecture, receptive-field, stratification, top-quintile, replication, k562, gm12878
+
+**mitigation_type**: process
+
+**structural_mitigation_candidate**: Never report a training-log metric as a preliminary
+result. Validation count Pearson is unstratified by construction, so on this project it
+carries the exact bias the reporting standard exists to remove. The only quotable number
+comes from the stratified per-fold evaluator, even when the training logs look unanimous.
