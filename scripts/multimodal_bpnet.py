@@ -87,7 +87,7 @@ class MultiModalBPNet(torch.nn.Module):
             self.seq_relu = torch.nn.ReLU()
         elif mode == 'atac':
             n_merged = n_filters
-            self.acc_conv = torch.nn.Conv1d(1, n_filters, kernel_size=21, padding=10)
+            self.acc_conv = torch.nn.Conv1d(n_acc_channels, n_filters, kernel_size=21, padding=10)
             self.acc_relu = torch.nn.ReLU()
 
         # Dilated residual layers on merged representation
