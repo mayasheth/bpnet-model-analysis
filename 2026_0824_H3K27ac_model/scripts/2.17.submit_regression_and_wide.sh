@@ -12,11 +12,12 @@
 # 2.15 was generalised to handle models with different receptive fields and different
 # accessibility inputs. Two things happen here, in this order.
 #
-# STEP 1, REGRESSION. Re-score an existing all-8-layer comparison and require the per-fold
-# table to be byte-identical to the stored one. For 8-layer models the new code path
-# resolves in_window to 2114 and the centre-crop is a no-op, so any difference at all means
-# the generalisation changed behaviour it should not have touched. The wide numbers are not
-# produced unless this passes.
+# STEP 1, REGRESSION. Re-score an existing all-8-layer comparison and compare against the
+# stored table via 2.18: region counts per fold must match EXACTLY (that is what a geometry
+# or region-set change would break) and every metric must match within 1e-3 (cuDNN is not
+# bit-reproducible across GPU models, so re-scoring on a different node moves the 4th
+# decimal place with the code untouched). The wide numbers are not produced unless this
+# passes.
 #
 # STEP 2, the comparison. Baseline is the narrow ATAC-only model in both arms, so it
 # contributes identically and the paired tests isolate the variable under test.
@@ -44,14 +45,12 @@ echo "########## STEP 1: backward-compatibility regression ##########"
 $PY scripts/2.15.perfold_from_config.py config/transfer_k562_to_gm_configs.json \
     REGRESSION_transfer_k562_to_gm_ "$GMEL" \
     --pair K562resMM_to_GM K562mm_to_GM --pair K562resSeq_to_GM K562mm_to_GM
-if diff -q results/REGRESSION_transfer_k562_to_gm_per_fold.tsv \
-           results/transfer_k562_to_gm_per_fold.tsv; then
-    echo "REGRESSION PASS: per-fold table unchanged"
+if $PY scripts/2.18.compare_perfold_tables.py \
+        results/REGRESSION_transfer_k562_to_gm_per_fold.tsv \
+        results/transfer_k562_to_gm_per_fold.tsv --tol 1e-3; then
     rm -f results/REGRESSION_transfer_k562_to_gm_{per_fold,fold_summary}.tsv
 else
-    echo "REGRESSION FAIL: 2.15 changed behaviour on all-8-layer configs" >&2
-    diff results/REGRESSION_transfer_k562_to_gm_per_fold.tsv \
-         results/transfer_k562_to_gm_per_fold.tsv | head -40 >&2
+    echo "2.15 changed behaviour on all-8-layer configs; not producing wide numbers" >&2
     exit 1
 fi
 
