@@ -62,6 +62,18 @@ a property of the objective and needs no further per-cell-type testing.
       DNase-like input everywhere without mixing assays across cell types.
       Also unblocks the composite-metric item below, whose best form needs DHS.
 
+## Adopt-or-not decisions, all measured
+
+- [ ] **Turn on test-time RC averaging as the default?** Free (one extra forward pass, no
+      retraining) and positive for every model: +0.0162 sequence only, +0.0081 sequence +
+      ATAC, +0.0016 and non-significant for ATAC only, which is the control (report Fig. 13).
+      Currently opt-in via `2.15 --rc-average` so existing numbers stay comparable. Adopting
+      it means re-scoring the report's tables as a set.
+- [ ] **Do the wider receptive field and the fragment channels combine?** `n_layers` 10 ×
+      5 fragment channels, 5 fold-jobs. Both act on the accessibility side and may read the
+      same neighbourhood structure, so +0.027 and +0.0135 may not sum. This decides what the
+      deployed model is, so it should run before the ABC arms are treated as final.
+
 ## Open questions
 
 - [ ] **Repeat the residual comparison for p300.** Resolved only for H3K27ac; p300's

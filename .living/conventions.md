@@ -159,3 +159,15 @@ Do NOT hand-write INDEX.md or reimplement the generator. A stand-in was written 
 a session where a `find` for the upstream copy timed out before reaching the
 EngreitzLabAgents checkout; it produced a subtly different tag-cluster format. The canonical
 script is on Oak at the path above.
+
+
+## Never end a sentence with a p-value in the report
+
+`render_report.py`'s numeric-claim regex captures a trailing period into the token, so
+`p = 0.53.` is parsed as the number `0.53.`, which parses as nothing and is reported as an
+untraceable claim even when `0.53` is registered in `numbers.json`. This has cost a
+render-fix cycle three times.
+
+Put a word or a comma after every p-value: `p = 0.53 in both strata`, `p = 0.090, consistent
+with no effect`, `at p = 0.086, and`. The same applies to any figure or CI value that would
+otherwise sit at the end of a sentence.

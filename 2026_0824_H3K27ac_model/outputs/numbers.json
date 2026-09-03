@@ -10125,6 +10125,860 @@
    "note": "paired t-test (rounded to 2 dp as quoted)"
   },
   {
+   "name": "rc_delta_atac5p_all",
+   "value": 0.00078,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold"
+  },
+  {
+   "name": "rc_delta_atac5p_all__r4",
+   "value": 0.0008,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_atac5p_all__r3",
+   "value": 0.001,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_atac5p_all__r2",
+   "value": 0.0,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rc_p_atac5p_all",
+   "value": 0.005957,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test"
+  },
+  {
+   "name": "rc_p_atac5p_all__r4",
+   "value": 0.006,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "rc_p_atac5p_all__r2",
+   "value": 0.01,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_atac5p_topq",
+   "value": 0.00164,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold"
+  },
+  {
+   "name": "rc_delta_atac5p_topq__r4",
+   "value": 0.0016,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_atac5p_topq__r3",
+   "value": 0.002,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_atac5p_topq__r2",
+   "value": 0.0,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rc_p_atac5p_topq",
+   "value": 0.085654,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test"
+  },
+  {
+   "name": "rc_p_atac5p_topq__r4",
+   "value": 0.0857,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "rc_p_atac5p_topq__r3",
+   "value": 0.086,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rc_p_atac5p_topq__r2",
+   "value": 0.09,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_atac5p_proftopq",
+   "value": 0.0013,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold"
+  },
+  {
+   "name": "rc_delta_atac5p_proftopq__r3",
+   "value": 0.001,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_atac5p_proftopq__r2",
+   "value": 0.0,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rc_p_atac5p_proftopq",
+   "value": 0.000244,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test"
+  },
+  {
+   "name": "rc_p_atac5p_proftopq__r4",
+   "value": 0.0002,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "rc_p_atac5p_proftopq__r3",
+   "value": 0.0,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_multimodal5p_all",
+   "value": 0.0025,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold"
+  },
+  {
+   "name": "rc_delta_multimodal5p_all__r3",
+   "value": 0.003,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_multimodal5p_all__r2",
+   "value": 0.0,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rc_p_multimodal5p_all",
+   "value": 0.006112,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test"
+  },
+  {
+   "name": "rc_p_multimodal5p_all__r4",
+   "value": 0.0061,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "rc_p_multimodal5p_all__r3",
+   "value": 0.006,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rc_p_multimodal5p_all__r2",
+   "value": 0.01,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_multimodal5p_topq",
+   "value": 0.0081,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold"
+  },
+  {
+   "name": "rc_delta_multimodal5p_topq__r3",
+   "value": 0.008,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_multimodal5p_topq__r2",
+   "value": 0.01,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rc_p_multimodal5p_topq",
+   "value": 0.000711,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test"
+  },
+  {
+   "name": "rc_p_multimodal5p_topq__r4",
+   "value": 0.0007,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "rc_p_multimodal5p_topq__r3",
+   "value": 0.001,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rc_p_multimodal5p_topq__r2",
+   "value": 0.0,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_multimodal5p_proftopq",
+   "value": 0.00376,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold"
+  },
+  {
+   "name": "rc_delta_multimodal5p_proftopq__r4",
+   "value": 0.0038,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_multimodal5p_proftopq__r3",
+   "value": 0.004,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_multimodal5p_proftopq__r2",
+   "value": 0.0,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rc_p_multimodal5p_proftopq",
+   "value": 4e-05,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test"
+  },
+  {
+   "name": "rc_p_multimodal5p_proftopq__r4",
+   "value": 0.0,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_residual_atac_all",
+   "value": 0.00086,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold"
+  },
+  {
+   "name": "rc_delta_residual_atac_all__r4",
+   "value": 0.0009,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_residual_atac_all__r3",
+   "value": 0.001,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_residual_atac_all__r2",
+   "value": 0.0,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rc_p_residual_atac_all",
+   "value": 0.008885,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test"
+  },
+  {
+   "name": "rc_p_residual_atac_all__r4",
+   "value": 0.0089,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "rc_p_residual_atac_all__r3",
+   "value": 0.009,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rc_p_residual_atac_all__r2",
+   "value": 0.01,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_residual_atac_topq",
+   "value": 0.0018,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold"
+  },
+  {
+   "name": "rc_delta_residual_atac_topq__r3",
+   "value": 0.002,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_residual_atac_topq__r2",
+   "value": 0.0,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rc_p_residual_atac_topq",
+   "value": 0.090201,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test"
+  },
+  {
+   "name": "rc_p_residual_atac_topq__r4",
+   "value": 0.0902,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "rc_p_residual_atac_topq__r3",
+   "value": 0.09,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_residual_atac_proftopq",
+   "value": 0.00118,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold"
+  },
+  {
+   "name": "rc_delta_residual_atac_proftopq__r4",
+   "value": 0.0012,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_residual_atac_proftopq__r3",
+   "value": 0.001,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_residual_atac_proftopq__r2",
+   "value": 0.0,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rc_p_residual_atac_proftopq",
+   "value": 5.9e-05,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test"
+  },
+  {
+   "name": "rc_p_residual_atac_proftopq__r4",
+   "value": 0.0001,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "rc_p_residual_atac_proftopq__r3",
+   "value": 0.0,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_residual_multimodal_all",
+   "value": 0.00318,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold"
+  },
+  {
+   "name": "rc_delta_residual_multimodal_all__r4",
+   "value": 0.0032,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_residual_multimodal_all__r3",
+   "value": 0.003,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_residual_multimodal_all__r2",
+   "value": 0.0,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rc_p_residual_multimodal_all",
+   "value": 0.00015,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test"
+  },
+  {
+   "name": "rc_p_residual_multimodal_all__r4",
+   "value": 0.0001,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "rc_p_residual_multimodal_all__r3",
+   "value": 0.0,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_residual_multimodal_topq",
+   "value": 0.00726,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold"
+  },
+  {
+   "name": "rc_delta_residual_multimodal_topq__r4",
+   "value": 0.0073,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_residual_multimodal_topq__r3",
+   "value": 0.007,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_residual_multimodal_topq__r2",
+   "value": 0.01,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rc_p_residual_multimodal_topq",
+   "value": 0.02949,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test"
+  },
+  {
+   "name": "rc_p_residual_multimodal_topq__r4",
+   "value": 0.0295,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "rc_p_residual_multimodal_topq__r3",
+   "value": 0.029,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rc_p_residual_multimodal_topq__r2",
+   "value": 0.03,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_residual_multimodal_proftopq",
+   "value": 0.00456,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold"
+  },
+  {
+   "name": "rc_delta_residual_multimodal_proftopq__r4",
+   "value": 0.0046,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_residual_multimodal_proftopq__r3",
+   "value": 0.005,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_residual_multimodal_proftopq__r2",
+   "value": 0.0,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rc_p_residual_multimodal_proftopq",
+   "value": 1.4e-05,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test"
+  },
+  {
+   "name": "rc_p_residual_multimodal_proftopq__r4",
+   "value": 0.0,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_residual_sequence_all",
+   "value": 0.00276,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold"
+  },
+  {
+   "name": "rc_delta_residual_sequence_all__r4",
+   "value": 0.0028,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_residual_sequence_all__r3",
+   "value": 0.003,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_residual_sequence_all__r2",
+   "value": 0.0,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rc_p_residual_sequence_all",
+   "value": 0.000384,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test"
+  },
+  {
+   "name": "rc_p_residual_sequence_all__r4",
+   "value": 0.0004,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "rc_p_residual_sequence_all__r3",
+   "value": 0.0,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_residual_sequence_topq",
+   "value": 0.00544,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold"
+  },
+  {
+   "name": "rc_delta_residual_sequence_topq__r4",
+   "value": 0.0054,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_residual_sequence_topq__r3",
+   "value": 0.005,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_residual_sequence_topq__r2",
+   "value": 0.01,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rc_p_residual_sequence_topq",
+   "value": 0.002342,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test"
+  },
+  {
+   "name": "rc_p_residual_sequence_topq__r4",
+   "value": 0.0023,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "rc_p_residual_sequence_topq__r3",
+   "value": 0.002,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rc_p_residual_sequence_topq__r2",
+   "value": 0.0,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_residual_sequence_proftopq",
+   "value": 0.00544,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold"
+  },
+  {
+   "name": "rc_delta_residual_sequence_proftopq__r4",
+   "value": 0.0054,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_residual_sequence_proftopq__r3",
+   "value": 0.005,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_residual_sequence_proftopq__r2",
+   "value": 0.01,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rc_p_residual_sequence_proftopq",
+   "value": 3.6e-05,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test"
+  },
+  {
+   "name": "rc_p_residual_sequence_proftopq__r4",
+   "value": 0.0,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_sequence5p_all",
+   "value": 0.0188,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold"
+  },
+  {
+   "name": "rc_delta_sequence5p_all__r3",
+   "value": 0.019,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_sequence5p_all__r2",
+   "value": 0.02,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rc_p_sequence5p_all",
+   "value": 0.0007,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test"
+  },
+  {
+   "name": "rc_p_sequence5p_all__r3",
+   "value": 0.001,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rc_p_sequence5p_all__r2",
+   "value": 0.0,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_sequence5p_topq",
+   "value": 0.01624,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold"
+  },
+  {
+   "name": "rc_delta_sequence5p_topq__r4",
+   "value": 0.0162,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_sequence5p_topq__r3",
+   "value": 0.016,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_sequence5p_topq__r2",
+   "value": 0.02,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rc_p_sequence5p_topq",
+   "value": 0.002273,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test"
+  },
+  {
+   "name": "rc_p_sequence5p_topq__r4",
+   "value": 0.0023,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "rc_p_sequence5p_topq__r3",
+   "value": 0.002,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rc_p_sequence5p_topq__r2",
+   "value": 0.0,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rc_delta_sequence5p_proftopq",
+   "value": 0.006,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold"
+  },
+  {
+   "name": "rc_delta_sequence5p_proftopq__r2",
+   "value": 0.01,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "RC-averaged minus single-pass, paired within fold (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rc_p_sequence5p_proftopq",
+   "value": 1e-05,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test"
+  },
+  {
+   "name": "rc_p_sequence5p_proftopq__r4",
+   "value": 0.0,
+   "source": "results/prof_{,rc_}residual_grid_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 4 dp as quoted)"
+  },
+  {
    "name": "profceil_k562_all_1bp",
    "value": 0.1171,
    "source": "results/profile_ceiling_binsize_k562.tsv",

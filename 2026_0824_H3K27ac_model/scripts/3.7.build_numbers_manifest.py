@@ -199,6 +199,29 @@ if d is not None:
         add(f"frag_p_{mtag}", _ttest_rel(w, n).pvalue, src, "paired t-test",
             roundings=(4, 3, 2))
 
+
+# --- test-time reverse-complement averaging: paired within-fold differences ---
+_pl = tsv("prof_residual_grid_per_fold.tsv")
+_rc = tsv("prof_rc_residual_grid_per_fold.tsv")
+if _pl is not None and _rc is not None:
+    src = "results/prof_{,rc_}residual_grid_per_fold.tsv"
+    for cfg in sorted(set(_pl["config"]) & set(_rc["config"])):
+        for metric, mtag in (("overall_pearson", "all"),
+                             ("overall_pearson_topq", "topq"),
+                             ("profile_pearson_topq", "proftopq")):
+            if metric not in _pl.columns or metric not in _rc.columns:
+                continue
+            aa = _rc[_rc["config"] == cfg].sort_values("fold")[metric].to_numpy(float)
+            bb = _pl[_pl["config"] == cfg].sort_values("fold")[metric].to_numpy(float)
+            if len(aa) != len(bb) or len(aa) == 0:
+                continue
+            key = str(cfg).replace(" ", "")
+            add(f"rc_delta_{key}_{mtag}", (aa - bb).mean(), src,
+                "RC-averaged minus single-pass, paired within fold",
+                roundings=(4, 3, 2))
+            add(f"rc_p_{key}_{mtag}", _ttest_rel(aa, bb).pvalue, src, "paired t-test",
+                roundings=(4, 3, 2))
+
 # --- profile-shape ceiling by bin size --------------------------------------
 for cell in ("k562", "gm12878"):
     d = tsv(f"profile_ceiling_binsize_{cell}.tsv")
