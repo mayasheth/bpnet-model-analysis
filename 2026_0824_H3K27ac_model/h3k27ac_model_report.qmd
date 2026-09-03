@@ -84,7 +84,7 @@ blockquote { border-left: 3px solid #ddd; margin-left: 0; padding-left: 1rem;
 - The same comparison for p300 gives sequence a +0.304 margin over accessibility against +0.127 for H3K27ac — a difference of 0.177 ± 0.027, about 6.6 standard errors (Fig. 4). H3K27ac scores higher overall but is the poorer substrate for sequence interpretation.
 - **GM12878 is simply the harder cell type, which is most of what the transfer asymmetry measures.** GM12878-trained models score higher on K562 than in their own cell type for every modality (Fig. 7), and the ATAC-only gap is explained by weaker ATAC–H3K27ac coupling in GM12878 (Fig. 8). Sequence remains weak everywhere (15–41% of ceiling), and its margin over accessibility shrinks on transfer in both directions.
 - **Sequence carries an accessibility-independent component, but only a residual objective exposes it.** The same sequence-only input scores 0.149 on the accessibility residual trained against total signal and 0.459 trained against `observed − atac_pred` (Fig. 5). Joint training extracts more still (0.551) and is the better predictor. Overall correlation overstates what any model adds once accessibility is an input: sequence + ATAC reaches 0.874 overall against 0.551 on the residual.
-- **Track construction matters at the resolution level.** ATAC and H3K27ac are spatially offset — ATAC peaks on the element centre, H3K27ac on flanking nucleosomes at ±250 bp and is far broader (Fig. 2). H3K27ac is still at 28% of maximum at ±2 kb, the edge of the profiled window, so its extent exceeds the model's ~1.1 kb receptive field by an unmeasured margin. Relatedly, switching the accessibility input to ChromBPNet-style 5′ insertion counts gains the ATAC-only model +0.032 (K562) and +0.023 (GM12878) on the top quintile while leaving sequence + ATAC unchanged (Fig. 6) — within a cell type the change is one of resolution, and only a model without sequence feels it. Widening the receptive field to ~4.2 kb pays off only for the model that holds accessibility: sequence + ATAC gains +0.027 (K562) and +0.014 (GM12878) on the elements carrying the mark, while sequence alone gains nothing there (Fig. 10). Enriching the accessibility input pays off too — five fragment-size channels in place of flat coverage gain +0.0135 on the same elements (Fig. 12) — so both of the architecture changes that have worked act on the accessibility side. At the other end of the resolution scale, the base-resolution profile is nearly unreproducible — inter-replicate ceiling 0.21 at 1 bp against 0.72 at 50 bp binning (Fig. 11) — which caps what the profile head can ever score rather than showing that it fails.
+- **Track construction matters at the resolution level.** ATAC and H3K27ac are spatially offset — ATAC peaks on the element centre, H3K27ac on flanking nucleosomes at ±250 bp and is far broader (Fig. 2). H3K27ac is still at 28% of maximum at ±2 kb, the edge of the profiled window, so its extent exceeds the model's ~1.1 kb receptive field by an unmeasured margin. Relatedly, switching the accessibility input to ChromBPNet-style 5′ insertion counts gains the ATAC-only model +0.032 (K562) and +0.023 (GM12878) on the top quintile while leaving sequence + ATAC unchanged (Fig. 6) — within a cell type the change is one of resolution, and only a model without sequence feels it. Widening the receptive field to ~4.2 kb pays off only for the model that holds accessibility: sequence + ATAC gains +0.027 (K562) and +0.014 (GM12878) on the elements carrying the mark, while sequence alone gains nothing there (Fig. 10). Enriching the accessibility input pays off too — five fragment-size channels in place of flat coverage gain +0.0135 on the same elements (Fig. 12) — so both of the architecture changes that have worked act on the accessibility side. Separately, averaging each prediction with its reverse complement at inference is free and helps every model, most where sequence matters most (+0.0162 sequence only, +0.0081 sequence + ATAC, +0.0016 and not significant for ATAC only; Fig. 13). At the other end of the resolution scale, the base-resolution profile is nearly unreproducible — inter-replicate ceiling 0.21 at 1 bp against 0.72 at 50 bp binning (Fig. 11) — which caps what the profile head can ever score rather than showing that it fails.
 
 ## Goals
 
@@ -555,6 +555,36 @@ for F in 0 1 2 3 4; do sbatch scripts/1.15.submit_training_fragchan.sh multimoda
 sbatch scripts/2.17.submit_regression_and_wide.sh fragchan
 ```
 Source: `scripts/0.23`, `scripts/0.24`, `scripts/1.15`, `scripts/3.9`
+</details>
+
+## Test-time reverse-complement averaging is free and always helps
+
+**Q:** Training already augments with reverse complements; does averaging each prediction with its reverse complement at inference add anything?
+
+**A:** Yes, and by an amount that tracks how much the model relies on sequence: +0.0162 for sequence only, +0.0081 for sequence + ATAC, and +0.0016 for ATAC only, which is the negative control and the one result that is not significant.
+
+![](figures/fig13_rc_averaging.png)
+
+<details>
+<summary>Figure 13 legend</summary>
+
+**Figure 13 | Reverse-complement averaging at inference, paired within fold, ordered by reliance on sequence.** K562 residual grid, 5 folds. Points are the mean paired difference between the RC-averaged and single-pass prediction, bars the t-based 95% CI. **a**, Top quintile counts: sequence only +0.0162 [+0.0097, +0.0227], p = 0.0023; sequence + ATAC +0.0081 [+0.0057, +0.0105], p = 0.0007; residual-trained sequence +0.0054 and residual-trained multimodal +0.0073, both significant; ATAC only +0.0016 [−0.0004, +0.0036] at p = 0.086, and its residual counterpart +0.0018 at p = 0.090, both consistent with no effect. **b**, Top quintile profile shape, significant for every model, +0.0012 to +0.0060. Colour follows the input-modality convention. The gradient is the mechanism: RC averaging cancels residual strand asymmetry in the sequence branch, so a model whose only input is unstranded accessibility coverage has nothing to gain, and the two ATAC-only rows behave as that control predicts. Predictions are averaged in probability space over the flattened strand-and-position multinomial, which is the space the loss is defined in. Cost is one extra forward pass and no retraining. Source: `results/prof_{,rc_}residual_grid_per_fold.tsv`.
+</details>
+
+**Method.**
+
+- The reverse complement flips the one-hot channel axis and the position axis; accessibility channels are strand-agnostic and are reversed along position only. Profiles are un-flipped and strands swapped before averaging.
+- Verified against a deliberately wrong control that reverses positions without complementing: the correct transform agrees with the forward pass at *r* = 0.9918 against 0.9485.
+- Off by default (`--rc-average`), so every other number in this report is single-pass and remains comparable to earlier runs.
+
+<details>
+<summary>Full methods &amp; code</summary>
+
+```bash
+sbatch scripts/2.19.submit_profile_and_rc.sh
+pixi run python scripts/3.10.plot_rc_averaging.py
+```
+Source: `scripts/2.15.perfold_from_config.py` (`--rc-average`), `scripts/2.20.paired_delta_between_runs.py`
 </details>
 
 ## Open questions / next steps

@@ -1146,3 +1146,52 @@ implying the wider window drops chromosome-end elements was wrong and has been c
 **structural_mitigation_candidate**: When several architecture changes target the same input
 stream, test the combination before adopting them additively — separately significant gains
 on the same underlying signal do not compose.
+
+
+### [2026-09-03] Test-time reverse-complement averaging is free, always positive, and carries its own control
+
+**Category**: result
+
+**What happened**: Training already augments with reverse complements, but nothing averaged
+predictions over a sequence and its reverse complement at inference. Adding it (`2.15
+--rc-average`, off by default) improves every model in the K562 residual grid, paired within
+fold, and the size of the gain tracks reliance on sequence.
+
+| model | top quintile Δ | p |
+|---|---|---|
+| sequence only | **+0.0162** [+0.0097, +0.0227] | 0.0023 |
+| sequence + ATAC | **+0.0081** [+0.0057, +0.0105] | 0.0007 |
+| sequence + ATAC, residual | +0.0073 [+0.0012, +0.0133] | 0.0295 |
+| sequence, residual | +0.0054 [+0.0032, +0.0076] | 0.0023 |
+| ATAC only | +0.0016 [−0.0004, +0.0036] | 0.086 |
+| ATAC only, residual | +0.0018 [−0.0004, +0.0040] | 0.090 |
+
+Profile shape improves for every model too, +0.0012 to +0.0060, all significant.
+
+**Why it matters**: The ordering is a built-in control, and it is what makes the result
+believable rather than just significant. RC averaging cancels residual strand asymmetry in
+the sequence branch, so a model whose only input is unstranded accessibility coverage should
+gain nothing — and the two ATAC-only rows are the only non-significant ones. A uniform gain
+across all six models would have suggested something generic (numerical smoothing, an
+evaluation artefact); the gradient points at the intended mechanism.
+
+Cost is one extra forward pass and no retraining, which makes this the cheapest improvement
+found on this project. For comparison, the fragment-size channels gained +0.0135 on the same
+elements and cost a full retrain plus building four genome-wide tracks.
+
+**Correctness check that mattered**: the transform was validated against a deliberately
+wrong version that reverses positions without complementing the one-hot channels. The correct
+transform agrees with the forward pass at r = 0.9918 and the wrong one at 0.9485, so the
+complement demonstrably matters. Without that control a silently-wrong flip would have looked
+like a small honest gain.
+
+**Left off by default**, so every existing number stays comparable. Adopt it deliberately as
+a set if the report's headline numbers are ever re-scored.
+
+**Tags**: inference, reverse-complement, augmentation, free-win, negative-control, k562
+
+**mitigation_type**: none
+
+**structural_mitigation_candidate**: When adding a symmetry-based inference trick, include a
+model that cannot benefit from the symmetry. A result that is uniform across every model is
+usually measuring something other than the mechanism claimed.

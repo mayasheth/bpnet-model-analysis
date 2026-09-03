@@ -4,9 +4,9 @@ Last audit: 2026-09-03
 
 | File | Entries | Last updated | Key topics |
 |------|---------|--------------|------------|
-| conventions.md | 12 sections | 2026-08-31 | Layout: analyses live at the repo root, not under `analysis/`, Reports, Figures, Environments, SLURM submit scripts (mandatory) |
+| conventions.md | 13 sections | 2026-09-03 | Layout: analyses live at the repo root, not under `analysis/`, Reports, Figures, Environments, SLURM submit scripts (mandatory) |
 | decisions.md | 6 entries | 2026-08-30 | Center H3K27ac training windows on candidate elements, not ChIP peaks, Counting window is a trade-off between signal and neighbour contamination, Keep the profile head, down-weighted, rather than removing it, Residual correlation beyond ATAC becomes the headline metric, Paired-end H3K27ac targets use read 1 only, not both mates |
-| learnings.md | 37 entries (large — read selectively) | 2026-09-03 | count_loss_weight must be calibrated to the actual loss magnitudes, not copied, Inter-replicate r is not a model performance ceiling without two corrections, bpnetlite's count target sums ALL channels, not one strand, Three Sherlock/SLURM traps that cost a job each, Peak count scales the negative pool, which can OOM by 50x |
+| learnings.md | 38 entries (large — read selectively) | 2026-09-03 | count_loss_weight must be calibrated to the actual loss magnitudes, not copied, Inter-replicate r is not a model performance ceiling without two corrections, bpnetlite's count target sums ALL channels, not one strand, Three Sherlock/SLURM traps that cost a job each, Peak count scales the negative pool, which can OOM by 50x |
 | findings/ | 3 findings across 4 topics | 2026-09-01 | predicting-regulatory-element-function-at-scale, linking-noncoding-variation-to-molecular-function, mapping-regulatory-perturbations-to-phenotype, how-enhancers-control-gene-expression |
 
 ## Local skills
@@ -23,12 +23,13 @@ Last summarized: 2026-09-03 (heuristic)
 - **ceiling** (9 entries) — L-14, L-17, L-18, L-24, D-2
 - **atac** (8 entries) — L-28, L-29, L-33, D-4, D-6
 - **gm12878** (7 entries) — L-24, L-30, L-31, L-35, L-37
-- **bpnetlite** (5 entries) — L-1, L-3, L-8, L-11, D-3
+- **k562** (6 entries) — L-30, L-31, L-35, L-37, L-38
 
 ## Most recent (10)
 
 - [2026-09-03] L-36: The receptive-field conclusion inverted when the second input mode finished
 - [2026-09-03] L-37: Both architecture changes that work act on the accessibility input
+- [2026-09-03] L-38: Test-time reverse-complement averaging is free, always positive, and carries its own control
 - [2026-09-02] L-34: Byte-identity is the wrong regression invariant for GPU inference
 - [2026-09-02] L-35: A 4.2 kb receptive field buys dead-vs-active separation and nothing within active elements
 - [2026-09-01] L-30: The residual-objective result reproduces in GM12878, so it is the objective and not K562
@@ -36,7 +37,6 @@ Last summarized: 2026-09-03 (heuristic)
 - [2026-09-01] L-32: A generated numbers manifest caught three wrong figures that proofreading missed
 - [2026-09-01] L-33: Measure a coordinate shift by correlation instead of trusting the documented one
 - [2026-08-31] L-28: The 5' ATAC rebuild works, and the read-length artifact is confirmed quantitatively
-- [2026-08-31] L-29: The 5' ATAC input helps the ATAC-only model and does nothing for multimodal
 
 ## By tag
 
@@ -45,8 +45,8 @@ Last summarized: 2026-09-03 (heuristic)
 - `ceiling`: L-2, L-7, L-9, L-10, L-14, L-17, L-18, L-24, D-2
 - `atac`: L-12, L-22, L-25, L-28, L-29, L-33, D-4, D-6
 - `gm12878`: L-14, L-22, L-24, L-30, L-31, L-35, L-37
+- `k562`: L-24, L-30, L-31, L-35, L-37, L-38
 - `bpnetlite`: L-1, L-3, L-8, L-11, D-3
-- `k562`: L-24, L-30, L-31, L-35, L-37
 - `loss-weighting`: L-1, L-11, L-13, L-16, D-3
 - `residual`: L-15, L-27, L-30, L-31, D-4
 - `silent-failure`: L-6, L-15, L-19, L-20, L-21
@@ -62,6 +62,7 @@ Last summarized: 2026-09-03 (heuristic)
 - `hyperparameters`: L-1, L-13, L-16
 - `mnll`: L-8, L-11, L-13
 - `multimodal`: L-27, L-29, L-36
+- `negative-control`: L-27, L-30, L-38
 - `prediction-was-wrong`: L-10, L-14, L-24
 - `profile-head`: L-11, L-36, D-3
 - `receptive-field`: L-35, L-36, L-37
@@ -74,7 +75,6 @@ Last summarized: 2026-09-03 (heuristic)
 - `fragment-extension`: L-8, L-9
 - `guards`: L-19, L-20
 - `methodology`: L-15, L-19
-- `negative-control`: L-27, L-30
 - `negative-result`: L-7, L-9
 - `nucleosome`: L-7, L-12
 - `overclaim`: L-16, L-17
@@ -91,6 +91,7 @@ Last summarized: 2026-09-03 (heuristic)
 - `training-objective`: L-27, L-30
 - `all-elements-artifact`: L-17
 - `asymmetry`: L-24
+- `augmentation`: L-38
 - `bash`: L-4
 - `bigwig`: L-8
 - `buffering`: L-4
@@ -117,10 +118,12 @@ Last summarized: 2026-09-03 (heuristic)
 - `drift`: L-32
 - `element-centric`: D-1
 - `encode`: L-25
+- `free-win`: L-38
 - `generalization`: L-25
 - `geo`: L-26
 - `gpu`: L-34
 - `index`: L-6
+- `inference`: L-38
 - `input-definition`: D-6
 - `latent-bug`: L-34
 - `learnability`: L-10
@@ -147,6 +150,7 @@ Last summarized: 2026-09-03 (heuristic)
 - `report`: L-32
 - `reporting-standard`: L-23
 - `reversal`: L-36
+- `reverse-complement`: L-38
 - `sample-definition`: L-26
 - `scaling`: L-5
 - `scope`: L-25
