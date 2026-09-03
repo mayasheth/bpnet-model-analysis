@@ -56,6 +56,16 @@ Append-only log of non-obvious decisions and their rationale.
 
 **Tags**: h3k27ac, profile-head, loss-weighting, architecture, bpnetlite
 
+**Update 2026-09-03 — decision stands, and the reasoning was better than the evidence then
+available.** Two measurements now exist. The inter-replicate ceiling on base-resolution
+profile SHAPE is 0.21 on the top quintile at 1 bp, rising to 0.72 at 50 bp binning, so the
+1 bp task is intrinsically near-unlearnable. Against that ceiling the head reaches
+`profile_pearson` of 0.171 (multimodal), 0.144 (sequence) and 0.114 (ATAC only), so it
+captures most of what is there. Separately, the `count_loss_weight` sweep still argues
+against removal from the other direction: 10 gave 0.496 while 100 gave 0.467 and 1000 gave
+0.464, so down-weighting the profile term made the COUNTS worse. Removal remains
+deprioritized on evidence. The open question is now binning rather than removal.
+
 ---
 
 ### [2026-08-25] Residual correlation beyond ATAC becomes the headline metric
@@ -177,3 +187,120 @@ internally consistent. Current course is the latter.
 
 **Tags**: atac, accessibility, chrombpnet, 5-prime, input-definition, read-length,
 comparability, transfer, telohaec
+
+### [2026-09-03] Adopt the wider receptive field for the multimodal model, reversing the earlier verdict
+
+**Context**: `n_layers` 8 gives a ~1.1 kb receptive field against an H3K27ac extent of several kb. The sequence-only arm of the `n_layers` 10 experiment finished first and was null on the top quintile (−0.006 K562, +0.010 GM12878, both p=0.53), which was recorded as "resolved, do not pursue".
+
+**Decision**: Adopt ~4.2 kb for the multimodal model. The multimodal arm gains +0.027 (K562, p=0.006) and +0.014 (GM12878, p=0.025) on the top quintile, all five folds rising in both cell types, with the accessibility residual up from 0.502 to 0.547 and 0.397 to 0.469.
+
+**Alternatives considered**:
+- Keep `n_layers` 8 — rejected: the gain is significant, replicated, and on the reporting standard.
+- Adopt it for sequence-only too — rejected: sequence gains only on all elements, which is the dead-vs-active contrast.
+- Wait for the ATAC-only arm before deciding — the arm is running and will refine the mechanism, but it cannot overturn a replicated multimodal gain.
+
+**Rationale**: The useful long-range information is in the accessibility track. A wider window lets the model read accessibility over a larger neighbourhood; sequence-only cannot exploit 4 kb of sequence, so for it the extra window is noise.
+
+**Consequences**: The deployed model geometry changes to trimming 2093 / in-window 5186, ~2-3x the training time per fold. Transfer and deployment comparisons were run at `n_layers` 8 and should be re-checked. Recorded reversal: the earlier decision generalised from one arm of a two-arm experiment.
+
+**Tags**: architecture, receptive-field, multimodal, reversal, accessibility
+
+---
+
+### [2026-09-03] Fragment-size accessibility channels are 5' insertion counts and include the flat track
+
+**Context**: Fragment length distinguishes nucleosome-free from nucleosome-occupied DNA and flat coverage discards it. An earlier pair of channels existed but used `genomecov -bg` over the full fragment interval, the read-length-dependent smear already removed from the flat track, and covered only half the fragments.
+
+**Decision**: Five channels `[all, sub ≤139, mono 140–329, di 330–620, poly ≥621]`, every one a single-base Tn5 insertion count, with `all` being `atac_5p.bw` itself. Bin edges sit in the troughs of the measured fragment-length distribution.
+
+**Alternatives considered**:
+- Full-fragment coverage for the stratified channels — rejected: it would place two incompatible accessibility conventions in one input tensor, and a mono-nucleosomal interval marking occupancy directly is not worth that.
+- The original `sub`/`mono` edges — rejected: they sat inside the modes and covered half the fragments.
+- Stratified channels only, without the flat one — rejected: including `all` is what makes the input a provable superset, since the first convolution can zero the four bins and reproduce the baseline exactly.
+
+**Rationale**: The bins partition the flat track exactly — zero discrepancy across 545,661,218 insertions — so any difference is added information rather than a changed input. The Tn5 shift was measured against the existing track (r = 1.0000 at +4/−5) rather than assumed, which also proved the PE BAMs and tagAligns hold the same reads.
+
+**Consequences**: Gains +0.0135 on the top quintile (p = 0.0034). `atac_sub.bw` and `atac_mono.bw` are superseded and must not be used with a 5' model. GM12878 replication needs its PE BAMs downloaded, since fragment length lives in TLEN.
+
+**Tags**: atac, fragment-length, accessibility, input-design, superset, tn5
+
+---
+
+### [2026-09-03] Inject predicted H3K27ac into ABC as a painted bigWig, with qnorm left on
+
+**Context**: The ABC activity term is `geomean(accessibility, H3K27ac)` computed from read counts over candidate regions. Our model emits a per-element scalar from 5' end counts in a ±500 bp window, which is not obviously commensurate with read counting over an element.
+
+**Decision**: Write a bigWig with each candidate region painted at `predicted_counts / width` and pass it in the `H3K27ac` column. Keep `use_qnorm: True`. Assemble the genome-wide track from the five fold models, each applied only to the chromosomes it held out.
+
+**Alternatives considered**:
+- Patch ABC to accept a precomputed activity column — rejected as unnecessary: `neighborhoods.py:count_bigwig` already sums bigWig values per region, so a painted track is counted exactly as a real one.
+- Turn qnorm off — rejected: it is what makes the injection scale-free, and the ABC score thresholds are calibrated on qnorm'd values.
+- Paint the prediction itself, so the region sum scales with width as real read counts do — kept as `--paint density`; the default makes ABC's sum recover the model's prediction exactly, since the model predicts a fixed ±500 bp window regardless of element width.
+- A five-model ensemble for the cross-cell-type arms, where leakage is not a concern — rejected: it would give those arms an ensembling advantage the same-cell-type arms cannot have.
+
+**Rationale**: `run_qnorm` is rank-based, mapping each region's within-sample quantile onto the K562 reference, so only the rank order of the injected values matters. That dissolves the units mismatch. Validated on chr22: predicted-vs-observed H3K27ac Spearman 0.716 all regions and 0.550 top quintile, against 0.633 and 0.469 for raw ATAC, so the prediction is a better proxy than the accessibility it would replace.
+
+**Consequences**: ABC scores our models on the ATAC-derived candidate regions while they were trained on the DNase-derived set, a train/score element mismatch inside the comparison; a matched run is training. Every arm must share one region set, so `Peaks/` is pre-populated from the completed July run and must be copied after the bigwigs exist or Snakemake re-runs region calling.
+
+**Tags**: abc, crispr-benchmark, activity, qnorm, injection, leakage
+
+---
+
+### [2026-09-03] Regression gates on inference code compare within a tolerance, never byte-identically
+
+**Context**: `2.15` is shared with the transfer and residual-grid results, so generalising it needed a gate. The first gate required the per-fold table to be byte-identical to a stored one, and it failed on differences in the 4th decimal place while region counts matched exactly.
+
+**Decision**: Assert exact equality only on deterministic quantities — fold set, config labels, `n` per fold, and the presence of every reference column — and compare metrics within 1e-3.
+
+**Alternatives considered**:
+- Keep byte-identity and pin the GPU model — rejected: it makes the gate depend on scheduling.
+- Drop the gate — rejected: it is the only thing standing between a refactor and silently changed published numbers.
+
+**Rationale**: cuDNN convolution is not bit-reproducible across GPU models, so re-scoring the same weights on a different node moves the 4th decimal place with the code untouched. The tolerance is chosen from the science's noise floor — between-fold sd is 0.041-0.046 — rather than from float precision, so a real behavioural change moves numbers by far more than the gate absorbs.
+
+**Consequences**: `2.18.compare_perfold_tables.py` implements it and states the tolerance and its justification in its own docstring, so the next reader does not tighten it back to zero. Added columns are reported and skipped; missing columns fail.
+
+**Tags**: testing, regression, determinism, tolerance, evaluation
+
+---
+
+### [2026-09-03] Test-time reverse-complement averaging stays opt-in
+
+**Context**: Averaging each prediction with its reverse complement at inference costs one extra forward pass and no retraining, and it improves every model: +0.0162 sequence only, +0.0081 multimodal, +0.0016 for ATAC only, which is the negative control and the only non-significant row.
+
+**Decision**: Ship it behind `--rc-average`, off by default.
+
+**Alternatives considered**:
+- Make it the default immediately — rejected for now: it would shift every number in the report by a small amount, so past and future tables would not be comparable unless all are re-scored together.
+- Leave it unimplemented — rejected: it is the cheapest measured gain on the project.
+
+**Rationale**: The gain is real but small relative to the comparisons being made, and comparability across the report matters more than a few thousandths until the tables are re-scored as a set.
+
+**Consequences**: Adopting it later means re-running every evaluation config in one batch. Listed as an explicit adopt-or-not decision in the TODO.
+
+**Tags**: inference, reverse-complement, adoption, comparability
+
+---
+
+### [2026-09-03] Split the analysis into three reports along stability, not topic
+
+**Context**: The single report has reached 17 sections and 13 figures, mixing stable characterisation with an actively churning set of architecture experiments.
+
+**Decision**: Three documents, ordered by how often they change.
+
+1. **Data characterisation** — what the data is and what is predictable in principle. H3K27ac position and width, the counting-window trade-off, both ceilings (counts and profile shape), ATAC fragment-length structure, ATAC-H3K27ac coupling across cell types, element derivation and panel caveats, ATAC input conventions. Every ceiling lives here and the other two reports cite it.
+2. **Evaluation methodology** — short, concrete, framed as standing cautions with the incident that motivated each. Why the top quintile leads, what the residual metric means and its artifact controls, paired within-fold testing against a between-fold sd of 0.041-0.046, the transfer-versus-deployment evaluation DESIGN, and ABC/CRISPR as the downstream metric.
+3. **Design decisions** — the workbench. Spine is a decision table of change / effect on the top quintile / verdict, with evidence below: input modality, residual versus total objective, receptive field, fragment channels, RC averaging, target definition, window size, `count_loss_weight`, the profile head, element derivation, and the transfer RESULTS with the deployment verdict.
+
+**Alternatives considered**:
+- Keep one report — rejected: the churn in category 3 forces re-reading stable material to find what changed.
+- Split by audience, a short headline plus a technical appendix — rejected for a working project: it optimises for a reader who is not the one using this daily.
+- Put transfer entirely in report 2 or entirely in report 3 — rejected: transferability is both an evaluation axis and a deployment decision, so the design goes in 2 and the results in 3.
+
+**Rationale**: Splitting on churn rate isolates the part that moves. Reports 1 and 2 become citable references; report 3 is expected to change every week.
+
+**Consequences**: Figure numbering restarts per report, so every legend and prose cross-reference is touched — mechanical, and the numbers manifest lint catches any reference that stops resolving. `render_report.py` resolves `outputs/numbers.json` relative to the report, so all three sharing one directory keeps one manifest. Deferred until the runs in flight land, so the split happens once.
+
+**Tags**: reporting, organisation, documentation, churn
+
+---
