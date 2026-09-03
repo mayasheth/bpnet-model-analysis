@@ -82,15 +82,19 @@ a property of the objective and needs no further per-cell-type testing.
 
 ## Architecture, in expected order of value
 
-- [x] **Wider receptive field — RESOLVED for sequence mode: do not pursue.** `n_layers` 10
-      (~4.2 kb vs ~1.1 kb), 5 folds, both cell types, paired within fold on the intersection
-      of valid regions. All elements +0.043 (K562, p=0.003) and +0.045 (GM12878, p=0.005);
-      top quintile −0.006 and +0.010, both p=0.53, sign-flipping. The extra context separates
-      dead from active regions and adds nothing among active elements, so on the reporting
-      standard it does not help. Revisit only if the application becomes on/off
-      classification. Results in `wide_seqonly_{k562,gm12878}_*.tsv`.
-      Multimodal arm still training; expected to show less, since ATAC already supplies the
-      long-range signal. ATAC-only arm never submitted and no longer worth it.
+- [~] **Wider receptive field — ADOPT for multimodal; the earlier "do not pursue" was wrong.**
+      `n_layers` 10 (~4.2 kb vs ~1.1 kb), 5 folds, both cell types, paired within fold on the
+      intersection of valid regions.
+      Top quintile: sequence-only −0.006 (K562) and +0.010 (GM12878), both p=0.53;
+      **multimodal +0.027 (p=0.006) and +0.014 (p=0.025)**, all five folds rising in both.
+      Accessibility residual 0.502 → 0.547 and 0.397 → 0.469.
+      Results in `wide_{k562,gm12878}_*.tsv`; report Fig. 10.
+      - [ ] **ATAC-only wide arm is RUNNING** (10 fold-jobs, submitted 2026-09-03). If it
+            reproduces the multimodal gain, the extra context is used purely as accessibility
+            neighbourhood and sequence contributes nothing to it — which would also mean the
+            deployed model should simply be widened.
+      - [ ] Decide whether to re-run the transfer and deployment comparisons at
+            `n_layers` 10, since those used the narrow multimodal model.
 - [ ] **Decide what to do with the profile head — one decision, three options.** The 1 bp
       profile task is close to unlearnable: measured inter-replicate ceiling is 0.21 (K562)
       and 0.18 (GM12878) on the top quintile, rising to 0.72 and 0.70 at 50 bp binning

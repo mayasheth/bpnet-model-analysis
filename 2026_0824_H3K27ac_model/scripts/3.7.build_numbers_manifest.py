@@ -146,22 +146,35 @@ for pref, tag in [("fiveprime_", "k562"), ("residual_grid_", "k562_resgrid"),
 # to subtract two means that were never the thing tested.
 from scipy.stats import ttest_rel as _ttest_rel
 for cell in ("k562", "gm12878"):
-    d = tsv(f"wide_seqonly_{cell}_per_fold.tsv")
-    if d is None:
-        continue
-    src = f"results/wide_seqonly_{cell}_per_fold.tsv"
-    for metric, mtag in (("overall_pearson", "all"), ("overall_pearson_topq", "topq")):
-        w = d[d["config"] == "sequence_WIDE"].sort_values("fold")[metric].to_numpy(float)
-        n = d[d["config"] == "sequence_narrow"].sort_values("fold")[metric].to_numpy(float)
-        if len(w) != len(n) or len(w) == 0:
+    for pref in (f"wide_{cell}_", f"wide_seqonly_{cell}_"):
+        d = tsv(f"{pref}per_fold.tsv")
+        if d is None:
             continue
-        diff = w - n
-        add(f"wide_delta_{cell}_{mtag}", diff.mean(), src,
-            "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field")
-        add(f"wide_p_{cell}_{mtag}", _ttest_rel(w, n).pvalue, src, "paired t-test",
-            roundings=(4, 3, 2))
-        add(f"wide_narrow_{cell}_{mtag}", n.mean(), src)
-        add(f"wide_wide_{cell}_{mtag}", w.mean(), src)
+        src = f"results/{pref}per_fold.tsv"
+        labels = set(d["config"])
+        for mode in ("sequence", "multimodal"):
+            if f"{mode}_WIDE" not in labels:
+                continue
+            for metric, mtag in (("overall_pearson", "all"),
+                                 ("overall_pearson_topq", "topq"),
+                                 ("profile_pearson", "profall"),
+                                 ("profile_pearson_topq", "proftopq")):
+                if metric not in d.columns:
+                    continue
+                w = d[d["config"] == f"{mode}_WIDE"].sort_values("fold")[metric].to_numpy(float)
+                n = d[d["config"] == f"{mode}_narrow"].sort_values("fold")[metric].to_numpy(float)
+                if len(w) != len(n) or len(w) == 0:
+                    continue
+                diff = w - n
+                # `sequence` keys keep their original names so existing prose stays valid.
+                key = cell if mode == "sequence" else f"{cell}_{mode}"
+                add(f"wide_delta_{key}_{mtag}", diff.mean(), src,
+                    "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field")
+                add(f"wide_p_{key}_{mtag}", _ttest_rel(w, n).pvalue, src, "paired t-test",
+                    roundings=(4, 3, 2))
+                add(f"wide_narrow_{key}_{mtag}", n.mean(), src)
+                add(f"wide_wide_{key}_{mtag}", w.mean(), src)
+        break   # prefer the full table; fall back to seqonly only if it is absent
 
 # --- profile-shape ceiling by bin size --------------------------------------
 for cell in ("k562", "gm12878"):
