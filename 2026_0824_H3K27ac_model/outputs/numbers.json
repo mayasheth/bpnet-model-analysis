@@ -6310,6 +6310,1700 @@
    "note": ""
   },
   {
+   "name": "prof_k562_sequence5p_overall_pearson",
+   "value": 0.494,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_sequence5p_overall_pearson__r2",
+   "value": 0.49,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_sequence5p_overall_pearson__r1",
+   "value": 0.5,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_sequence5p_overall_pearson_topq",
+   "value": 0.381,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_sequence5p_overall_pearson_topq__r2",
+   "value": 0.38,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_sequence5p_overall_pearson_topq__r1",
+   "value": 0.4,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_sequence5p_residual_pearson",
+   "value": 0.149,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_sequence5p_residual_pearson__r2",
+   "value": 0.15,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_sequence5p_residual_pearson__r1",
+   "value": 0.1,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_sequence5p_incremental_r2",
+   "value": -0.418,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_sequence5p_incremental_r2__r2",
+   "value": -0.42,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_sequence5p_incremental_r2__r1",
+   "value": -0.4,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_sequence5p_incremental_r2_topq",
+   "value": -0.156,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_sequence5p_incremental_r2_topq__r2",
+   "value": -0.16,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_sequence5p_incremental_r2_topq__r1",
+   "value": -0.2,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_sequence5p_profile_pearson",
+   "value": 0.055,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_sequence5p_profile_pearson__r2",
+   "value": 0.06,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_sequence5p_profile_pearson__r1",
+   "value": 0.1,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_sequence5p_profile_pearson_topq",
+   "value": 0.144,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_sequence5p_profile_pearson_topq__r2",
+   "value": 0.14,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_sequence5p_profile_pearson_topq__r1",
+   "value": 0.1,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_sequence5p_profile_jsd",
+   "value": 0.604,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_sequence5p_profile_jsd__r2",
+   "value": 0.6,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_multimodal5p_overall_pearson",
+   "value": 0.874,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_multimodal5p_overall_pearson__r2",
+   "value": 0.87,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_multimodal5p_overall_pearson__r1",
+   "value": 0.9,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_multimodal5p_overall_pearson_topq",
+   "value": 0.687,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_multimodal5p_overall_pearson_topq__r2",
+   "value": 0.69,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_multimodal5p_overall_pearson_topq__r1",
+   "value": 0.7,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_multimodal5p_residual_pearson",
+   "value": 0.551,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_multimodal5p_residual_pearson__r2",
+   "value": 0.55,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_multimodal5p_residual_pearson__r1",
+   "value": 0.6,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_multimodal5p_incremental_r2",
+   "value": 0.102,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_multimodal5p_incremental_r2__r2",
+   "value": 0.1,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_multimodal5p_incremental_r2_topq",
+   "value": 0.169,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_multimodal5p_incremental_r2_topq__r2",
+   "value": 0.17,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_multimodal5p_incremental_r2_topq__r1",
+   "value": 0.2,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_multimodal5p_profile_pearson",
+   "value": 0.063,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_multimodal5p_profile_pearson__r2",
+   "value": 0.06,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_multimodal5p_profile_pearson__r1",
+   "value": 0.1,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_multimodal5p_profile_pearson_topq",
+   "value": 0.169,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_multimodal5p_profile_pearson_topq__r2",
+   "value": 0.17,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_multimodal5p_profile_pearson_topq__r1",
+   "value": 0.2,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_multimodal5p_profile_jsd",
+   "value": 0.602,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_multimodal5p_profile_jsd__r2",
+   "value": 0.6,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_residual_sequence_overall_pearson",
+   "value": 0.856,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_residual_sequence_overall_pearson__r2",
+   "value": 0.86,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_residual_sequence_overall_pearson__r1",
+   "value": 0.9,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_residual_sequence_overall_pearson_topq",
+   "value": 0.646,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_residual_sequence_overall_pearson_topq__r2",
+   "value": 0.65,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_residual_sequence_overall_pearson_topq__r1",
+   "value": 0.6,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_residual_sequence_residual_pearson",
+   "value": 0.459,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_residual_sequence_residual_pearson__r2",
+   "value": 0.46,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_residual_sequence_residual_pearson__r1",
+   "value": 0.5,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_residual_sequence_incremental_r2",
+   "value": 0.071,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_residual_sequence_incremental_r2__r2",
+   "value": 0.07,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_residual_sequence_incremental_r2__r1",
+   "value": 0.1,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_residual_sequence_incremental_r2_topq",
+   "value": 0.115,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_residual_sequence_incremental_r2_topq__r2",
+   "value": 0.12,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_residual_sequence_incremental_r2_topq__r1",
+   "value": 0.1,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_residual_sequence_profile_pearson",
+   "value": 0.057,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_residual_sequence_profile_pearson__r2",
+   "value": 0.06,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_residual_sequence_profile_pearson__r1",
+   "value": 0.1,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_residual_sequence_profile_pearson_topq",
+   "value": 0.15,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_residual_sequence_profile_pearson_topq__r1",
+   "value": 0.1,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_residual_sequence_profile_jsd",
+   "value": 0.604,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_residual_sequence_profile_jsd__r2",
+   "value": 0.6,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_residual_multimodal_overall_pearson",
+   "value": 0.867,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_residual_multimodal_overall_pearson__r2",
+   "value": 0.87,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_residual_multimodal_overall_pearson__r1",
+   "value": 0.9,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_residual_multimodal_overall_pearson_topq",
+   "value": 0.67,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_residual_multimodal_overall_pearson_topq__r1",
+   "value": 0.7,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_residual_multimodal_residual_pearson",
+   "value": 0.514,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_residual_multimodal_residual_pearson__r2",
+   "value": 0.51,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_residual_multimodal_residual_pearson__r1",
+   "value": 0.5,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_residual_multimodal_incremental_r2",
+   "value": 0.09,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_residual_multimodal_incremental_r2__r1",
+   "value": 0.1,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_residual_multimodal_incremental_r2_topq",
+   "value": 0.146,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_residual_multimodal_incremental_r2_topq__r2",
+   "value": 0.15,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_residual_multimodal_incremental_r2_topq__r1",
+   "value": 0.1,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_residual_multimodal_profile_pearson",
+   "value": 0.063,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_residual_multimodal_profile_pearson__r2",
+   "value": 0.06,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_residual_multimodal_profile_pearson__r1",
+   "value": 0.1,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_residual_multimodal_profile_pearson_topq",
+   "value": 0.167,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_residual_multimodal_profile_pearson_topq__r2",
+   "value": 0.17,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_residual_multimodal_profile_pearson_topq__r1",
+   "value": 0.2,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_residual_multimodal_profile_jsd",
+   "value": 0.602,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_residual_multimodal_profile_jsd__r2",
+   "value": 0.6,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_residual_atac_overall_pearson",
+   "value": 0.813,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_residual_atac_overall_pearson__r2",
+   "value": 0.81,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_residual_atac_overall_pearson__r1",
+   "value": 0.8,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_residual_atac_overall_pearson_topq",
+   "value": 0.546,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_residual_atac_overall_pearson_topq__r2",
+   "value": 0.55,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_residual_atac_overall_pearson_topq__r1",
+   "value": 0.5,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_residual_atac_residual_pearson",
+   "value": -0.003,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_residual_atac_residual_pearson__r2",
+   "value": -0.0,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_residual_atac_incremental_r2",
+   "value": -0.0,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_residual_atac_incremental_r2_topq",
+   "value": -0.003,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_residual_atac_incremental_r2_topq__r2",
+   "value": -0.0,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_residual_atac_profile_pearson",
+   "value": 0.035,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_residual_atac_profile_pearson__r2",
+   "value": 0.04,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_residual_atac_profile_pearson__r1",
+   "value": 0.0,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_residual_atac_profile_pearson_topq",
+   "value": 0.098,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_residual_atac_profile_pearson_topq__r2",
+   "value": 0.1,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_residual_atac_profile_jsd",
+   "value": 0.609,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_residual_atac_profile_jsd__r2",
+   "value": 0.61,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_residual_atac_profile_jsd__r1",
+   "value": 0.6,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_atac5p_overall_pearson",
+   "value": 0.814,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_atac5p_overall_pearson__r2",
+   "value": 0.81,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_atac5p_overall_pearson__r1",
+   "value": 0.8,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_atac5p_overall_pearson_topq",
+   "value": 0.549,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_atac5p_overall_pearson_topq__r2",
+   "value": 0.55,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_atac5p_overall_pearson_topq__r1",
+   "value": 0.5,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_atac5p_incremental_r2",
+   "value": 0.0,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_atac5p_incremental_r2_topq",
+   "value": 0.0,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_atac5p_profile_pearson",
+   "value": 0.035,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_atac5p_profile_pearson__r2",
+   "value": 0.04,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_atac5p_profile_pearson__r1",
+   "value": 0.0,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_atac5p_profile_pearson_topq",
+   "value": 0.098,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_atac5p_profile_pearson_topq__r2",
+   "value": 0.1,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_atac5p_profile_jsd",
+   "value": 0.609,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "prof_k562_atac5p_profile_jsd__r2",
+   "value": 0.61,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "prof_k562_atac5p_profile_jsd__r1",
+   "value": 0.6,
+   "source": "results/prof_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_sequence5p_overall_pearson",
+   "value": 0.513,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_sequence5p_overall_pearson__r2",
+   "value": 0.51,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_sequence5p_overall_pearson__r1",
+   "value": 0.5,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_sequence5p_overall_pearson_topq",
+   "value": 0.397,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_sequence5p_overall_pearson_topq__r2",
+   "value": 0.4,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_sequence5p_residual_pearson",
+   "value": 0.148,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_sequence5p_residual_pearson__r2",
+   "value": 0.15,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_sequence5p_residual_pearson__r1",
+   "value": 0.1,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_sequence5p_incremental_r2",
+   "value": -0.4,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_sequence5p_incremental_r2_topq",
+   "value": -0.145,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_sequence5p_incremental_r2_topq__r2",
+   "value": -0.14,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_sequence5p_incremental_r2_topq__r1",
+   "value": -0.1,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_sequence5p_profile_pearson",
+   "value": 0.057,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_sequence5p_profile_pearson__r2",
+   "value": 0.06,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_sequence5p_profile_pearson__r1",
+   "value": 0.1,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_sequence5p_profile_pearson_topq",
+   "value": 0.15,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_sequence5p_profile_pearson_topq__r1",
+   "value": 0.1,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_sequence5p_profile_jsd",
+   "value": 0.604,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_sequence5p_profile_jsd__r2",
+   "value": 0.6,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_multimodal5p_overall_pearson",
+   "value": 0.877,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_multimodal5p_overall_pearson__r2",
+   "value": 0.88,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_multimodal5p_overall_pearson__r1",
+   "value": 0.9,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_multimodal5p_overall_pearson_topq",
+   "value": 0.695,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_multimodal5p_overall_pearson_topq__r2",
+   "value": 0.69,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_multimodal5p_overall_pearson_topq__r1",
+   "value": 0.7,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_multimodal5p_residual_pearson",
+   "value": 0.559,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_multimodal5p_residual_pearson__r2",
+   "value": 0.56,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_multimodal5p_residual_pearson__r1",
+   "value": 0.6,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_multimodal5p_incremental_r2",
+   "value": 0.105,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_multimodal5p_incremental_r2__r2",
+   "value": 0.1,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_multimodal5p_incremental_r2_topq",
+   "value": 0.179,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_multimodal5p_incremental_r2_topq__r2",
+   "value": 0.18,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_multimodal5p_incremental_r2_topq__r1",
+   "value": 0.2,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_multimodal5p_profile_pearson",
+   "value": 0.064,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_multimodal5p_profile_pearson__r2",
+   "value": 0.06,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_multimodal5p_profile_pearson__r1",
+   "value": 0.1,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_multimodal5p_profile_pearson_topq",
+   "value": 0.172,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_multimodal5p_profile_pearson_topq__r2",
+   "value": 0.17,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_multimodal5p_profile_pearson_topq__r1",
+   "value": 0.2,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_multimodal5p_profile_jsd",
+   "value": 0.602,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_multimodal5p_profile_jsd__r2",
+   "value": 0.6,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_residual_sequence_overall_pearson",
+   "value": 0.859,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_residual_sequence_overall_pearson__r2",
+   "value": 0.86,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_residual_sequence_overall_pearson__r1",
+   "value": 0.9,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_residual_sequence_overall_pearson_topq",
+   "value": 0.651,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_residual_sequence_overall_pearson_topq__r2",
+   "value": 0.65,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_residual_sequence_overall_pearson_topq__r1",
+   "value": 0.7,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_residual_sequence_residual_pearson",
+   "value": 0.47,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_residual_sequence_residual_pearson__r1",
+   "value": 0.5,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_residual_sequence_incremental_r2",
+   "value": 0.075,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_residual_sequence_incremental_r2__r2",
+   "value": 0.07,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_residual_sequence_incremental_r2__r1",
+   "value": 0.1,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_residual_sequence_incremental_r2_topq",
+   "value": 0.12,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_residual_sequence_incremental_r2_topq__r1",
+   "value": 0.1,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_residual_sequence_profile_pearson",
+   "value": 0.059,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_residual_sequence_profile_pearson__r2",
+   "value": 0.06,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_residual_sequence_profile_pearson__r1",
+   "value": 0.1,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_residual_sequence_profile_pearson_topq",
+   "value": 0.155,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_residual_sequence_profile_pearson_topq__r2",
+   "value": 0.15,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_residual_sequence_profile_pearson_topq__r1",
+   "value": 0.2,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_residual_sequence_profile_jsd",
+   "value": 0.603,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_residual_sequence_profile_jsd__r2",
+   "value": 0.6,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_residual_multimodal_overall_pearson",
+   "value": 0.871,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_residual_multimodal_overall_pearson__r2",
+   "value": 0.87,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_residual_multimodal_overall_pearson__r1",
+   "value": 0.9,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_residual_multimodal_overall_pearson_topq",
+   "value": 0.677,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_residual_multimodal_overall_pearson_topq__r2",
+   "value": 0.68,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_residual_multimodal_overall_pearson_topq__r1",
+   "value": 0.7,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_residual_multimodal_residual_pearson",
+   "value": 0.529,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_residual_multimodal_residual_pearson__r2",
+   "value": 0.53,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_residual_multimodal_residual_pearson__r1",
+   "value": 0.5,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_residual_multimodal_incremental_r2",
+   "value": 0.095,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_residual_multimodal_incremental_r2__r2",
+   "value": 0.1,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_residual_multimodal_incremental_r2_topq",
+   "value": 0.154,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_residual_multimodal_incremental_r2_topq__r2",
+   "value": 0.15,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_residual_multimodal_incremental_r2_topq__r1",
+   "value": 0.2,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_residual_multimodal_profile_pearson",
+   "value": 0.064,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_residual_multimodal_profile_pearson__r2",
+   "value": 0.06,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_residual_multimodal_profile_pearson__r1",
+   "value": 0.1,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_residual_multimodal_profile_pearson_topq",
+   "value": 0.172,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_residual_multimodal_profile_pearson_topq__r2",
+   "value": 0.17,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_residual_multimodal_profile_pearson_topq__r1",
+   "value": 0.2,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_residual_multimodal_profile_jsd",
+   "value": 0.602,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_residual_multimodal_profile_jsd__r2",
+   "value": 0.6,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_residual_atac_overall_pearson",
+   "value": 0.814,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_residual_atac_overall_pearson__r2",
+   "value": 0.81,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_residual_atac_overall_pearson__r1",
+   "value": 0.8,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_residual_atac_overall_pearson_topq",
+   "value": 0.548,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_residual_atac_overall_pearson_topq__r2",
+   "value": 0.55,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_residual_atac_overall_pearson_topq__r1",
+   "value": 0.5,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_residual_atac_residual_pearson",
+   "value": -0.002,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_residual_atac_residual_pearson__r2",
+   "value": -0.0,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_residual_atac_incremental_r2",
+   "value": -0.0,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_residual_atac_incremental_r2_topq",
+   "value": -0.003,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_residual_atac_incremental_r2_topq__r2",
+   "value": -0.0,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_residual_atac_profile_pearson",
+   "value": 0.035,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_residual_atac_profile_pearson__r2",
+   "value": 0.04,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_residual_atac_profile_pearson__r1",
+   "value": 0.0,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_residual_atac_profile_pearson_topq",
+   "value": 0.099,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_residual_atac_profile_pearson_topq__r2",
+   "value": 0.1,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_residual_atac_profile_jsd",
+   "value": 0.609,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_residual_atac_profile_jsd__r2",
+   "value": 0.61,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_residual_atac_profile_jsd__r1",
+   "value": 0.6,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_atac5p_overall_pearson",
+   "value": 0.814,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_atac5p_overall_pearson__r2",
+   "value": 0.81,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_atac5p_overall_pearson__r1",
+   "value": 0.8,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_atac5p_overall_pearson_topq",
+   "value": 0.551,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_atac5p_overall_pearson_topq__r2",
+   "value": 0.55,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_atac5p_overall_pearson_topq__r1",
+   "value": 0.6,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_atac5p_incremental_r2",
+   "value": 0.0,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_atac5p_incremental_r2_topq",
+   "value": 0.0,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_atac5p_profile_pearson",
+   "value": 0.035,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_atac5p_profile_pearson__r2",
+   "value": 0.04,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_atac5p_profile_pearson__r1",
+   "value": 0.0,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_atac5p_profile_pearson_topq",
+   "value": 0.099,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_atac5p_profile_pearson_topq__r2",
+   "value": 0.1,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_atac5p_profile_jsd",
+   "value": 0.609,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "profrc_k562_atac5p_profile_jsd__r2",
+   "value": 0.61,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "profrc_k562_atac5p_profile_jsd__r1",
+   "value": 0.6,
+   "source": "results/prof_rc_residual_grid_fold_summary.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
    "name": "wide_delta_k562_all",
    "value": 0.04304,
    "source": "results/wide_k562_per_fold.tsv",
@@ -7918,6 +9612,517 @@
    "source": "results/wide_gm12878_per_fold.tsv",
    "derived": true,
    "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "frag_flat_all",
+   "value": 0.87554,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "frag_flat_all__r3",
+   "value": 0.876,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "frag_flat_all__r2",
+   "value": 0.88,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "frag_flat_all__r1",
+   "value": 0.9,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "frag_chan_all",
+   "value": 0.87792,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "frag_chan_all__r3",
+   "value": 0.878,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "frag_chan_all__r2",
+   "value": 0.88,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "frag_chan_all__r1",
+   "value": 0.9,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "frag_delta_all",
+   "value": 0.00238,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 5 fragment channels minus flat ATAC"
+  },
+  {
+   "name": "frag_delta_all__r4",
+   "value": 0.0024,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 5 fragment channels minus flat ATAC (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "frag_delta_all__r3",
+   "value": 0.002,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 5 fragment channels minus flat ATAC (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "frag_delta_all__r2",
+   "value": 0.0,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 5 fragment channels minus flat ATAC (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "frag_p_all",
+   "value": 0.030045,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test"
+  },
+  {
+   "name": "frag_p_all__r4",
+   "value": 0.03,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "frag_flat_topq",
+   "value": 0.6898,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "frag_flat_topq__r3",
+   "value": 0.69,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "frag_flat_topq__r1",
+   "value": 0.7,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "frag_chan_topq",
+   "value": 0.7033,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "frag_chan_topq__r3",
+   "value": 0.703,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "frag_chan_topq__r2",
+   "value": 0.7,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "frag_delta_topq",
+   "value": 0.0135,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 5 fragment channels minus flat ATAC"
+  },
+  {
+   "name": "frag_delta_topq__r3",
+   "value": 0.014,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 5 fragment channels minus flat ATAC (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "frag_delta_topq__r2",
+   "value": 0.01,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 5 fragment channels minus flat ATAC (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "frag_p_topq",
+   "value": 0.003418,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test"
+  },
+  {
+   "name": "frag_p_topq__r4",
+   "value": 0.0034,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "frag_p_topq__r3",
+   "value": 0.003,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "frag_p_topq__r2",
+   "value": 0.0,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "frag_flat_resid",
+   "value": 0.50166,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "frag_flat_resid__r3",
+   "value": 0.502,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "frag_flat_resid__r2",
+   "value": 0.5,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "frag_chan_resid",
+   "value": 0.51588,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "frag_chan_resid__r3",
+   "value": 0.516,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "frag_chan_resid__r2",
+   "value": 0.52,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "frag_chan_resid__r1",
+   "value": 0.5,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "frag_delta_resid",
+   "value": 0.01422,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 5 fragment channels minus flat ATAC"
+  },
+  {
+   "name": "frag_delta_resid__r4",
+   "value": 0.0142,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 5 fragment channels minus flat ATAC (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "frag_delta_resid__r3",
+   "value": 0.014,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 5 fragment channels minus flat ATAC (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "frag_delta_resid__r2",
+   "value": 0.01,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 5 fragment channels minus flat ATAC (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "frag_p_resid",
+   "value": 0.029603,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test"
+  },
+  {
+   "name": "frag_p_resid__r4",
+   "value": 0.0296,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "frag_p_resid__r3",
+   "value": 0.03,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "frag_flat_proftopq",
+   "value": 0.17146,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "frag_flat_proftopq__r3",
+   "value": 0.171,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "frag_flat_proftopq__r2",
+   "value": 0.17,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "frag_flat_proftopq__r1",
+   "value": 0.2,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "frag_chan_proftopq",
+   "value": 0.17252,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "frag_chan_proftopq__r3",
+   "value": 0.173,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "frag_chan_proftopq__r2",
+   "value": 0.17,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "frag_chan_proftopq__r1",
+   "value": 0.2,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "frag_delta_proftopq",
+   "value": 0.00106,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 5 fragment channels minus flat ATAC"
+  },
+  {
+   "name": "frag_delta_proftopq__r4",
+   "value": 0.0011,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 5 fragment channels minus flat ATAC (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "frag_delta_proftopq__r3",
+   "value": 0.001,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 5 fragment channels minus flat ATAC (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "frag_delta_proftopq__r2",
+   "value": 0.0,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 5 fragment channels minus flat ATAC (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "frag_p_proftopq",
+   "value": 0.010861,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test"
+  },
+  {
+   "name": "frag_p_proftopq__r4",
+   "value": 0.0109,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "frag_p_proftopq__r3",
+   "value": 0.011,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "frag_p_proftopq__r2",
+   "value": 0.01,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "frag_flat_incr2topq",
+   "value": 0.13706,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "frag_flat_incr2topq__r3",
+   "value": 0.137,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "frag_flat_incr2topq__r2",
+   "value": 0.14,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "frag_flat_incr2topq__r1",
+   "value": 0.1,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "frag_chan_incr2topq",
+   "value": 0.1559,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "frag_chan_incr2topq__r3",
+   "value": 0.156,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "frag_chan_incr2topq__r2",
+   "value": 0.16,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "frag_chan_incr2topq__r1",
+   "value": 0.2,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "frag_delta_incr2topq",
+   "value": 0.01884,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 5 fragment channels minus flat ATAC"
+  },
+  {
+   "name": "frag_delta_incr2topq__r4",
+   "value": 0.0188,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 5 fragment channels minus flat ATAC (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "frag_delta_incr2topq__r3",
+   "value": 0.019,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 5 fragment channels minus flat ATAC (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "frag_delta_incr2topq__r2",
+   "value": 0.02,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 5 fragment channels minus flat ATAC (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "frag_p_incr2topq",
+   "value": 0.003566,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test"
+  },
+  {
+   "name": "frag_p_incr2topq__r4",
+   "value": 0.0036,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "frag_p_incr2topq__r3",
+   "value": 0.004,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "frag_p_incr2topq__r2",
+   "value": 0.0,
+   "source": "results/fragchan_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 2 dp as quoted)"
   },
   {
    "name": "profceil_k562_all_1bp",
