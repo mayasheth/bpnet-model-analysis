@@ -189,3 +189,24 @@ Two consequences:
 - A job whose log ends at the last thing the Python script printed, with the wrapper's own
   trailing `echo` missing, is hung rather than working. That absent final line is the
   cheapest signal, so keep an `echo` after the python call in every submit script.
+
+
+## Match the partition to the job, not to habit
+
+Three separate costs today came from putting the wrong job on the wrong partition.
+
+- **Long CPU jobs belong on `normal`, not `owners`.** The GM12878 fragment-channel build
+  (~3.5 h, a full pass over three 9 GB BAMs) was preempted after 40 minutes. It requeues
+  automatically, but its expensive intermediate lives in `$SCRATCH` under a cleanup trap, so
+  a preemption loses everything. `normal` is not preemptible; use it whenever a single
+  uncheckpointed step runs longer than about an hour. `owners` remains right for training,
+  which is short per fold and cheap to lose.
+- **Pure inference does not need a GPU.** The genome-wide ABC predictions sat behind a
+  depleted GPU fairshare while hundreds of CPU nodes were idle. `4.1` selects its device via
+  `torch.cuda.is_available()`, so the CPU twin (`4.4`) needed no code change and 153,545
+  regions finish comfortably within a few hours on 16 threads. Reserve GPU requests for
+  training.
+- **Submitting a large batch costs priority for everything after it.** Twenty training jobs
+  submitted inside an hour drained fairshare, so the work that had actually been prioritised
+  queued behind exploratory follow-ups. Submit the thing that unblocks downstream work first,
+  and `scontrol hold` the speculative batch rather than racing it.
