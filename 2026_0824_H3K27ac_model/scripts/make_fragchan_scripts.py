@@ -40,12 +40,27 @@ CHANS = ('ATAC_BW="$PROJECT_DIR/2026_0529_multimodal_p300_model/data/atac_5p.bw,
          '$PROJ/data/atac_sub5p.bw,$PROJ/data/atac_mono5p.bw,'
          '$PROJ/data/atac_di5p.bw,$PROJ/data/atac_poly5p.bw"')
 
+# GM12878's flat channel lives in the transferability project and its stratified channels
+# carry the gm12878_ prefix, so the list is not a simple string substitution of the K562 one.
+GM_CHANS = ('ATAC_BW="$TRANS/data/atac_5p.bw,'
+            '$PROJ/data/gm12878_atac_sub5p.bw,$PROJ/data/gm12878_atac_mono5p.bw,'
+            '$PROJ/data/gm12878_atac_di5p.bw,$PROJ/data/gm12878_atac_poly5p.bw"')
+
 JOBS = [
     (f"{K27}/scripts/1.11.submit_training_5prime_accs5p.sh",
      f"{K27}/scripts/1.15.submit_training_fragchan.sh",
      [('ATAC_BW="$PROJECT_DIR/2026_0529_multimodal_p300_model/data/atac_5p.bw"', CHANS),
       ('OUT_DIR="$PROJ/models/${MODE}5p_accs5p_hw${HALF_WINDOW}_clw${COUNT_LOSS_WEIGHT}/fold${FOLD}"',
        'OUT_DIR="$PROJ/models/${MODE}5p_fragchan_hw${HALF_WINDOW}_clw${COUNT_LOSS_WEIGHT}/fold${FOLD}"'),
+      ('case "$MODE" in sequence|multimodal|atac) ;; *) echo "bad MODE \'$MODE\'" >&2; exit 1 ;; esac',
+       'case "$MODE" in multimodal|atac) ;; *) echo "MODE must be multimodal or atac '
+       '(sequence ignores the accessibility input)" >&2; exit 1 ;; esac')]),
+
+    (f"{K27}/scripts/1.12.submit_training_gm12878_accs5p.sh",
+     f"{K27}/scripts/1.18.submit_training_fragchan_gm12878.sh",
+     [('ATAC_BW="$TRANS/data/atac_5p.bw"', GM_CHANS),
+      ('OUT_DIR="$PROJ/models/gm12878_${MODE}5p_accs5p_hw${HALF_WINDOW}_clw${COUNT_LOSS_WEIGHT}/fold${FOLD}"',
+       'OUT_DIR="$PROJ/models/gm12878_${MODE}5p_fragchan_hw${HALF_WINDOW}_clw${COUNT_LOSS_WEIGHT}/fold${FOLD}"'),
       ('case "$MODE" in sequence|multimodal|atac) ;; *) echo "bad MODE \'$MODE\'" >&2; exit 1 ;; esac',
        'case "$MODE" in multimodal|atac) ;; *) echo "MODE must be multimodal or atac '
        '(sequence ignores the accessibility input)" >&2; exit 1 ;; esac')]),
