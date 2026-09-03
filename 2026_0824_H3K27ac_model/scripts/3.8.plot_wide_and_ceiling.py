@@ -3,9 +3,12 @@
 
 Fig 10 is a slopegraph rather than bars because the comparison is PAIRED within fold. Fold
 sd on this project is 0.041-0.046, several times the effect, so bars with error bars would
-show two overlapping clouds and hide a difference that is consistent fold by fold. The
-slopes carry the actual evidence; the point of the figure is that the all-element slopes
-rise together while the top-quintile slopes do not.
+show two overlapping clouds and hide a difference that is consistent fold by fold.
+
+The figure covers BOTH input modes, because they disagree and an earlier sequence-only
+version of this figure supported the wrong conclusion. Sequence-only gains on all elements
+and nothing on the top quintile; multimodal gains on the top quintile in both cell types.
+Plotting one mode invited reading the sequence null as the whole answer.
 
 Fig 11 shows raw replicate agreement and the corrected ceiling side by side, because the raw
 number invites the wrong conclusion: a 1 bp agreement of 0.02 is not a 0.02 ceiling. A model
@@ -34,9 +37,13 @@ CELLS = [("k562", "K562"), ("gm12878", "GM12878")]
 STRATA = [("overall_pearson", "All elements"), ("overall_pearson_topq", "Top quintile")]
 
 
-def paired(df, metric):
-    w = df[df["config"] == "sequence_WIDE"].sort_values("fold")[metric].to_numpy(float)
-    n = df[df["config"] == "sequence_narrow"].sort_values("fold")[metric].to_numpy(float)
+MODES = [("sequence", "Sequence only", "#B2182B"),
+         ("multimodal", "Sequence + ATAC", "#762A83")]
+
+
+def paired(df, metric, mode):
+    w = df[df["config"] == f"{mode}_WIDE"].sort_values("fold")[metric].to_numpy(float)
+    n = df[df["config"] == f"{mode}_narrow"].sort_values("fold")[metric].to_numpy(float)
     d = w - n
     half = TCRIT * d.std(ddof=1) / np.sqrt(len(d))
     return n, w, d.mean(), half, ttest_rel(w, n).pvalue
@@ -44,33 +51,39 @@ def paired(df, metric):
 
 def fig10():
     apply_rcparams()
-    fig, axes = plt.subplots(1, 2, figsize=(7.2, 3.0))
-    for ax, (key, title) in zip(axes, CELLS):
-        f = f"{P}/results/wide_seqonly_{key}_per_fold.tsv"
-        if not os.path.exists(f):
-            ax.text(.5, .5, "not yet scored", ha="center", transform=ax.transAxes)
-            continue
-        df = pd.read_csv(f, sep="\t")
-        for j, (metric, slab) in enumerate(STRATA):
-            x0, x1 = 3 * j, 3 * j + 1
-            nar, wid, mu, half, p = paired(df, metric)
-            for a, b in zip(nar, wid):
-                ax.plot([x0, x1], [a, b], color="0.6", lw=0.6, marker="o", ms=2.2,
-                        mfc="0.6", mec="none", zorder=1)
-            ax.plot([x0, x1], [nar.mean(), wid.mean()], color=SEQ, lw=2.0,
-                    marker="o", ms=4, zorder=2)
-            star = "*" if p < 0.05 else "n.s."
-            ax.text(x0 + .5, max(wid.max(), nar.max()) + .012,
-                    f"{mu:+.3f} {star}", ha="center", color=SEQ, fontsize=6)
-            ax.text(x0 + .5, -0.19, slab, ha="center", va="top", transform=
-                    ax.get_xaxis_transform(), fontsize=7)
-        ax.set_xticks([0, 1, 3, 4])
-        ax.set_xticklabels(["1.1 kb", "4.2 kb"] * 2, fontsize=6, rotation=0)
-        ax.set_xlim(-0.6, 4.6)
-        ax.set_ylabel("Pearson $r$ vs observed H3K27ac")
-        ax.set_title(title, fontsize=8)
-    add_panel_label(axes[0], "a"); add_panel_label(axes[1], "b")
-    fig.tight_layout(rect=(0, 0.06, 1, 1))
+    fig, axes = plt.subplots(2, 2, figsize=(7.2, 5.4))
+    letters = iter("abcd")
+    for i, (mode, mlab, colour) in enumerate(MODES):
+        for j, (key, title) in enumerate(CELLS):
+            ax = axes[i][j]
+            f = f"{P}/results/wide_{key}_per_fold.tsv"
+            if not os.path.exists(f):
+                ax.text(.5, .5, "not yet scored", ha="center", transform=ax.transAxes)
+                continue
+            df = pd.read_csv(f, sep="\t")
+            if f"{mode}_WIDE" not in set(df["config"]):
+                ax.text(.5, .5, "not yet scored", ha="center", transform=ax.transAxes)
+                continue
+            for k, (metric, slab) in enumerate(STRATA):
+                x0, x1 = 3 * k, 3 * k + 1
+                nar, wid, mu, half, pv = paired(df, metric, mode)
+                for aa, bb in zip(nar, wid):
+                    ax.plot([x0, x1], [aa, bb], color="0.6", lw=0.6, marker="o", ms=2.2,
+                            mfc="0.6", mec="none", zorder=1)
+                ax.plot([x0, x1], [nar.mean(), wid.mean()], color=colour, lw=2.0,
+                        marker="o", ms=4, zorder=2)
+                star = "*" if pv < 0.05 else "n.s."
+                ax.text(x0 + .5, max(wid.max(), nar.max()) + .010,
+                        f"{mu:+.3f} {star}", ha="center", color=colour, fontsize=6)
+                ax.text(x0 + .5, -0.17, slab, ha="center", va="top",
+                        transform=ax.get_xaxis_transform(), fontsize=7)
+            ax.set_xticks([0, 1, 3, 4])
+            ax.set_xticklabels(["1.1 kb", "4.2 kb"] * 2, fontsize=6, rotation=0)
+            ax.set_xlim(-0.6, 4.6)
+            ax.set_ylabel("Pearson $r$")
+            ax.set_title(f"{mlab} — {title}", fontsize=8)
+            add_panel_label(ax, next(letters))
+    fig.tight_layout(rect=(0, 0.04, 1, 1))
     save_fig(fig, f"{P}/figures/fig10_wide_receptive_field.png")
     print("wrote fig10")
 

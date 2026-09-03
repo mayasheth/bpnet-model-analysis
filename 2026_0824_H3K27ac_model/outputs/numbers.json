@@ -6312,427 +6312,1610 @@
   {
    "name": "wide_delta_k562_all",
    "value": 0.04304,
-   "source": "results/wide_seqonly_k562_per_fold.tsv",
+   "source": "results/wide_k562_per_fold.tsv",
    "derived": true,
    "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field"
   },
   {
    "name": "wide_delta_k562_all__r3",
    "value": 0.043,
-   "source": "results/wide_seqonly_k562_per_fold.tsv",
+   "source": "results/wide_k562_per_fold.tsv",
    "derived": true,
    "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field (rounded to 3 dp as quoted)"
   },
   {
    "name": "wide_delta_k562_all__r2",
    "value": 0.04,
-   "source": "results/wide_seqonly_k562_per_fold.tsv",
+   "source": "results/wide_k562_per_fold.tsv",
    "derived": true,
    "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field (rounded to 2 dp as quoted)"
   },
   {
    "name": "wide_delta_k562_all__r1",
    "value": 0.0,
-   "source": "results/wide_seqonly_k562_per_fold.tsv",
+   "source": "results/wide_k562_per_fold.tsv",
    "derived": true,
    "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field (rounded to 1 dp as quoted)"
   },
   {
    "name": "wide_p_k562_all",
    "value": 0.002978,
-   "source": "results/wide_seqonly_k562_per_fold.tsv",
+   "source": "results/wide_k562_per_fold.tsv",
    "derived": true,
    "note": "paired t-test"
   },
   {
    "name": "wide_p_k562_all__r4",
    "value": 0.003,
-   "source": "results/wide_seqonly_k562_per_fold.tsv",
+   "source": "results/wide_k562_per_fold.tsv",
    "derived": true,
    "note": "paired t-test (rounded to 4 dp as quoted)"
   },
   {
    "name": "wide_p_k562_all__r2",
    "value": 0.0,
-   "source": "results/wide_seqonly_k562_per_fold.tsv",
+   "source": "results/wide_k562_per_fold.tsv",
    "derived": true,
    "note": "paired t-test (rounded to 2 dp as quoted)"
   },
   {
    "name": "wide_narrow_k562_all",
    "value": 0.49378,
-   "source": "results/wide_seqonly_k562_per_fold.tsv",
+   "source": "results/wide_k562_per_fold.tsv",
    "derived": true,
    "note": ""
   },
   {
    "name": "wide_narrow_k562_all__r3",
    "value": 0.494,
-   "source": "results/wide_seqonly_k562_per_fold.tsv",
+   "source": "results/wide_k562_per_fold.tsv",
    "derived": true,
    "note": " (rounded to 3 dp as quoted)"
   },
   {
    "name": "wide_narrow_k562_all__r2",
    "value": 0.49,
-   "source": "results/wide_seqonly_k562_per_fold.tsv",
+   "source": "results/wide_k562_per_fold.tsv",
    "derived": true,
    "note": " (rounded to 2 dp as quoted)"
   },
   {
    "name": "wide_narrow_k562_all__r1",
    "value": 0.5,
-   "source": "results/wide_seqonly_k562_per_fold.tsv",
+   "source": "results/wide_k562_per_fold.tsv",
    "derived": true,
    "note": " (rounded to 1 dp as quoted)"
   },
   {
    "name": "wide_wide_k562_all",
    "value": 0.53682,
-   "source": "results/wide_seqonly_k562_per_fold.tsv",
+   "source": "results/wide_k562_per_fold.tsv",
    "derived": true,
    "note": ""
   },
   {
    "name": "wide_wide_k562_all__r3",
    "value": 0.537,
-   "source": "results/wide_seqonly_k562_per_fold.tsv",
+   "source": "results/wide_k562_per_fold.tsv",
    "derived": true,
    "note": " (rounded to 3 dp as quoted)"
   },
   {
    "name": "wide_wide_k562_all__r2",
    "value": 0.54,
-   "source": "results/wide_seqonly_k562_per_fold.tsv",
+   "source": "results/wide_k562_per_fold.tsv",
    "derived": true,
    "note": " (rounded to 2 dp as quoted)"
   },
   {
    "name": "wide_wide_k562_all__r1",
    "value": 0.5,
-   "source": "results/wide_seqonly_k562_per_fold.tsv",
+   "source": "results/wide_k562_per_fold.tsv",
    "derived": true,
    "note": " (rounded to 1 dp as quoted)"
   },
   {
    "name": "wide_delta_k562_topq",
    "value": -0.00634,
-   "source": "results/wide_seqonly_k562_per_fold.tsv",
+   "source": "results/wide_k562_per_fold.tsv",
    "derived": true,
    "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field"
   },
   {
    "name": "wide_delta_k562_topq__r3",
    "value": -0.006,
-   "source": "results/wide_seqonly_k562_per_fold.tsv",
+   "source": "results/wide_k562_per_fold.tsv",
    "derived": true,
    "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field (rounded to 3 dp as quoted)"
   },
   {
    "name": "wide_delta_k562_topq__r2",
    "value": -0.01,
-   "source": "results/wide_seqonly_k562_per_fold.tsv",
+   "source": "results/wide_k562_per_fold.tsv",
    "derived": true,
    "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field (rounded to 2 dp as quoted)"
   },
   {
    "name": "wide_delta_k562_topq__r1",
    "value": -0.0,
-   "source": "results/wide_seqonly_k562_per_fold.tsv",
+   "source": "results/wide_k562_per_fold.tsv",
    "derived": true,
    "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field (rounded to 1 dp as quoted)"
   },
   {
    "name": "wide_p_k562_topq",
    "value": 0.527477,
-   "source": "results/wide_seqonly_k562_per_fold.tsv",
+   "source": "results/wide_k562_per_fold.tsv",
    "derived": true,
    "note": "paired t-test"
   },
   {
    "name": "wide_p_k562_topq__r4",
    "value": 0.5275,
-   "source": "results/wide_seqonly_k562_per_fold.tsv",
+   "source": "results/wide_k562_per_fold.tsv",
    "derived": true,
    "note": "paired t-test (rounded to 4 dp as quoted)"
   },
   {
    "name": "wide_p_k562_topq__r3",
    "value": 0.527,
-   "source": "results/wide_seqonly_k562_per_fold.tsv",
+   "source": "results/wide_k562_per_fold.tsv",
    "derived": true,
    "note": "paired t-test (rounded to 3 dp as quoted)"
   },
   {
    "name": "wide_p_k562_topq__r2",
    "value": 0.53,
-   "source": "results/wide_seqonly_k562_per_fold.tsv",
+   "source": "results/wide_k562_per_fold.tsv",
    "derived": true,
    "note": "paired t-test (rounded to 2 dp as quoted)"
   },
   {
    "name": "wide_narrow_k562_topq",
    "value": 0.3812,
-   "source": "results/wide_seqonly_k562_per_fold.tsv",
+   "source": "results/wide_k562_per_fold.tsv",
    "derived": true,
    "note": ""
   },
   {
    "name": "wide_narrow_k562_topq__r3",
    "value": 0.381,
-   "source": "results/wide_seqonly_k562_per_fold.tsv",
+   "source": "results/wide_k562_per_fold.tsv",
    "derived": true,
    "note": " (rounded to 3 dp as quoted)"
   },
   {
    "name": "wide_narrow_k562_topq__r2",
    "value": 0.38,
-   "source": "results/wide_seqonly_k562_per_fold.tsv",
+   "source": "results/wide_k562_per_fold.tsv",
    "derived": true,
    "note": " (rounded to 2 dp as quoted)"
   },
   {
    "name": "wide_narrow_k562_topq__r1",
    "value": 0.4,
-   "source": "results/wide_seqonly_k562_per_fold.tsv",
+   "source": "results/wide_k562_per_fold.tsv",
    "derived": true,
    "note": " (rounded to 1 dp as quoted)"
   },
   {
    "name": "wide_wide_k562_topq",
    "value": 0.37486,
-   "source": "results/wide_seqonly_k562_per_fold.tsv",
+   "source": "results/wide_k562_per_fold.tsv",
    "derived": true,
    "note": ""
   },
   {
    "name": "wide_wide_k562_topq__r3",
    "value": 0.375,
-   "source": "results/wide_seqonly_k562_per_fold.tsv",
+   "source": "results/wide_k562_per_fold.tsv",
    "derived": true,
    "note": " (rounded to 3 dp as quoted)"
   },
   {
    "name": "wide_wide_k562_topq__r2",
    "value": 0.37,
-   "source": "results/wide_seqonly_k562_per_fold.tsv",
+   "source": "results/wide_k562_per_fold.tsv",
    "derived": true,
    "note": " (rounded to 2 dp as quoted)"
   },
   {
    "name": "wide_wide_k562_topq__r1",
    "value": 0.4,
-   "source": "results/wide_seqonly_k562_per_fold.tsv",
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "wide_delta_k562_profall",
+   "value": 0.00014,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field"
+  },
+  {
+   "name": "wide_delta_k562_profall__r3",
+   "value": 0.0,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_p_k562_profall",
+   "value": 0.384581,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test"
+  },
+  {
+   "name": "wide_p_k562_profall__r4",
+   "value": 0.3846,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "wide_p_k562_profall__r3",
+   "value": 0.385,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_p_k562_profall__r2",
+   "value": 0.38,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "wide_narrow_k562_profall",
+   "value": 0.05474,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "wide_narrow_k562_profall__r3",
+   "value": 0.055,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_narrow_k562_profall__r2",
+   "value": 0.05,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "wide_narrow_k562_profall__r1",
+   "value": 0.1,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "wide_wide_k562_profall",
+   "value": 0.05488,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "wide_wide_k562_profall__r3",
+   "value": 0.055,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_wide_k562_profall__r2",
+   "value": 0.05,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "wide_wide_k562_profall__r1",
+   "value": 0.1,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "wide_delta_k562_proftopq",
+   "value": 0.00082,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field"
+  },
+  {
+   "name": "wide_delta_k562_proftopq__r3",
+   "value": 0.001,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_delta_k562_proftopq__r2",
+   "value": 0.0,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "wide_p_k562_proftopq",
+   "value": 0.12028,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test"
+  },
+  {
+   "name": "wide_p_k562_proftopq__r4",
+   "value": 0.1203,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "wide_p_k562_proftopq__r3",
+   "value": 0.12,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_narrow_k562_proftopq",
+   "value": 0.14432,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "wide_narrow_k562_proftopq__r3",
+   "value": 0.144,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_narrow_k562_proftopq__r2",
+   "value": 0.14,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "wide_narrow_k562_proftopq__r1",
+   "value": 0.1,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "wide_wide_k562_proftopq",
+   "value": 0.14514,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "wide_wide_k562_proftopq__r3",
+   "value": 0.145,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_wide_k562_proftopq__r2",
+   "value": 0.15,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "wide_wide_k562_proftopq__r1",
+   "value": 0.1,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "wide_delta_k562_multimodal_all",
+   "value": 0.00822,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field"
+  },
+  {
+   "name": "wide_delta_k562_multimodal_all__r3",
+   "value": 0.008,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_delta_k562_multimodal_all__r2",
+   "value": 0.01,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "wide_delta_k562_multimodal_all__r1",
+   "value": 0.0,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "wide_p_k562_multimodal_all",
+   "value": 0.000269,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test"
+  },
+  {
+   "name": "wide_p_k562_multimodal_all__r4",
+   "value": 0.0003,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "wide_p_k562_multimodal_all__r3",
+   "value": 0.0,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_narrow_k562_multimodal_all",
+   "value": 0.87554,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "wide_narrow_k562_multimodal_all__r3",
+   "value": 0.876,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_narrow_k562_multimodal_all__r2",
+   "value": 0.88,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "wide_narrow_k562_multimodal_all__r1",
+   "value": 0.9,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "wide_wide_k562_multimodal_all",
+   "value": 0.88376,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "wide_wide_k562_multimodal_all__r3",
+   "value": 0.884,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_wide_k562_multimodal_all__r2",
+   "value": 0.88,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "wide_wide_k562_multimodal_all__r1",
+   "value": 0.9,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "wide_delta_k562_multimodal_topq",
+   "value": 0.02712,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field"
+  },
+  {
+   "name": "wide_delta_k562_multimodal_topq__r3",
+   "value": 0.027,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_delta_k562_multimodal_topq__r2",
+   "value": 0.03,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "wide_delta_k562_multimodal_topq__r1",
+   "value": 0.0,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "wide_p_k562_multimodal_topq",
+   "value": 0.005878,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test"
+  },
+  {
+   "name": "wide_p_k562_multimodal_topq__r4",
+   "value": 0.0059,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "wide_p_k562_multimodal_topq__r3",
+   "value": 0.006,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_p_k562_multimodal_topq__r2",
+   "value": 0.01,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "wide_narrow_k562_multimodal_topq",
+   "value": 0.6898,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "wide_narrow_k562_multimodal_topq__r3",
+   "value": 0.69,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_narrow_k562_multimodal_topq__r1",
+   "value": 0.7,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "wide_wide_k562_multimodal_topq",
+   "value": 0.71692,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "wide_wide_k562_multimodal_topq__r3",
+   "value": 0.717,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_wide_k562_multimodal_topq__r2",
+   "value": 0.72,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "wide_wide_k562_multimodal_topq__r1",
+   "value": 0.7,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "wide_delta_k562_multimodal_profall",
+   "value": 0.0003,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field"
+  },
+  {
+   "name": "wide_delta_k562_multimodal_profall__r3",
+   "value": 0.0,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_p_k562_multimodal_profall",
+   "value": 0.02846,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test"
+  },
+  {
+   "name": "wide_p_k562_multimodal_profall__r4",
+   "value": 0.0285,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "wide_p_k562_multimodal_profall__r3",
+   "value": 0.028,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_p_k562_multimodal_profall__r2",
+   "value": 0.03,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "wide_narrow_k562_multimodal_profall",
+   "value": 0.06362,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "wide_narrow_k562_multimodal_profall__r3",
+   "value": 0.064,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_narrow_k562_multimodal_profall__r2",
+   "value": 0.06,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "wide_narrow_k562_multimodal_profall__r1",
+   "value": 0.1,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "wide_wide_k562_multimodal_profall",
+   "value": 0.06392,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "wide_wide_k562_multimodal_profall__r3",
+   "value": 0.064,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_wide_k562_multimodal_profall__r2",
+   "value": 0.06,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "wide_wide_k562_multimodal_profall__r1",
+   "value": 0.1,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "wide_delta_k562_multimodal_proftopq",
+   "value": 0.00114,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field"
+  },
+  {
+   "name": "wide_delta_k562_multimodal_proftopq__r3",
+   "value": 0.001,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_delta_k562_multimodal_proftopq__r2",
+   "value": 0.0,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "wide_p_k562_multimodal_proftopq",
+   "value": 0.028491,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test"
+  },
+  {
+   "name": "wide_p_k562_multimodal_proftopq__r4",
+   "value": 0.0285,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "wide_p_k562_multimodal_proftopq__r3",
+   "value": 0.028,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_p_k562_multimodal_proftopq__r2",
+   "value": 0.03,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "wide_narrow_k562_multimodal_proftopq",
+   "value": 0.17146,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "wide_narrow_k562_multimodal_proftopq__r3",
+   "value": 0.171,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_narrow_k562_multimodal_proftopq__r2",
+   "value": 0.17,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "wide_narrow_k562_multimodal_proftopq__r1",
+   "value": 0.2,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "wide_wide_k562_multimodal_proftopq",
+   "value": 0.1726,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "wide_wide_k562_multimodal_proftopq__r3",
+   "value": 0.173,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_wide_k562_multimodal_proftopq__r2",
+   "value": 0.17,
+   "source": "results/wide_k562_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "wide_wide_k562_multimodal_proftopq__r1",
+   "value": 0.2,
+   "source": "results/wide_k562_per_fold.tsv",
    "derived": true,
    "note": " (rounded to 1 dp as quoted)"
   },
   {
    "name": "wide_delta_gm12878_all",
    "value": 0.04456,
-   "source": "results/wide_seqonly_gm12878_per_fold.tsv",
+   "source": "results/wide_gm12878_per_fold.tsv",
    "derived": true,
    "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field"
   },
   {
    "name": "wide_delta_gm12878_all__r3",
    "value": 0.045,
-   "source": "results/wide_seqonly_gm12878_per_fold.tsv",
+   "source": "results/wide_gm12878_per_fold.tsv",
    "derived": true,
    "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field (rounded to 3 dp as quoted)"
   },
   {
    "name": "wide_delta_gm12878_all__r2",
    "value": 0.04,
-   "source": "results/wide_seqonly_gm12878_per_fold.tsv",
+   "source": "results/wide_gm12878_per_fold.tsv",
    "derived": true,
    "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field (rounded to 2 dp as quoted)"
   },
   {
    "name": "wide_delta_gm12878_all__r1",
    "value": 0.0,
-   "source": "results/wide_seqonly_gm12878_per_fold.tsv",
+   "source": "results/wide_gm12878_per_fold.tsv",
    "derived": true,
    "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field (rounded to 1 dp as quoted)"
   },
   {
    "name": "wide_p_gm12878_all",
    "value": 0.005265,
-   "source": "results/wide_seqonly_gm12878_per_fold.tsv",
+   "source": "results/wide_gm12878_per_fold.tsv",
    "derived": true,
    "note": "paired t-test"
   },
   {
    "name": "wide_p_gm12878_all__r4",
    "value": 0.0053,
-   "source": "results/wide_seqonly_gm12878_per_fold.tsv",
+   "source": "results/wide_gm12878_per_fold.tsv",
    "derived": true,
    "note": "paired t-test (rounded to 4 dp as quoted)"
   },
   {
    "name": "wide_p_gm12878_all__r3",
    "value": 0.005,
-   "source": "results/wide_seqonly_gm12878_per_fold.tsv",
+   "source": "results/wide_gm12878_per_fold.tsv",
    "derived": true,
    "note": "paired t-test (rounded to 3 dp as quoted)"
   },
   {
    "name": "wide_p_gm12878_all__r2",
    "value": 0.01,
-   "source": "results/wide_seqonly_gm12878_per_fold.tsv",
+   "source": "results/wide_gm12878_per_fold.tsv",
    "derived": true,
    "note": "paired t-test (rounded to 2 dp as quoted)"
   },
   {
    "name": "wide_narrow_gm12878_all",
    "value": 0.47522,
-   "source": "results/wide_seqonly_gm12878_per_fold.tsv",
+   "source": "results/wide_gm12878_per_fold.tsv",
    "derived": true,
    "note": ""
   },
   {
    "name": "wide_narrow_gm12878_all__r3",
    "value": 0.475,
-   "source": "results/wide_seqonly_gm12878_per_fold.tsv",
+   "source": "results/wide_gm12878_per_fold.tsv",
    "derived": true,
    "note": " (rounded to 3 dp as quoted)"
   },
   {
    "name": "wide_narrow_gm12878_all__r2",
    "value": 0.48,
-   "source": "results/wide_seqonly_gm12878_per_fold.tsv",
+   "source": "results/wide_gm12878_per_fold.tsv",
    "derived": true,
    "note": " (rounded to 2 dp as quoted)"
   },
   {
    "name": "wide_narrow_gm12878_all__r1",
    "value": 0.5,
-   "source": "results/wide_seqonly_gm12878_per_fold.tsv",
+   "source": "results/wide_gm12878_per_fold.tsv",
    "derived": true,
    "note": " (rounded to 1 dp as quoted)"
   },
   {
    "name": "wide_wide_gm12878_all",
    "value": 0.51978,
-   "source": "results/wide_seqonly_gm12878_per_fold.tsv",
+   "source": "results/wide_gm12878_per_fold.tsv",
    "derived": true,
    "note": ""
   },
   {
    "name": "wide_wide_gm12878_all__r3",
    "value": 0.52,
-   "source": "results/wide_seqonly_gm12878_per_fold.tsv",
+   "source": "results/wide_gm12878_per_fold.tsv",
    "derived": true,
    "note": " (rounded to 3 dp as quoted)"
   },
   {
    "name": "wide_wide_gm12878_all__r1",
    "value": 0.5,
-   "source": "results/wide_seqonly_gm12878_per_fold.tsv",
+   "source": "results/wide_gm12878_per_fold.tsv",
    "derived": true,
    "note": " (rounded to 1 dp as quoted)"
   },
   {
    "name": "wide_delta_gm12878_topq",
    "value": 0.01004,
-   "source": "results/wide_seqonly_gm12878_per_fold.tsv",
+   "source": "results/wide_gm12878_per_fold.tsv",
    "derived": true,
    "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field"
   },
   {
    "name": "wide_delta_gm12878_topq__r3",
    "value": 0.01,
-   "source": "results/wide_seqonly_gm12878_per_fold.tsv",
+   "source": "results/wide_gm12878_per_fold.tsv",
    "derived": true,
    "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field (rounded to 3 dp as quoted)"
   },
   {
    "name": "wide_delta_gm12878_topq__r1",
    "value": 0.0,
-   "source": "results/wide_seqonly_gm12878_per_fold.tsv",
+   "source": "results/wide_gm12878_per_fold.tsv",
    "derived": true,
    "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field (rounded to 1 dp as quoted)"
   },
   {
    "name": "wide_p_gm12878_topq",
    "value": 0.531693,
-   "source": "results/wide_seqonly_gm12878_per_fold.tsv",
+   "source": "results/wide_gm12878_per_fold.tsv",
    "derived": true,
    "note": "paired t-test"
   },
   {
    "name": "wide_p_gm12878_topq__r4",
    "value": 0.5317,
-   "source": "results/wide_seqonly_gm12878_per_fold.tsv",
+   "source": "results/wide_gm12878_per_fold.tsv",
    "derived": true,
    "note": "paired t-test (rounded to 4 dp as quoted)"
   },
   {
    "name": "wide_p_gm12878_topq__r3",
    "value": 0.532,
-   "source": "results/wide_seqonly_gm12878_per_fold.tsv",
+   "source": "results/wide_gm12878_per_fold.tsv",
    "derived": true,
    "note": "paired t-test (rounded to 3 dp as quoted)"
   },
   {
    "name": "wide_p_gm12878_topq__r2",
    "value": 0.53,
-   "source": "results/wide_seqonly_gm12878_per_fold.tsv",
+   "source": "results/wide_gm12878_per_fold.tsv",
    "derived": true,
    "note": "paired t-test (rounded to 2 dp as quoted)"
   },
   {
    "name": "wide_narrow_gm12878_topq",
    "value": 0.2215,
-   "source": "results/wide_seqonly_gm12878_per_fold.tsv",
+   "source": "results/wide_gm12878_per_fold.tsv",
    "derived": true,
    "note": ""
   },
   {
    "name": "wide_narrow_gm12878_topq__r3",
    "value": 0.221,
-   "source": "results/wide_seqonly_gm12878_per_fold.tsv",
+   "source": "results/wide_gm12878_per_fold.tsv",
    "derived": true,
    "note": " (rounded to 3 dp as quoted)"
   },
   {
    "name": "wide_narrow_gm12878_topq__r2",
    "value": 0.22,
-   "source": "results/wide_seqonly_gm12878_per_fold.tsv",
+   "source": "results/wide_gm12878_per_fold.tsv",
    "derived": true,
    "note": " (rounded to 2 dp as quoted)"
   },
   {
    "name": "wide_narrow_gm12878_topq__r1",
    "value": 0.2,
-   "source": "results/wide_seqonly_gm12878_per_fold.tsv",
+   "source": "results/wide_gm12878_per_fold.tsv",
    "derived": true,
    "note": " (rounded to 1 dp as quoted)"
   },
   {
    "name": "wide_wide_gm12878_topq",
    "value": 0.23154,
-   "source": "results/wide_seqonly_gm12878_per_fold.tsv",
+   "source": "results/wide_gm12878_per_fold.tsv",
    "derived": true,
    "note": ""
   },
   {
    "name": "wide_wide_gm12878_topq__r3",
    "value": 0.232,
-   "source": "results/wide_seqonly_gm12878_per_fold.tsv",
+   "source": "results/wide_gm12878_per_fold.tsv",
    "derived": true,
    "note": " (rounded to 3 dp as quoted)"
   },
   {
    "name": "wide_wide_gm12878_topq__r2",
    "value": 0.23,
-   "source": "results/wide_seqonly_gm12878_per_fold.tsv",
+   "source": "results/wide_gm12878_per_fold.tsv",
    "derived": true,
    "note": " (rounded to 2 dp as quoted)"
   },
   {
    "name": "wide_wide_gm12878_topq__r1",
    "value": 0.2,
-   "source": "results/wide_seqonly_gm12878_per_fold.tsv",
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "wide_delta_gm12878_profall",
+   "value": 0.00028,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field"
+  },
+  {
+   "name": "wide_delta_gm12878_profall__r3",
+   "value": 0.0,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_p_gm12878_profall",
+   "value": 0.087036,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test"
+  },
+  {
+   "name": "wide_p_gm12878_profall__r4",
+   "value": 0.087,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "wide_p_gm12878_profall__r2",
+   "value": 0.09,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "wide_narrow_gm12878_profall",
+   "value": 0.04176,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "wide_narrow_gm12878_profall__r3",
+   "value": 0.042,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_narrow_gm12878_profall__r2",
+   "value": 0.04,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "wide_narrow_gm12878_profall__r1",
+   "value": 0.0,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "wide_wide_gm12878_profall",
+   "value": 0.04204,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "wide_wide_gm12878_profall__r3",
+   "value": 0.042,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_wide_gm12878_profall__r2",
+   "value": 0.04,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "wide_wide_gm12878_profall__r1",
+   "value": 0.0,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "wide_delta_gm12878_proftopq",
+   "value": 0.00106,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field"
+  },
+  {
+   "name": "wide_delta_gm12878_proftopq__r3",
+   "value": 0.001,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_delta_gm12878_proftopq__r2",
+   "value": 0.0,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "wide_p_gm12878_proftopq",
+   "value": 0.164275,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test"
+  },
+  {
+   "name": "wide_p_gm12878_proftopq__r4",
+   "value": 0.1643,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "wide_p_gm12878_proftopq__r3",
+   "value": 0.164,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_p_gm12878_proftopq__r2",
+   "value": 0.16,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "wide_narrow_gm12878_proftopq",
+   "value": 0.11178,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "wide_narrow_gm12878_proftopq__r3",
+   "value": 0.112,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_narrow_gm12878_proftopq__r2",
+   "value": 0.11,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "wide_narrow_gm12878_proftopq__r1",
+   "value": 0.1,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "wide_wide_gm12878_proftopq",
+   "value": 0.11284,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "wide_wide_gm12878_proftopq__r3",
+   "value": 0.113,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_wide_gm12878_proftopq__r2",
+   "value": 0.11,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "wide_wide_gm12878_proftopq__r1",
+   "value": 0.1,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "wide_delta_gm12878_multimodal_all",
+   "value": 0.01444,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field"
+  },
+  {
+   "name": "wide_delta_gm12878_multimodal_all__r3",
+   "value": 0.014,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_delta_gm12878_multimodal_all__r2",
+   "value": 0.01,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "wide_delta_gm12878_multimodal_all__r1",
+   "value": 0.0,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "wide_p_gm12878_multimodal_all",
+   "value": 3.6e-05,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test"
+  },
+  {
+   "name": "wide_p_gm12878_multimodal_all__r4",
+   "value": 0.0,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "wide_narrow_gm12878_multimodal_all",
+   "value": 0.8261,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "wide_narrow_gm12878_multimodal_all__r3",
+   "value": 0.826,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_narrow_gm12878_multimodal_all__r2",
+   "value": 0.83,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "wide_narrow_gm12878_multimodal_all__r1",
+   "value": 0.8,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "wide_wide_gm12878_multimodal_all",
+   "value": 0.84054,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "wide_wide_gm12878_multimodal_all__r3",
+   "value": 0.841,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_wide_gm12878_multimodal_all__r2",
+   "value": 0.84,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "wide_wide_gm12878_multimodal_all__r1",
+   "value": 0.8,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "wide_delta_gm12878_multimodal_topq",
+   "value": 0.01366,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field"
+  },
+  {
+   "name": "wide_delta_gm12878_multimodal_topq__r3",
+   "value": 0.014,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_delta_gm12878_multimodal_topq__r2",
+   "value": 0.01,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "wide_delta_gm12878_multimodal_topq__r1",
+   "value": 0.0,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "wide_p_gm12878_multimodal_topq",
+   "value": 0.024768,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test"
+  },
+  {
+   "name": "wide_p_gm12878_multimodal_topq__r4",
+   "value": 0.0248,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "wide_p_gm12878_multimodal_topq__r3",
+   "value": 0.025,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_p_gm12878_multimodal_topq__r2",
+   "value": 0.02,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "wide_narrow_gm12878_multimodal_topq",
+   "value": 0.5789,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "wide_narrow_gm12878_multimodal_topq__r3",
+   "value": 0.579,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_narrow_gm12878_multimodal_topq__r2",
+   "value": 0.58,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "wide_narrow_gm12878_multimodal_topq__r1",
+   "value": 0.6,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "wide_wide_gm12878_multimodal_topq",
+   "value": 0.59256,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "wide_wide_gm12878_multimodal_topq__r3",
+   "value": 0.593,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_wide_gm12878_multimodal_topq__r2",
+   "value": 0.59,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "wide_wide_gm12878_multimodal_topq__r1",
+   "value": 0.6,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "wide_delta_gm12878_multimodal_profall",
+   "value": 0.0,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field"
+  },
+  {
+   "name": "wide_p_gm12878_multimodal_profall",
+   "value": 1.0,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test"
+  },
+  {
+   "name": "wide_narrow_gm12878_multimodal_profall",
+   "value": 0.0512,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "wide_narrow_gm12878_multimodal_profall__r3",
+   "value": 0.051,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_narrow_gm12878_multimodal_profall__r2",
+   "value": 0.05,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "wide_narrow_gm12878_multimodal_profall__r1",
+   "value": 0.1,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "wide_wide_gm12878_multimodal_profall",
+   "value": 0.0512,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "wide_wide_gm12878_multimodal_profall__r3",
+   "value": 0.051,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_wide_gm12878_multimodal_profall__r2",
+   "value": 0.05,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "wide_wide_gm12878_multimodal_profall__r1",
+   "value": 0.1,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "wide_delta_gm12878_multimodal_proftopq",
+   "value": 0.00034,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field"
+  },
+  {
+   "name": "wide_delta_gm12878_multimodal_proftopq__r3",
+   "value": 0.0,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": "paired within-fold difference, 4.2 kb minus 1.1 kb receptive field (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_p_gm12878_multimodal_proftopq",
+   "value": 0.312257,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test"
+  },
+  {
+   "name": "wide_p_gm12878_multimodal_proftopq__r4",
+   "value": 0.3123,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "wide_p_gm12878_multimodal_proftopq__r3",
+   "value": 0.312,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_p_gm12878_multimodal_proftopq__r2",
+   "value": 0.31,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": "paired t-test (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "wide_narrow_gm12878_multimodal_proftopq",
+   "value": 0.13888,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "wide_narrow_gm12878_multimodal_proftopq__r3",
+   "value": 0.139,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_narrow_gm12878_multimodal_proftopq__r2",
+   "value": 0.14,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "wide_narrow_gm12878_multimodal_proftopq__r1",
+   "value": 0.1,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "wide_wide_gm12878_multimodal_proftopq",
+   "value": 0.13922,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "wide_wide_gm12878_multimodal_proftopq__r3",
+   "value": 0.139,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "wide_wide_gm12878_multimodal_proftopq__r2",
+   "value": 0.14,
+   "source": "results/wide_gm12878_per_fold.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "wide_wide_gm12878_multimodal_proftopq__r1",
+   "value": 0.1,
+   "source": "results/wide_gm12878_per_fold.tsv",
    "derived": true,
    "note": " (rounded to 1 dp as quoted)"
   },

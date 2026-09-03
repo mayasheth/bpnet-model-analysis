@@ -1000,6 +1000,10 @@ the next person does not tighten it back to zero.
 
 ### [2026-09-02] A 4.2 kb receptive field buys dead-vs-active separation and nothing within active elements
 
+> **SUPERSEDED 2026-09-03 — this entry generalised from the sequence-only arm and the
+> multimodal arm reverses it.** See the correction entry at the end of this file. The
+> sequence-only numbers below are correct; the conclusion drawn from them is not.
+
 **Category**: result
 
 **What happened**: Trained `n_layers = 10` (trimming 2093, in-window 5186, ~4.2 kb receptive
@@ -1042,3 +1046,58 @@ activity task. Revisit only if the application turns out to be on/off classifica
 result. Validation count Pearson is unstratified by construction, so on this project it
 carries the exact bias the reporting standard exists to remove. The only quotable number
 comes from the stratified per-fold evaluator, even when the training logs look unanimous.
+
+
+### [2026-09-03] The receptive-field conclusion inverted when the second input mode finished
+
+**Category**: reversal
+
+**What happened**: I reported the wide-receptive-field experiment as resolved and negative
+on the basis of the sequence-only arm, which finished first: +0.043 and +0.045 on all
+elements, null on the top quintile with the sign flipping between cell types. I wrote "do
+not pursue" into the TODO, the report and a learning entry, and predicted the multimodal arm
+would show even less because ATAC already supplies long-range context. The multimodal arm
+shows the opposite.
+
+| top quintile, paired within fold | K562 | GM12878 |
+|---|---|---|
+| sequence only | −0.006 (p=0.53) | +0.010 (p=0.53) |
+| sequence + ATAC | **+0.027 (p=0.006)** | **+0.014 (p=0.025)** |
+
+All five folds rise in both cell types for multimodal. The accessibility residual also rises,
+0.502 → 0.547 in K562 and 0.397 → 0.469 in GM12878.
+
+**Why it matters**: Two distinct errors, and the second is the more general one.
+
+1. I generalised from one arm of a two-arm experiment while the other was still running, and
+   picked the arm whose mechanism I had already reasoned about. The stated reason for
+   expecting a small multimodal effect — accessibility already carries long-range context —
+   is precisely the reason the effect is LARGE there: the wider window lets the model read
+   accessibility over a wider neighbourhood. The same sentence supports both predictions,
+   which means it was not evidence.
+2. The project standing rule is "report the top quintile first". It caught the sequence arm's
+   all-element artifact and it is what makes the multimodal result credible, but it does not
+   protect against generalising across input modes. Fig. 10 now carries both arms for exactly
+   this reason.
+
+**Resolution**: The wide receptive field is worth adopting for the multimodal model, which is
+the deployed one. An ATAC-only wide arm was submitted to test whether sequence contributes to
+the gain at all; if it reproduces +0.027 the extra context is purely accessibility
+neighbourhood.
+
+**Also corrected**: the same report claimed the 1 bp profile head was "largely fitting
+Poisson noise". First real numbers give top-quintile `profile_pearson` of 0.114 (ATAC), 0.144
+(sequence) and 0.171 (multimodal) against an achievable ~0.21, so the head captures most of a
+small reproducible signal. The case for binning is that it raises the ceiling, not that the
+head fails. Note the two numbers are not exactly comparable — the ceiling excludes elements
+flat in either replicate while `profile_pearson` scores them zero — so the ratio is
+approximate and the model side is deflated.
+
+**Tags**: reversal, receptive-field, architecture, multimodal, stratification, premature-conclusion, profile-head
+
+**mitigation_type**: process
+
+**structural_mitigation_candidate**: Do not record a conclusion for a multi-arm experiment
+until every arm has finished, even when the finished arms agree with each other and with the
+mechanism you expected. State the pending arms explicitly in the interim write-up, and put
+all arms in the figure so a single-arm reading is not available to the next reader.
