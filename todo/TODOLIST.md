@@ -125,13 +125,17 @@ a property of the objective and needs no further per-cell-type testing.
       **Payoff if it holds:** removes a term that is largely fitting Poisson noise, frees
       trunk capacity, and roughly halves the output tensor, buying a larger batch or a wider
       window at the same memory.
-- [~] **Fragment-size ATAC channels** — tracks BUILDING, training not yet submitted.
-      Five channels `[all, sub(≤139), mono(140–329), di(330–620), poly(≥621)]`, all
-      single-base insertion counts, so they are a strict superset of the accs5p input and
-      cannot regress. `0.23` builds them; the Tn5 shift was measured, not assumed (`0.22`,
-      r = 1.0000 at +4/−5). Train with `1.15`, modes multimodal and atac.
-      The old `atac_sub.bw`/`atac_mono.bw` are full-fragment coverage and are superseded.
-      GM12878 needs its PE BAMs downloaded before the same thing is possible there.
+- [x] **Fragment-size ATAC channels — DONE and positive.** Top quintile 0.690 → 0.703,
+      paired +0.0135 [+0.0075, +0.0195], p = 0.0034, every fold rising; report Fig. 12.
+      Strict superset of the flat input (bins sum to it exactly), so the gain is added
+      information. Results in `fragchan_k562_per_fold.tsv`.
+      - [ ] **Do the two accessibility-side gains combine?** `n_layers` 10 × fragment
+            channels. Both may be reading the same neighbourhood structure, so +0.027 and
+            +0.0135 may not sum. 5 fold-jobs, and it decides what the deployed model is.
+      - [ ] **GM12878 replication** needs its paired-end BAMs downloaded — fragment length
+            lives in TLEN, which the per-read tagAligns discard.
+      - [ ] **ATAC-only fragment arm** (`1.15 atac`) — asks whether fragment structure alone
+            beats flat ATAC, with no sequence involved.
 - [ ] **Switch the accessibility input to 5′ counts, as a set.** ~35 fold-jobs. Within a
       cell type this moves only the ATAC-only model; across cell types it removes a
       read-length confound (TeloHAEC 36 bp vs K562 95 bp). Mixing the two inputs is invalid.

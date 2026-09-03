@@ -1101,3 +1101,48 @@ approximate and the model side is deflated.
 until every arm has finished, even when the finished arms agree with each other and with the
 mechanism you expected. State the pending arms explicitly in the interim write-up, and put
 all arms in the figure so a single-arm reading is not available to the next reader.
+
+
+### [2026-09-03] Both architecture changes that work act on the accessibility input
+
+**Category**: result
+
+**What happened**: Two independent architecture changes were scored on the top signal
+quintile in K562, paired within fold.
+
+| change | top quintile | paired difference |
+|---|---|---|
+| receptive field 1.1 kb → 4.2 kb, sequence only | 0.381 → 0.375 | −0.006 (p=0.53) |
+| receptive field 1.1 kb → 4.2 kb, sequence + ATAC | 0.690 → 0.717 | **+0.027 (p=0.006)** |
+| flat ATAC → 5 fragment-size channels, sequence + ATAC | 0.690 → 0.703 | **+0.0135 (p=0.0034)** |
+
+The receptive-field gain replicates in GM12878 (+0.014, p=0.025). The fragment-channel input
+is a strict superset of the flat one — the four length bins sum to the flat 5′ track with
+zero discrepancy across 545,661,218 insertions and zero largest single-base difference over
+2 Mb — so its gain is added information rather than a changed input definition.
+
+**Why it matters**: Everything that has moved the top quintile acts on the accessibility
+side. Wider context helps only the model holding ATAC; enriching ATAC itself helps; widening
+the window for sequence alone does nothing. Against that, the residual work showed the
+sequence component is real but small, and the profile ceiling showed base-resolution shape is
+nearly unreproducible. The consistent picture is that headroom on this target lives in how
+accessibility is represented, and the sequence component is close to its practical limit at
+this scale.
+
+**Open and cheap**: whether the two gains are additive. Both plausibly read the same
+neighbourhood structure — a wider window sees accessibility further out, and fragment length
+sees nucleosome occupancy locally — so +0.027 and +0.0135 may not sum. One grid of
+`n_layers` 10 × fragment channels answers it.
+
+**Also**: the wide-vs-narrow comparison carries no region-coverage confound. K562 per-fold
+element counts are identical at in-window 2114 and 5186 (10,143 / 14,392 / 12,801 / 12,021 /
+9,298), so the intersection that the evaluator takes costs nothing. The earlier report text
+implying the wider window drops chromosome-end elements was wrong and has been corrected.
+
+**Tags**: architecture, accessibility, fragment-length, receptive-field, top-quintile, k562, gm12878
+
+**mitigation_type**: none
+
+**structural_mitigation_candidate**: When several architecture changes target the same input
+stream, test the combination before adopting them additively — separately significant gains
+on the same underlying signal do not compose.

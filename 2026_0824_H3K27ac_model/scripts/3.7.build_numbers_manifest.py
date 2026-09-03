@@ -176,6 +176,29 @@ for cell in ("k562", "gm12878"):
                 add(f"wide_wide_{key}_{mtag}", w.mean(), src)
         break   # prefer the full table; fall back to seqonly only if it is absent
 
+
+# --- fragment-size accessibility channels: paired within-fold differences ---
+d = tsv("fragchan_k562_per_fold.tsv")
+if d is not None:
+    src = "results/fragchan_k562_per_fold.tsv"
+    for metric, mtag in (("overall_pearson", "all"), ("overall_pearson_topq", "topq"),
+                         ("residual_pearson", "resid"),
+                         ("profile_pearson_topq", "proftopq"),
+                         ("incremental_r2_topq", "incr2topq")):
+        if metric not in d.columns:
+            continue
+        w = d[d["config"] == "multimodal_FRAGCHAN"].sort_values("fold")[metric].to_numpy(float)
+        n = d[d["config"] == "multimodal_flat"].sort_values("fold")[metric].to_numpy(float)
+        if len(w) != len(n) or len(w) == 0:
+            continue
+        add(f"frag_flat_{mtag}", n.mean(), src)
+        add(f"frag_chan_{mtag}", w.mean(), src)
+        add(f"frag_delta_{mtag}", (w - n).mean(), src,
+            "paired within-fold difference, 5 fragment channels minus flat ATAC",
+            roundings=(4, 3, 2))
+        add(f"frag_p_{mtag}", _ttest_rel(w, n).pvalue, src, "paired t-test",
+            roundings=(4, 3, 2))
+
 # --- profile-shape ceiling by bin size --------------------------------------
 for cell in ("k562", "gm12878"):
     d = tsv(f"profile_ceiling_binsize_{cell}.tsv")

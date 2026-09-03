@@ -84,7 +84,7 @@ blockquote { border-left: 3px solid #ddd; margin-left: 0; padding-left: 1rem;
 - The same comparison for p300 gives sequence a +0.304 margin over accessibility against +0.127 for H3K27ac — a difference of 0.177 ± 0.027, about 6.6 standard errors (Fig. 4). H3K27ac scores higher overall but is the poorer substrate for sequence interpretation.
 - **GM12878 is simply the harder cell type, which is most of what the transfer asymmetry measures.** GM12878-trained models score higher on K562 than in their own cell type for every modality (Fig. 7), and the ATAC-only gap is explained by weaker ATAC–H3K27ac coupling in GM12878 (Fig. 8). Sequence remains weak everywhere (15–41% of ceiling), and its margin over accessibility shrinks on transfer in both directions.
 - **Sequence carries an accessibility-independent component, but only a residual objective exposes it.** The same sequence-only input scores 0.149 on the accessibility residual trained against total signal and 0.459 trained against `observed − atac_pred` (Fig. 5). Joint training extracts more still (0.551) and is the better predictor. Overall correlation overstates what any model adds once accessibility is an input: sequence + ATAC reaches 0.874 overall against 0.551 on the residual.
-- **Track construction matters at the resolution level.** ATAC and H3K27ac are spatially offset — ATAC peaks on the element centre, H3K27ac on flanking nucleosomes at ±250 bp and is far broader (Fig. 2). H3K27ac is still at 28% of maximum at ±2 kb, the edge of the profiled window, so its extent exceeds the model's ~1.1 kb receptive field by an unmeasured margin. Relatedly, switching the accessibility input to ChromBPNet-style 5′ insertion counts gains the ATAC-only model +0.032 (K562) and +0.023 (GM12878) on the top quintile while leaving sequence + ATAC unchanged (Fig. 6) — within a cell type the change is one of resolution, and only a model without sequence feels it. Widening the receptive field to ~4.2 kb pays off only for the model that holds accessibility: sequence + ATAC gains +0.027 (K562) and +0.014 (GM12878) on the elements carrying the mark, while sequence alone gains nothing there (Fig. 10). The long-range information that matters is in the accessibility track. At the other end of the resolution scale, the base-resolution profile is nearly unreproducible — inter-replicate ceiling 0.21 at 1 bp against 0.72 at 50 bp binning (Fig. 11) — which caps what the profile head can ever score rather than showing that it fails.
+- **Track construction matters at the resolution level.** ATAC and H3K27ac are spatially offset — ATAC peaks on the element centre, H3K27ac on flanking nucleosomes at ±250 bp and is far broader (Fig. 2). H3K27ac is still at 28% of maximum at ±2 kb, the edge of the profiled window, so its extent exceeds the model's ~1.1 kb receptive field by an unmeasured margin. Relatedly, switching the accessibility input to ChromBPNet-style 5′ insertion counts gains the ATAC-only model +0.032 (K562) and +0.023 (GM12878) on the top quintile while leaving sequence + ATAC unchanged (Fig. 6) — within a cell type the change is one of resolution, and only a model without sequence feels it. Widening the receptive field to ~4.2 kb pays off only for the model that holds accessibility: sequence + ATAC gains +0.027 (K562) and +0.014 (GM12878) on the elements carrying the mark, while sequence alone gains nothing there (Fig. 10). Enriching the accessibility input pays off too — five fragment-size channels in place of flat coverage gain +0.0135 on the same elements (Fig. 12) — so both of the architecture changes that have worked act on the accessibility side. At the other end of the resolution scale, the base-resolution profile is nearly unreproducible — inter-replicate ceiling 0.21 at 1 bp against 0.72 at 50 bp binning (Fig. 11) — which caps what the profile head can ever score rather than showing that it fails.
 
 ## Goals
 
@@ -473,7 +473,7 @@ Source: `scripts/0.10.plot_fragment_lengths.py`, `scripts/0.9.make_atac_fragment
 <details>
 <summary>Figure 10 legend</summary>
 
-**Figure 10 | Quadrupling the receptive field helps sequence + ATAC on the elements carrying the mark and sequence alone not at all.** `n_layers` 8 (trimming 557, 2,114 bp input, ~1.1 kb receptive field) against `n_layers` 10 (trimming 2,093, 5,186 bp input, ~4.2 kb). Grey lines are individual folds, coloured line the mean; the comparison is paired within fold because fold `sd` here is 0.041–0.046, several times the effect. **a**, **b**, Sequence only: all elements 0.494 → 0.537 in K562 (paired +0.043, p = 0.003) and 0.475 → 0.520 in GM12878 (+0.045, p = 0.005); top quintile 0.381 → 0.375 (−0.006, p = 0.53) and 0.221 → 0.232 (+0.010, p = 0.53), the sign flipping between cell types. **c**, **d**, Sequence + ATAC: top quintile 0.690 → 0.717 in K562 (+0.027, p = 0.006) and 0.579 → 0.593 in GM12878 (+0.014, p = 0.025), with all five folds rising in both cell types. Both models are scored on the intersection of regions each could accept, since the 5,186 bp window drops elements within 2,593 bp of a chromosome end that the narrower one keeps. Everything except `n_layers` and the derived window geometry is byte-identical between the two arms. An ATAC-only arm is training and will show whether the gain needs sequence at all. Source: `results/wide_{k562,gm12878}_per_fold.tsv`.
+**Figure 10 | Quadrupling the receptive field helps sequence + ATAC on the elements carrying the mark and sequence alone not at all.** `n_layers` 8 (trimming 557, 2,114 bp input, ~1.1 kb receptive field) against `n_layers` 10 (trimming 2,093, 5,186 bp input, ~4.2 kb). Grey lines are individual folds, coloured line the mean; the comparison is paired within fold because fold `sd` here is 0.041–0.046, several times the effect. **a**, **b**, Sequence only: all elements 0.494 → 0.537 in K562 (paired +0.043, p = 0.003) and 0.475 → 0.520 in GM12878 (+0.045, p = 0.005); top quintile 0.381 → 0.375 (−0.006, p = 0.53) and 0.221 → 0.232 (+0.010, p = 0.53), the sign flipping between cell types. **c**, **d**, Sequence + ATAC: top quintile 0.690 → 0.717 in K562 (+0.027, p = 0.006) and 0.579 → 0.593 in GM12878 (+0.014, p = 0.025), with all five folds rising in both cell types. Both models are scored on the intersection of regions each could accept; in K562 that intersection costs nothing, the per-fold element counts being identical at both window sizes (10,143 / 14,392 / 12,801 / 12,021 / 9,298), so the comparison carries no region-coverage confound. Everything except `n_layers` and the derived window geometry is byte-identical between the two arms. An ATAC-only arm is training and will show whether the gain needs sequence at all. Source: `results/wide_{k562,gm12878}_per_fold.tsv`.
 </details>
 
 **Method.**
@@ -524,6 +524,39 @@ sbatch scripts/0.25.submit.sh
 Source: `scripts/0.25.profile_ceiling_by_binsize.py`
 </details>
 
+## Fragment-size-stratified accessibility adds real information
+
+**Q:** Does supplying fragment length, which flat ATAC coverage discards and which distinguishes nucleosome-free from nucleosome-occupied DNA, improve prediction?
+
+**A:** Yes, on the elements carrying the mark: +0.0135 [+0.0075, +0.0195], p = 0.0034, taking sequence + ATAC from 0.690 to 0.703, with the accessibility residual rising from 0.502 to 0.516.
+
+![](figures/fig12_fragment_channels.png)
+
+<details>
+<summary>Figure 12 legend</summary>
+
+**Figure 12 | Five fragment-size accessibility channels beat one flat channel on the elements carrying H3K27ac.** K562 sequence + ATAC, 5 folds, paired within fold. Accessibility input is `[all, sub ≤139, mono 140–329, di 330–620, poly ≥621]` bp, every channel a single-base Tn5 insertion count. **a**, All elements 0.876 → 0.878 (paired +0.0024, p = 0.030). **b**, Top quintile 0.690 → 0.703 (paired +0.0135, p = 0.0034), every fold rising. Grey lines individual folds, purple the mean. The four length bins sum to the flat 5′ track exactly — zero discrepancy across 545,661,218 insertions and zero largest single-base difference over 2 Mb — so the input is a strict superset of the baseline and the gain is added information rather than a changed input definition. Bin edges sit in the troughs of the fragment-length distribution (Fig. 9); the earlier `sub`/`mono` channels used full-fragment coverage and covered half the fragments, and are superseded. The Tn5 shift needed to build them from the paired-end BAMs was measured against the existing track rather than assumed (*r* = 1.0000 at +4/−5). Source: `results/fragchan_k562_per_fold.tsv`.
+</details>
+
+**Method.**
+
+- Fragment length lives in TLEN, so the channels come from the paired-end BAMs while the flat track comes from tagAligns; agreement to the base confirms the two sources hold the same reads.
+- `n_acc_filters` stays 8, so the merged representation is still 64 + 8 wide and the only change is what the accessibility branch can see.
+
+<details>
+<summary>Full methods &amp; code</summary>
+
+```bash
+sbatch scripts/0.22.calibrate_tn5_shift.sh
+PLUS_DELTA=4 MINUS_DELTA=-5 sbatch scripts/0.23.make_atac_fragment_5p_channels.sh
+pixi run python scripts/0.24.validate_atac_fragment_channels.py
+pixi run python scripts/make_fragchan_scripts.py
+for F in 0 1 2 3 4; do sbatch scripts/1.15.submit_training_fragchan.sh multimodal $F; done
+sbatch scripts/2.17.submit_regression_and_wide.sh fragchan
+```
+Source: `scripts/0.23`, `scripts/0.24`, `scripts/1.15`, `scripts/3.9`
+</details>
+
 ## Open questions / next steps
 
 **The panel is ATAC-only.** DNase and ATAC are not interchangeable inputs, so substituting one would confound assay with cell type inside the comparison the panel exists to make. A DNase-input model is therefore not on this list, despite being the only route to four of the cell types below.
@@ -547,7 +580,7 @@ Source: `scripts/0.25.profile_ceiling_by_binsize.py`
 
 - **Wider receptive field — worth adopting for the multimodal model.** ~4.2 kb gains +0.027 (K562) and +0.014 (GM12878) on the top quintile, significant and same-signed in both cell types, and lifts the accessibility residual from 0.502 to 0.547 and 0.397 to 0.469 (Fig. 10). Sequence alone gains only on all elements. An ATAC-only arm is training: if it reproduces the gain, the extra context is being used entirely as accessibility neighbourhood and sequence is irrelevant to it.
 - **Nucleosome-resolution profile target — supported by a measured ceiling, but the head is not failing.** At 1 bp a perfect model caps at 0.21; binning to 50 bp raises the ceiling to 0.72 (Fig. 11). On the top quintile the models reach `profile_pearson` of 0.114 (ATAC), 0.144 (sequence) and 0.171 (sequence + ATAC), so most of the small reproducible signal is already captured and the case for binning is that it raises the ceiling rather than that the current head learns nothing. Treat the ratio of those two numbers as approximate: the ceiling excludes elements flat in either replicate while `profile_pearson` scores them as zero, which deflates the model side. Every other metric in this report comes from the counts head, so binning moves them only through the shared trunk.
-- **Fragment-size-stratified accessibility channels — tracks built, training queued.** Five channels `[all, sub ≤139, mono 140–329, di 330–620, poly ≥621]`, all single-base insertion counts, which sum to the flat track exactly (0 discrepancy in 545.7 million insertions), so the input is a strict superset of the present baseline and cannot regress. The Tn5 shift was measured against the existing track rather than assumed (*r* = 1.0000 at +4/−5). The bins in Fig. 9 are superseded: they were full-fragment coverage, the wrong convention for a 5′ model, and covered half the fragments.
+- **Fragment-size-stratified accessibility channels — done, and worth adopting.** +0.0135 on the top quintile, p = 0.0034 (Fig. 12). Five channels that sum to the flat track exactly, so the gain is added information. Open: whether it combines with the wider receptive field, since both act on the accessibility side and might be reading the same neighbourhood structure twice; and GM12878 replication, which needs its paired-end BAMs downloaded because fragment length lives in TLEN.
 
 **Standing cautions**
 
