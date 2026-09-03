@@ -171,3 +171,21 @@ render-fix cycle three times.
 Put a word or a comma after every p-value: `p = 0.53 in both strata`, `p = 0.090, consistent
 with no effect`, `at p = 0.086, and`. The same applies to any figure or CI value that would
 otherwise sit at the end of a sentence.
+
+
+## Completion markers and the queue can disagree
+
+`training_complete.json` is written when training finishes, but the process does not always
+exit. One wide-receptive-field job wrote its marker and final checkpoint at 06:01 and was
+still holding a GPU at 10:39 — 4.5 hours — with the log ending at "Model saved" and no
+"Done:" line. On `scancel` it ignored SIGTERM and slurmd gave up after 927 s
+("JOB NOT ENDING WITH SIGNALS"), so it was a real teardown hang, most likely dataloader
+workers not joining.
+
+Two consequences:
+
+- A family showing 5/5 markers does not mean the queue is clear. Check `squeue` separately
+  before concluding a stage is finished, and before assuming a GPU shortage is external.
+- A job whose log ends at the last thing the Python script printed, with the wrapper's own
+  trailing `echo` missing, is hung rather than working. That absent final line is the
+  cheapest signal, so keep an `echo` after the python call in every submit script.
