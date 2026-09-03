@@ -38,7 +38,7 @@
 # 0.22.calibrate_tn5_shift.sh -- there is no default, because guessing puts the stratified
 # channels a few bp out of phase with the flat channel.
 #
-# Usage: PLUS_DELTA=4 MINUS_DELTA=-5 sbatch 0.23.make_atac_fragment_5p_channels.sh
+# Usage: PLUS_DELTA=4 MINUS_DELTA=-5 sbatch 0.23.make_atac_fragment_5p_channels.sh [k562|gm12878]
 
 set -euo pipefail
 export PYTHONUNBUFFERED=1
@@ -46,16 +46,26 @@ D=/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet
 P=$D/2026_0824_H3K27ac_model
 export PATH="$D/.pixi/envs/multimodal/bin:$PATH"
 CHR=/oak/stanford/groups/engreitz/Users/sheth/hg38_resources/GRCh38.main.chrom.sizes
-BAM_DIR="${SCRATCH}/atac_pe"
-PLUS_DELTA=${PLUS_DELTA:?set PLUS_DELTA from results/tn5_shift_calibration.txt}
-MINUS_DELTA=${MINUS_DELTA:?set MINUS_DELTA from results/tn5_shift_calibration.txt}
+CELL=${1:-k562}
+case "$CELL" in
+  k562)
+    BAMS=("${SCRATCH}/atac_pe/ENCFF077FBI.pe.bam" "${SCRATCH}/atac_pe/ENCFF128WZG.pe.bam"
+          "${SCRATCH}/atac_pe/ENCFF534DCE.pe.bam")
+    PFX="" ;;
+  gm12878)
+    G=/oak/stanford/groups/engreitz/Users/sheth/Data/ENCODE/GM12878/ATAC
+    BAMS=("$G/ENCFF440GRZ.bam" "$G/ENCFF962FMH.bam" "$G/ENCFF981FXV.bam")
+    PFX="gm12878_" ;;
+  *) echo "unknown CELL '$CELL'" >&2; exit 1 ;;
+esac
+PLUS_DELTA=${PLUS_DELTA:?set PLUS_DELTA from results/tn5_shift_calibration_${CELL}.txt}
+MINUS_DELTA=${MINUS_DELTA:?set MINUS_DELTA from results/tn5_shift_calibration_${CELL}.txt}
 
 WORK="${SCRATCH}/atacfrag5p_$$"; mkdir -p "$WORK"; trap "rm -rf $WORK" EXIT
 mkdir -p "$P/data" "$P/log" "$P/results"
 
-BAMS=("$BAM_DIR/ENCFF077FBI.pe.bam" "$BAM_DIR/ENCFF128WZG.pe.bam" "$BAM_DIR/ENCFF534DCE.pe.bam")
 for b in "${BAMS[@]}"; do [[ -s "$b" ]] || { echo "ERROR missing $b" >&2; exit 1; }; done
-echo "plus_delta=$PLUS_DELTA minus_delta=$MINUS_DELTA"
+echo "cell=$CELL plus_delta=$PLUS_DELTA minus_delta=$MINUS_DELTA"
 
 # One pass over the BAMs: emit `class<TAB>chrom<TAB>pos` for both insertion sites of every
 # properly-paired, non-duplicate fragment. TLEN>0 selects the leftmost mate, so each
@@ -77,10 +87,10 @@ done | awk -v OFS='\t' -v dp="$PLUS_DELTA" -v dm="$MINUS_DELTA" '
     }
     END { for (k in n) printf "FRAGCOUNT\t%s\t%d\n", k, n[k] > "/dev/stderr" }
 ' 2> "$WORK/counts.txt" > "$WORK/all_sites.txt"
-grep FRAGCOUNT "$WORK/counts.txt" | tee "$P/results/atac_fragment_class_counts.txt"
+grep FRAGCOUNT "$WORK/counts.txt" | tee "$P/results/atac_fragment_class_counts_${CELL}.txt"
 
 for k in sub mono di poly; do
-    out="$P/data/atac_${k}5p.bw"
+    out="$P/data/${PFX}atac_${k}5p.bw"
     echo "=== channel $k -> $(basename $out) ==="
     awk -v k="$k" -v OFS='\t' '$1 == k { print $2, $3, $3 + 1 }' "$WORK/all_sites.txt" \
       | awk 'NR==FNR{c[$1]=$2; next} ($1 in c) && $3 <= c[$1]' "$CHR" - \
@@ -92,4 +102,4 @@ for k in sub mono di poly; do
     echo "  wrote $out"
 done
 
-ls -la "$P/data"/atac_{sub,mono,di,poly}5p.bw
+ls -la "$P/data"/${PFX}atac_{sub,mono,di,poly}5p.bw

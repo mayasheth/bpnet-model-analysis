@@ -27,16 +27,33 @@ D=/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet
 P=$D/2026_0824_H3K27ac_model
 export PATH="$D/.pixi/envs/multimodal/bin:$PATH"
 PY="$D/.pixi/envs/multimodal/bin/python"
-BAM_DIR="${SCRATCH}/atac_pe"
+# Cell type selects the BAMs and the reference bigwig. Default k562 so prior runs are
+# reproduced byte for byte.
+CELL=${1:-k562}
+case "$CELL" in
+  k562)
+    BAMS=("${SCRATCH}/atac_pe/ENCFF077FBI.pe.bam" "${SCRATCH}/atac_pe/ENCFF128WZG.pe.bam"
+          "${SCRATCH}/atac_pe/ENCFF534DCE.pe.bam")
+    REF_BW="$D/2026_0529_multimodal_p300_model/data/atac_5p.bw" ;;
+  gm12878)
+    G=/oak/stanford/groups/engreitz/Users/sheth/Data/ENCODE/GM12878/ATAC
+    BAMS=("$G/ENCFF440GRZ.bam" "$G/ENCFF962FMH.bam" "$G/ENCFF981FXV.bam")
+    REF_BW="$D/2026_0606_GM12878_transferability/data/atac_5p.bw" ;;
+  *) echo "unknown CELL '$CELL'" >&2; exit 1 ;;
+esac
+for b in "${BAMS[@]}"; do [[ -s "$b" ]] || { echo "ERROR missing $b" >&2; exit 1; }; done
+[[ -s "$REF_BW" ]] || { echo "ERROR missing $REF_BW" >&2; exit 1; }
+
 WORK="${SCRATCH}/tn5cal_$$"; mkdir -p "$WORK"; trap "rm -rf $WORK" EXIT
 mkdir -p "$P/log" "$P/results"
 
 CHROM=chr20
-for b in ENCFF077FBI ENCFF128WZG ENCFF534DCE; do
-    samtools view -b -f 0x2 -F 0x400 "$BAM_DIR/$b.pe.bam" "$CHROM" \
+echo "cell=$CELL ref=$REF_BW"
+for b in "${BAMS[@]}"; do
+    samtools view -b -f 0x2 -F 0x400 "$b" "$CHROM" 2>/dev/null \
       | bedtools bamtobed -i stdin
 done | awk -v OFS='\t' '{if($6=="+") print "P", $2; else print "M", $3-1}' > "$WORK/ends.txt"
 wc -l "$WORK/ends.txt"
 
-$PY "$P/scripts/0.22.calibrate_tn5_shift.py" "$WORK/ends.txt" "$CHROM" \
-  | tee "$P/results/tn5_shift_calibration.txt"
+$PY "$P/scripts/0.22.calibrate_tn5_shift.py" "$WORK/ends.txt" "$CHROM" "$REF_BW" \
+  | tee "$P/results/tn5_shift_calibration_${CELL}.txt"

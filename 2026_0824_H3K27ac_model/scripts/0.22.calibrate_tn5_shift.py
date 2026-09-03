@@ -9,8 +9,11 @@ import numpy as np
 import pyBigWig
 
 ends_path, chrom = sys.argv[1], sys.argv[2]
-BW = ("/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/"
-      "2026_0529_multimodal_p300_model/data/atac_5p.bw")
+# Reference bigwig is an argument so the same calibration runs for any cell type; the K562
+# path is kept as the default for backward compatibility with the original invocation.
+BW = sys.argv[3] if len(sys.argv) > 3 else (
+    "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/"
+    "2026_0529_multimodal_p300_model/data/atac_5p.bw")
 
 bw = pyBigWig.open(BW)
 n = bw.chroms()[chrom]
