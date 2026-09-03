@@ -82,7 +82,18 @@ for cfg in entries:
     m0 = torch.load(model_path(cfg, 0), map_location="cpu", weights_only=False)
     cfg["_in_window"] = OUT_W + 2 * m0.trimming
     cfg["_trimming"] = m0.trimming
-    cfg.setdefault("accessibility_bw", spec["baseline"]["accessibility_bw"])
+    # Pre-2.15 configs (consumed by 2.8/2.11) omit this entirely and hardcoded the path in
+    # the script, so say what is missing instead of raising KeyError from a setdefault.
+    if "accessibility_bw" not in cfg:
+        base_acc = spec["baseline"].get("accessibility_bw")
+        if base_acc is None:
+            raise SystemExit(
+                f"error: entry {cfg['label']!r} has no 'accessibility_bw' and neither does "
+                f"the baseline. This config predates 2.15, which needs an explicit "
+                f"accessibility track per entry. Add one -- and check whether the models "
+                f"were trained on atac.bw or atac_5p.bw, because the two are not "
+                f"interchangeable (results/TARGET_PROVENANCE.md).")
+        cfg["accessibility_bw"] = base_acc
     del m0
 IN_W_MAX = max(c["_in_window"] for c in entries)
 for cfg in entries:

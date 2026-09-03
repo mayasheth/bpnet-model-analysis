@@ -132,6 +132,18 @@ a property of the objective and needs no further per-cell-type testing.
       cell type this moves only the ATAC-only model; across cell types it removes a
       read-length confound (TeloHAEC 36 bp vs K562 95 bp). Mixing the two inputs is invalid.
 - [ ] **Re-check ±500 vs ±1000** on the 5′ target once a retrain happens anyway.
+- [ ] **Train on the ATAC-derived K562 element set** — easy (one path change in `1.11`),
+      and now load-bearing for the ABC work rather than merely tidy.
+      Verified path, 153,545 regions:
+      `ENCODE_rE2G/results/2025_0226_ATAC_powerlaw_models/ATAC_H3K27ac_powerlaw/Peaks/macs2_peaks.narrowPeak.sorted.candidateRegions.bed`
+      (element set with class labels: the sibling `Neighborhoods/EnhancerList.bed`).
+      **This file is byte-identical (md5 7d5995ce…) to the candidate regions of the July ABC
+      run**, so the ABC experiment scores models on the ATAC-derived set while they were
+      trained on the DNase-derived one (150,528 elements). The windows are convolutional so
+      it is not fatal, but it is a genuine train/score element mismatch inside the ABC
+      comparison, and training on this set removes it.
+      Also the cheapest test of whether element derivation matters at all; if it does not,
+      the panel-wide inconsistency stops being a caveat worth carrying.
 
 ## Panel data caveats
 

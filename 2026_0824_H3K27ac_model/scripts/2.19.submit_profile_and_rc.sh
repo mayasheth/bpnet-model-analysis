@@ -53,13 +53,13 @@ fi
 
 echo
 echo "########## STEP 2: profile metrics, K562 residual grid ##########"
-$PY scripts/2.15.perfold_from_config.py config/residual_grid_eval_configs.json \
+$PY scripts/2.15.perfold_from_config.py config/prof_residual_grid_configs.json \
     prof_residual_grid_ "$K5EL" \
     --pair multimodal5p sequence5p --pair residual_multimodal multimodal5p
 
 echo
 echo "########## STEP 3: same grid with test-time RC averaging ##########"
-$PY scripts/2.15.perfold_from_config.py config/residual_grid_eval_configs.json \
+$PY scripts/2.15.perfold_from_config.py config/prof_residual_grid_configs.json \
     prof_rc_residual_grid_ "$K5EL" --rc-average
 
 echo

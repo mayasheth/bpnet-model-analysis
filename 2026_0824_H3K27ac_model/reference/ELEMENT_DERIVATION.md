@@ -57,3 +57,33 @@ So the available options are:
 Recorded so the option is known rather than rediscovered. The earlier statement that
 K562/GM12878 ATAC element sets were not readily available was correct for GM12878 and wrong
 for K562.
+
+
+## Correction 2026-09-03: the recorded ATAC-element path was stale
+
+`K562_ATAC_ChromBPNet/` no longer exists on Oak, so the path given above resolves to
+nothing. The source run does still exist, and is the authoritative location:
+
+```
+ENCODE_rE2G/results/2025_0226_ATAC_powerlaw_models/ATAC_H3K27ac_powerlaw/
+    Peaks/macs2_peaks.narrowPeak.sorted.candidateRegions.bed   # 153,545 regions
+    Neighborhoods/EnhancerList.bed                             # same, with class labels
+```
+
+**This file is byte-identical (md5 `7d5995ce17fbaad18958f19d5f0b6e1b`) to the candidate
+regions of the July 2026 ABC run** in
+`ABC_working/.../results/2026_0721_h3k27ac_counting_comparison/K562_ATAC_only/Peaks/`.
+Two consequences:
+
+- Any ABC work that scores our models on its candidate regions is scoring them on the
+  ATAC-derived element set, while the models were trained on the DNase-derived set
+  (150,528 elements). That is a train/score element mismatch inside the comparison. It is
+  survivable because the model consumes fixed windows rather than element boundaries, but it
+  should be stated, and training on the ATAC-derived set removes it.
+- Making K562 derivation-consistent is therefore cheaper than the "re-derive every K562
+  number" framing above suggests, if the ABC experiment becomes the primary readout: the ABC
+  numbers would then be consistent by construction and only the in-cell-type correlation
+  tables would need re-deriving.
+
+Record a path by its source run, not by a working copy. The working copy was deleted; the
+run was not.
