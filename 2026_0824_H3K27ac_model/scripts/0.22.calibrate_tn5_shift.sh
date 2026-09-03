@@ -44,13 +44,24 @@ esac
 for b in "${BAMS[@]}"; do [[ -s "$b" ]] || { echo "ERROR missing $b" >&2; exit 1; }; done
 [[ -s "$REF_BW" ]] || { echo "ERROR missing $REF_BW" >&2; exit 1; }
 
+# This script reads ONE chromosome, which needs an index. The K562 BAMs on $SCRATCH were
+# indexed when they were downloaded; the GM12878 ones on Oak were not, and under
+# `set -euo pipefail` the missing index kills the run five seconds in with samtools' error
+# swallowed by the 2>/dev/null on the region query. Build the index if it is absent.
+for b in "${BAMS[@]}"; do
+    if [[ ! -s "$b.bai" && ! -s "${b%.bam}.bai" ]]; then
+        echo "indexing $(basename "$b") (no .bai found)"
+        samtools index -@ 4 "$b"
+    fi
+done
+
 WORK="${SCRATCH}/tn5cal_$$"; mkdir -p "$WORK"; trap "rm -rf $WORK" EXIT
 mkdir -p "$P/log" "$P/results"
 
 CHROM=chr20
 echo "cell=$CELL ref=$REF_BW"
 for b in "${BAMS[@]}"; do
-    samtools view -b -f 0x2 -F 0x400 "$b" "$CHROM" 2>/dev/null \
+    samtools view -b -f 0x2 -F 0x400 "$b" "$CHROM" \
       | bedtools bamtobed -i stdin
 done | awk -v OFS='\t' '{if($6=="+") print "P", $2; else print "M", $3-1}' > "$WORK/ends.txt"
 wc -l "$WORK/ends.txt"
