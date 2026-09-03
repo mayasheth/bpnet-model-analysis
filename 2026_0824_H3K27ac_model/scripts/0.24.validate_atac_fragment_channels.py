@@ -9,15 +9,22 @@ the same reads exhaustively, i.e. if
 both genome-wide and base by base. The channels come from the PE BAMs and `all` from the
 tagAligns, so this is a real check on two independent derivations, not a tautology.
 
-Run: python 0.24.validate_atac_fragment_channels.py
+Run: python 0.24.validate_atac_fragment_channels.py [k562|gm12878]
 """
 import numpy as np
 import pyBigWig
 
+import sys
 D = "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet"
-ALL = f"{D}/2026_0529_multimodal_p300_model/data/atac_5p.bw"
-BINS = {k: f"{D}/2026_0824_H3K27ac_model/data/atac_{k}5p.bw" for k in
+CELL = sys.argv[1] if len(sys.argv) > 1 else "k562"
+FLAT = {"k562": f"{D}/2026_0529_multimodal_p300_model/data/atac_5p.bw",
+        "gm12878": f"{D}/2026_0606_GM12878_transferability/data/atac_5p.bw"}
+PFX = {"k562": "", "gm12878": "gm12878_"}
+assert CELL in FLAT, f"unknown cell type {CELL!r}"
+ALL = FLAT[CELL]
+BINS = {k: f"{D}/2026_0824_H3K27ac_model/data/{PFX[CELL]}atac_{k}5p.bw" for k in
         ("sub", "mono", "di", "poly")}
+print(f"cell type: {CELL}")
 
 bw_all = pyBigWig.open(ALL)
 bws = {k: pyBigWig.open(v) for k, v in BINS.items()}

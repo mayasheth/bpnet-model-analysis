@@ -40,8 +40,10 @@ K5EL=$D/reference/K562_DNase_candidate_elements.narrowPeak
 cd "$P"
 
 echo "########## STEP 1: backward-compatibility regression ##########"
+# --no-rc-average is REQUIRED here: the stored reference table is single-pass, so
+# leaving RC on would fail the gate on a deliberate change rather than a regression.
 $PY scripts/2.15.perfold_from_config.py config/transfer_k562_to_gm_configs.json \
-    REGRESSION_transfer_k562_to_gm_ "$GMEL"
+    REGRESSION_transfer_k562_to_gm_ "$GMEL" --no-rc-average
 if $PY scripts/2.18.compare_perfold_tables.py \
         results/REGRESSION_transfer_k562_to_gm_per_fold.tsv \
         results/transfer_k562_to_gm_per_fold.tsv --tol 1e-3; then
@@ -54,13 +56,13 @@ fi
 echo
 echo "########## STEP 2: profile metrics, K562 residual grid ##########"
 $PY scripts/2.15.perfold_from_config.py config/prof_residual_grid_configs.json \
-    prof_residual_grid_ "$K5EL" \
+    prof_residual_grid_ "$K5EL" --no-rc-average \
     --pair multimodal5p sequence5p --pair residual_multimodal multimodal5p
 
 echo
 echo "########## STEP 3: same grid with test-time RC averaging ##########"
 $PY scripts/2.15.perfold_from_config.py config/prof_residual_grid_configs.json \
-    prof_rc_residual_grid_ "$K5EL" --rc-average
+    prof_rc_residual_grid_ "$K5EL"
 
 echo
 echo "########## STEP 4: what RC averaging is worth (RC - plain) ##########"

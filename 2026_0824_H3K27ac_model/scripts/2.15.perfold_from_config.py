@@ -26,6 +26,10 @@ Emits, for every compare entry against the config's baseline:
 Residual-objective models are handled via `"residual": true` in the config entry: their
 forward() emits the residual, so the baseline prediction is added back before scoring.
 
+TEST-TIME REVERSE-COMPLEMENT AVERAGING IS ON BY DEFAULT (since 2026-09-03). Pass
+--no-rc-average to reproduce a single-pass number, which every table written before that
+date is. Mixing the two inside one report is the failure mode to avoid.
+
 MODELS MAY HAVE DIFFERENT RECEPTIVE FIELDS. Each entry's input window is read from its own
 saved model (`model.trimming`), not assumed. Windows are extracted once at the LARGEST
 in-window across entries and cropped centrally per model. That is also what makes a
@@ -62,10 +66,15 @@ dev = "cuda" if torch.cuda.is_available() else "cpu"
 ap = argparse.ArgumentParser()
 ap.add_argument("config"); ap.add_argument("out_prefix"); ap.add_argument("elements")
 ap.add_argument("--pair", nargs=2, action="append", default=[])
-ap.add_argument("--rc-average", action="store_true",
-                help="Average each prediction with its reverse-complement. Off by "
-                     "default so stored numbers stay comparable; turn on to measure "
-                     "what test-time RC averaging is worth.")
+ap.add_argument("--no-rc-average", dest="rc_average", action="store_false",
+                default=True,
+                help="Disable test-time reverse-complement averaging. RC averaging is ON "
+                     "by default as of 2026-09-03: it improves every model (+0.0162 "
+                     "sequence only, +0.0081 multimodal, +0.0016 and non-significant for "
+                     "ATAC only, which is the control) and costs one extra forward pass. "
+                     "MANDATORY for regression gates, whose stored reference tables are "
+                     "single-pass -- otherwise the gate fails on a real change it should "
+                     "not be testing.")
 a = ap.parse_args()
 spec = json.load(open(a.config))
 entries = [spec["baseline"]] + spec["compare"]
