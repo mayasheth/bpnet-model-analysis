@@ -254,6 +254,50 @@ Two further habits that cost time on 2026-09-03:
   jobs submitted inside an hour drained fairshare and left the work that mattered queued
   behind exploratory follow-ups.
 
+## Running Snakemake pipelines on Sherlock
+
+Do not reach for whatever `snakemake` happens to be on `PATH`. Several stale ones exist in
+`/home/groups/engreitz/Software/anaconda3/envs` (5.5.4, 5.10, 5.32), and
+`~/.conda/envs/final-abc-env` has the bioinformatics tools but no snakemake and a python that
+segfaults on import. Use the dedicated wrapper envs, which live on **Oak**, not in `~/.conda`:
+
+| pipeline targets | env | version |
+|---|---|---|
+| Snakemake 7 | `$OAK/Users/sheth/.conda/envs/run_snakemake` | 7.32.4 |
+| Snakemake 9 | `$OAK/Users/sheth/.conda/envs/run_snakemake9` | 9.6.0 |
+
+Both carry `conda` and `mamba`, so `--use-conda` works from either.
+
+**Always pass a `--profile`.** Without one, Snakemake runs every rule inside the submitting
+allocation; with one, each rule instance becomes its own SLURM job, which is both faster and
+the only way a large DAG fits sensible resource requests.
+
+```bash
+SM=$OAK/Users/sheth/.conda/envs/run_snakemake/bin/snakemake
+$SM --configfile <cfg> --profile ~/.config/snakemake/slurm --use-conda
+```
+
+`~/.config/snakemake/slurm` — 50 concurrent jobs, `slurm_partition=engreitz,owners,normal`,
+`slurm_account=engreitz`, 6 h default runtime, 3 retries, `rerun-incomplete`.
+`~/.config/snakemake/slurm_long` is the same with 100 jobs and 48 h.
+
+**The v7 and v9 profiles are NOT interchangeable.** Both existing profiles are v7-style: they
+drive submission through a `cluster:` command string. Snakemake 9 uses the executor plugin
+instead (`snakemake_executor_plugin_slurm` 1.4.0 is installed in `run_snakemake9`), which
+wants `executor: slurm` and `default-resources` in the plugin's own keys, and ignores
+`cluster:`. As of 2026-09-04 **no v9-style profile exists** under `~/.config/snakemake`, so a
+snakemake9 pipeline needs one written before it can submit to the cluster at all.
+
+**Submit the driver as its own small job.** With a profile the driver only orchestrates, so
+2 cores and 8 GB is plenty, but give it a long wall clock (48 h) and a non-preemptible
+partition: if the driver dies, running children finish and nothing further is submitted.
+
+**Gate the run on a dry run** (`-n -q`) whenever correctness depends on rules being skipped.
+The ABC arms share one candidate-region set by pre-populating each arm's `Peaks/`; if
+`call_macs_peaks` ever appears in the dry run, the arms would silently get different region
+sets and every cross-arm comparison would be meaningless. `scripts/4.5.submit_abc.sh` aborts
+in that case rather than producing nine incomparable answers.
+
 ## Environment and dependencies
 
 Primary conda environments:
