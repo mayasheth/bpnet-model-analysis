@@ -23,7 +23,7 @@ THREE ARM FAMILIES.
 WHY THE SCALE OF THE PREDICTION DOES NOT MATTER: run_qnorm is rank-based, mapping each
 region's within-sample quantile onto the K562 reference. Keep use_qnorm True.
 """
-import argparse, os, shutil
+import argparse, os, shutil, time
 
 D = "/oak/stanford/groups/engreitz/Users/sheth"
 ABC = f"{D}/ABC_working/ABC-Enhancer-Gene-Prediction"
@@ -110,7 +110,34 @@ if a.copy_peaks:
             print(f"  exists, skipping {dst}")
             continue
         shutil.copytree(src, dst)
-        print(f"  populated {dst}")
-    print("Peaks populated; MACS2 should be skipped for every arm")
+        # copytree preserves mtimes, so the copies carry the ORIGINAL run's dates. Snakemake
+        # compares mtimes, so July-dated Peaks against a September-dated predicted bigwig
+        # reads as stale and re-runs MACS2 -- on a bigwig, for the activity-only arms.
+        # Stamp every copied file to now so it is newer than any input.
+        now = time.time()
+        for root, _dirs, files in os.walk(dst):
+            for fn in files:
+                os.utime(os.path.join(root, fn), (now, now))
+            os.utime(root, (now, now))
+        print(f"  populated and touched {dst}")
+    # Verify the invariant rather than trusting it: every Peaks file must post-date every
+    # input file named in the biosample table.
+    newest_input = 0.0
+    for r in rows:
+        for col in ("ATAC", "H3K27ac", "DHS"):
+            for path in str(r[col]).split(","):
+                if path and os.path.exists(path):
+                    newest_input = max(newest_input, os.path.getmtime(path))
+    stale = []
+    for r in rows:
+        d = f"{ABC}/{a.results_dir}/{r['biosample']}/Peaks"
+        for fn in os.listdir(d):
+            if os.path.getmtime(os.path.join(d, fn)) < newest_input:
+                stale.append(f"{r['biosample']}/{fn}")
+    if stale:
+        raise SystemExit(f"ERROR: {len(stale)} Peaks file(s) older than the newest input; "
+                         f"Snakemake would re-run region calling. First few: {stale[:3]}")
+    print(f"Peaks populated and all files post-date every input "
+          f"(newest input mtime {newest_input:.0f}); MACS2 will be skipped")
 else:
     print("\nPeaks NOT copied (pass --copy-peaks once the bigwigs exist)")
