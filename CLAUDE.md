@@ -254,6 +254,22 @@ Two further habits that cost time on 2026-09-03:
   jobs submitted inside an hour drained fairshare and left the work that mattered queued
   behind exploratory follow-ups.
 
+## Ask before running a broad search
+
+**Before any "search for anything" tool call — a repo-wide `grep -r`, a `find` over Oak, or
+hunting for where something lives — ask Maya first.** She usually knows the path outright or
+can narrow it to one directory, and that is faster and more reliable than guessing.
+
+Two failures on 2026-09-03/04 make the case. A `find` over Oak for an element set timed out
+and returned nothing, which would read as "the file does not exist" if it had not been
+recorded as a non-result. And a `grep -rl 'executor:'` across four lab repos found no
+snakemake9 profile, so this file briefly asserted that none existed; one question produced
+`seq-processing-snakemake`, whose profile sits in a hidden `.snakemake_profile/` that the
+search patterns never covered.
+
+A timed-out or empty search is not evidence of absence. Targeted `ls` of a named directory
+is fine and does not need asking; open-ended discovery does.
+
 ## Running Snakemake pipelines on Sherlock
 
 Do not reach for whatever `snakemake` happens to be on `PATH`. Several stale ones exist in
@@ -273,20 +289,42 @@ allocation; with one, each rule instance becomes its own SLURM job, which is bot
 the only way a large DAG fits sensible resource requests.
 
 ```bash
-SM=$OAK/Users/sheth/.conda/envs/run_snakemake/bin/snakemake
-$SM --configfile <cfg> --profile ~/.config/snakemake/slurm --use-conda
+SM_ENV=$OAK/Users/sheth/.conda/envs/run_snakemake
+export PATH="$SM_ENV/bin:$PATH"     # REQUIRED for --use-conda
+$SM_ENV/bin/snakemake --configfile <cfg> --profile ~/.config/snakemake/slurm --use-conda
 ```
+
+The `PATH` line is not optional. `--use-conda` shells out to `mamba` from `/usr/bin/bash`,
+which does not inherit the wrapper env just because snakemake was invoked by absolute path;
+without it the run dies with `CreateCondaEnvironmentException` before submitting anything.
+`--conda-frontend conda` is the alternative if mamba is genuinely unavailable.
 
 `~/.config/snakemake/slurm` — 50 concurrent jobs, `slurm_partition=engreitz,owners,normal`,
 `slurm_account=engreitz`, 6 h default runtime, 3 retries, `rerun-incomplete`.
 `~/.config/snakemake/slurm_long` is the same with 100 jobs and 48 h.
 
-**The v7 and v9 profiles are NOT interchangeable.** Both existing profiles are v7-style: they
-drive submission through a `cluster:` command string. Snakemake 9 uses the executor plugin
-instead (`snakemake_executor_plugin_slurm` 1.4.0 is installed in `run_snakemake9`), which
-wants `executor: slurm` and `default-resources` in the plugin's own keys, and ignores
-`cluster:`. As of 2026-09-04 **no v9-style profile exists** under `~/.config/snakemake`, so a
-snakemake9 pipeline needs one written before it can submit to the cluster at all.
+**The v7 and v9 profiles are NOT interchangeable.** The two under `~/.config/snakemake`
+(`slurm`, `slurm_long`) are v7-style: submission goes through a `cluster:` command string.
+Snakemake 9 uses the executor plugin (`snakemake_executor_plugin_slurm` 1.4.0, installed in
+`run_snakemake9`), which needs `executor: slurm` and a nested `cluster:` mapping of
+`submit-cmd` / `status-cmd` / `cancel-cmd`, and ignores a v7 `cluster:` string.
+
+v9 pipelines keep their profile **inside the repo**, not in `~/.config/snakemake`. Working
+template, copy this rather than writing one:
+
+```
+$OAK/Users/sheth/seq-processing-snakemake/.snakemake_profile/slurm/config.yaml
+```
+
+and its README gives the invocation:
+
+```bash
+conda activate run_snakemake9
+snakemake --configfile config/config.yml --profile .snakemake_profile/slurm
+```
+
+That profile also bakes in `use-conda: true`, `conda-frontend: mamba`, `keep-going: true`
+and `default-resources` with `slurm_partition=engreitz`, so those need not be passed.
 
 **Submit the driver as its own small job.** With a profile the driver only orchestrates, so
 2 cores and 8 GB is plenty, but give it a long wall clock (48 h) and a non-preemptible

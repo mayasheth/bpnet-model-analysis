@@ -27,8 +27,13 @@
 set -euo pipefail
 D=/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet
 A=/oak/stanford/groups/engreitz/Users/sheth/ABC_working/ABC-Enhancer-Gene-Prediction
-SM=/oak/stanford/groups/engreitz/Users/sheth/.conda/envs/run_snakemake/bin/snakemake
+SM_ENV=/oak/stanford/groups/engreitz/Users/sheth/.conda/envs/run_snakemake
+SM=$SM_ENV/bin/snakemake
 PROFILE="$HOME/.config/snakemake/slurm"
+# --use-conda shells out to mamba from /usr/bin/bash, which does not inherit the wrapper
+# env just because snakemake was called by absolute path. Without this the run dies with
+# CreateCondaEnvironmentException before submitting anything.
+export PATH="$SM_ENV/bin:$PATH"
 CFG=config/mine/config_predicted_activity.yaml
 mkdir -p "$D/2026_0824_H3K27ac_model/log"
 cd "$A"
