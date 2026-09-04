@@ -1195,3 +1195,48 @@ a set if the report's headline numbers are ever re-scored.
 **structural_mitigation_candidate**: When adding a symmetry-based inference trick, include a
 model that cannot benefit from the symmetry. A result that is uniform across every model is
 usually measuring something other than the mechanism claimed.
+
+
+### [2026-09-04] Reusing a Snakemake run's outputs needs the per-run files too, not just the obvious ones
+
+**Category**: process
+
+**What happened**: The nine ABC predicted-activity arms must share one candidate-region set,
+so each arm's `Peaks/` was copied from a completed run and the dry run was gated to abort if
+any region-calling rule got scheduled. It aborted three times.
+
+1. `shutil.copytree` preserves mtimes, so the copies carried the original run's July dates
+   and read as stale against September bigwigs.
+2. Stamping every copied file with one timestamp fixed that but not the real requirement:
+   Snakemake needs an output **strictly newer** than its input, and equal mtimes still
+   scheduled the rule. Files had to be staggered along the chain
+   `narrowPeak -> .sorted -> Counts.bed -> candidateRegions.bed`.
+3. Still aborted. `snakemake -n -r` gave the actual reason, which was not an mtime at all:
+   `sort_narrowpeaks` takes a SECOND input, the per-run
+   `results/<run>/tmp/<chrom sizes>.bed` written by `generate_chrom_sizes_bed_file`. A fresh
+   results directory lacks it, so Snakemake generated it and everything downstream re-ran
+   with reason *"Input files updated by another job"*.
+
+Copying `tmp/` as well, stamped earlier than the Peaks chain, produced a clean dry run:
+9 x create_neighborhoods / create_predictions / filter_predictions / QC and nothing else.
+
+**Why it matters**: I diagnosed twice by assumption and once by evidence, and only the
+evidence was right. `-r` was available from the first abort and would have shown the
+cascade immediately; instead two rounds went into an mtime theory that was true but not
+sufficient. The general shape: when reusing part of a pipeline's output tree, the
+per-biosample directories are the visible dependency and the per-RUN files are the invisible
+one, and a missing per-run file re-runs everything through the "updated by another job" rule
+rather than announcing itself.
+
+**Why the gate was worth having**: without it the run would have completed, silently calling
+regions per arm. All nine arms would then have had different candidate regions, and every
+cross-arm comparison — the entire point of the experiment — would have been meaningless
+while looking perfectly healthy.
+
+**Tags**: snakemake, abc, reuse, mtime, dry-run, gating, diagnosis
+
+**mitigation_type**: process
+
+**structural_mitigation_candidate**: Run `snakemake -n -r` and read the stated reason before
+theorising about why a rule is scheduled. When reusing outputs, diff the fresh results tree
+against the source run at the top level, not just the directories you meant to copy.

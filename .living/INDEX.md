@@ -6,7 +6,7 @@ Last audit: 2026-09-04
 |------|---------|--------------|------------|
 | conventions.md | 17 sections | 2026-09-04 | Layout: analyses live at the repo root, not under `analysis/`, Reports, Figures, Environments, SLURM submit scripts (mandatory) |
 | decisions.md | 12 entries | 2026-09-03 | Center H3K27ac training windows on candidate elements, not ChIP peaks, Counting window is a trade-off between signal and neighbour contamination, Keep the profile head, down-weighted, rather than removing it, Residual correlation beyond ATAC becomes the headline metric, Paired-end H3K27ac targets use read 1 only, not both mates |
-| learnings.md | 38 entries (large — read selectively) | 2026-09-03 | count_loss_weight must be calibrated to the actual loss magnitudes, not copied, Inter-replicate r is not a model performance ceiling without two corrections, bpnetlite's count target sums ALL channels, not one strand, Three Sherlock/SLURM traps that cost a job each, Peak count scales the negative pool, which can OOM by 50x |
+| learnings.md | 39 entries (large — read selectively) | 2026-09-04 | count_loss_weight must be calibrated to the actual loss magnitudes, not copied, Inter-replicate r is not a model performance ceiling without two corrections, bpnetlite's count target sums ALL channels, not one strand, Three Sherlock/SLURM traps that cost a job each, Peak count scales the negative pool, which can OOM by 50x |
 | findings/ | 3 findings across 4 topics | 2026-09-01 | predicting-regulatory-element-function-at-scale, linking-noncoding-variation-to-molecular-function, mapping-regulatory-perturbations-to-phenotype, how-enhancers-control-gene-expression |
 
 ## Local skills
@@ -27,6 +27,7 @@ Last summarized: 2026-09-04 (heuristic)
 
 ## Most recent (10)
 
+- [2026-09-04] L-39: Reusing a Snakemake run's outputs needs the per-run files too, not just the obvious ones
 - [2026-09-03] L-36: The receptive-field conclusion inverted when the second input mode finished
 - [2026-09-03] L-37: Both architecture changes that work act on the accessibility input
 - [2026-09-03] L-38: Test-time reverse-complement averaging is free, always positive, and carries its own control
@@ -36,7 +37,6 @@ Last summarized: 2026-09-04 (heuristic)
 - [2026-09-03] D-10: Regression gates on inference code compare within a tolerance, never byte-identically
 - [2026-09-03] D-11: Test-time reverse-complement averaging stays opt-in
 - [2026-09-03] D-12: Split the analysis into three reports along stability, not topic
-- [2026-09-02] L-34: Byte-identity is the wrong regression invariant for GPU inference
 
 ## By tag
 
@@ -72,6 +72,7 @@ Last summarized: 2026-09-04 (heuristic)
 - `validation`: L-19, L-28, L-33
 - `variance`: L-16, L-18, L-23
 - `window-selection`: L-7, D-1, D-2
+- `abc`: L-39, D-9
 - `determinism`: L-34, D-10
 - `fragment-extension`: L-8, L-9
 - `guards`: L-19, L-20
@@ -97,7 +98,6 @@ Last summarized: 2026-09-04 (heuristic)
 - `top-quintile`: L-35, L-37
 - `training`: L-1, L-5
 - `training-objective`: L-27, L-30
-- `abc`: D-9
 - `activity`: D-9
 - `adoption`: D-11
 - `all-elements-artifact`: L-17
@@ -127,12 +127,15 @@ Last summarized: 2026-09-04 (heuristic)
 - `denominator`: L-22
 - `deployment`: L-31
 - `depth`: L-28
+- `diagnosis`: L-39
 - `dnase`: L-25
 - `documentation`: D-12
 - `drift`: L-32
+- `dry-run`: L-39
 - `element-centric`: D-1
 - `encode`: L-25
 - `free-win`: L-38
+- `gating`: L-39
 - `generalization`: L-25
 - `geo`: L-26
 - `gpu`: L-34
@@ -146,6 +149,7 @@ Last summarized: 2026-09-04 (heuristic)
 - `memory`: L-5
 - `metric-choice`: D-4
 - `model-free-baseline`: L-22
+- `mtime`: L-39
 - `mycelium`: L-6
 - `negatives`: L-5
 - `normalization`: L-14
@@ -167,10 +171,12 @@ Last summarized: 2026-09-04 (heuristic)
 - `report`: L-32
 - `reporting`: D-12
 - `reporting-standard`: L-23
+- `reuse`: L-39
 - `sample-definition`: L-26
 - `scaling`: L-5
 - `scope`: L-25
 - `sequence-vs-accessibility`: L-18
+- `snakemake`: L-39
 - `spearman-brown`: L-2
 - `str-replace`: L-20
 - `stranded`: L-3

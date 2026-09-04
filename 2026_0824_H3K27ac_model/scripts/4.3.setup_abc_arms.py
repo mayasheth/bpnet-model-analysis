@@ -132,6 +132,26 @@ if a.copy_peaks:
     if missing:
         raise SystemExit("\nrefusing to copy Peaks while bigwigs are missing: Peaks must be "
                          "newer than every input or Snakemake will re-run region calling")
+
+    # `sort_narrowpeaks` takes a SECOND input beyond the narrowPeak: the per-run
+    # results/<run>/tmp/<chrom sizes>.bed written by generate_chrom_sizes_bed_file. In a
+    # fresh results directory that file is absent, so Snakemake generates it and then
+    # re-runs everything downstream with reason "Input files updated by another job" --
+    # which is what aborted the first two attempts, and is not an mtime problem at all.
+    # Copy it too, stamped earlier than the Peaks chain.
+    tmp_src = os.path.join(os.path.dirname(os.path.dirname(a.peaks_from)), "tmp")
+    tmp_dst = f"{ABC}/{a.results_dir}/tmp"
+    if os.path.isdir(tmp_src) and not os.path.exists(tmp_dst):
+        shutil.copytree(tmp_src, tmp_dst)
+        t0 = newest_input_mtime() + 30
+        for root, _d, files in os.walk(tmp_dst):
+            for fn in files:
+                os.utime(os.path.join(root, fn), (t0, t0))
+        print(f"  populated {tmp_dst} (per-run chrom-sizes bed)")
+    elif not os.path.isdir(tmp_src):
+        print(f"  WARNING: no tmp/ at {tmp_src}; generate_chrom_sizes_bed_file will run and "
+              f"cascade into region calling")
+
     src = a.peaks_from
     for r in rows:
         dst = f"{ABC}/{a.results_dir}/{r['biosample']}/Peaks"
@@ -152,7 +172,7 @@ if a.copy_peaks:
         #   macs2_peaks.narrowPeak -> .sorted -> (+ Counts.bed) -> .candidateRegions.bed
         # with each stage later than the one feeding it, and the whole set later than every
         # external input.
-        base = newest_input_mtime() + 60
+        base = newest_input_mtime() + 60   # tmp/ is stamped at +30, so the chain follows it
         for step, names in enumerate(PEAKS_ORDER):
             t = base + 10 * step
             for fn in names(os.listdir(dst)):
@@ -182,8 +202,21 @@ if a.copy_peaks:
         for a_, b_ in zip(chain, chain[1:]):
             if a_ in mt and b_ in mt and not mt[b_] > mt[a_]:
                 bad.append(f"{r['biosample']}: {b_} is not strictly newer than {a_}")
+    tmp_dst = f"{ABC}/{a.results_dir}/tmp"
+    if not os.path.isdir(tmp_dst) or not os.listdir(tmp_dst):
+        bad.append("results/<run>/tmp is missing; generate_chrom_sizes_bed_file will run "
+                   "and cascade into sort_narrowpeaks and make_candidate_regions")
+    else:
+        newest_tmp = max(os.path.getmtime(os.path.join(tmp_dst, f))
+                         for f in os.listdir(tmp_dst)
+                         if os.path.isfile(os.path.join(tmp_dst, f)))
+        for r in rows:
+            f = (f"{ABC}/{a.results_dir}/{r['biosample']}/Peaks/"
+                 f"macs2_peaks.narrowPeak.sorted")
+            if os.path.exists(f) and not os.path.getmtime(f) > newest_tmp:
+                bad.append(f"{r['biosample']}: .sorted is not newer than results/<run>/tmp")
     if bad:
-        raise SystemExit(f"ERROR: {len(bad)} mtime problem(s); Snakemake would re-run region "
+        raise SystemExit(f"ERROR: {len(bad)} problem(s); Snakemake would re-run region "
                          f"calling. First few: {bad[:3]}")
     print(f"Peaks populated, all files post-date every input (newest {newest_input:.0f}), "
           f"and the rule chain is strictly increasing; region calling will be skipped")
