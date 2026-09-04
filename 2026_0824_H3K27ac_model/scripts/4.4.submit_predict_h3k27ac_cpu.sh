@@ -1,5 +1,10 @@
 #!/bin/bash
-#SBATCH -p normal,owners
+#SBATCH -p engreitz,normal,owners
+#
+# PARTITION: `engreitz` first -- the lab-owned partition, 9 nodes at 24+ cores and 192 GB+
+# with a 7-day limit and no GPUs, so it is the right home for CPU work and does not compete
+# with the general GPU queues. `normal` and `owners` follow as fallbacks; SLURM starts the
+# job wherever a slot frees first.
 #SBATCH -t 8:00:00
 #SBATCH --mem=64G
 #SBATCH -c 16

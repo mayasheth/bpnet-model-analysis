@@ -1,5 +1,11 @@
 #!/bin/bash
-#SBATCH -p owners,normal
+#SBATCH -p engreitz,normal
+#
+# PARTITION: `engreitz` first -- the lab-owned partition, 9 nodes at 24+ cores and 192 GB+
+# with a 7-day limit and no GPUs, so it is the right home for CPU work and does not compete
+# with the general GPU queues. `owners` is deliberately EXCLUDED here: this job is one
+# uncheckpointed pass over three 9 GB BAMs into a temp directory under a cleanup trap, so a
+# preemption loses everything. It was preempted once already at 40 minutes.
 #SBATCH -t 12:00:00
 #SBATCH --mem=64G
 #SBATCH -c 8
