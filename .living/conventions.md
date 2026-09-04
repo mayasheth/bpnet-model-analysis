@@ -215,3 +215,17 @@ Three separate costs today came from putting the wrong job on the wrong partitio
   submitted inside an hour drained fairshare, so the work that had actually been prioritised
   queued behind exploratory follow-ups. Submit the thing that unblocks downstream work first,
   and `scontrol hold` the speculative batch rather than racing it.
+
+
+## Snakemake on Sherlock: wrapper env + profile, matched to the major version
+
+Full table in `CLAUDE.md`. The short form: drive pipelines with
+`$OAK/Users/sheth/.conda/envs/run_snakemake` (7.32.4) or `run_snakemake9` (9.6.0), always
+pass `--profile` so each rule instance is submitted as its own job, and submit the driver
+itself as a small long-lived job on a non-preemptible partition.
+
+The trap worth remembering: `~/.config/snakemake/slurm` and `slurm_long` are **v7-style**,
+driving submission through a `cluster:` command string. Snakemake 9 uses the executor plugin
+and ignores `cluster:` entirely, so a v9 pipeline pointed at these profiles will not submit
+to the cluster. A v9 profile (`executor: slurm` plus plugin-style `default-resources`) did
+not exist as of 2026-09-04 and has to be written first.
