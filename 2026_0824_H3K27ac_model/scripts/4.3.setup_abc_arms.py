@@ -46,6 +46,36 @@ K27ONLY = ["k562_atac", "k562_sequence", "k562_multimodal"]
 COLS = ["biosample", "DHS", "ATAC", "H3K27ac", "default_accessibility_feature",
         "HiC_file", "HiC_type", "HiC_resolution", "alt_TSS", "alt_genes"]
 
+def newest_input_mtime():
+    """Latest mtime among every file named in the biosample table."""
+    newest = 0.0
+    for r in rows:
+        for col in ("ATAC", "H3K27ac", "DHS"):
+            for path in str(r[col]).split(","):
+                if path and os.path.exists(path):
+                    newest = max(newest, os.path.getmtime(path))
+    return newest
+
+
+# Peaks files in rule-chain order: each stage is stamped later than the one feeding it.
+# Anything unmatched lands in the final bucket, which is safe -- a too-new file is never
+# the thing that triggers a re-run of the rule that produced it.
+PEAKS_ORDER = [
+    lambda fs: [f for f in fs if f in ("macs2_peaks.xls", "macs2_summits.bed",
+                                       "macs2_peaks.narrowPeak")],
+    lambda fs: [f for f in fs if f == "macs2_peaks.narrowPeak.sorted"],
+    lambda fs: [f for f in fs if f.endswith("Counts.bed")],
+    lambda fs: [f for f in fs if f.endswith("candidateRegions.bed")],
+    lambda fs: [f for f in fs if f in ("candidateRegions.qc.txt", "params.txt")],
+    lambda fs: [f for f in fs
+                if not any((f in ("macs2_peaks.xls", "macs2_summits.bed",
+                                  "macs2_peaks.narrowPeak",
+                                  "macs2_peaks.narrowPeak.sorted",
+                                  "candidateRegions.qc.txt", "params.txt"),
+                            f.endswith("Counts.bed"),
+                            f.endswith("candidateRegions.bed")))],
+]
+
 ap = argparse.ArgumentParser()
 ap.add_argument("--results-dir", default="results/2026_0903_predicted_activity")
 ap.add_argument("--peaks-from", default=f"{JULY}/K562_ATAC_only/Peaks")
@@ -112,14 +142,25 @@ if a.copy_peaks:
         shutil.copytree(src, dst)
         # copytree preserves mtimes, so the copies carry the ORIGINAL run's dates. Snakemake
         # compares mtimes, so July-dated Peaks against a September-dated predicted bigwig
-        # reads as stale and re-runs MACS2 -- on a bigwig, for the activity-only arms.
-        # Stamp every copied file to now so it is newer than any input.
-        now = time.time()
-        for root, _dirs, files in os.walk(dst):
-            for fn in files:
-                os.utime(os.path.join(root, fn), (now, now))
-            os.utime(root, (now, now))
-        print(f"  populated and touched {dst}")
+        # reads as stale and re-runs region calling -- on a bigwig, for the activity-only
+        # arms.
+        #
+        # Stamping everything with one timestamp is NOT enough, and the first attempt failed
+        # exactly there: Snakemake requires an output to be STRICTLY NEWER than its input, so
+        # equal mtimes still scheduled sort_narrowpeaks and make_candidate_regions. The files
+        # must be staggered along the rule chain
+        #   macs2_peaks.narrowPeak -> .sorted -> (+ Counts.bed) -> .candidateRegions.bed
+        # with each stage later than the one feeding it, and the whole set later than every
+        # external input.
+        base = newest_input_mtime() + 60
+        for step, names in enumerate(PEAKS_ORDER):
+            t = base + 10 * step
+            for fn in names(os.listdir(dst)):
+                fp = os.path.join(dst, fn)
+                if os.path.isfile(fp):
+                    os.utime(fp, (t, t))
+        os.utime(dst, (base + 10 * len(PEAKS_ORDER), ) * 2)
+        print(f"  populated and staggered {dst}")
     # Verify the invariant rather than trusting it: every Peaks file must post-date every
     # input file named in the biosample table.
     newest_input = 0.0
@@ -128,16 +169,23 @@ if a.copy_peaks:
             for path in str(r[col]).split(","):
                 if path and os.path.exists(path):
                     newest_input = max(newest_input, os.path.getmtime(path))
-    stale = []
+    bad = []
     for r in rows:
         d = f"{ABC}/{a.results_dir}/{r['biosample']}/Peaks"
-        for fn in os.listdir(d):
-            if os.path.getmtime(os.path.join(d, fn)) < newest_input:
-                stale.append(f"{r['biosample']}/{fn}")
-    if stale:
-        raise SystemExit(f"ERROR: {len(stale)} Peaks file(s) older than the newest input; "
-                         f"Snakemake would re-run region calling. First few: {stale[:3]}")
-    print(f"Peaks populated and all files post-date every input "
-          f"(newest input mtime {newest_input:.0f}); MACS2 will be skipped")
+        mt = {fn: os.path.getmtime(os.path.join(d, fn)) for fn in os.listdir(d)}
+        for fn, t in mt.items():
+            if t < newest_input:
+                bad.append(f"{r['biosample']}/{fn}: older than newest input")
+        # each link of the rule chain must be strictly newer than the one before it
+        chain = ["macs2_peaks.narrowPeak", "macs2_peaks.narrowPeak.sorted",
+                 "macs2_peaks.narrowPeak.sorted.candidateRegions.bed"]
+        for a_, b_ in zip(chain, chain[1:]):
+            if a_ in mt and b_ in mt and not mt[b_] > mt[a_]:
+                bad.append(f"{r['biosample']}: {b_} is not strictly newer than {a_}")
+    if bad:
+        raise SystemExit(f"ERROR: {len(bad)} mtime problem(s); Snakemake would re-run region "
+                         f"calling. First few: {bad[:3]}")
+    print(f"Peaks populated, all files post-date every input (newest {newest_input:.0f}), "
+          f"and the rule chain is strictly increasing; region calling will be skipped")
 else:
     print("\nPeaks NOT copied (pass --copy-peaks once the bigwigs exist)")
