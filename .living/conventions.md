@@ -193,6 +193,11 @@ Two consequences:
 
 ## Match the partition to the job, not to habit
 
+**Use the lab's own `engreitz` partition for anything that does not need a GPU.** Nine nodes
+at 24+ cores and 192 GB+, 7-day limit, no GPUs. It does not compete with the general GPU
+queues, so it sidesteps a fairshare depleted by training. Put it first and let `normal` and
+`owners` follow as fallbacks: `#SBATCH -p engreitz,normal,owners`.
+
 Three separate costs today came from putting the wrong job on the wrong partition.
 
 - **Long CPU jobs belong on `normal`, not `owners`.** The GM12878 fragment-channel build

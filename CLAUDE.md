@@ -227,6 +227,33 @@ generate_motif_pairs(motif_dict)         # Generate all motif pair combinations
 
 ---
 
+## SLURM partitions — pick deliberately
+
+**`engreitz` is the lab's own partition. Use it for everything that does not need a GPU.**
+9 nodes, 24+ cores, 192 GB+, 7-day limit, no GPUs. It does not compete with the general GPU
+queues, so it sidesteps a fairshare depleted by training runs.
+
+```bash
+#SBATCH -p engreitz,normal,owners   # CPU work: lab partition first, fallbacks after
+#SBATCH -p gpu,owners               # training only
+```
+
+| job | partition | why |
+|---|---|---|
+| Training (per fold, ~1–3 h) | `gpu,owners` | needs a GPU; short enough that preemption is cheap |
+| Inference / prediction | `engreitz,normal,owners` | no GPU needed. `torch.cuda.is_available()` makes the fallback automatic, so the same script runs either way |
+| Track building, evaluation, plotting | `engreitz,normal,owners` | CPU only |
+| One long uncheckpointed step | `engreitz,normal` — **never `owners`** | preemption loses the whole thing. The fragment-channel build (one pass over three 9 GB BAMs into a temp dir under a cleanup trap) was preempted at 40 minutes |
+| Resumable Snakemake DAG | `engreitz,normal,owners` | rule outputs persist, so preemption costs one rule; `--rerun-incomplete` handles partials. Take the faster queue |
+
+Two further habits that cost time on 2026-09-03:
+
+- **Request less.** 8 cores / 64 GB backfills far more easily than 16 / 128, and the counting
+  and inference steps here stream rather than holding anything large.
+- **Submit in dependency order, and `scontrol hold` the speculative batch.** Twenty training
+  jobs submitted inside an hour drained fairshare and left the work that mattered queued
+  behind exploratory follow-ups.
+
 ## Environment and dependencies
 
 Primary conda environments:

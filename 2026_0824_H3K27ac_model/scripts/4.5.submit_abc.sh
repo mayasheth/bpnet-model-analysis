@@ -1,16 +1,29 @@
 #!/bin/bash
-#SBATCH -p normal
-#SBATCH -t 24:00:00
-#SBATCH --mem=128G
-#SBATCH -c 16
+#SBATCH -p engreitz,normal,owners
+#
+# PARTITION: `engreitz` first -- the lab-owned partition, 9 nodes at 24+ cores and 192 GB+
+# with a 7-day limit and no GPUs, so it is the right home for CPU work and does not compete
+# with the general GPU queues. `normal` and `owners` follow as fallbacks; SLURM starts the
+# job wherever a slot frees first.
+#SBATCH -t 12:00:00
+#SBATCH --mem=64G
+#SBATCH -c 8
 #SBATCH -o log/abcrun.%j.txt
 #SBATCH -e log/abcrun.%j.txt
 #SBATCH --job-name=abc_predacts
 #
 # Run ABC over the nine predicted-activity arms.
 #
-# `normal` rather than `owners`: this is a multi-hour uncheckpointed Snakemake DAG, and a
-# preemption partway through wastes every completed rule.
+# `owners,normal` -- the OPPOSITE call from the fragment-channel build, deliberately.
+# That build is one uncheckpointed pass over three 9 GB BAMs into a temp directory under a
+# cleanup trap, so preemption loses everything and it must sit on non-preemptible `normal`.
+# This is a Snakemake DAG whose rule outputs persist on disk, so a preemption loses at most
+# the single rule in flight and `--rerun-incomplete` cleans up any partial output. Being
+# resumable, it should take the faster queue rather than the safer one.
+#
+# The request is 8 cores / 64 GB / 12 h rather than 16 / 128 / 24: the counting rules stream
+# through bedtools rather than loading anything large, and a smaller request backfills far
+# more easily against a depleted fairshare.
 #
 # Snakemake runs LOCALLY across the allocated cores rather than submitting its own cluster
 # jobs, which keeps the whole DAG inside one allocation and avoids a second layer of
