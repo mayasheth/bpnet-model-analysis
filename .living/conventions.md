@@ -226,6 +226,18 @@ itself as a small long-lived job on a non-preemptible partition.
 
 The trap worth remembering: `~/.config/snakemake/slurm` and `slurm_long` are **v7-style**,
 driving submission through a `cluster:` command string. Snakemake 9 uses the executor plugin
-and ignores `cluster:` entirely, so a v9 pipeline pointed at these profiles will not submit
-to the cluster. A v9 profile (`executor: slurm` plus plugin-style `default-resources`) did
-not exist as of 2026-09-04 and has to be written first.
+and ignores `cluster:` entirely. v9 profiles live **inside their repo**, not in
+`~/.config/snakemake`; copy the working one at
+`$OAK/Users/sheth/seq-processing-snakemake/.snakemake_profile/slurm/config.yaml`.
+
+Also: `--use-conda` needs the wrapper env's `bin` on `PATH`, because it shells out to mamba
+from `/usr/bin/bash`. Calling snakemake by absolute path is not enough.
+
+## Ask before running a broad search
+
+Before a repo-wide grep, a `find` over Oak, or any hunt for where something lives, ask.
+Maya usually knows the path or can narrow it to one directory. A `find` for an element set
+timed out and returned nothing; a `grep -rl` across four repos missed a snakemake9 profile
+that one question located immediately, in a hidden directory the patterns never covered.
+An empty or timed-out search is not evidence of absence. Targeted `ls` of a named directory
+does not need asking.
