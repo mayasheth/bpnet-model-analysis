@@ -30,10 +30,25 @@ A=/oak/stanford/groups/engreitz/Users/sheth/ABC_working/ABC-Enhancer-Gene-Predic
 SM_ENV=/oak/stanford/groups/engreitz/Users/sheth/.conda/envs/run_snakemake
 SM=$SM_ENV/bin/snakemake
 PROFILE="$HOME/.config/snakemake/slurm"
-# --use-conda shells out to mamba from /usr/bin/bash, which does not inherit the wrapper
-# env just because snakemake was called by absolute path. Without this the run dies with
+# --use-conda shells out to mamba from /usr/bin/bash, which does not inherit the wrapper env
+# just because snakemake was called by absolute path; without mamba the run dies with
 # CreateCondaEnvironmentException before submitting anything.
-export PATH="$SM_ENV/bin:$PATH"
+#
+# But putting $SM_ENV/bin on PATH is NOT the fix: every rule job inherits the driver's
+# environment, and the wrapper env's python (3.11, no pyranges) then shadows the rule conda
+# env's python (3.10, with pyranges), so every create_neighborhoods job dies on
+# `import pyranges`. Expose ONLY mamba and conda, through a shim directory appended to the
+# end of PATH, so nothing else can be shadowed whatever order conda activation applies.
+# The shim must live on a SHARED filesystem, not mktemp -d. With the SLURM executor each
+# rule runs its own `snakemake --jobstep`, which re-checks for mamba on whatever node it
+# lands on; a driver-local /tmp path is invisible there (and deleted when the driver exits),
+# so the children failed with the same CreateCondaEnvironmentException the driver had.
+SHIM=$D/2026_0824_H3K27ac_model/.mamba_shim
+mkdir -p "$SHIM"
+ln -sfn "$SM_ENV/bin/mamba" "$SHIM/mamba"
+ln -sfn "$SM_ENV/bin/conda" "$SHIM/conda"
+export PATH="$PATH:$SHIM"
+command -v mamba >/dev/null || { echo "ERROR: mamba still not on PATH via $SHIM" >&2; exit 1; }
 CFG=config/mine/config_predicted_activity.yaml
 mkdir -p "$D/2026_0824_H3K27ac_model/log"
 cd "$A"
@@ -42,6 +57,19 @@ mkdir -p .snakemake/slurm_logs
 echo "snakemake: $($SM --version)"
 echo "profile:   $PROFILE"
 echo
+
+# A driver killed mid-run leaves the working directory locked, and the next attempt dies
+# with LockException before doing anything. Clear it -- but only after confirming no other
+# ABC driver is alive, because unlocking a live workflow lets two Snakemake instances write
+# the same files.
+OTHERS=$(squeue -u "$USER" -h -o '%i %j %T' | awk '$2 ~ /abc_driver/ && $3 == "RUNNING" {print $1}' | grep -v "^${SLURM_JOB_ID:-none}$" || true)
+if [[ -n "$OTHERS" ]]; then
+    echo "ABORT: another abc_driver is RUNNING (job(s): $OTHERS)." >&2
+    echo "Cancel it before starting a new one; do not unlock a live workflow." >&2
+    exit 1
+fi
+echo "=== clearing any stale lock ==="
+$SM --configfile "$CFG" --unlock || true
 
 echo "=== dry run ==="
 $SM --configfile "$CFG" --use-conda -n -q > /tmp/abc_dryrun.$$ 2>&1 || { cat /tmp/abc_dryrun.$$; exit 1; }
