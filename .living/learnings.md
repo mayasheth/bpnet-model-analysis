@@ -1286,3 +1286,67 @@ asserts the environment preconditions on the node type the real work runs on, an
 before the pipeline rather than after the third failure. Gate correctness invariants with a
 dry run that uses the SAME flags as the real run. After cancelling a driver, always check for
 orphaned children -- the scheduler leaves them running.
+
+### [2026-09-05] Why better H3K27ac does not help ABC: rank displacement of the functional elements
+
+**Category**: result
+
+**What happened**: Observed H3K27ac beats ATAC alone by +0.062 AUPRC on the CRISPR benchmark
+(0.519 vs 0.457). Predicted H3K27ac recovers none of it on precision-at-min-sensitivity, and
+its AUPRC gain sits entirely inside the floor's CI. `4.9.diagnose_abc_gap.py` separates three
+candidate explanations.
+
+**Accuracy is not the problem.** Predicted vs observed H3K27ac per ABC region, Spearman:
+
+| stratum | n | Spearman |
+|---|---|---|
+| all regions | 153,545 | 0.794 |
+| CRISPR-tested regions | 3,016 | **0.824** |
+| regions of regulated pairs | 339 | 0.663 |
+
+Agreement on the tested regions is HIGHER than genome-wide, so the model is not failing where
+the benchmark looks.
+
+**The mechanism is rank displacement, and I had the wrong mechanism first.** I predicted
+dynamic-range compression. That cannot be it: `normalized_atac` is identical across arms and
+`normalized_h3k27ac` is qnorm'd onto the same K562 reference, so scale is mathematically
+irrelevant — both arms draw values from the same distribution. The only way regulated
+elements end up with lower activity is if the model RANKS THEM LOWER, which it does:
+
+| stratum | p99/p50 observed | p99/p50 predicted |
+|---|---|---|
+| all regions | 32.4 | 25.4 |
+| CRISPR-tested | 11.0 | 9.2 |
+| regulated pairs | **6.00** | **4.03** |
+
+Top-decile separation on regulated pairs: 6.46 observed against 4.23 predicted. The loss is
+concentrated on exactly the elements CRISPR calls functional.
+
+**The threshold behaviour is the surprise.** All three arms catch the same positives:
+observed 322 of 429, predicted 325, ATAC-only 323, with 10-15 discordant either way. So the
+observed-H3K27ac advantage is about RANKING (suppressing negatives), not about detecting more
+true positives. Any effort aimed at "catching more enhancers" is aimed at the wrong quantity.
+
+**One sharp failure class.** The 12 pairs observed catches and predicted misses sit at
+elements with observed H3K27ac.RPM median 22.79 -- about 39x the genome-wide median of 0.59 --
+where the model predicts 0.71. Very strong real signal treated as near-background.
+
+**Also ruled out**: the train/score element mismatch. Training on the ATAC-derived set ABC
+scores against changes nothing: -0.0011 [-0.0147, +0.0125], p = 0.83.
+
+**Why it matters**: the quantity this project has been optimising is the wrong one. Overall
+top-quintile r improved from 0.690 to 0.724 across the architecture work, and none of it
+reached the endpoint, because the endpoint depends on ORDERING AMONG HIGH-SIGNAL ELEMENTS and
+on separating them from negatives. A loss that weights high-signal elements, or a ranking
+objective, targets that directly; more trunk capacity does not.
+
+**Tags**: abc, crispr-benchmark, diagnosis, qnorm, ranking, negative-result, mechanism
+
+**mitigation_type**: none
+
+**structural_mitigation_candidate**: When a model improves on its training metric but not on
+the downstream endpoint, diagnose which property of the prediction the endpoint consumes
+before trying more architectures. Here the endpoint consumes rank order among high-signal
+elements; the training metric averaged over everything. Also: check whether a hypothesised
+mechanism is even reachable given the pipeline -- scale compression was impossible to blame
+because qnorm removes scale by construction.

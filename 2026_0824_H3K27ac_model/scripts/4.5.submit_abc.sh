@@ -51,6 +51,15 @@ export PATH="$PATH:$SHIM"
 command -v mamba >/dev/null || { echo "ERROR: mamba still not on PATH via $SHIM" >&2; exit 1; }
 CFG=config/mine/config_predicted_activity.yaml
 mkdir -p "$D/2026_0824_H3K27ac_model/log"
+# Re-stamp Peaks before every run rather than trusting whoever ran 4.3 last. If the
+# predicted bigwigs have been regenerated, the existing Peaks are older than them and
+# Snakemake would re-run region calling, silently giving each arm its own region set. Making
+# this part of the run means the invariant cannot depend on operator order.
+echo "=== re-stamping Peaks against current inputs ==="
+"$D/.pixi/envs/multimodal/bin/python" \
+    "$D/2026_0824_H3K27ac_model/scripts/4.3.setup_abc_arms.py" --copy-peaks --force-peaks \
+    | tail -3
+
 cd "$A"
 mkdir -p .snakemake/slurm_logs
 
