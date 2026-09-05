@@ -72,7 +72,11 @@ echo "=== clearing any stale lock ==="
 $SM --configfile "$CFG" --unlock || true
 
 echo "=== dry run ==="
-$SM --configfile "$CFG" --use-conda -n -q > /tmp/abc_dryrun.$$ 2>&1 || { cat /tmp/abc_dryrun.$$; exit 1; }
+# The dry run must use the SAME flags as the real run, or its verdict is about a different
+# invocation. Omitting --profile meant it lacked the profile's rerun-incomplete, so it died
+# with IncompleteFilesException on outputs left by a cancelled run while the real run would
+# have handled them -- the gate was stricter than the thing it was gating.
+$SM --configfile "$CFG" --profile "$PROFILE" --use-conda -n -q > /tmp/abc_dryrun.$$ 2>&1 || { cat /tmp/abc_dryrun.$$; exit 1; }
 cat /tmp/abc_dryrun.$$
 if grep -qE '^[[:space:]]*(call_macs_peaks|sort_narrowpeaks|make_candidate_regions)[[:space:]]' /tmp/abc_dryrun.$$; then
     echo "ABORT: region-calling rules are scheduled, so the copied Peaks were not honoured." >&2

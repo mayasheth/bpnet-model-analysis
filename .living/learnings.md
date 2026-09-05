@@ -1240,3 +1240,49 @@ while looking perfectly healthy.
 **structural_mitigation_candidate**: Run `snakemake -n -r` and read the stated reason before
 theorising about why a rule is scheduled. When reusing outputs, diff the fresh results tree
 against the source run at the top level, not just the directories you meant to copy.
+
+### [2026-09-04] Nine ABC arms on one region set: what it took, and the two invariants that mattered
+
+**Category**: process
+
+**What happened**: Getting ABC to run nine predicted-activity arms took seven driver
+submissions. Every failure but the last was caused by the fix for the previous one.
+
+| attempt | failure | cause |
+|---|---|---|
+| 1 | region-calling rules scheduled | `copytree` preserves mtimes, so copied Peaks carried July dates |
+| 2 | same | one uniform timestamp is not enough; Snakemake needs an output STRICTLY newer than its input |
+| 3 | same | `sort_narrowpeaks` also takes the per-RUN `results/<run>/tmp/<chrom sizes>.bed`, absent in a fresh results dir, which cascades via input-files-updated-by-another-job |
+| 4 | `CreateCondaEnvironmentException` | `--use-conda` needs mamba on PATH for the shell Snakemake spawns |
+| 5 | `ModuleNotFoundError: pyranges` | the PATH fix for (4) put the wrapper env's python ahead of the rule env's |
+| 6 | `LockException` | a driver cancelled in (5) was still alive and holding the lock |
+| 7 | `IncompleteFilesException` | the dry-run gate omitted `--profile`, so it lacked the profile's `rerun-incomplete` while the real run had it |
+
+Also found mid-run: two child jobs from a cancelled driver were still RUNNING 22 minutes
+later. SLURM does not kill a driver's children, so they were about to write the same output
+files as the new driver's children.
+
+**Why it matters**: two invariants did all the protective work.
+
+- **The dry-run gate.** It aborted whenever region-calling rules appeared. Without it the run
+  would have completed while calling candidate regions independently per arm, and all nine
+  arms would have had different region sets -- every cross-arm comparison meaningless, with
+  nothing in the output looking wrong. Final verification: identical 153,546 rows and
+  identical region md5 `7d5995ce` across all nine.
+- **The guarded unlock.** Refusing to `--unlock` while another driver was RUNNING stopped two
+  Snakemake instances from writing the same files.
+
+**Why it took seven tries**: I diagnosed by assumption and resubmitted, twice, when
+`snakemake -n -r` prints the reason directly. A ten-minute validation job
+(`scripts/shimtest.sh`) that checked mamba resolution and python precedence ON A COMPUTE NODE
+settled in seconds what four submissions had probed one hypothesis at a time.
+
+**Tags**: abc, snakemake, gating, diagnosis, orphaned-jobs, mtime, conda, process
+
+**mitigation_type**: process
+
+**structural_mitigation_candidate**: For a cluster pipeline, write a seconds-long job that
+asserts the environment preconditions on the node type the real work runs on, and run it
+before the pipeline rather than after the third failure. Gate correctness invariants with a
+dry run that uses the SAME flags as the real run. After cancelling a driver, always check for
+orphaned children -- the scheduler leaves them running.
