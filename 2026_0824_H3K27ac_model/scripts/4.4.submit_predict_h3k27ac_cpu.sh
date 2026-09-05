@@ -32,6 +32,14 @@ ARM=${1:?usage: sbatch 4.4... ARM MODEL_DIR MODE [CHROMS]}
 MODEL_DIR=${2:?}
 MODE=${3:?}
 CHROMS=${4:-}
+# Env overrides so the same script serves the p300 models, which live in another project
+# directory and were trained against a different target and accessibility track. Duplicating
+# this script for p300 would fork the RC-averaging and leakage-assembly logic, which is
+# exactly how 2.8/2.11 drifted before 2.15 replaced them.
+#   MODEL_ROOT  prefix for a relative MODEL_DIR (default: the H3K27ac project)
+#   ACC_BW      accessibility track the model was trained on
+#   SIGNAL_BW   any valid bigwig on this genome; used for bounds checking only
+#   OUT_PREFIX  output filename stem (default predk27ac)
 
 D=/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet
 P=$D/2026_0824_H3K27ac_model
@@ -46,14 +54,23 @@ cd "$P"
 export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK:-16}
 export MKL_NUM_THREADS=${SLURM_CPUS_PER_TASK:-16}
 
+MODEL_ROOT=${MODEL_ROOT:-$P}
+ACC_BW=${ACC_BW:-$D/2026_0529_multimodal_p300_model/data/atac.bw}
+OUT_PREFIX=${OUT_PREFIX:-predk27ac}
+case "$MODEL_DIR" in /*) MODEL_PATH="$MODEL_DIR" ;; *) MODEL_PATH="$MODEL_ROOT/$MODEL_DIR" ;; esac
+[[ -d "$MODEL_PATH" ]] || { echo "ERROR: no model dir $MODEL_PATH" >&2; exit 1; }
+
 ACC=()
-[[ "$MODE" != "sequence" ]] && ACC=(--accessibility-bw "$D/2026_0529_multimodal_p300_model/data/atac.bw")
+[[ "$MODE" != "sequence" ]] && ACC=(--accessibility-bw "$ACC_BW")
+SIG=()
+[[ -n "${SIGNAL_BW:-}" ]] && SIG=(--signal-bw "$SIGNAL_BW")
 CH=()
 [[ -n "$CHROMS" ]] && CH=(--chroms "$CHROMS")
 
+echo "model=$MODEL_PATH mode=$MODE acc=$ACC_BW out=${OUT_PREFIX}_${ARM}.bw"
 $PY scripts/4.1.predict_h3k27ac_for_abc.py \
-    --regions "$REG" --model-dir "$P/$MODEL_DIR" --mode "$MODE" \
-    ${ACC[@]+"${ACC[@]}"} ${CH[@]+"${CH[@]}"} \
-    --chrom-sizes "$SIZES" --out-bw "$OUTDIR/predk27ac_${ARM}.bw"
+    --regions "$REG" --model-dir "$MODEL_PATH" --mode "$MODE" \
+    ${ACC[@]+"${ACC[@]}"} ${CH[@]+"${CH[@]}"} ${SIG[@]+"${SIG[@]}"} \
+    --chrom-sizes "$SIZES" --out-bw "$OUTDIR/${OUT_PREFIX}_${ARM}.bw"
 
-echo "Done: $OUTDIR/predk27ac_${ARM}.bw"
+echo "Done: $OUTDIR/${OUT_PREFIX}_${ARM}.bw"
