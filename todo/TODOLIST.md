@@ -56,9 +56,18 @@ accessibility.**
       learned gate, prefer it — simpler and interpretable. Both are sequence-derived, so
       unlike fragment channels they cost nothing in transferability. Needs `0.27` to build the
       tracks first.
-- [ ] **CTCF/EP300 enrichment in the error strata** (`4.11`, submitted). Direct test against
-      ENCODE peak calls rather than a PWM proxy. Prediction: over-predicted tail enriched for
-      CTCF and depleted for EP300; under-predicted the reverse.
+- [x] **CTCF/EP300 enrichment in the error strata — PEAK OVERLAPS DONE** (`4.11`).
+      Over-predicted 5%: CTCF 36.9% vs 17.4% typical (2.1x, confirming the CTCF hypothesis),
+      but EP300 16.4% vs 8.8% — ENRICHED, contradicting my prediction of depletion, and
+      H3K27ac peaks 30.6% vs 15.8% despite low H3K27ac RPM. Under-predicted 1%: EP300 57.7%
+      (6.6x), H3K4me1 86.8% (3.1x), H3K27me3 0.0%, CTCF 9.3% (depleted) — canonical active
+      enhancers the model misses. CTCF enrichment is NON-MONOTONIC (36.9% at 5%, 23.4% at 1%),
+      unexplained; the most extreme over-predictions may be a different population.
+- [~] **Quantitative signal, not just peak overlaps** (`4.13`). Peak calls are thresholded and
+      the two measures demonstrably diverge here — the over-predicted stratum has H3K27ac
+      peaks called at 2x background while its H3K27ac RPM is at background. Counting reads
+      from the local BAMs gives the graded version. Peaks and signal should both be reported;
+      neither alone is trustworthy.
 - [ ] **Characterise the 12 threshold-level false negatives** individually once `4.11` lands —
       observed H3K27ac 39× the genome median where the model predicts near-background.
 
@@ -98,6 +107,32 @@ attribute any gain to the architecture or to the loss.
 - [ ] **Train on multiple cell types to optimise transferability.** The most promising route
       to a deployable model, since it directly optimises what deployment needs rather than
       in-cell-type fit. Do it after the transfer matrix says which architecture to carry.
+
+## Using p300 without needing p300 at deployment
+
+The application target has ATAC and nothing else, so **p300 can never be a model input** — it
+is unavailable in the target cell type, whatever we hold for training. It can be a target, an
+auxiliary task, or an annotation. Ordered so the cheap prerequisite gates the expensive work:
+
+- [ ] **First: do p300-target models predict the elements the H3K27ac model misses?** The
+      under-predicted stratum is 6.6x EP300-peak-enriched, 3.1x H3K4me1, CTCF-depleted, zero
+      H3K27me3 — canonical active enhancers the H3K27ac model treats as background. If the
+      existing p300 models in `2026_0529_multimodal_p300_model` also miss them, neither idea
+      below helps and both are dropped. Reuses `4.1` (predict p300 on the ABC regions) and
+      `4.12` (fold-elevation vs observed p300, ENCSR000EGE).
+- [ ] **Then: multi-head model** — shared trunk, two counts heads, predicting H3K27ac and
+      p300 from ATAC + sequence with a weighted loss. Deployment-valid because p300 is needed
+      only at TRAINING time; inference reads the H3K27ac head. Directly supervises the failing
+      population rather than adding capacity. Needs `extract_windows` to carry a second signal
+      track and the loss to sum two count terms — more invasive than the gate, and
+      `multimodal_bpnet.py` is shared with p300, so it needs the `test_asymmetric_loss.py`
+      treatment.
+      Trainable in K562 and GM12878, the same two cell types all the transfer work uses.
+- [ ] **Fallback only: stack predicted p300 as an input channel.** Information-theoretically
+      redundant — a predicted p300 track is a deterministic function of ATAC + sequence, which
+      the H3K27ac model already sees — so it can only act as an inductive bias, and it costs
+      two training runs and two models at inference to get what multi-head gets in one. Try
+      only if multi-head underperforms.
 
 ## p300 as the activity term instead of H3K27ac
 
