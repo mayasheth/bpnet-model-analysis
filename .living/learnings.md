@@ -1350,3 +1350,53 @@ before trying more architectures. Here the endpoint consumes rank order among hi
 elements; the training metric averaged over everything. Also: check whether a hypothesised
 mechanism is even reachable given the pipeline -- scale compression was impossible to blame
 because qnorm removes scale by construction.
+
+### [2026-09-05] Sequence already knows which elements are not acetylated; the additive trunk ignores it
+
+**Category**: result
+
+**What happened**: Every model that sees ATAC over-predicts H3K27ac at accessible-but-
+unacetylated elements. Measuring each model's elevation in that stratum against ITS OWN
+genome-wide median (the painted-bigwig scale differs from observed RPM, so cross-model raw
+comparisons are meaningless):
+
+| | in stratum | own median | fold |
+|---|---|---|---|
+| observed H3K27ac | 0.59 | 0.59 | **1.0x** |
+| sequence only | 0.28 | 0.18 | **1.6x** |
+| ATAC only | 1.00 | 0.12 | **8.3x** |
+| sequence + ATAC | 0.80 | 0.11 | **7.3x** |
+
+Those elements are GC 0.593, CpG o/e 0.551, 2.4x promoter-enriched, ATAC/K27ac ratio 13.25
+against 2.20 typical -- a CpG-island / CTCF phenotype. The sequence-only model nearly gets
+them right; the accessibility-using models do not, and multimodal inherits ATAC's error
+almost intact.
+
+**Why it matters**: the information is already in sequence and the architecture cannot use it.
+`MultiModalBPNet` concatenates a 64-filter sequence branch with an 8-filter accessibility
+branch and the trunk mixes them ADDITIVELY, so accessibility contributes equally everywhere.
+There is no mechanism for sequence to veto accessibility at a CpG island. Adding
+sequence-derived features (GC, CpG density, motif scores) would supply information the branch
+already has -- the fix is an interaction, not another additive input.
+
+**The loss is the other half.** log1pMSE is symmetric, so predicting 0.80 where truth is 0.59
+costs ~0.015 squared log error while missing an 18.6 enhancer costs ~6.1 -- roughly 400x less
+sensitive to inventing signal than to missing it. A gate has no gradient pressure to close
+while that holds, so the architecture change and the loss change must go in together or the
+experiment will wrongly conclude gating does not work.
+
+**A mistake worth recording**: my diagnostic script printed an automated verdict of "sequence
+cannot see it", the opposite of the truth. It applied an accessibility-residualised error to
+the sequence-only model, which has no accessibility input -- charging it with failing to
+predict a deviation from something it cannot observe. The raw numbers in the same output said
+the opposite. Do not let a script print a conclusion that has not been checked against its
+own inputs, and do not apply a control designed for one arm to an arm it does not fit.
+
+**Tags**: architecture, gating, loss-design, cpg-island, ctcf, over-prediction, self-correction
+
+**mitigation_type**: structural
+
+**structural_mitigation_candidate**: Before adding a feature to fix a model error, check
+whether a model that ALREADY has that feature makes the same error. If the sequence-only arm
+gets these elements right, the problem is how the branches combine, not what they contain --
+and no amount of extra input will fix it.

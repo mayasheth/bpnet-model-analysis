@@ -21,6 +21,42 @@ import numpy
 import torch
 
 from bpnetlite.losses import MNLLLoss, log1pMSELoss, _mixture_loss
+
+
+def _asymmetric_mixture_loss(y, y_hat_logits, y_hat_logcounts, count_loss_weight,
+                             overprediction_weight, labels=None):
+    """_mixture_loss with the count term made asymmetric.
+
+    Identical to bpnetlite's `_mixture_loss` when overprediction_weight == 1.0 -- verified
+    numerically by scripts/test_asymmetric_loss.py, which is the regression gate for this
+    file being shared with the p300 models.
+
+    Above 1.0, squared log-count error is multiplied by that factor wherever the prediction
+    EXCEEDS the truth. The endpoint (ABC ranking) is hurt far more by inventing signal at
+    accessible-but-inactive elements than by missing a strong enhancer, and the symmetric
+    loss encodes the opposite priority.
+    """
+    y_hat_logits = y_hat_logits.reshape(y_hat_logits.shape[0], -1)
+    y_hat_logits = torch.nn.functional.log_softmax(y_hat_logits, dim=-1)
+
+    y = y.reshape(y.shape[0], -1)
+    y_ = y.sum(dim=-1).reshape(y.shape[0], 1)
+
+    if labels is not None:
+        profile_loss = MNLLLoss(y_hat_logits[labels == 1], y[labels == 1]).mean()
+    else:
+        profile_loss = MNLLLoss(y_hat_logits, y).mean()
+
+    # log1pMSELoss is mean((log_pred - log1p(true))^2); reproduce it elementwise so the
+    # over-prediction cases can be weighted.
+    err = y_hat_logcounts - torch.log(y_ + 1)
+    w = torch.where(err > 0,
+                    torch.full_like(err, float(overprediction_weight)),
+                    torch.ones_like(err))
+    count_loss = (w * err.pow(2)).mean()
+
+    loss = profile_loss + count_loss_weight * count_loss
+    return profile_loss, count_loss, loss
 from bpnetlite.performance import calculate_performance_measures
 from bpnetlite.logging import Logger
 
@@ -58,7 +94,8 @@ class MultiModalBPNet(torch.nn.Module):
     def __init__(self, n_filters=64, n_acc_filters=8, n_acc_channels=1,
                  n_layers=8, n_outputs=2,
                  mode='multimodal', count_loss_weight=1, profile_output_bias=True,
-                 count_output_bias=True, name=None, trimming=None, verbose=True):
+                 count_output_bias=True, name=None, trimming=None, verbose=True,
+                 gate_accessibility=False, overprediction_weight=1.0):
         super().__init__()
         assert mode in ('multimodal', 'sequence', 'atac'), \
             f"mode must be 'multimodal', 'sequence', or 'atac', got '{mode}'"
@@ -70,6 +107,12 @@ class MultiModalBPNet(torch.nn.Module):
         # Number of accessibility INPUT channels (1 = a single flat track; >1 for
         # fragment-size-stratified channels). n_acc_filters is the output width.
         self.n_acc_channels = n_acc_channels
+        self.gate_accessibility = gate_accessibility
+        # >1 makes over-prediction cost more than under-prediction. log1pMSE is symmetric, so
+        # predicting 0.80 where truth is 0.59 costs ~0.015 while missing an 18.6 enhancer
+        # costs ~6.1 -- roughly 400x less sensitive to inventing signal than to missing it.
+        # A gate has no gradient pressure to close without this.
+        self.overprediction_weight = overprediction_weight
         self.count_loss_weight = count_loss_weight
         self.name = name or f"multimodal_bpnet.{mode}.{n_filters}.{n_layers}"
         self.trimming = trimming or 47 + sum(2**i for i in range(1, n_layers + 1))
@@ -81,6 +124,22 @@ class MultiModalBPNet(torch.nn.Module):
             self.acc_conv = torch.nn.Conv1d(n_acc_channels, n_acc_filters,
                                             kernel_size=21, padding=10)
             self.acc_relu = torch.nn.ReLU()
+            if gate_accessibility:
+                # Sequence decides, per position, how much accessibility to let through.
+                # The trunk otherwise mixes the two branches ADDITIVELY, so accessibility
+                # contributes equally everywhere -- which is why every model that sees ATAC
+                # over-predicts H3K27ac at accessible-but-unacetylated elements (CpG-island
+                # promoters, CTCF sites) by 7-8x while the sequence-only model elevates them
+                # only 1.6x. The signal is already in sequence; it has no way to veto ATAC.
+                #
+                # Initialised OPEN: zero weights and bias +4 give sigmoid ~ 0.982 everywhere,
+                # so at initialisation this model is the ungated one and can only learn to
+                # close the gate where closing helps. That keeps the comparison clean and
+                # avoids destabilising early training.
+                self.gate_conv = torch.nn.Conv1d(n_filters, n_acc_filters,
+                                                 kernel_size=21, padding=10)
+                torch.nn.init.zeros_(self.gate_conv.weight)
+                torch.nn.init.constant_(self.gate_conv.bias, 4.0)
         elif mode == 'sequence':
             n_merged = n_filters
             self.seq_conv = torch.nn.Conv1d(4, n_filters, kernel_size=21, padding=10)
@@ -136,6 +195,9 @@ class MultiModalBPNet(torch.nn.Module):
         if self.mode == 'multimodal':
             X_seq = self.seq_relu(self.seq_conv(X[:, :4, :]))
             X_acc = self.acc_relu(self.acc_conv(X[:, 4:, :]))
+            # getattr keeps checkpoints pickled before the gate existed loadable
+            if getattr(self, "gate_accessibility", False):
+                X_acc = X_acc * torch.sigmoid(self.gate_conv(X_seq))
             X_merged = torch.cat([X_seq, X_acc], dim=1)
         elif self.mode == 'sequence':
             X_merged = self.seq_relu(self.seq_conv(X))
@@ -202,9 +264,10 @@ class MultiModalBPNet(torch.nn.Module):
                     y_hat_logits, y_hat_logcounts = self(X)
                     if offset is not None:
                         y_hat_logcounts = y_hat_logcounts + offset.reshape(-1, 1)
-                    train_profile_loss, train_count_loss, loss = _mixture_loss(
+                    train_profile_loss, train_count_loss, loss = _asymmetric_mixture_loss(
                         y, y_hat_logits, y_hat_logcounts,
-                        self.count_loss_weight, labels
+                        self.count_loss_weight,
+                        getattr(self, "overprediction_weight", 1.0), labels
                     )
 
                 loss.backward()
@@ -226,8 +289,9 @@ class MultiModalBPNet(torch.nn.Module):
                     y_hat_logcounts = y_hat_logcounts + \
                         offset_valid.to(y_hat_logcounts.device).reshape(-1, 1)
 
-                valid_profile_loss, valid_count_loss, valid_loss = _mixture_loss(
-                    y_valid, y_hat_logits, y_hat_logcounts, self.count_loss_weight
+                valid_profile_loss, valid_count_loss, valid_loss = _asymmetric_mixture_loss(
+                    y_valid, y_hat_logits, y_hat_logcounts, self.count_loss_weight,
+                    getattr(self, "overprediction_weight", 1.0)
                 )
 
                 measures = calculate_performance_measures(
