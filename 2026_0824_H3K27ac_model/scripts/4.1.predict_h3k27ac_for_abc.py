@@ -62,6 +62,13 @@ ap.add_argument("--paint", default="counts", choices=["counts", "density"],
                 help="counts: sum over region equals the prediction (default). "
                      "density: sum scales with region width, as real read counts do.")
 ap.add_argument("--batch", type=int, default=256)
+ap.add_argument("--no-rc-average", dest="rc_average", action="store_false", default=True,
+                help="Disable test-time reverse-complement averaging. RC averaging is ON by "
+                     "default as of 2026-09-05, matching the 2.15 evaluator: the number we "
+                     "report and the track we ship should be produced the same way, or the "
+                     "quoted metric is not the pipeline's actual output. Measured gain on "
+                     "top-quintile counts: +0.0162 sequence, +0.0081 multimodal, +0.0016 "
+                     "and non-significant for ATAC only.")
 a = ap.parse_args()
 
 SIGNAL_DEFAULT = ("/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/"
@@ -130,10 +137,28 @@ for chrom, g in reg.groupby("chr", sort=True):
     X = (np.concatenate([seqs, x], axis=1) if a.mode == "multimodal"
          else seqs if a.mode == "sequence" else x).astype(np.float32)
 
+    # Reverse complement: one-hot channels are ACGT, so flipping the channel axis maps
+    # A<->T and C<->G, and flipping the length axis completes it. Accessibility channels are
+    # strand-agnostic coverage and are reversed along length only. Only the counts head is
+    # used here, so unlike 2.15 there is no profile to un-flip.
+    n_seq = 4 if a.mode in ("multimodal", "sequence") else 0
+
+    def rc(xb):
+        if n_seq:
+            seq_part = torch.flip(xb[:, :n_seq], dims=[1, 2])
+            if xb.shape[1] > n_seq:
+                return torch.cat([seq_part, torch.flip(xb[:, n_seq:], dims=[2])], dim=1)
+            return seq_part
+        return torch.flip(xb, dims=[2])
+
     out = []
     with torch.no_grad():
         for i in range(0, len(X), a.batch):
-            _, lc = m(torch.from_numpy(X[i:i + a.batch]).to(dev))
+            xb = torch.from_numpy(X[i:i + a.batch]).to(dev)
+            _, lc = m(xb)
+            if a.rc_average:
+                _, lc_rc = m(rc(xb))
+                lc = (lc + lc_rc) / 2
             out.append(lc.squeeze(-1).cpu().numpy())
     m.to("cpu"); del X, seqs, accs, x
     lc = np.concatenate(out) if out else np.zeros(0)
@@ -145,7 +170,8 @@ for chrom, g in reg.groupby("chr", sort=True):
                       vals.astype(np.float32))
     n_pred += len(kept)
     print(f"  {chrom}: fold{fold} in_window={in_w} n={len(kept):,} "
-          f"dropped={int((~valid).sum())} median_counts={np.median(counts):.1f}", flush=True)
+          f"dropped={int((~valid).sum())} median_counts={np.median(counts):.1f} "
+          f"rc={'on' if a.rc_average else 'off'}", flush=True)
 
 print(f"\npredicted {n_pred:,} regions; {n_drop:,} dropped "
       f"({100.0*n_drop/max(1,n_pred+n_drop):.3f}% -- these read as 0 in ABC)", flush=True)

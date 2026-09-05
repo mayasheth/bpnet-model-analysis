@@ -79,6 +79,11 @@ PEAKS_ORDER = [
 ap = argparse.ArgumentParser()
 ap.add_argument("--results-dir", default="results/2026_0903_predicted_activity")
 ap.add_argument("--peaks-from", default=f"{JULY}/K562_ATAC_only/Peaks")
+ap.add_argument("--force-peaks", action="store_true",
+                help="Delete and re-copy each arm's Peaks/ even if present. REQUIRED after "
+                     "regenerating the predicted bigwigs: the existing Peaks would then be "
+                     "older than the new inputs, and Snakemake would re-run region calling, "
+                     "giving each arm its own region set.")
 ap.add_argument("--copy-peaks", action="store_true",
                 help="Also populate each arm's Peaks/ from the July run. Run this only "
                      "after every predicted bigwig exists, so Peaks is the newer file.")
@@ -141,6 +146,8 @@ if a.copy_peaks:
     # Copy it too, stamped earlier than the Peaks chain.
     tmp_src = os.path.join(os.path.dirname(os.path.dirname(a.peaks_from)), "tmp")
     tmp_dst = f"{ABC}/{a.results_dir}/tmp"
+    if a.force_peaks and os.path.isdir(tmp_dst):
+        shutil.rmtree(tmp_dst)
     if os.path.isdir(tmp_src) and not os.path.exists(tmp_dst):
         shutil.copytree(tmp_src, tmp_dst)
         t0 = newest_input_mtime() + 30
@@ -157,8 +164,10 @@ if a.copy_peaks:
         dst = f"{ABC}/{a.results_dir}/{r['biosample']}/Peaks"
         os.makedirs(os.path.dirname(dst), exist_ok=True)
         if os.path.exists(dst):
-            print(f"  exists, skipping {dst}")
-            continue
+            if not a.force_peaks:
+                print(f"  exists, skipping {dst}")
+                continue
+            shutil.rmtree(dst)
         shutil.copytree(src, dst)
         # copytree preserves mtimes, so the copies carry the ORIGINAL run's dates. Snakemake
         # compares mtimes, so July-dated Peaks against a September-dated predicted bigwig

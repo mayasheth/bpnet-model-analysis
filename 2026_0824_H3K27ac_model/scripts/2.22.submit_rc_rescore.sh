@@ -31,6 +31,7 @@ PY=$D/.pixi/envs/multimodal/bin/python
 GMEL=$TR/reference/GM12878_candidate_elements.narrowPeak
 K5EL=$D/reference/K562_DNase_candidate_elements.narrowPeak
 P300EL=$D/reference/K562_DNase_candidate_elements.narrowPeak
+K5EL_ATAC=$D/reference/K562_ATAC_candidate_elements.narrowPeak
 cd "$P"
 
 run () {  # config out_prefix elements [pair args...]
@@ -67,11 +68,25 @@ run deploy_gm_to_k562_configs.json      rc_deploy_gm_to_k562_    "$K5EL" \
     --pair GMresMM_to_K562 GMmm_to_K562 --pair GMresSeq_to_K562 GMmm_to_K562
 
 # Figs 10 and 12 architecture
-run wide_k562_configs.json              rc_wide_k562_            "$K5EL" \
-    --pair sequence_WIDE sequence_narrow --pair multimodal_WIDE multimodal_narrow
-run wide_gm12878_configs.json           rc_wide_gm12878_         "$GMEL" \
-    --pair sequence_WIDE sequence_narrow --pair multimodal_WIDE multimodal_narrow
 run fragchan_k562_configs.json          rc_fragchan_k562_        "$K5EL" \
+    --pair multimodal_FRAGCHAN multimodal_flat
+
+# Added 2026-09-05: the four comparisons whose models finished that morning. Including them
+# here is what makes the report internally consistent -- otherwise these four would be the
+# only single-pass tables in an otherwise RC-averaged report.
+run wide_k562_configs.json              rc_wide_k562_            "$K5EL" \
+    --pair atac_WIDE atac_narrow --pair sequence_WIDE sequence_narrow \
+    --pair multimodal_WIDE multimodal_narrow
+run wide_gm12878_configs.json           rc_wide_gm12878_         "$GMEL" \
+    --pair atac_WIDE atac_narrow --pair sequence_WIDE sequence_narrow \
+    --pair multimodal_WIDE multimodal_narrow
+run fragwide_k562_configs.json          rc_fragwide_k562_        "$K5EL" \
+    --pair mm_narrow_FRAG mm_narrow_flat --pair mm_WIDE_flat mm_narrow_flat \
+    --pair mm_WIDE_FRAG mm_narrow_flat --pair mm_WIDE_FRAG mm_WIDE_flat \
+    --pair mm_WIDE_FRAG mm_narrow_FRAG
+run atacel_k562_configs.json            rc_atacel_k562_          "$K5EL_ATAC" \
+    --pair mm_trained_ATAC_elements mm_trained_DNase_elements
+run fragchan_gm12878_configs.json       rc_fragchan_gm12878_     "$GMEL" \
     --pair multimodal_FRAGCHAN multimodal_flat
 
 echo "All tables re-scored with RC averaging. Re-run 3.7 and every 3.x figure script "

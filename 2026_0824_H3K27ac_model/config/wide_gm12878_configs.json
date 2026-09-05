@@ -10,6 +10,15 @@
  },
  "compare": [
   {
+   "label": "atac_WIDE",
+   "mode": "atac",
+   "half_window": 500,
+   "model_dir": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/models/gm12878_atac5p_accs5p_wide_hw500_clw10",
+   "accessibility_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0606_GM12878_transferability/data/atac_5p.bw",
+   "signal_plus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/gm12878_h3k27ac_5p_plus.bw",
+   "signal_minus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/gm12878_h3k27ac_5p_minus.bw"
+  },
+  {
    "label": "sequence_narrow",
    "mode": "sequence",
    "half_window": 500,
