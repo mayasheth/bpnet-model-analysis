@@ -26,6 +26,75 @@ a property of the objective and needs no further per-cell-type testing.
       state, no input-domain shift — a sharp and cheap test of whether the model tracks
       condition-specific change. Inference only if trained on ctrl.
 
+## Interrogating the ABC negative result — the main thread
+
+The CRISPR benchmark says predicted H3K27ac adds nothing detectable over ATAC alone (best
+predicted arm 0.482 vs floor 0.457, CI overlapping; deployment-scenario arms at or below the
+floor). `4.9.diagnose_abc_gap.py` localised why: the prediction is accurate (Spearman 0.82 on
+CRISPR-tested regions, better than genome-wide) but **ranks the functional elements too low**,
+and since ABC's qnorm removes scale by construction, rank is the only channel available. All
+arms catch the same positives, so the deficit is in suppressing negatives.
+
+`4.10`/`4.12` then localised the error to a specific population: every model that sees ATAC
+over-predicts H3K27ac at accessible-but-unacetylated elements by 7–8× its own median, while
+sequence-only elevates them 1.6× and observed H3K27ac not at all. Those elements are GC 0.59,
+CpG o/e 0.55, 2.4× promoter-enriched, ATAC/K27ac ratio 13.25 vs 2.20 typical — a CpG-island /
+CTCF phenotype. **The signal is in sequence; the additive trunk gives it no way to veto
+accessibility.**
+
+- [~] **RUNNING: gate × loss factorial** (`1.19`, 15 fold-jobs). Sequence-conditioned gate on
+      the accessibility branch (`X_acc *= sigmoid(conv(X_seq))`, initialised open so the model
+      starts as the ungated one), crossed with an asymmetric count loss weighting
+      over-prediction 3×. `gate` alone is expected to do little because the gate has no
+      gradient pressure while log1pMSE is ~400× more sensitive to missing signal than to
+      inventing it — which is why it gets its own arm instead of being assumed.
+      Backward compatibility for the shared `multimodal_bpnet.py` is gated by
+      `scripts/test_asymmetric_loss.py`: weight 1.0 reproduces bpnetlite exactly, an open gate
+      changes predictions by 0.39%, and pre-gate checkpoints still load.
+- [ ] **Indicator-channel control.** GC and CpG-density tracks as extra accessibility
+      channels, no gate, no loss change. If hand-supplied class information does as well as a
+      learned gate, prefer it — simpler and interpretable. Both are sequence-derived, so
+      unlike fragment channels they cost nothing in transferability. Needs `0.27` to build the
+      tracks first.
+- [ ] **CTCF/EP300 enrichment in the error strata** (`4.11`, submitted). Direct test against
+      ENCODE peak calls rather than a PWM proxy. Prediction: over-predicted tail enriched for
+      CTCF and depleted for EP300; under-predicted the reverse.
+- [ ] **Characterise the 12 threshold-level false negatives** individually once `4.11` lands —
+      observed H3K27ac 39× the genome median where the model predicts near-background.
+
+## Which model transfers best — do not assume the in-cell-type winner
+
+- [~] **RUNNING: transfer matrix** (`2.24`). narrow/wide × flat/fragments, both directions,
+      with each target's own models in the same table so the transfer drop is readable.
+      The in-cell-type ranking is NOT the deployment ranking: wide gained +0.028/+0.016
+      in-cell-type but only +0.012/+0.005 transferred, neither significant. Fragment channels
+      have never been tested on transfer and are the arm most at risk, since fragment-size
+      distributions are library properties.
+- [ ] **TeloHAEC as a third cell type, with conditions.** The only new cell type under the
+      ATAC-only rule. Tracks, elements and model-free coupling are ready. Caveats to carry:
+      ATAC-derived elements (though derivation was shown not to matter, p = 0.83), 36 bp reads
+      vs 95 bp, and shallower libraries — so read length and depth remain confounded even
+      though element derivation does not. Fragment channels there would need PE BAMs.
+- [ ] **Train on multiple cell types to optimise transferability.** The most promising route
+      to a deployable model, since it directly optimises what deployment needs rather than
+      in-cell-type fit. Do it after the transfer matrix says which architecture to carry.
+
+## p300 as the activity term instead of H3K27ac
+
+- [ ] **ABC + CRISPR with p300 predictions, and with observed p300.** p300 is a coactivator,
+      one step closer to the sequence-specified event, and is arguably what ABC's activity
+      term is really proxying. Observed p300 gives both a ceiling and — importantly — a qnorm
+      REFERENCE, so the no-reference problem dissolves: build a p300 qnorm reference from the
+      observed arm rather than running without qnorm and having to scale-match the geomean by
+      hand. Data: EP300 ENCSR000EGE, `ENCFF466WKF/ENCFF163FSR.filtered.sorted.bam`, peaks
+      `ENCFF702XPO.bed.gz`. p300 models already exist in `2026_0529_multimodal_p300_model`
+      (residual r 0.654, higher than H3K27ac's).
+- [ ] **Test removing qnorm** as its own arm (`use_qnorm: False`; `activity_base_no_qnorm` is
+      already in every EnhancerList). Expectation is that it hurts — the model emits log1p
+      counts over ±500 bp while observed H3K27ac is read counts over the element, so without
+      qnorm the geomean multiplies incommensurate magnitudes, and ABC's thresholds are
+      calibrated on qnorm'd values. Cheap enough to settle rather than argue.
+
 ## Downstream utility — decides whether the correlation metrics are the right target
 
 - [ ] **Plug predicted H3K27ac into ABC and benchmark it.** The end-to-end test of whether

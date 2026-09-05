@@ -82,6 +82,16 @@ def parse_args():
     p.add_argument("--n-acc-filters", type=int, default=8)
     p.add_argument("--n-layers", type=int, default=8)
     p.add_argument("--count-loss-weight", type=float, default=1.0)
+    p.add_argument("--gate-accessibility", action="store_true",
+                   help="Let sequence gate the accessibility branch: "
+                        "X_acc *= sigmoid(conv(X_seq)). Initialised open, so the model "
+                        "starts identical to the ungated one and can only learn to suppress "
+                        "accessibility where that helps. Multimodal mode only.")
+    p.add_argument("--overprediction-weight", type=float, default=1.0,
+                   help="Multiply squared log-count error by this factor where the "
+                        "prediction EXCEEDS the truth. 1.0 reproduces bpnetlite exactly. "
+                        "Pair it with --gate-accessibility: the gate has no gradient "
+                        "pressure to close while the loss is symmetric.")
     p.add_argument("--batch-size", type=int, default=64)
     p.add_argument("--max-epochs", type=int, default=100)
     p.add_argument("--early-stopping", type=int, default=10)
@@ -599,9 +609,16 @@ def main():
         n_outputs=n_outputs,
         mode=args.mode,
         count_loss_weight=args.count_loss_weight,
+        gate_accessibility=args.gate_accessibility,
+        overprediction_weight=args.overprediction_weight,
         name=model_prefix,
         verbose=True
     )
+    if args.gate_accessibility:
+        assert args.mode == "multimodal", "--gate-accessibility needs multimodal mode"
+        print("accessibility gating: ON (initialised open)")
+    if args.overprediction_weight != 1.0:
+        print(f"over-prediction weight: {args.overprediction_weight}")
     print(f"Model trimming: {model.trimming} (output window: "
           f"{args.in_window - 2*model.trimming})")
     assert args.in_window - 2 * model.trimming == args.out_window, (
