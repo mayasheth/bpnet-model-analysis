@@ -62,6 +62,26 @@ accessibility.**
 - [ ] **Characterise the 12 threshold-level false negatives** individually once `4.11` lands —
       observed H3K27ac 39× the genome median where the model predicts near-background.
 
+## Sequence-gated multimodal for p300 — diagnose before training
+
+Naming: the architecture is **sequence-gated multimodal**; `gate` is the flag and filename
+token. The asymmetric loss is named separately on purpose, because the factorial exists to
+attribute any gain to the architecture or to the loss.
+
+- [ ] **Confirm p300 has the same failure mode BEFORE training p300 with the gate.** The
+      premise is that p300 suffers the same accessibility domination, and it may not: p300's
+      residual *r* is 0.654 against H3K27ac's ~0.55, so sequence adds MORE beyond accessibility
+      there. That is consistent with the problem being milder, or with it being equally severe
+      but more fixable — different expected gains, same number.
+      Cheap test, reusing existing machinery: predict p300 on the ABC candidate regions with
+      the existing `2026_0529_multimodal_p300_model` models via `4.1`, then run the `4.12`
+      fold-elevation comparison against observed p300 (ENCSR000EGE,
+      `ENCFF466WKF`/`ENCFF163FSR`). Confirmed if p300's sequence-only arm gets high-ATAC /
+      low-p300 elements right while its multimodal arm does not.
+- [ ] **Then train p300 with the gate**, 15 fold-jobs, only if the diagnostic confirms it.
+      `multimodal_bpnet.py` is already shared, so no further code change is needed — the p300
+      submit scripts just gain the two flags.
+
 ## Which model transfers best — do not assume the in-cell-type winner
 
 - [~] **RUNNING: transfer matrix** (`2.24`). narrow/wide × flat/fragments, both directions,
