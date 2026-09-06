@@ -1,5 +1,5 @@
 ---
-title: "Architecture and input decisions, and why predicted H3K27ac does not yet improve ABC"
+title: "Architecture and input decisions: predicted H3K27ac does not improve ABC, predicted p300 does"
 date: "2026-09-05"
 status: "draft"
 format:
@@ -70,7 +70,7 @@ blockquote { border-left: 3px solid #ddd; margin-left: 0; padding-left: 1rem;
 
 ![](figures/fig14_crispr_benchmark.png)
 
-**Figure 1 | No predicted-H3K27ac arm clears the ATAC-only floor on the CRISPR benchmark, and the deployment arms sit at or below it.** **Headline figure.**
+**Figure 1 | No predicted-H3K27ac arm clears the ATAC-only floor on the CRISPR benchmark, and the deployment arms sit at or below it.** **Headline figure.** Superseded in part: switching the target to p300 does clear the floor, by +0.055 with a paired-bootstrap interval excluding zero -- see "Predicted p300 works where predicted H3K27ac does not" below. This figure remains the H3K27ac result.
 
 <details>
 <summary>Full legend</summary>
@@ -92,8 +92,10 @@ scored by `CRISPR_comparison`. Source:
 
 ## Summary
 
-- **The downstream benchmark is negative.** No predicted-H3K27ac arm clears the ATAC-only floor with a resolvable margin, and the deployment arms -- GM12878-trained models applied to K562, which is the actual use case -- sit at or below it (Fig. 1). This is the project's terminal metric, so it is the headline result.
-- **The mechanism is compressed dynamic range, not inaccuracy.** Predicted and observed H3K27ac correlate at Spearman 0.79 genome-wide, but the predicted activity term's p99/p50 ratio is 4.03 against 6.00 on the regions of regulated pairs, so ABC's ranking is displaced rather than wrong.
+- **Predicted p300 clears the benchmark floor; predicted H3K27ac does not.** A sequence + ATAC model predicting p300, substituted into ABC's activity term, beats the ATAC-only floor by **+0.055 AUPRC [+0.034, +0.074]** on a paired bootstrap, sign preserved in 100% of resamples, and is statistically indistinguishable from *measured* H3K27ac (-0.007 [-0.032, +0.017]). No predicted-H3K27ac arm managed this (Fig. 1).
+- **Observed p300 is simply a better ABC activity term than observed H3K27ac**, by +0.038 [+0.019, +0.058], independent of any model. That widens the available headroom over the floor from 0.062 to 0.099 and is a reason to prefer p300 as the modelling target wherever it can be measured.
+- **For p300 the sequence branch earns its place**, beating the ATAC-only p300 model by +0.051 [+0.032, +0.069]. For H3K27ac the sequence arms were catastrophic (0.393 and 0.275 against a 0.457 floor). This is the clearest evidence yet that target choice, not architecture, was the binding constraint.
+- **For H3K27ac the mechanism is compressed dynamic range, not inaccuracy.** Predicted and observed H3K27ac correlate at Spearman 0.79 genome-wide, but the predicted activity term's p99/p50 ratio is 4.03 against 6.00 on the regions of regulated pairs, so ABC's ranking is displaced rather than wrong.
 - **In-cell-type architecture gains do not travel.** Every transferred architecture is within 0.016 of the simplest one, and the richer models have the *larger* transfer drops. Transferring the best model buys +0.013 to +0.036 over simply using the target cell type's own ATAC-only model.
 - **The failures have a clean signature, but it is not CTCF.** Over-predicted elements are accessible, GC-rich, CpG-rich, promoter-enriched and carry no more H3K27ac than a random element; CTCF-high elements are only 27% of that tail and removing them leaves the rest over-predicted more, not less, so the 2.6x pooled CTCF enrichment is a passenger. GC content correlates with the error 3-4x more strongly than CTCF does. Under-predicted elements are canonical active enhancers (EP300 3.4x, H3K4me1 3.3x, zero H3K27me3).
 - **p300 as a second target is dropped.** Where the H3K27ac model fails, observed p300 is elevated only ~2.3x over its own input control and the p300 models predict it at 1.83x -- below that control -- so neither a multi-head model nor stacking can help.
@@ -140,8 +142,10 @@ stated. Read every row against a between-fold `sd` of 0.041-0.046 (Report 2).
 | **Profile head at 1 bp** | ceiling 0.21; models reach 0.114-0.171 | not informative, but not failing either; removing it is untested |
 | **Architecture choice on transfer** | no arm beats narrow+flat by a resolvable margin (best +0.016, *p*=0.066) | in-cell gains do not travel |
 | **Predicted H3K27ac as the ABC activity term** | AUPRC 0.482 against a floor of 0.457 and a ceiling of 0.519 | does not clear the floor; deployment arms at or below it |
-| **p300 as a second target or a second head** | predicted p300 1.83x elevation against a 2.10x input control | **dropped** |
-| **Sequence-gated accessibility, and asymmetric count loss** | trained, scoring in flight | pending |
+| **Predicted p300 as the ABC activity term** | **+0.055 [+0.034, +0.074]** over the floor, paired bootstrap | **adopted as the target of choice**; matches measured H3K27ac |
+| **Observed p300 instead of observed H3K27ac as the activity term** | **+0.038 [+0.019, +0.058]** | use p300 where it is measured; model-independent |
+| **p300 as a second head alongside H3K27ac** | predicted p300 1.83x elevation against a 2.10x input control at the H3K27ac failure elements | **dropped**; p300 as the *primary* target is the version that works |
+| **Sequence-gated accessibility, and asymmetric count loss** | in-cell null; **-0.013 (*p*=0.039) transferred when combined** | **closed** |
 
 ## Inputs: accessibility carries most of it, and sequence adds a real but small complement
 
@@ -956,6 +960,107 @@ sbatch --dependency=afterok:... scripts/4.14.p300_at_h3k27ac_failures.py
 Source: `scripts/4.4`, `scripts/4.14.p300_at_h3k27ac_failures.py`
 </details>
 
+## Predicted p300 works where predicted H3K27ac does not
+
+**Q:** The H3K27ac arms failed the benchmark. p300 is one step closer to the
+sequence-specified events -- does substituting *predicted p300* for the activity term do
+better, and is observed p300 even a better activity term to begin with?
+
+**A:** Yes to both, and the second explains part of the first. Observed p300 beats observed
+H3K27ac as ABC's activity term by **+0.038 AUPRC [+0.019, +0.058]**. A sequence + ATAC model
+predicting p300 beats the ATAC-only floor by **+0.055 [+0.034, +0.074]** with the sign
+preserved in 100% of paired resamples, and is indistinguishable from *measured* H3K27ac
+(-0.007 [-0.032, +0.017]). This is the first predicted-activity arm in the project to clear
+the floor with a resolvable margin.
+
+**AUPRC on the CRISPR benchmark, 10,342 element-gene pairs, 466 regulated:**
+
+| arm | AUPRC | unpaired 95% CI |
+|---|---|---|
+| ATAC x **observed p300** | **0.557** | [0.506, 0.605] |
+| ATAC x observed H3K27ac | 0.519 | [0.468, 0.567] |
+| ATAC x **predicted p300**, sequence + ATAC model | **0.512** | [0.463, 0.560] |
+| predicted p300 alone, sequence + ATAC model | 0.502 | [0.454, 0.550] |
+| ATAC x predicted p300, ATAC-only model | 0.461 | [0.415, 0.511] |
+| ATAC only (floor) | 0.457 | [0.408, 0.507] |
+| predicted p300 alone, ATAC-only model | 0.443 | [0.394, 0.491] |
+| distance to TSS | 0.435 | [0.386, 0.485] |
+
+**The unpaired intervals resolve nothing and the paired ones resolve everything**, which is
+the same lesson as the within-fold pairing in Report 2, applied downstream. Every interval
+above overlaps every other; the arms are scored on the *identical* pair set, so resampling
+pairs once and recomputing all arms on that resample removes the shared variance:
+
+| comparison | delta | paired 95% CI | sign kept |
+|---|---|---|---|
+| observed p300 - observed H3K27ac | **+0.038** | [+0.019, +0.058] | 99.9% |
+| observed p300 - floor | **+0.099** | [+0.079, +0.120] | 100% |
+| **predicted p300 (seq + ATAC) - floor** | **+0.055** | **[+0.034, +0.074]** | **100%** |
+| predicted p300 (seq + ATAC) - observed H3K27ac | -0.007 | [-0.032, +0.017] | 71% |
+| predicted p300 alone (seq + ATAC) - floor | +0.045 | [+0.012, +0.077] | 99.6% |
+| predicted p300 (ATAC-only model) - floor | +0.004 | [-0.012, +0.021] | 70% |
+| predicted p300, seq + ATAC - ATAC-only model | **+0.051** | [+0.032, +0.069] | 100% |
+
+**Sequence is what makes it work, and that is the opposite of the H3K27ac result.** The
+multimodal p300 model beats the ATAC-only p300 model by +0.051 with the sign preserved in
+every resample, while the ATAC-only p300 model is at the floor (+0.004, interval spanning
+zero). For H3K27ac the sequence-containing arms were the *worst* in the whole panel -- 0.393
+for the geometric mean and 0.275 predicted-alone, both far below distance-to-TSS. Same
+architecture, same accessibility input, same benchmark: the target was the binding constraint.
+
+**Two independent things contribute and they should not be conflated.** Observed p300 is a
+better activity term than observed H3K27ac (+0.038), so the *concept* has more headroom over
+the floor -- 0.099 against 0.062. And the model captures more of the headroom it is given:
+55% of p300's against a non-resolvable fraction of H3K27ac's. A p300-target model would be
+worth preferring for either reason alone.
+
+**This does not contradict the earlier p300 negative, and the distinction matters.** The
+learnability test below shows p300 is *not* predictable at the specific elements where the
+H3K27ac model fails, which correctly killed the multi-head and stacking ideas. It says
+nothing about p300 as the *primary* target, where the relevant question is whether the
+predicted track ranks elements well enough for ABC -- a different quantity, now measured, and
+positive.
+
+**Method.**
+
+- Own ABC results directory and config, reusing the July floor and observed-H3K27ac ceiling
+  so the numbers are directly comparable to the H3K27ac run.
+- Observed p300 carried as this concept's own ceiling; a predicted arm with no observed anchor
+  decides nothing.
+- Differences tested by paired bootstrap over the shared pair set, 2,000 resamples.
+
+<details>
+<summary>Full methods &amp; code</summary>
+
+**Cross-run comparability is verified, not assumed.** The two shared anchors reproduce across
+the two independent pipeline runs: ATAC-only floor 0.4573 here against 0.4572 in the H3K27ac
+run, and observed H3K27ac 0.5192 against 0.5192. Agreement to 1e-4 on both is what licenses
+comparing 0.512 here against 0.482 there.
+
+**A systematic offset between the two AUPRC estimators, which does not affect any delta.**
+`4.17` computes average precision directly and reports 0.5673 / 0.5296 / 0.4680 for observed
+p300 / observed H3K27ac / floor where the pipeline reports 0.5569 / 0.5192 / 0.4573 -- a
+constant +0.0105 on all three, so it is a tie-handling or interpolation difference in the
+estimator rather than a difference in the data. Deltas are unaffected, which is why the
+paired table quotes deltas and the unpaired table quotes the pipeline's values.
+
+The ABC driver for this run stalled at 18 of 21 steps with every child job COMPLETED and
+nothing queued; the outstanding steps were a QC plot and aggregation, which nothing downstream
+reads. The five `EnhancerPredictionsAllPutative.tsv.gz` files were verified as valid gzip at
+10.1-10.3M rows each before the driver was cancelled and the benchmark run.
+
+```bash
+pixi run python scripts/4.3.setup_abc_arms.py --arms p300 \
+    --results-dir results/2026_0905_p300_activity
+ABC_CFG=config/mine/config_p300_activity.yaml ABC_ARMS=p300 \
+    ABC_RESULTS_DIR=results/2026_0905_p300_activity sbatch scripts/4.5.submit_abc.sh
+pixi run python scripts/4.6.setup_crispr_comparison.py --arms p300
+CC_CFG=.../config/config_p300_activity.yml sbatch scripts/4.7.submit_crispr_comparison.sh
+pixi run python scripts/4.17.paired_auprc_bootstrap.py <merged.txt.gz> --pair A B ...
+```
+Source: `scripts/4.3`, `4.5`-`4.7`, `4.17.paired_auprc_bootstrap.py`
+</details>
+
 ## Sequence-gated accessibility and an asymmetric count loss
 
 **Q:** The multimodal trunk merges a sequence branch and an accessibility branch additively,
@@ -1061,14 +1166,25 @@ Source: `scripts/multimodal_bpnet.py`, `scripts/train_multimodal_bpnet.py`,
 
 ## Open questions / next steps
 
-**The project's central question is now answered negatively, and the next work should be
-chosen accordingly.** Predicted H3K27ac does not improve ABC's CRISPR-benchmark performance
-(Fig. 1), the failure mode is compressed dynamic range on the strongly acetylated elements,
-and the sequence branch does not carry the discriminating signal the obvious fixes assume it
-does. Three directions remain, in order of expected value.
+**The central question now has a positive answer, but for p300 rather than H3K27ac.**
+Predicted H3K27ac does not improve ABC (Fig. 1); predicted p300 from a sequence + ATAC model
+clears the floor by +0.055 [+0.034, +0.074] and matches measured H3K27ac. Two things follow
+for planning: the p300 target is where the effort should go, and the H3K27ac diagnostics
+(compressed dynamic range, a sequence branch that does not discriminate) explain why *that*
+target underperformed rather than describing the approach as a whole.
 
-**1. Fix the training-element composition, which is the most likely single cause of the
-sequence branch's flatness.** The negative pool is not GC-matched (Report 1): it is a uniform
+**1. Train a GM12878 p300 model and re-run the benchmark transferred.** This is now the
+highest-value experiment in the project by a wide margin. Transferability to a cell type with
+only ATAC is the stated goal, the K562 p300 result is the first arm to clear the floor, and
+the transferred version is completely untested. EP300 data exists in GM12878 (ENCSR000DZG),
+so this is five folds of training plus an existing scoring path -- no new tooling. Everything
+below is lower priority until it lands.
+
+Then, in order of expected value:
+
+**2. Fix the training-element composition, which is the most likely single cause of the
+H3K27ac sequence branch's flatness** -- and which should be applied to the p300 models too,
+since they share the negative pool. The negative pool is not GC-matched (Report 1): it is a uniform
 random genome sample at mean GC 0.389 against 0.466-0.593 for candidate elements, and it is
 10% of every batch. A sequence branch can satisfy that contrast with a coarse GC detector,
 which is exactly what its behaviour looks like -- 0.397 correlation *across* candidate
@@ -1087,7 +1203,7 @@ elements and almost no dynamic range *within* them. Three experiments, cheapest 
   p300 setup and neither has been swept. They set how much of the loss is spent on the
   positive-versus-background contrast rather than on grading elements against each other.
 
-**2. Give the model the sequence features it is not learning**, if composition alone does not
+**3. Give the model the sequence features it is not learning**, if composition alone does not
 fix it. Explicit GC-content and CpG-density channels, computed by the same route as the
 existing accessibility channels, with an indicator-channel control to confirm the gain comes
 from the feature rather than from the extra capacity. Motif-derived channels are the heavier
@@ -1095,7 +1211,7 @@ version of the same idea. Run this after the composition experiments, since a GC
 a GC-matched negative set are two ways of attacking the same problem and the second is
 cheaper.
 
-**3. Attack the dynamic range directly.** The benchmark fails on compression, not on ranking
+**4. Attack the dynamic range directly.** The benchmark fails on compression, not on ranking
 error, and no architecture change tried so far targets compression. Candidates: a loss on the
 predicted *spread* over each batch, training on rank-transformed targets, or predicting the
 composite `geomean(accessibility, H3K27ac)` that downstream consumers actually use. That last
@@ -1104,21 +1220,22 @@ accessibility term in the target, half the target is readable off the input and 
 is circular, so it must be `geomean(DHS, H3K27ac)` predicted from sequence + ATAC and
 baselined against the two-step route scored on the *same* composite.
 
-**4. Motif syntax, which is the remaining scientific question and has never been started.**
+**5. Motif syntax, which is the remaining scientific question and has never been started.**
 SHAP / TF-MoDISco / FiNeMo on the **residual-trained** model, whose predictions are forced
 onto signal accessibility cannot supply. Use the +/-500 bp window, which carries no neighbour
 contamination. Expect less attributable signal than p300 (Fig. 3).
 
 **Also open, smaller**
 
-- **ABC with predicted *p300* as the activity term.** Not yet run. The predicted-p300 tracks
-  over the ABC regions already exist from the learnability diagnostic, so the K562-trained
-  arms are nearly free; an observed-p300 arm is needed alongside them as the ceiling, since a
-  predicted arm with no anchor decides nothing. This is a different question from F-006 -- that
-  finding says p300 is not predictable *at the elements H3K27ac prediction fails*, not that
-  predicted p300 is a poor activity term, and its compression in ABC is untested. A
-  GM12878-trained arm needs a GM12878 p300 model, which does not exist; the EP300 data does
-  (ENCSR000DZG), so it is five folds of training away.
+- **Run the dynamic-range diagnostic on the p300 arms.** `4.9` established that predicted
+  H3K27ac fails through compression rather than inaccuracy. The same diagnostic on the p300
+  arms would say whether p300 succeeds by being less compressed -- the mechanism behind the
+  headline result is currently inferred, not measured.
+- **Re-test the H3K27ac benchmark deltas with the paired bootstrap.** Those arms were read off
+  overlapping unpaired intervals, which the p300 run demonstrates resolves nothing. The best
+  H3K27ac arm was +0.025 over the floor unpaired, and +0.055 turned out to be resolvable for
+  p300, so "no H3K27ac arm clears the floor" should be re-tested paired before it is treated
+  as settled.
 - **A qnorm-off ABC arm.** `run_qnorm` is rank-based so scale is irrelevant, but the reference
   is built from observed K562 signal, so a predicted track inherits the observed
   distribution's shape. Worth one arm.

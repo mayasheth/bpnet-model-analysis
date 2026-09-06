@@ -396,3 +396,71 @@ result is worth being able to reproduce. Report 3 records the numbers and the pr
 preceded them.
 
 **Tags**: architecture, gating, loss-design, training-composition, negatives, negative-result
+
+### [2026-09-06] Make p300 the primary modelling target; train a GM12878 p300 model next
+
+**Context**: Predicted H3K27ac never cleared the ABC benchmark floor. Substituting predicted
+p300 does, by +0.055 AUPRC [+0.034, +0.074] on a paired bootstrap, matching *measured*
+H3K27ac. Observed p300 also beats observed H3K27ac as the activity term by +0.038
+[+0.019, +0.058], so the target is better independently of any model. The gain requires
+sequence (+0.051 over the ATAC-only p300 model), which is the mirror image of H3K27ac, where
+the sequence arms were the worst in the panel.
+
+**Decision**: p300 becomes the primary target for the predicted-activity work. The next
+experiment is a GM12878 p300 model and a transferred benchmark run; everything else drops
+below it in priority. EP300 data exists in GM12878 (ENCSR000DZG), so this is five folds of
+training on an existing scoring path.
+
+**Alternatives considered**:
+- Keep optimising the H3K27ac model -- rejected: same architecture, same accessibility input
+  and same benchmark give +0.055 for p300 and nothing resolvable for H3K27ac, so the target
+  was the binding constraint, not the architecture.
+- Declare the transferability question answered from the K562 result -- rejected: this is
+  K562-trained and K562-evaluated. F-005 showed in-cell-type architecture gains do not travel,
+  and there is no reason to assume a target-choice gain travels either.
+- Predict both and combine -- deferred: F-006 killed the multi-head design on learnability
+  grounds and nothing here reopens it.
+
+**Rationale**: p300 is one step closer to the sequence-specified events, which is also why
+F-001 found sequence contributes 2.2x more to p300 than to H3K27ac. That earlier finding was
+treated as guidance for *attribution* work only; it turns out to have predicted which target
+would produce a usable predicted-activity track, which is worth remembering as a case where a
+mechanistic result had a practical consequence we did not act on for six weeks.
+
+**Consequences**: H3K27ac work is not wasted -- the ceilings, window choice, RC averaging,
+receptive field and the whole evaluation methodology carry over unchanged, and the p300 models
+share the negative pool so the GC-matching fix applies to both. The H3K27ac benchmark deltas
+need re-testing with the paired bootstrap before "no arm clears the floor" is treated as
+settled.
+
+**Tags**: p300, target-choice, abc, crispr-benchmark, transferability, positive-result
+
+### [2026-09-06] Use a paired bootstrap for every CRISPR-benchmark comparison
+
+**Context**: `performance_summary.txt` reports an independent bootstrap CI per predictor.
+Those are ~+/-0.05 wide while the differences of interest are 0.03-0.10, so every arm's
+interval overlaps every other's and no comparison is possible from them. All arms are scored
+on the identical element-gene pair set.
+
+**Decision**: Compare arms with `scripts/4.17.paired_auprc_bootstrap.py` -- resample the pair
+set once per iteration and recompute every arm on that same resample. Report the delta, a
+percentile CI and the fraction of resamples preserving the sign. Never compare two arms by
+eye from the unpaired intervals.
+
+**Alternatives considered**:
+- Read the unpaired intervals and describe overlapping arms as indistinguishable -- rejected,
+  and this is not hypothetical: it is what produced the H3K27ac reading, and the p300 run
+  shows a +0.055 difference sitting inside two overlapping unpaired intervals is in fact
+  resolvable at 100% sign retention.
+
+**Rationale**: Identical to the within-fold pairing already standard for the model metrics
+(Report 2): shared sampling variance dominates, and pairing removes it. It was applied
+upstream and not downstream purely by oversight.
+
+**Consequences**: Report 3 quotes paired deltas for every benchmark comparison and keeps the
+unpaired table only to show that it resolves nothing. `4.17` also revealed a constant +0.0105
+offset between its own average-precision implementation and the pipeline's across all arms --
+an estimator difference, not a data difference, which is why deltas rather than absolute
+values are the quotable output.
+
+**Tags**: statistics, paired-testing, crispr-benchmark, abc, bootstrap
