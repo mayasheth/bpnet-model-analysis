@@ -20,7 +20,7 @@ from matplotlib.patches import Patch
 from scipy.stats import t as tdist
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from nature_style import apply_rcparams, save_fig, add_panel_label, figsize
+from nature_style import apply_rcparams, save_fig, add_panel_label, figsize, n_label, annotate_n_fig
 
 P = "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model"
 COLOR = {"atac": "#2166AC", "sequence": "#B2182B", "multimodal": "#762A83"}
@@ -121,6 +121,9 @@ ax.set_ylim(-0.13, 0.45)
 add_panel_label(ax, "c")
 
 fig.tight_layout()
+_lab = "; ".join(
+    f"{_c} {n_label(pf[_c]).replace('n = ', '')}" for _c, _f, _g, _s in CELLS)
+annotate_n_fig(fig, "n = " + _lab)
 out = save_fig(fig, f"{P}/figures/fig5_residual_grid_both.png")
 print("Wrote", out, "and .pdf")
 
