@@ -1,0 +1,330 @@
+---
+title: "How a comparison in this project is scored, and what each metric can support"
+date: "2026-09-05"
+status: "draft"
+format:
+  html:
+    embed-resources: true
+    toc: true
+    code-fold: true
+---
+
+```{=html}
+<style>
+/* Typography and layout. Present in the document rather than the renderer so the
+   report looks the same whether it is built by quarto or by the pandoc fallback
+   (Sherlock has pandoc 2.10 and no quarto, which otherwise renders bare Times). */
+html { -webkit-text-size-adjust: 100%; }
+body {
+  font-family: Arial, Calibri, "Helvetica Neue", Helvetica, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #1a1a1a;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem;
+  background: #fff;
+}
+h1 { font-size: 1.7rem; font-weight: 600; line-height: 1.3; margin: 0 0 .3rem; }
+h2 { font-size: 1.15rem; font-weight: 600; margin: 2.6rem 0 .6rem;
+     padding-top: 1.1rem; border-top: 1px solid #e4e4e4; }
+h3 { font-size: 1rem;   font-weight: 600; margin: 1.6rem 0 .4rem; }
+p.date, .date { color: #666; font-size: .85rem; }
+
+/* Figures: never exceed the text column, and centre them. Without this the
+   pandoc fallback shows every PNG at natural pixel width and they overflow. */
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 1.1rem auto 0.4rem;
+}
+
+/* The table of contents pandoc emits as a bare bulleted list */
+#TOC, nav#TOC { font-size: .9rem; background: #fafafa; border: 1px solid #eaeaea;
+  border-radius: 6px; padding: .8rem 1.2rem; margin: 1.5rem 0 2rem; }
+#TOC ul { margin: .2rem 0; padding-left: 1.1rem; }
+#TOC a { color: #235; text-decoration: none; }
+#TOC a:hover { text-decoration: underline; }
+
+/* Q:/A: lines read as the skimmable layer */
+p > strong:first-child { color: #111; }
+
+table { border-collapse: collapse; font-size: .88rem; margin: 1rem 0; width: 100%; }
+th, td { border-bottom: 1px solid #e8e8e8; padding: .38rem .6rem; text-align: left;
+         vertical-align: top; }
+th { background: #f6f6f6; font-weight: 600; }
+
+code, pre { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: .82rem; }
+pre { background: #f7f7f8; border: 1px solid #ececec; border-radius: 5px;
+      padding: .7rem .9rem; overflow-x: auto; }
+code { background: #f2f2f3; padding: .07em .32em; border-radius: 3px; }
+pre code { background: none; padding: 0; }
+
+blockquote { border-left: 3px solid #ddd; margin-left: 0; padding-left: 1rem;
+             color: #444; }
+</style>
+```
+
+## Headline figure
+
+![](figures/fig1_three_mode_comparison.png)
+
+**Figure 1 | The same five models, two strata, two different conclusions -- which is why the top quintile leads every comparison in this project.** **Headline figure.**
+
+<details>
+<summary>Full legend</summary>
+
+**Figure 1 | Predicting K562 H3K27ac at candidate elements, by input modality.** Pearson *r*
+between predicted and observed log counts. **a**, All elements. **b**, Top quintile by
+observed H3K27ac -- the elements carrying the mark. Colour encodes input modality throughout
+all three reports: **red sequence only, blue ATAC only, purple sequence + ATAC**. Dashed line
+is the achievable ceiling; 0.957 all elements, 0.929 top quintile. The panels are not a
+rescaling of one another: sequence-only falls from 0.494 to 0.380 while ATAC-only falls from
+0.831 to 0.548, so the gap between the two modalities is 0.34 in **a** and 0.17 in **b**.
+The multimodal model's fold-to-fold spread (sd 0.015) is a third of either single-input
+model's (0.041-0.046). Source: `results/fiveprime_stratified_fold_summary.tsv`.
+</details>
+
+## Goals
+
+This report is the standing set of rules for how a comparison in this project is scored, and
+what each metric can and cannot support. It is deliberately short and each item is stated as
+a caution together with the incident that motivated it, because every one of them was
+written after a wrong reading was published internally, not in advance.
+
+It covers: which stratum leads, how differences are tested, what the residual metric means
+and the controls it needs, how a transfer evaluation must be *designed* to be interpretable,
+and what the downstream ABC/CRISPR benchmark can decide. Report 1 holds the ceilings and
+track definitions this report refers to; Report 3 holds the results.
+
+## Report the top signal quintile first, and check every input mode
+
+**The rule.** Every model comparison leads with the top quintile of elements by observed
+signal. All-element numbers may be reported alongside but never alone, and a claim supported
+only by the all-element stratum is not a finding.
+
+**Why.** Training negatives are a GC-matched genomic background rather than non-peak regions
+(Report 1), so most elements carry no H3K27ac and an unstratified correlation is dominated
+by the dead-versus-active contrast that accessibility already resolves. The two panels of
+Fig. 1 are the same models and disagree about the size of every effect.
+
+**The incidents.** Four misleading readings so far, all of the same shape.
+
+- The wider receptive field gains a significant +0.043 on all elements for the sequence-only
+  model and nothing at all on the elements carrying the mark (-0.006, *p* = 0.53). Reported
+  from the all-element stratum this reads as the architecture change working.
+- The residual-transfer comparison flips sign between strata: residual-multimodal beats
+  multimodal by +0.005 and +0.011 with a locally fitted baseline and loses by -0.005 when it
+  is transferred, all four significant on all elements and none resolvable on the top
+  quintile (*p* = 0.17-0.76).
+- Cross-cell-type coupling inverts its ordering between strata: TeloHAEC is highest on all
+  elements and lowest on the top quintile (Report 1, Fig. 1).
+- The same architecture change points opposite ways in different input modes. In the wide
+  receptive-field experiment the sequence and multimodal arms disagree on the top quintile,
+  so a conclusion drawn from whichever arm finished first would have inverted.
+
+**The corollary, which is the part that keeps being learned the hard way.** A single arm of a
+factorial is not a result. The receptive-field question was closed as "resolved, do not
+pursue" on the sequence arm alone and had to be reopened when the multimodal arm landed. Wait
+for the modality that the change is supposed to act on.
+
+## Pair within fold; the between-fold spread dominates everything
+
+**The rule.** Report the mean across the five chromosome-holdout folds with a t-based 95%
+confidence interval, showing individual folds as points. For any comparison between two
+models, difference them **within each fold and then average** -- a paired test.
+
+**Why.** Fold `sd` is 0.041-0.046 for single-input models, giving CI half-widths near 0.05,
+against a run-to-run variance of 0.018. Nearly every architecture effect in this project is
+between 0.002 and 0.03, which is well inside that spread. Both models in a fold see the same
+held-out chromosomes, so differencing within a fold removes the between-fold variation that
+otherwise dominates. Unpaired, none of the fragment-channel, RC-averaging or
+receptive-field results would be resolvable.
+
+A single pooled correlation over concatenated folds is not an acceptable substitute: it gives
+no error bar and can be biased when folds differ in mean or scale.
+
+**The consequence for planning.** A change expected to move the metric by less than ~0.005
+cannot be resolved with five folds, and either needs more folds or should not be run. State
+the expected effect size before submitting.
+
+## What the residual metric means, and the controls it needs
+
+**Definition.** `residual_pearson = r(observed - atac_pred, model_pred - atac_pred)`, where
+`atac_pred` is an **ATAC-only model's held-out prediction**, not the raw ATAC track. So the
+residual is what accessibility genuinely cannot explain rather than what a linear function of
+one bigwig cannot explain. Reported alongside incremental *R^2* against the observed signal,
+and stratified by |true residual| so performance is scored where accessibility fails.
+
+**The artifact to rule out.** Because `true_resid = obs - atac_pred`, anything merely
+anti-correlated with `atac_pred` might earn positive residual *r* for free. It largely
+cannot: `obs - atac_pred` is near-orthogonal to `atac_pred` by the least-squares residual
+property. But the argument is not enough on its own, so three controls run with it.
+
+1. **A negative control model.** An ATAC-input model trained on the residual -- asked to
+   predict an ATAC model's own errors from the same ATAC input -- must score zero. It does:
+   -0.003 [-0.065, 0.060], incremental *R^2* -0.000, flat across all |residual| quintiles,
+   while its output correlates -0.620 with `atac_pred`, so the leak channel is wide open and
+   still yields nothing. This control is load-bearing; a clearly positive value here would
+   have made the whole residual result an artifact.
+2. **Partialling.** Removing `atac_pred` from both sides leaves the residual-trained sequence
+   model unchanged at 0.459, against 0.149 to 0.205 for the more entangled
+   sequence-on-total model.
+3. **Incremental *R^2* against observed signal**, which cannot be faked out of sample.
+
+**A trap for anyone re-running this.** `MultiModalBPNet.forward()` does **not** add the count
+offset -- that happens only inside `fit()` when scoring the loss -- so an offset-trained
+model's raw output *is* the residual. The first evaluator subtracted `atac_pred` anyway,
+double-counting the baseline and correlating a residual against observed signal for
+`overall_pearson`. Both bugs produced plausible wrong numbers rather than failing. The fix
+sits behind a `"residual": true` config key so earlier results stay reproducible, and
+`scripts/2.7.diagnose_residual_offset.py` verifies the semantics empirically before any
+scoring: a residual predictor's output must centre near 0 (measured -0.044) and a logcounts
+predictor near the observed mean (2.835 against 2.786), with a plain sequence model as a
+control proving the test discriminates.
+
+**Residualisation is the wrong control for a stratum defined by accessibility disagreement.**
+Later, and separately: the elements where the multimodal model over-predicts are by
+construction "accessibility says high, H3K27ac says low", so the observed residual is
+strongly negative there and **any** predictor that does not track accessibility downward --
+including a constant -- scores as over-predicting. A residualised error column therefore
+cannot distinguish "the sequence branch fails to see this" from "the sequence branch has no
+dynamic range". It produced exactly that wrong verdict once (`scripts/4.12`), which is now
+scored as fold elevation over each arm's own median, carrying the opposite tail as the arm's
+own responsiveness scale. Report 3 has the corrected reading.
+
+## Designing a transfer evaluation so that it is interpretable
+
+A raw cross-cell-type correlation cannot distinguish a model that fails to generalise from a
+target that is simply harder to predict. Four design requirements follow, and all four came
+from readings that had to be withdrawn.
+
+**Run both directions.** A one-directional analysis of K562 to GM12878 reads as a collapse of
+the sequence component. The reciprocal shows GM12878-trained models scoring *higher* on K562
+than in their own cell type for every modality, so much of the apparent failure is that
+GM12878 is the harder cell type.
+
+**Score against the ceiling of the cell type being predicted**, not the training cell type,
+using the corrected ceiling from Report 1.
+
+**Measure the model-free coupling in the target before training anything there.** It costs
+minutes of CPU and a transfer number cannot be interpreted without it: the ATAC-only
+"transfer drop" into GM12878 turned out to be entirely explained by weaker
+accessibility-H3K27ac coupling there (Report 1, Fig. 1), not by any failure of the model.
+
+**Include the target's own ATAC-only model as the floor.** The deployment question is not
+"does the transferred model score well" but "does it beat what the target cell type's own
+ATAC could have given for free". Without that arm a transfer table can look successful while
+describing a model nobody should deploy.
+
+**In-cell-type ranking is not the deployment ranking**, so any architecture change intended
+for deployment is scored transferred as well as locally. The two rankings do in fact differ;
+Report 3 has the matrix.
+
+## ABC and the CRISPR benchmark as the downstream metric
+
+The project's stated goal is a predicted activity track usable in ABC, so the terminal
+metric is CRISPR-benchmark AUPRC rather than any correlation.
+
+**Design.** ABC's `activity_base = sqrt(normalized_h3k27ac * normalized_atac)`. Model
+predictions are painted into a bigwig as `predicted_counts / width` over the ABC candidate
+regions and substituted for the H3K27ac term, with observed ATAC retained. Arms cover the
+geometric mean with observed ATAC, predicted H3K27ac as the whole activity term, both
+K562-trained and GM12878-trained models, and all three input modalities.
+
+**Two scale questions, one of which turns out not to matter.** The pipeline counts reads from
+BAMs while a painted prediction track has arbitrary units, so absolute scale is not
+comparable. It does not need to be: `run_qnorm` is **rank-based**, so any monotone rescaling
+of the activity term leaves the quantile-normalised value unchanged, and only the *ordering*
+of the predictions matters. What does deserve a check is that the qnorm reference itself is
+built from observed K562 signal, so a predicted track inherits the observed distribution's
+shape -- which is why a qnorm-off arm is worth running and is listed as open.
+
+**Two anchors are mandatory.** A floor of ATAC-only activity and a ceiling of ATAC with
+observed H3K27ac. Every predicted arm is read as a position between them, and a predicted arm
+that fails to clear the floor has not demonstrated anything, however good its correlation.
+
+**What this benchmark can and cannot resolve.** Its CIs are roughly +/-0.05 wide while the
+differences under discussion are ~0.02, so it cannot rank two similar predicted arms. It can
+tell whether a predicted track reaches the observed-H3K27ac ceiling, and whether it clears
+the floor. Present it as a forest plot with the CIs visible; bars hide the only thing that
+matters.
+
+**The mechanism check that goes with it.** A benchmark result of "no better than the floor"
+is compatible with two very different causes -- inaccurate predictions, or accurate
+predictions whose *dynamic range* is compressed so that ABC's ranking is displaced. These are
+distinguished by comparing observed and predicted `activity_base` percentile ratios and
+top-decile mean/median ratios on the tested regions, and by counting the pairs each arm
+catches that the other misses. Run that diagnostic before concluding anything about the
+model from an AUPRC.
+
+## Regression gates, and what tolerance to set
+
+**Do not byte-diff numerical output.** The first regression gate on the per-fold scoring
+tables compared bytes and failed on 1e-4 differences from cuDNN nondeterminism.
+`scripts/2.18.compare_perfold_tables.py` replaces it: exact on fold, label and *n* and on
+reference columns; metrics compared within `--tol 1e-3`, a tolerance taken from the science's
+noise floor rather than from what the hardware happens to reproduce. Added columns are
+reported and skipped; missing columns fail.
+
+**A regression test that cannot fail is worse than none.** The first version of the
+asymmetric-loss test passed while verifying nothing: its over-prediction check had zero
+over-predicted elements in the sample, and its gate comparison compared two models whose
+random initialisations were never matched, because adding the gate consumed extra RNG draws.
+Both now assert their own preconditions -- `3 <= n_over <= N-3`, and weight-matched
+initialisation -- so a vacuous pass is impossible.
+
+**Never quote a metric from a training log as a preliminary result.** Validation count Pearson
+in the training log is unstratified, so it is the all-element number this report's first rule
+warns about. A promising early gain reported from training logs vanished entirely on the top
+quintile. Wait for `scripts/2.15.perfold_from_config.py`.
+
+## Conventions
+
+- **Reverse-complement averaging is on by default** in all scoring since 2026-09-03
+  (`--no-rc-average` to disable). It is free, positive for every model, and applying it
+  everywhere keeps tables comparable; the tables named `rc_*` are the re-scored set.
+- **One scoring code path.** In-cell grids, transfer runs and input-definition swaps are all
+  driven by the same config JSON through `2.15.perfold_from_config.py`, so a difference
+  between two results cannot come from which evaluator ran. Model geometry is read per entry
+  from `model.trimming` rather than hardcoded, after an earlier version silently could not
+  score the wide models.
+- **Report the change, the stratum and the *p* together**, or the number is not usable by
+  anyone else.
+- **Non-GPU work goes to the lab's `engreitz` partition**; see the repository `CLAUDE.md`.
+
+## Methods
+
+All correlations are on log counts, over element-centred windows of the half-width recorded
+per result. Fold assignments come from `reference/hg38_five_folds.json` and are shared across
+every model in the project so numbers are comparable. Per-fold tables are written to
+`results/*_per_fold.tsv` and summaries to `results/*_fold_summary.tsv`; the paired
+differences quoted anywhere in these reports come from the `--pair A B` output of
+`2.15.perfold_from_config.py`, which is a t-test on the five within-fold differences.
+
+Numeric claims in these reports are checked against `outputs/numbers.json` by
+`render_report.py`, which flags any hand-typed number not registered at its compute site.
+
+### Regenerate
+
+```
+Environment: pixi env `multimodal`, pixi.lock sha256:069960d36312
+```
+
+```bash
+# the one scoring path, driven by a config JSON
+pixi run python scripts/2.15.perfold_from_config.py config/<name>_configs.json \
+    <prefix>_ <elements.narrowPeak> --pair A B
+
+# regression gates
+pixi run python scripts/2.18.compare_perfold_tables.py results/old_per_fold.tsv \
+    results/new_per_fold.tsv --tol 1e-3
+pixi run python scripts/test_asymmetric_loss.py
+
+# residual-metric semantics check, before any residual scoring
+pixi run python scripts/2.7.diagnose_residual_offset.py
+
+# this report
+python render_report.py report2_evaluation_methodology.qmd
+```
