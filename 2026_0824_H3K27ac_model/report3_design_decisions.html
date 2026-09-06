@@ -5,7 +5,7 @@
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="dcterms.date" content="2026-09-05" />
-  <title>Architecture and input decisions: predicted H3K27ac does not improve ABC, predicted p300 does</title>
+  <title>Architecture and input decisions: predicted p300 improves ABC in the training cell type, and not on transfer</title>
   <style>
     code{white-space: pre-wrap;}
     span.smallcaps{font-variant: small-caps;}
@@ -104,7 +104,7 @@ details[open] > summary { margin-bottom: 0.5em; }
 <body>
 <div style="background:#fff3cd;color:#664d03;padding:8px 14px;border-radius:4px;margin:0 0 16px 0;font-weight:600;font-family:system-ui,sans-serif;">Status: Draft — work in progress</div>
 <header id="title-block-header">
-<h1 class="title">Architecture and input decisions: predicted H3K27ac does not improve ABC, predicted p300 does</h1>
+<h1 class="title">Architecture and input decisions: predicted p300 improves ABC in the training cell type, and not on transfer</h1>
 <p class="date">2026-09-05</p>
 </header>
 <nav id="TOC" role="doc-toc">
@@ -203,8 +203,10 @@ Full legend
 </details>
 <h2 id="summary">Summary</h2>
 <ul>
-<li><strong>Predicted p300 clears the benchmark floor; predicted H3K27ac does not.</strong> A sequence + ATAC model predicting p300, substituted into ABC’s activity term, beats the ATAC-only floor by <strong>+0.055 AUPRC [+0.034, +0.074]</strong> on a paired bootstrap, sign preserved in 100% of resamples, and is statistically indistinguishable from <em>measured</em> H3K27ac (-0.007 [-0.032, +0.017]). No predicted-H3K27ac arm managed this (Fig. 1).</li>
-<li><strong>Observed p300 is simply a better ABC activity term than observed H3K27ac</strong>, by +0.038 [+0.019, +0.058], independent of any model. That widens the available headroom over the floor from 0.062 to 0.099 and is a reason to prefer p300 as the modelling target wherever it can be measured.</li>
+<li><strong>Predicted p300 clears the benchmark floor in the training cell type; predicted H3K27ac does not.</strong> A K562 sequence + ATAC model predicting p300, substituted into ABC’s activity term, beats the ATAC-only floor by <strong>+0.055 AUPRC [+0.034, +0.074]</strong> on a paired bootstrap, sign preserved in 100% of resamples, and is indistinguishable from <em>measured</em> H3K27ac (-0.007 [-0.032, +0.017]). No predicted-H3K27ac arm managed this (Fig. 1).</li>
+<li><strong>It does not survive transfer, which is the case the project exists to serve.</strong> A GM12878-trained p300 model applied to K562 scores <strong>+0.009 [-0.004, +0.022]</strong> over the floor – interval spanning zero, indistinguishable from just using the target cell type’s own ATAC. The transfer drop is <strong>-0.046 [-0.061, -0.030]</strong>, consuming 83% of the in-cell gain, and the transferred arm is <strong>-0.053 [-0.074, -0.032]</strong> below measured H3K27ac.</li>
+<li><strong>Deployment now fails for both targets, so the barrier is transfer rather than target choice.</strong> The H3K27ac deployment arms sat at 0.455 and 0.452 against a 0.457 floor; the p300 deployment arm sits at 0.466. Target choice buys a large in-cell-type gain and nothing deployable, which is the same shape as every architecture change (F-005).</li>
+<li><strong>Observed p300 is simply a better ABC activity term than observed H3K27ac</strong>, by +0.038 [+0.019, +0.058], independent of any model and replicated across two pipeline runs. That widens the available headroom over the floor from 0.062 to 0.099 and is a reason to prefer p300 as the target wherever it can be measured – a conclusion about the assay, which stands regardless of the transfer result.</li>
 <li><strong>For p300 the sequence branch earns its place</strong>, beating the ATAC-only p300 model by +0.051 [+0.032, +0.069]. For H3K27ac the sequence arms were catastrophic (0.393 and 0.275 against a 0.457 floor). This is the clearest evidence yet that target choice, not architecture, was the binding constraint.</li>
 <li><strong>For H3K27ac the mechanism is compressed dynamic range, not inaccuracy.</strong> Predicted and observed H3K27ac correlate at Spearman 0.79 genome-wide, but the predicted activity term’s p99/p50 ratio is 4.03 against 6.00 on the regions of regulated pairs, so ABC’s ranking is displaced rather than wrong.</li>
 <li><strong>In-cell-type architecture gains do not travel.</strong> Every transferred architecture is within 0.016 of the simplest one, and the richer models have the <em>larger</em> transfer drops. Transferring the best model buys +0.013 to +0.036 over simply using the target cell type’s own ATAC-only model.</li>
@@ -312,21 +314,26 @@ Full legend
 <td>does not clear the floor; deployment arms at or below it</td>
 </tr>
 <tr class="odd">
-<td><strong>Predicted p300 as the ABC activity term</strong></td>
+<td><strong>Predicted p300 as the ABC activity term, in-cell type</strong></td>
 <td><strong>+0.055 [+0.034, +0.074]</strong> over the floor, paired bootstrap</td>
-<td><strong>adopted as the target of choice</strong>; matches measured H3K27ac</td>
+<td>real; matches measured H3K27ac</td>
 </tr>
 <tr class="even">
+<td><strong>Predicted p300 as the ABC activity term, transferred</strong></td>
+<td><strong>+0.009 [-0.004, +0.022]</strong> over the floor; drop -0.046 [-0.061, -0.030]</td>
+<td><strong>null</strong>; no better than the target’s own ATAC</td>
+</tr>
+<tr class="odd">
 <td><strong>Observed p300 instead of observed H3K27ac as the activity term</strong></td>
 <td><strong>+0.038 [+0.019, +0.058]</strong></td>
 <td>use p300 where it is measured; model-independent</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><strong>p300 as a second head alongside H3K27ac</strong></td>
 <td>predicted p300 1.83x elevation against a 2.10x input control at the H3K27ac failure elements</td>
 <td><strong>dropped</strong>; p300 as the <em>primary</em> target is the version that works</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><strong>Sequence-gated accessibility, and asymmetric count loss</strong></td>
 <td>in-cell null; <strong>-0.013 (<em>p</em>=0.039) transferred when combined</strong></td>
 <td><strong>closed</strong></td>
@@ -1235,8 +1242,8 @@ Full methods &amp; code
 Source: <code>scripts/4.4</code>, <code>scripts/4.14.p300_at_h3k27ac_failures.py</code>
 </details>
 <h2 id="predicted-p300-works-where-predicted-h3k27ac-does-not">Predicted p300 works where predicted H3K27ac does not</h2>
-<p><strong>Q:</strong> The H3K27ac arms failed the benchmark. p300 is one step closer to the sequence-specified events – does substituting <em>predicted p300</em> for the activity term do better, and is observed p300 even a better activity term to begin with?</p>
-<p><strong>A:</strong> Yes to both, and the second explains part of the first. Observed p300 beats observed H3K27ac as ABC’s activity term by <strong>+0.038 AUPRC [+0.019, +0.058]</strong>. A sequence + ATAC model predicting p300 beats the ATAC-only floor by <strong>+0.055 [+0.034, +0.074]</strong> with the sign preserved in 100% of paired resamples, and is indistinguishable from <em>measured</em> H3K27ac (-0.007 [-0.032, +0.017]). This is the first predicted-activity arm in the project to clear the floor with a resolvable margin.</p>
+<p><strong>Q:</strong> The H3K27ac arms failed the benchmark. p300 is one step closer to the sequence-specified events – does substituting <em>predicted p300</em> for the activity term do better, is observed p300 even a better activity term to begin with, and does any of it survive transfer to a cell type with only ATAC?</p>
+<p><strong>A:</strong> Yes to both, and the second explains part of the first. Observed p300 beats observed H3K27ac as ABC’s activity term by <strong>+0.038 AUPRC [+0.019, +0.058]</strong>. A sequence + ATAC model predicting p300 beats the ATAC-only floor by <strong>+0.055 [+0.034, +0.074]</strong> with the sign preserved in 100% of paired resamples, and is indistinguishable from <em>measured</em> H3K27ac (-0.007 [-0.032, +0.017]). This is the first predicted-activity arm in the project to clear the floor with a resolvable margin. <strong>It does not transfer</strong>: a GM12878-trained p300 model applied to K562 lands at +0.009 [-0.004, +0.022] over the floor, an interval spanning zero.</p>
 <p><strong>AUPRC on the CRISPR benchmark, 10,342 element-gene pairs, 466 regulated:</strong></p>
 <table>
 <thead>
@@ -1266,6 +1273,16 @@ Source: <code>scripts/4.4</code>, <code>scripts/4.14.p300_at_h3k27ac_failures.py
 <td>predicted p300 alone, sequence + ATAC model</td>
 <td>0.502</td>
 <td>[0.454, 0.550]</td>
+</tr>
+<tr class="odd">
+<td><strong>ATAC x predicted p300, GM12878 model -&gt; K562</strong></td>
+<td><strong>0.466</strong></td>
+<td>[0.420, 0.516]</td>
+</tr>
+<tr class="even">
+<td>predicted p300 alone, GM12878 model -&gt; K562</td>
+<td>0.462</td>
+<td>[0.416, 0.512]</td>
 </tr>
 <tr class="odd">
 <td>ATAC x predicted p300, ATAC-only model</td>
@@ -1342,10 +1359,36 @@ Source: <code>scripts/4.4</code>, <code>scripts/4.14.p300_at_h3k27ac_failures.py
 <td>[+0.032, +0.069]</td>
 <td>100%</td>
 </tr>
+<tr class="even">
+<td><strong>transferred (GM12878 -&gt; K562) - floor</strong></td>
+<td><strong>+0.009</strong></td>
+<td><strong>[-0.004, +0.022]</strong></td>
+<td>91%</td>
+</tr>
+<tr class="odd">
+<td>transferred, predicted-alone - floor</td>
+<td>+0.005</td>
+<td>[-0.019, +0.028]</td>
+<td>65%</td>
+</tr>
+<tr class="even">
+<td><strong>local - transferred (the transfer drop)</strong></td>
+<td><strong>+0.046</strong></td>
+<td>[+0.030, +0.061]</td>
+<td>100%</td>
+</tr>
+<tr class="odd">
+<td>transferred - observed H3K27ac</td>
+<td>-0.053</td>
+<td>[-0.074, -0.032]</td>
+<td>100%</td>
+</tr>
 </tbody>
 </table>
 <p><strong>Sequence is what makes it work, and that is the opposite of the H3K27ac result.</strong> The multimodal p300 model beats the ATAC-only p300 model by +0.051 with the sign preserved in every resample, while the ATAC-only p300 model is at the floor (+0.004, interval spanning zero). For H3K27ac the sequence-containing arms were the <em>worst</em> in the whole panel – 0.393 for the geometric mean and 0.275 predicted-alone, both far below distance-to-TSS. Same architecture, same accessibility input, same benchmark: the target was the binding constraint.</p>
-<p><strong>Two independent things contribute and they should not be conflated.</strong> Observed p300 is a better activity term than observed H3K27ac (+0.038), so the <em>concept</em> has more headroom over the floor – 0.099 against 0.062. And the model captures more of the headroom it is given: 55% of p300’s against a non-resolvable fraction of H3K27ac’s. A p300-target model would be worth preferring for either reason alone.</p>
+<p><strong>Two independent things contribute and they should not be conflated.</strong> Observed p300 is a better activity term than observed H3K27ac (+0.038), so the <em>concept</em> has more headroom over the floor – 0.099 against 0.062. And the model captures more of the headroom it is given: 55% of p300’s against a non-resolvable fraction of H3K27ac’s. The first of these is a fact about the assay and survives the transfer result; the second is a fact about a K562-trained model on K562 and does not.</p>
+<p><strong>The transfer result is the one that matters for the stated goal, and it is a null.</strong> The whole point is a model deployable in any cell type with only ATAC. Transferred, predicted p300 buys +0.009 [-0.004, +0.022] over that cell type’s own ATAC-only activity – nothing. The drop of -0.046 [-0.061, -0.030] removes 83% of the in-cell-type gain, and the transferred arm is -0.053 below measured H3K27ac. Deployment now fails for <strong>both</strong> targets: the H3K27ac deployment arms scored 0.455 and 0.452 against the 0.457 floor, the p300 one scores 0.466. So the barrier is transfer, not target choice, which is the same conclusion the architecture programme reached (F-005) by a completely different route.</p>
+<p><strong>One control is missing and it bounds how strongly this can be stated.</strong> The transfer drop conflates two things: what is lost by moving cell type, and the possibility that the GM12878 p300 model is simply weaker than the K562 one – different experiment (ENCSR000DZG against ENCSR000EGE), different depth, and it was trained in a different project. Separating them needs the GM12878 p300 model scored <em>in GM12878</em>, the local-versus-transferred pairing the H3K27ac transfer matrix used throughout. Until that runs, “the p300 gain does not transfer” is the honest reading and “transfer specifically destroys it” is not yet established.</p>
 <p><strong>This does not contradict the earlier p300 negative, and the distinction matters.</strong> The learnability test below shows p300 is <em>not</em> predictable at the specific elements where the H3K27ac model fails, which correctly killed the multi-head and stacking ideas. It says nothing about p300 as the <em>primary</em> target, where the relevant question is whether the predicted track ranks elements well enough for ABC – a different quantity, now measured, and positive.</p>
 <p><strong>Method.</strong></p>
 <ul>
@@ -1438,7 +1481,8 @@ Source: <code>scripts/multimodal_bpnet.py</code>, <code>scripts/train_multimodal
 </details>
 <h2 id="open-questions-next-steps">Open questions / next steps</h2>
 <p><strong>The central question now has a positive answer, but for p300 rather than H3K27ac.</strong> Predicted H3K27ac does not improve ABC (Fig. 1); predicted p300 from a sequence + ATAC model clears the floor by +0.055 [+0.034, +0.074] and matches measured H3K27ac. Two things follow for planning: the p300 target is where the effort should go, and the H3K27ac diagnostics (compressed dynamic range, a sequence branch that does not discriminate) explain why <em>that</em> target underperformed rather than describing the approach as a whole.</p>
-<p><strong>1. Train a GM12878 p300 model and re-run the benchmark transferred.</strong> This is now the highest-value experiment in the project by a wide margin. Transferability to a cell type with only ATAC is the stated goal, the K562 p300 result is the first arm to clear the floor, and the transferred version is completely untested. EP300 data exists in GM12878 (ENCSR000DZG), so this is five folds of training plus an existing scoring path – no new tooling. Everything below is lower priority until it lands.</p>
+<p><strong>1. Score the GM12878 p300 model in GM12878, to finish the transfer comparison.</strong> The transferred arm is a null (+0.009 over the floor), but the drop conflates transfer with the possibility that the GM12878 p300 model is weaker in absolute terms – it comes from a different experiment and a different project. The local-versus-transferred pairing that the H3K27ac transfer matrix used throughout is the missing control, and it is cheap: the model exists, GM12878 EP300 data exists, and the scoring path exists. Without it the result reads as “the gain does not transfer” and cannot be sharpened to “transfer is what destroys it”.</p>
+<p><strong>2. Decide whether the deployment goal is reachable at all with this design.</strong> Both targets now fail deployment: H3K27ac arms at 0.455 and 0.452, p300 at 0.466, against a 0.457 floor. Every architecture change also failed to travel (F-005). Before more variants are tried it is worth asking what a transferred model would have to get right that none so far does – the common structure is that all of them lean on accessibility, and accessibility is the part that does travel, so the transferred model reduces towards the floor arm by construction. A multi-cell-type training run is the obvious next design, and TeloHAEC plus its four conditions is the cheapest way to get a third cell type.</p>
 <p>Then, in order of expected value:</p>
 <p><strong>2. Fix the training-element composition, which is the most likely single cause of the H3K27ac sequence branch’s flatness</strong> – and which should be applied to the p300 models too, since they share the negative pool. The negative pool is not GC-matched (Report 1): it is a uniform random genome sample at mean GC 0.389 against 0.466-0.593 for candidate elements, and it is 10% of every batch. A sequence branch can satisfy that contrast with a coarse GC detector, which is exactly what its behaviour looks like – 0.397 correlation <em>across</em> candidate elements and almost no dynamic range <em>within</em> them. Three experiments, cheapest first.</p>
 <ul>

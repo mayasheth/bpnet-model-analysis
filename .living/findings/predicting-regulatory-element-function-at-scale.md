@@ -159,3 +159,27 @@ should be re-tested with the paired bootstrap in `scripts/4.17`.
 | 2026-09-06 | ABC 42221146, benchmark 42233184 | EPCrisprBenchmark_ensemble_data_GRCh38, scE2G intGENCODEv43 universes | 2026_0824_H3K27ac_model | AUPRC: observed p300 0.557, observed H3K27ac 0.519, predicted p300 (seq+ATAC) 0.512, predicted p300 alone 0.502, predicted p300 (ATAC-only) 0.461, floor 0.457, distToTSS 0.435 | supports |
 | 2026-09-06 | job 42233184 + `4.17` paired bootstrap, 2,000 resamples | shared 10,342 element-gene pairs | 2026_0824_H3K27ac_model | Paired deltas: obs p300 - obs H3K27ac +0.038 [+0.019, +0.058]; pred p300 - floor +0.055 [+0.034, +0.074]; pred p300 - obs H3K27ac -0.007 [-0.032, +0.017]; multimodal - ATAC-only p300 +0.051 [+0.032, +0.069] | supports |
 | 2026-09-06 | cross-run anchor check | same two anchor arms in both pipeline runs | 2026_0824_H3K27ac_model | Floor 0.4573 vs 0.4572 and observed H3K27ac 0.5192 vs 0.5192 across independent runs, licensing the 0.512-against-0.482 comparison | supports |
+
+**Update 2026-09-06 (same day): the gain does not transfer, and this finding is in-cell-type only.**
+A GM12878-trained multimodal p300 model applied to K562 scores **+0.009 AUPRC [-0.004, +0.022]**
+over the ATAC-only floor on the same paired bootstrap and the same 10,342-pair set — an interval
+spanning zero, i.e. indistinguishable from using the target cell type's own ATAC. The transfer
+drop is **-0.046 [-0.061, -0.030]** (sign kept 100%), removing 83% of the in-cell-type gain, and
+the transferred arm sits **-0.053 [-0.074, -0.032]** below measured H3K27ac. Predicted-alone
+transferred is +0.005 [-0.019, +0.028].
+
+Deployment therefore fails for **both** targets — H3K27ac deployment arms 0.455 and 0.452, p300
+0.466, against a 0.457 floor — so the barrier is transfer rather than target choice, which is the
+same conclusion F-005 reached for architecture changes by an independent route. The claims that
+survive are: observed p300 beats observed H3K27ac as an activity term (+0.038, a fact about the
+assay), and a K562-trained p300 model matches measured H3K27ac *in K562*.
+
+**Missing control.** The drop conflates transfer with the possibility that the GM12878 p300 model
+is weaker in absolute terms: different experiment (ENCSR000DZG against ENCSR000EGE), different
+project, never scored in its own cell type. The local-versus-transferred pairing used throughout
+the H3K27ac transfer matrix is required before "transfer destroys the gain" can be claimed rather
+than "the gain does not transfer".
+
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-09-06 | ABC 42269593, benchmark 42275735, bootstrap `4.17` | 9 arms on one shared 10,342-pair set | 2026_0824_H3K27ac_model | transferred - floor +0.009 [-0.004, +0.022]; local - transferred +0.046 [+0.030, +0.061]; transferred - observed H3K27ac -0.053 [-0.074, -0.032] | refutes |

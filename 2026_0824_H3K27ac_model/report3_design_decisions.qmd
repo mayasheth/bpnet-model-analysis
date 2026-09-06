@@ -1,5 +1,5 @@
 ---
-title: "Architecture and input decisions: predicted H3K27ac does not improve ABC, predicted p300 does"
+title: "Architecture and input decisions: predicted p300 improves ABC in the training cell type, and not on transfer"
 date: "2026-09-05"
 status: "draft"
 format:
@@ -92,8 +92,10 @@ scored by `CRISPR_comparison`. Source:
 
 ## Summary
 
-- **Predicted p300 clears the benchmark floor; predicted H3K27ac does not.** A sequence + ATAC model predicting p300, substituted into ABC's activity term, beats the ATAC-only floor by **+0.055 AUPRC [+0.034, +0.074]** on a paired bootstrap, sign preserved in 100% of resamples, and is statistically indistinguishable from *measured* H3K27ac (-0.007 [-0.032, +0.017]). No predicted-H3K27ac arm managed this (Fig. 1).
-- **Observed p300 is simply a better ABC activity term than observed H3K27ac**, by +0.038 [+0.019, +0.058], independent of any model. That widens the available headroom over the floor from 0.062 to 0.099 and is a reason to prefer p300 as the modelling target wherever it can be measured.
+- **Predicted p300 clears the benchmark floor in the training cell type; predicted H3K27ac does not.** A K562 sequence + ATAC model predicting p300, substituted into ABC's activity term, beats the ATAC-only floor by **+0.055 AUPRC [+0.034, +0.074]** on a paired bootstrap, sign preserved in 100% of resamples, and is indistinguishable from *measured* H3K27ac (-0.007 [-0.032, +0.017]). No predicted-H3K27ac arm managed this (Fig. 1).
+- **It does not survive transfer, which is the case the project exists to serve.** A GM12878-trained p300 model applied to K562 scores **+0.009 [-0.004, +0.022]** over the floor -- interval spanning zero, indistinguishable from just using the target cell type's own ATAC. The transfer drop is **-0.046 [-0.061, -0.030]**, consuming 83% of the in-cell gain, and the transferred arm is **-0.053 [-0.074, -0.032]** below measured H3K27ac.
+- **Deployment now fails for both targets, so the barrier is transfer rather than target choice.** The H3K27ac deployment arms sat at 0.455 and 0.452 against a 0.457 floor; the p300 deployment arm sits at 0.466. Target choice buys a large in-cell-type gain and nothing deployable, which is the same shape as every architecture change (F-005).
+- **Observed p300 is simply a better ABC activity term than observed H3K27ac**, by +0.038 [+0.019, +0.058], independent of any model and replicated across two pipeline runs. That widens the available headroom over the floor from 0.062 to 0.099 and is a reason to prefer p300 as the target wherever it can be measured -- a conclusion about the assay, which stands regardless of the transfer result.
 - **For p300 the sequence branch earns its place**, beating the ATAC-only p300 model by +0.051 [+0.032, +0.069]. For H3K27ac the sequence arms were catastrophic (0.393 and 0.275 against a 0.457 floor). This is the clearest evidence yet that target choice, not architecture, was the binding constraint.
 - **For H3K27ac the mechanism is compressed dynamic range, not inaccuracy.** Predicted and observed H3K27ac correlate at Spearman 0.79 genome-wide, but the predicted activity term's p99/p50 ratio is 4.03 against 6.00 on the regions of regulated pairs, so ABC's ranking is displaced rather than wrong.
 - **In-cell-type architecture gains do not travel.** Every transferred architecture is within 0.016 of the simplest one, and the richer models have the *larger* transfer drops. Transferring the best model buys +0.013 to +0.036 over simply using the target cell type's own ATAC-only model.
@@ -142,7 +144,8 @@ stated. Read every row against a between-fold `sd` of 0.041-0.046 (Report 2).
 | **Profile head at 1 bp** | ceiling 0.21; models reach 0.114-0.171 | not informative, but not failing either; removing it is untested |
 | **Architecture choice on transfer** | no arm beats narrow+flat by a resolvable margin (best +0.016, *p*=0.066) | in-cell gains do not travel |
 | **Predicted H3K27ac as the ABC activity term** | AUPRC 0.482 against a floor of 0.457 and a ceiling of 0.519 | does not clear the floor; deployment arms at or below it |
-| **Predicted p300 as the ABC activity term** | **+0.055 [+0.034, +0.074]** over the floor, paired bootstrap | **adopted as the target of choice**; matches measured H3K27ac |
+| **Predicted p300 as the ABC activity term, in-cell type** | **+0.055 [+0.034, +0.074]** over the floor, paired bootstrap | real; matches measured H3K27ac |
+| **Predicted p300 as the ABC activity term, transferred** | **+0.009 [-0.004, +0.022]** over the floor; drop -0.046 [-0.061, -0.030] | **null**; no better than the target's own ATAC |
 | **Observed p300 instead of observed H3K27ac as the activity term** | **+0.038 [+0.019, +0.058]** | use p300 where it is measured; model-independent |
 | **p300 as a second head alongside H3K27ac** | predicted p300 1.83x elevation against a 2.10x input control at the H3K27ac failure elements | **dropped**; p300 as the *primary* target is the version that works |
 | **Sequence-gated accessibility, and asymmetric count loss** | in-cell null; **-0.013 (*p*=0.039) transferred when combined** | **closed** |
@@ -964,14 +967,16 @@ Source: `scripts/4.4`, `scripts/4.14.p300_at_h3k27ac_failures.py`
 
 **Q:** The H3K27ac arms failed the benchmark. p300 is one step closer to the
 sequence-specified events -- does substituting *predicted p300* for the activity term do
-better, and is observed p300 even a better activity term to begin with?
+better, is observed p300 even a better activity term to begin with, and does any of it
+survive transfer to a cell type with only ATAC?
 
 **A:** Yes to both, and the second explains part of the first. Observed p300 beats observed
 H3K27ac as ABC's activity term by **+0.038 AUPRC [+0.019, +0.058]**. A sequence + ATAC model
 predicting p300 beats the ATAC-only floor by **+0.055 [+0.034, +0.074]** with the sign
 preserved in 100% of paired resamples, and is indistinguishable from *measured* H3K27ac
 (-0.007 [-0.032, +0.017]). This is the first predicted-activity arm in the project to clear
-the floor with a resolvable margin.
+the floor with a resolvable margin. **It does not transfer**: a GM12878-trained p300 model
+applied to K562 lands at +0.009 [-0.004, +0.022] over the floor, an interval spanning zero.
 
 **AUPRC on the CRISPR benchmark, 10,342 element-gene pairs, 466 regulated:**
 
@@ -981,6 +986,8 @@ the floor with a resolvable margin.
 | ATAC x observed H3K27ac | 0.519 | [0.468, 0.567] |
 | ATAC x **predicted p300**, sequence + ATAC model | **0.512** | [0.463, 0.560] |
 | predicted p300 alone, sequence + ATAC model | 0.502 | [0.454, 0.550] |
+| **ATAC x predicted p300, GM12878 model -> K562** | **0.466** | [0.420, 0.516] |
+| predicted p300 alone, GM12878 model -> K562 | 0.462 | [0.416, 0.512] |
 | ATAC x predicted p300, ATAC-only model | 0.461 | [0.415, 0.511] |
 | ATAC only (floor) | 0.457 | [0.408, 0.507] |
 | predicted p300 alone, ATAC-only model | 0.443 | [0.394, 0.491] |
@@ -1000,6 +1007,10 @@ pairs once and recomputing all arms on that resample removes the shared variance
 | predicted p300 alone (seq + ATAC) - floor | +0.045 | [+0.012, +0.077] | 99.6% |
 | predicted p300 (ATAC-only model) - floor | +0.004 | [-0.012, +0.021] | 70% |
 | predicted p300, seq + ATAC - ATAC-only model | **+0.051** | [+0.032, +0.069] | 100% |
+| **transferred (GM12878 -> K562) - floor** | **+0.009** | **[-0.004, +0.022]** | 91% |
+| transferred, predicted-alone - floor | +0.005 | [-0.019, +0.028] | 65% |
+| **local - transferred (the transfer drop)** | **+0.046** | [+0.030, +0.061] | 100% |
+| transferred - observed H3K27ac | -0.053 | [-0.074, -0.032] | 100% |
 
 **Sequence is what makes it work, and that is the opposite of the H3K27ac result.** The
 multimodal p300 model beats the ATAC-only p300 model by +0.051 with the sign preserved in
@@ -1011,8 +1022,26 @@ architecture, same accessibility input, same benchmark: the target was the bindi
 **Two independent things contribute and they should not be conflated.** Observed p300 is a
 better activity term than observed H3K27ac (+0.038), so the *concept* has more headroom over
 the floor -- 0.099 against 0.062. And the model captures more of the headroom it is given:
-55% of p300's against a non-resolvable fraction of H3K27ac's. A p300-target model would be
-worth preferring for either reason alone.
+55% of p300's against a non-resolvable fraction of H3K27ac's. The first of these is a fact
+about the assay and survives the transfer result; the second is a fact about a K562-trained
+model on K562 and does not.
+
+**The transfer result is the one that matters for the stated goal, and it is a null.** The
+whole point is a model deployable in any cell type with only ATAC. Transferred, predicted p300
+buys +0.009 [-0.004, +0.022] over that cell type's own ATAC-only activity -- nothing. The drop
+of -0.046 [-0.061, -0.030] removes 83% of the in-cell-type gain, and the transferred arm is
+-0.053 below measured H3K27ac. Deployment now fails for **both** targets: the H3K27ac
+deployment arms scored 0.455 and 0.452 against the 0.457 floor, the p300 one scores 0.466. So
+the barrier is transfer, not target choice, which is the same conclusion the architecture
+programme reached (F-005) by a completely different route.
+
+**One control is missing and it bounds how strongly this can be stated.** The transfer drop
+conflates two things: what is lost by moving cell type, and the possibility that the GM12878
+p300 model is simply weaker than the K562 one -- different experiment (ENCSR000DZG against
+ENCSR000EGE), different depth, and it was trained in a different project. Separating them
+needs the GM12878 p300 model scored *in GM12878*, the local-versus-transferred pairing the
+H3K27ac transfer matrix used throughout. Until that runs, "the p300 gain does not transfer"
+is the honest reading and "transfer specifically destroys it" is not yet established.
 
 **This does not contradict the earlier p300 negative, and the distinction matters.** The
 learnability test below shows p300 is *not* predictable at the specific elements where the
@@ -1173,12 +1202,22 @@ for planning: the p300 target is where the effort should go, and the H3K27ac dia
 (compressed dynamic range, a sequence branch that does not discriminate) explain why *that*
 target underperformed rather than describing the approach as a whole.
 
-**1. Train a GM12878 p300 model and re-run the benchmark transferred.** This is now the
-highest-value experiment in the project by a wide margin. Transferability to a cell type with
-only ATAC is the stated goal, the K562 p300 result is the first arm to clear the floor, and
-the transferred version is completely untested. EP300 data exists in GM12878 (ENCSR000DZG),
-so this is five folds of training plus an existing scoring path -- no new tooling. Everything
-below is lower priority until it lands.
+**1. Score the GM12878 p300 model in GM12878, to finish the transfer comparison.** The
+transferred arm is a null (+0.009 over the floor), but the drop conflates transfer with the
+possibility that the GM12878 p300 model is weaker in absolute terms -- it comes from a
+different experiment and a different project. The local-versus-transferred pairing that the
+H3K27ac transfer matrix used throughout is the missing control, and it is cheap: the model
+exists, GM12878 EP300 data exists, and the scoring path exists. Without it the result reads as
+"the gain does not transfer" and cannot be sharpened to "transfer is what destroys it".
+
+**2. Decide whether the deployment goal is reachable at all with this design.** Both targets
+now fail deployment: H3K27ac arms at 0.455 and 0.452, p300 at 0.466, against a 0.457 floor.
+Every architecture change also failed to travel (F-005). Before more variants are tried it is
+worth asking what a transferred model would have to get right that none so far does -- the
+common structure is that all of them lean on accessibility, and accessibility is the part that
+does travel, so the transferred model reduces towards the floor arm by construction. A
+multi-cell-type training run is the obvious next design, and TeloHAEC plus its four conditions
+is the cheapest way to get a third cell type.
 
 Then, in order of expected value:
 
