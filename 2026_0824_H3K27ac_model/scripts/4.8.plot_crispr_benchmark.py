@@ -14,13 +14,24 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from nature_style import apply_rcparams, save_fig, add_panel_label
+from nature_style import apply_rcparams, save_fig, add_panel_label, n_label, annotate_n_fig
 
 P = "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model"
 SRC = ("/oak/stanford/groups/engreitz/Users/sheth/CRISPR_comparison_v3/CRISPR_comparison/"
        "workflow/results/2026_0904_predicted_activity/performance_summary.txt")
 
 d = pd.read_csv(SRC, sep="\t")
+
+# Sample size, read from the merged benchmark table rather than typed in, so it cannot drift
+# when the universe or the element set changes. Counted on one arm: every arm is scored on
+# the identical pair set, which is the point of running them in one pipeline invocation.
+MERGED = os.path.join(os.path.dirname(SRC), "expt_pred_merged_annot.txt.gz")
+_m = pd.read_csv(MERGED, sep="\t", usecols=["pred_uid", "Regulated"], low_memory=False)
+_one = _m[_m["pred_uid"] == _m["pred_uid"].iloc[0]]
+N_LABEL = (f"n = {len(_one):,} element-gene pairs, "
+           f"{int(_one['Regulated'].astype(str).str.upper().eq('TRUE').sum()):,} regulated; "
+           f"identical pair set for every arm")
+print(N_LABEL)
 d["arm"] = d["pred_uid"].str.replace(r"\.ABC\.Score$", "", regex=True)
 
 FLOOR, CEIL = "K562_ATAC_only", "K562_ATAC_H3K27ac_element"
@@ -70,6 +81,7 @@ ax.text(floor_v, len(ORDER) - 0.45, "floor ", fontsize=6, color="0.55", va="cent
         ha="right")
 ax.set_title("Predicted H3K27ac as the ABC activity term", fontsize=8)
 fig.tight_layout(rect=(0.30, 0, 1, 1))
+annotate_n_fig(fig, N_LABEL)
 save_fig(fig, f"{P}/figures/fig14_crispr_benchmark.png")
 print(f"\nfloor {floor_v:.3f}, ceiling {ceil_v:.3f}, headroom {ceil_v - floor_v:+.3f}")
 print("wrote fig14")

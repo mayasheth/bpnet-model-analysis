@@ -26,7 +26,7 @@ import matplotlib.pyplot as plt
 from scipy.stats import t as tdist
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from nature_style import apply_rcparams, save_fig, add_panel_label, figsize
+from nature_style import apply_rcparams, save_fig, add_panel_label, figsize, n_label, annotate_n_fig
 
 P = "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model"
 COLOR = {"atac": "#2166AC", "sequence": "#B2182B", "multimodal": "#762A83"}
@@ -123,6 +123,7 @@ def main():
     add_panel_label(ax, "c")
 
     fig.tight_layout()
+    annotate_n_fig(fig, n_label(pf))
     out = save_fig(fig, f"{P}/figures/fig5_residual_grid.png")
     print("Wrote", out, "and .pdf")
 

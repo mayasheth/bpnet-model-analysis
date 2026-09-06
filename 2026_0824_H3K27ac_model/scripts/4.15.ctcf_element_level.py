@@ -102,9 +102,22 @@ STRATA = [("under-predicted 1%", d["err"] <= q[0.01]),
           ("over-predicted 1%", d["err"] >= q[0.99])]
 
 RP = {m: m + "_rpkm" for m in MARKS}
+OUT_EL = f"{D}/EP300_BPNet/2026_0824_H3K27ac_model/results/error_strata_ctcf_elements.tsv"
 CT, IG = RP["CTCF"], RP["IgG"]
 
 # =========================================================================================
+# Per-element table for the figure, so the plot and these tests share one computation.
+_lab = pd.Series("other", index=d.index)
+for _l, _m in STRATA:
+    if "middle" in _l or "1%" in _l:
+        _lab[_m] = _l
+_out = d[["chr", "start", "end", "obs", "pred", "seq", "ATAC.RPM", "gc", "cpg_oe",
+          "promoter", "err", RP["CTCF"], RP["IgG"]]].copy()
+_out["stratum"] = _lab
+_out["over5"] = STRATA[3][1].astype(int)
+_out.round(5).to_csv(OUT_EL, sep="\t", index=False)
+print(f"wrote {OUT_EL}\n")
+
 print("TEST 1  distribution of CTCF signal within each stratum, not just the mean")
 print("        A mean enrichment carried by a minority is a misleading stratum summary.")
 typ = d[STRATA[2][1]]

@@ -20,6 +20,7 @@ The styling spec follows Nature family journal requirements:
 from __future__ import annotations
 
 from pathlib import Path
+import pandas as pd
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -246,3 +247,56 @@ __all__ = [
     "add_box",
     "add_arrow",
 ]
+
+
+# --- Sample size, stated on the figure ---------------------------------------
+#
+# Every panel must say how many observations it rests on. A correlation with no n is not
+# interpretable, and for a 5-fold design the single most useful summary is the RANGE across
+# folds, because the folds are chromosome holdouts and differ substantially in size (9,298 to
+# 14,392 elements in the K562 candidate set). A mean would hide that.
+
+def fold_n_range(df, n_col="n", fold_col="fold", config=None, config_col="config",
+                 stratum=None, stratum_col="stratum"):
+    """(min, max, n_folds) of the per-fold observation count in a per-fold table.
+
+    Works for both table formats in this project: the `2.15` output keyed on
+    (fold, config) and the `2.2` output keyed on (config, fold, stratum).
+    """
+    d = df
+    if config is not None and config_col in d.columns:
+        d = d[d[config_col] == config]
+    if stratum is not None and stratum_col in d.columns:
+        d = d[d[stratum_col] == stratum]
+    # Several result tables in this project are appended to across invocations, so they can
+    # carry repeated header rows. Coerce and drop rather than returning NaN.
+    d = d.assign(**{n_col: pd.to_numeric(d[n_col], errors="coerce")}).dropna(subset=[n_col])
+    per_fold = d.groupby(fold_col)[n_col].max()
+    if per_fold.empty:
+        raise ValueError(f"no numeric {n_col!r} rows after filtering")
+    return int(per_fold.min()), int(per_fold.max()), int(len(per_fold))
+
+
+def n_label(df=None, *, n=None, unit="elements", per_fold=True, **kw):
+    """Text for the n annotation. Pass a per-fold table, or a plain integer via `n`."""
+    if n is not None:
+        return f"n = {n:,} {unit}"
+    lo, hi, k = fold_n_range(df, **kw)
+    if lo == hi:
+        return f"n = {lo:,} {unit} per fold, {k} folds"
+    return f"n = {lo:,}–{hi:,} {unit} per fold, {k} folds"
+
+
+def annotate_n(ax, text, loc="lower right", pad=0.015):
+    """Put the n label in a figure corner, small and grey so it never competes with data."""
+    xy = {"lower right": (1 - pad, pad, "right", "bottom"),
+          "lower left": (pad, pad, "left", "bottom"),
+          "upper right": (1 - pad, 1 - pad, "right", "top"),
+          "upper left": (pad, 1 - pad, "left", "top")}[loc]
+    ax.annotate(text, xy=(xy[0], xy[1]), xycoords="axes fraction",
+                ha=xy[2], va=xy[3], fontsize=5.5, color="#666666")
+
+
+def annotate_n_fig(fig, text, y=0.005):
+    """Same, but once for a whole multi-panel figure rather than per panel."""
+    fig.text(0.995, y, text, ha="right", va="bottom", fontsize=5.5, color="#666666")

@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 from scipy.stats import ttest_rel, t as tdist
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from nature_style import apply_rcparams, save_fig, add_panel_label
+from nature_style import apply_rcparams, save_fig, add_panel_label, n_label, annotate_n_fig
 
 P = "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model"
 TCRIT = tdist.ppf(0.975, df=4)
@@ -57,5 +57,6 @@ for ax, (metric, title) in zip(axes, METRICS):
 axes[0].set_xlim(-0.006, 0.024)
 add_panel_label(axes[0], "a"); add_panel_label(axes[1], "b")
 fig.tight_layout(rect=(0.14, 0, 1, 1))
+annotate_n_fig(fig, n_label(plain))
 save_fig(fig, f"{P}/figures/fig13_rc_averaging.png")
 print("wrote fig13")

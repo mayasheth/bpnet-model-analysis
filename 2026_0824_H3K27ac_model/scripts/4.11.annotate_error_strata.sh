@@ -34,6 +34,8 @@ cd "$P"
 "$D/.pixi/envs/multimodal/bin/python" scripts/4.10.characterize_prediction_errors.py --emit-beds "$W" > /dev/null
 ls -la "$W"/*.bed
 
+OUT_TSV="$P/results/error_strata_peak_overlap.tsv"
+{ printf 'stratum\tn'; for m in CTCF EP300 H3K4me1 H3K27me3 H3K27ac; do printf '\t%s' "$m"; done; printf '\n'; } > "$OUT_TSV"
 printf '%-24s %8s' stratum n
 for m in CTCF EP300 H3K4me1 H3K27me3 H3K27ac; do printf ' %9s' "$m"; done; printf '\n'
 
@@ -48,9 +50,14 @@ for f in "$W"/stratum_*.bed; do
     lab=$(basename "$f" .bed | sed 's/^stratum_//')
     n=$(wc -l < "$f")
     printf '%-24s %8d' "$lab" "$n"
+    printf '%s\t%s' "$lab" "$n" >> "$OUT_TSV"
     for m in CTCF EP300 H3K4me1 H3K27me3 H3K27ac; do
         ov=$(bedtools intersect -u -a "$f" -b "$W/$m.bed" | wc -l)
-        printf ' %8.1f%%' "$(echo "scale=4; 100*$ov/$n" | bc)"
+        v=$(echo "scale=4; 100*$ov/$n" | bc)
+        printf ' %8.1f%%' "$v"
+        printf '\t%s' "$v" >> "$OUT_TSV"
     done
     printf '\n'
+    printf '\n' >> "$OUT_TSV"
 done
+echo "wrote $OUT_TSV"
