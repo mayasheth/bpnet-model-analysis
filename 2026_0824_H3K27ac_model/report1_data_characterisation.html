@@ -120,6 +120,7 @@ details[open] > summary { margin-bottom: 0.5em; }
 <li><a href="#the-atac-library-supports-fragment-size-stratification">The ATAC library supports fragment-size stratification</a></li>
 <li><a href="#accessibility-track-conventions-and-the-read-length-confound-they-hide">Accessibility track conventions, and the read-length confound they hide</a></li>
 <li><a href="#element-derivation-differs-between-cell-types-which-is-a-standing-confound">Element derivation differs between cell types, which is a standing confound</a></li>
+<li><a href="#the-training-negative-pool-is-not-gc-matched-despite-its-filename">The training negative pool is not GC-matched, despite its filename</a></li>
 <li><a href="#methods">Methods</a>
 <ul>
 <li><a href="#regenerate">Regenerate</a></li>
@@ -271,10 +272,10 @@ See the coupling section below for the complete legend. The two points that make
 <td>Shared across all models so numbers are comparable</td>
 </tr>
 <tr class="odd">
-<td><strong>GC-matched negatives</strong></td>
-<td>Genome-wide GC-binned background, hg38</td>
+<td><strong>Training negative pool</strong></td>
+<td>ChromBPNet genome-wide GC-<em>annotated</em> tiling, hg38; n = 3,088,298 bins, 1 kb stride, mean GC 0.389. <strong>Not GC-matched to the positives</strong> — see the negatives section below</td>
 <td>Repo: <code>reference/genomewide_gc_stride_1000_flank_size_1057.gc.bed</code></td>
-<td>Training negatives</td>
+<td>Training negatives only; never evaluated on</td>
 </tr>
 </tbody>
 </table>
@@ -446,7 +447,15 @@ Source: <code>scripts/0.10.plot_fragment_lengths.py</code>, <code>scripts/0.9.ma
 <h2 id="element-derivation-differs-between-cell-types-which-is-a-standing-confound">Element derivation differs between cell types, which is a standing confound</h2>
 <p>Documented in full in <code>reference/ELEMENT_DERIVATION.md</code>. The K562 and GM12878 candidate element sets are DNase-derived; TeloHAEC’s are ATAC-derived. TeloHAEC is therefore the one cell type whose elements match its own input assay, and the two cell types carrying most of this project’s results do not.</p>
 <p>An ATAC-derived K562 set exists (<code>reference/K562_ATAC_candidate_elements.narrowPeak</code>, same rE2G model type as TeloHAEC’s), so the confound is testable rather than merely noted; the test and its result are in Report 3. The ABC candidate regions used for the downstream benchmark are ATAC-derived, from observed K562 ATAC.</p>
-<p><strong>The negatives matter as much as the positives.</strong> Training negatives are a GC-matched genomic background rather than non-peak regions, so the element set spans active and inactive elements and a large part of any unstratified correlation is the dead-versus-active contrast. This is the root reason the evaluation is stratified; see Report 2.</p>
+<h2 id="the-training-negative-pool-is-not-gc-matched-despite-its-filename">The training negative pool is not GC-matched, despite its filename</h2>
+<p><code>reference/genomewide_gc_stride_1000_flank_size_1057.gc.bed</code> is ChromBPNet’s genome-wide GC-<em>annotated</em> tiling: 3,088,298 bins at 1 kb stride with GC in column 4. That file is the <em>input</em> to GC matching, not its output. Our training code reads only columns 1-3, discarding the GC column, and the sampler draws uniformly at random from a 50,000-window random subsample of it. So the training negatives are a uniform random sample of the genome, at mean GC <strong>0.389</strong> against <strong>0.466-0.593</strong> for candidate elements, and no matching to either cell type’s positive set takes place. The same pool is used for K562 and GM12878, which would be wrong if matching were happening – since the positives differ per cell type – and is moot because it is not.</p>
+<p>Three things follow, two reassuring and one not.</p>
+<ul>
+<li><strong>Negatives are not mislabelled.</strong> They carry their <em>true</em> extracted H3K27ac signal rather than a hard zero, so the 1 kb bins that happen to overlap a real candidate element get their real signal. They are also restricted to each fold’s training chromosomes.</li>
+<li><strong>No reported number is computed on them.</strong> Evaluation runs on the candidate element set only (Report 2), so every correlation in these three reports is an element-only number.</li>
+<li><strong>But it changes what the model can learn.</strong> A positive/negative contrast separable on GC content alone is a known way to turn a BPNet-style sequence branch into a coarse GC detector, and a large share of the sequence branch’s training signal here is that contrast: negatives are 10% of every batch and differ from positives by 0.1 in mean GC. This is a live hypothesis for why the sequence branch has almost no dynamic range <em>within</em> candidate elements while still correlating 0.397 across them (Report 3), and it is the first item on that report’s open list.</li>
+</ul>
+<p><strong>Separately, the candidate element set itself spans active and inactive elements</strong>, so most of it carries no H3K27ac whatever the negatives are doing. That is the reason every evaluation in this project is stratified, and it is independent of the issue above.</p>
 <h2 id="methods">Methods</h2>
 <p>All ChIP-seq targets are counted as <strong>5’ read ends</strong> at single-base resolution (<code>bedtools genomecov -5 -dz</code>, stranded), matching the convention already used for the p300 models in this repository. Accessibility inputs exist in both conventions described above; which one a given result used is recorded per result in <code>results/TARGET_PROVENANCE.md</code>.</p>
 <p>Ceilings are reported as the raw inter-replicate <em>r</em>. Converting one to a bound on model performance requires two corrections, applied wherever a fraction-of-ceiling is quoted anywhere in this project: Spearman-Brown for the fact that the model predicts the two-replicate <em>merge</em> rather than one replicate (<code>rel = 2r/(1+r)</code>), then a square root, since a model predicts the expected signal while a replicate is one noisy realisation of it. At +/-500 bp this converts a raw 0.760 into a bound of 0.929 on the top quintile, and a raw 0.844 into 0.957 over all elements.</p>

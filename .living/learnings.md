@@ -1447,3 +1447,69 @@ motivation survived.
 **structural_mitigation_candidate**: Any per-stratum comparison between predictors with
 different dynamic ranges must report the opposite stratum in the same table as a
 responsiveness scale. If a script prints a verdict, the verdict must read both.
+
+### [2026-09-05] The training negative pool was never GC-matched, and the filename says otherwise
+
+`reference/genomewide_gc_stride_1000_flank_size_1057.gc.bed` is ChromBPNet's genome-wide
+GC-**annotated** tiling -- 3,088,298 bins, 1 kb stride, GC in column 4, mean GC 0.389. That
+file is the *input* to `get_gc_matched_negatives`, not its output. Our
+`train_multimodal_bpnet.py` reads `usecols=[0, 1, 2]`, discarding the GC column, and the
+sampler draws uniformly (`rng.randint(n_negatives)`) from a random 50,000-window subsample.
+So no GC matching has ever happened in this project, in either cell type, for either target.
+Candidate elements sit at GC 0.466-0.593 against the pool's 0.389.
+
+Three consequences, and only one of them is bad.
+
+- **Not a labelling bug.** Negatives carry their true extracted signal from the target bigwig
+  rather than a hard zero, so the 1 kb bins that overlap a real candidate element get their
+  real signal. They are also restricted to each fold's training chromosomes, and the 50k cap
+  is `sample(random_state=42)`, so there is no chromosome bias either.
+- **Not an evaluation bug.** `2.15.perfold_from_config.py` scores `load_peaks(elements, val)`
+  only, so no reported number in this project was ever computed on a negative.
+- **But it shapes what the sequence branch learns.** Negatives are 10% of every batch and
+  differ from positives by ~0.1 in mean GC, so a coarse GC detector satisfies a large part of
+  the sequence branch's training signal. That is a candidate explanation for the branch's
+  measured behaviour: 0.397 correlation *across* candidate elements and almost no dynamic
+  range *within* them.
+
+**How this was missed for six weeks.** The filename contains `gc`, the argument is called
+`--negatives`, the docstring says "GC-matched negatives", and every report I wrote repeated
+it. Nobody read `load_negatives`. The lesson is narrow and practical: when a file's name
+asserts a property the analysis depends on, read the code that consumes it -- a four-column
+BED read with `usecols=[0,1,2]` is discarding the property in plain sight.
+
+**Tags**: negatives, gc-matching, training-composition, sequence-branch, documentation-drift
+
+**mitigation_type**: structural
+
+**structural_mitigation_candidate**: For any preprocessed input whose value depends on a
+property in its name (gc-matched, deduplicated, shifted, normalised), assert the property in
+code at load time rather than trusting the filename.
+
+### [2026-09-05] The gate and the asymmetric loss both fail, as the corrected sequence reading predicted
+
+A 2x2 factorial of sequence-gated accessibility and a 3x over-prediction penalty, against a
+matched ungated symmetric baseline, all 5 folds. In-cell K562 every arm is null (gate
+-0.0001 *p*=0.99; asym +0.0001 *p*=0.98; both -0.0032 *p*=0.51). Transferred to GM12878 the
+gate is null (-0.0015), asym trends negative (-0.0078, *p*=0.11) and the combination is
+significantly worse (**-0.0128, *p*=0.039**).
+
+**The value here is that the null was predicted before it was measured.** Both interventions
+assume the sequence branch knows which elements are unacetylated and is being overridden by
+accessibility. The responsiveness-normalised analysis showed it does not know -- 1.55x
+elevation at the over-predicted tail against 1.44x at the under-predicted tail, where truth
+separates them 1.00x against 31.3x. I recorded the lowered prior in the report before scoring
+ran, which is the only reason this reads as a confirmation rather than a surprise.
+
+**The generalisable point.** A gate, an attention mechanism or a loss reweighting can only
+change how existing information is *combined*. None of them can create discriminative
+capacity in a branch that has none. Before building any such mechanism, measure whether the
+branch it operates on can separate the cases at all -- and measure it with a scale control,
+since a branch with no dynamic range looks accurate wherever the truth is flat.
+
+**Tags**: architecture, gating, loss-design, negative-result, prediction-before-measurement
+
+**mitigation_type**: structural
+
+**structural_mitigation_candidate**: Before building a mechanism that reweights or gates an
+existing branch, verify that branch is discriminative on the cases the mechanism targets.

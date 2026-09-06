@@ -5,9 +5,9 @@ Last audit: 2026-09-05
 | File | Entries | Last updated | Key topics |
 |------|---------|--------------|------------|
 | conventions.md | 17 sections | 2026-09-04 | Layout: analyses live at the repo root, not under `analysis/`, Reports, Figures, Environments, SLURM submit scripts (mandatory) |
-| decisions.md | 12 entries | 2026-09-03 | Center H3K27ac training windows on candidate elements, not ChIP peaks, Counting window is a trade-off between signal and neighbour contamination, Keep the profile head, down-weighted, rather than removing it, Residual correlation beyond ATAC becomes the headline metric, Paired-end H3K27ac targets use read 1 only, not both mates |
-| learnings.md | 42 entries (large — read selectively) | 2026-09-05 | count_loss_weight must be calibrated to the actual loss magnitudes, not copied, Inter-replicate r is not a model performance ceiling without two corrections, bpnetlite's count target sums ALL channels, not one strand, Three Sherlock/SLURM traps that cost a job each, Peak count scales the negative pool, which can OOM by 50x |
-| findings/ | 3 findings across 4 topics | 2026-09-01 | predicting-regulatory-element-function-at-scale, linking-noncoding-variation-to-molecular-function, mapping-regulatory-perturbations-to-phenotype, how-enhancers-control-gene-expression |
+| decisions.md | 14 entries | 2026-09-05 | Center H3K27ac training windows on candidate elements, not ChIP peaks, Counting window is a trade-off between signal and neighbour contamination, Keep the profile head, down-weighted, rather than removing it, Residual correlation beyond ATAC becomes the headline metric, Paired-end H3K27ac targets use read 1 only, not both mates |
+| learnings.md | 45 entries (large — read selectively) | 2026-09-05 | count_loss_weight must be calibrated to the actual loss magnitudes, not copied, Inter-replicate r is not a model performance ceiling without two corrections, bpnetlite's count target sums ALL channels, not one strand, Three Sherlock/SLURM traps that cost a job each, Peak count scales the negative pool, which can OOM by 50x |
+| findings/ | 6 findings across 4 topics | 2026-09-05 | predicting-regulatory-element-function-at-scale, linking-noncoding-variation-to-molecular-function, mapping-regulatory-perturbations-to-phenotype, how-enhancers-control-gene-expression |
 
 ## Local skills
 See `.living/skills/` for project-specific skill packs.
@@ -22,21 +22,21 @@ Last summarized: 2026-09-05 (heuristic)
 - **5-prime** (11 entries) — L-18, L-28, L-29, D-5, D-6
 - **atac** (9 entries) — L-29, L-33, D-4, D-6, D-8
 - **ceiling** (9 entries) — L-14, L-17, L-18, L-24, D-2
+- **architecture** (7 entries) — L-37, L-42, L-45, D-3, D-7
 - **gm12878** (7 entries) — L-24, L-30, L-31, L-35, L-37
-- **architecture** (6 entries) — L-36, L-37, L-42, D-3, D-7
 
 ## Most recent (10)
 
 - [2026-09-05] L-41: Why better H3K27ac does not help ABC: rank displacement of the functional elements
 - [2026-09-05] L-42: Sequence already knows which elements are not acetylated; the additive trunk ignores it
+- [2026-09-05] L-43: Correcting the previous entry: sequence does NOT see the CTCF signature, and my substitute control was also wrong
+- [2026-09-05] L-44: The training negative pool was never GC-matched, and the filename says otherwise
+- [2026-09-05] L-45: The gate and the asymmetric loss both fail, as the corrected sequence reading predicted
+- [2026-09-05] D-13: Drop both p300 ideas: no second head, no stacked p300 input
+- [2026-09-05] D-14: Do not carry fragment channels into deployment
 - [2026-09-04] L-39: Reusing a Snakemake run's outputs needs the per-run files too, not just the obvious ones
 - [2026-09-04] L-40: Nine ABC arms on one region set: what it took, and the two invariants that mattered
 - [2026-09-03] L-36: The receptive-field conclusion inverted when the second input mode finished
-- [2026-09-03] L-37: Both architecture changes that work act on the accessibility input
-- [2026-09-03] L-38: Test-time reverse-complement averaging is free, always positive, and carries its own control
-- [2026-09-03] D-7: Adopt the wider receptive field for the multimodal model, reversing the earlier verdict
-- [2026-09-03] D-8: Fragment-size accessibility channels are 5' insertion counts and include the flat track
-- [2026-09-03] D-9: Inject predicted H3K27ac into ABC as a painted bigWig, with qnorm left on
 
 ## By tag
 
@@ -44,9 +44,10 @@ Last summarized: 2026-09-05 (heuristic)
 - `5-prime`: L-8, L-9, L-10, L-11, L-13, L-17, L-18, L-28, L-29, D-5, D-6
 - `atac`: L-12, L-22, L-25, L-28, L-29, L-33, D-4, D-6, D-8
 - `ceiling`: L-2, L-7, L-9, L-10, L-14, L-17, L-18, L-24, D-2
+- `architecture`: L-35, L-36, L-37, L-42, L-45, D-3, D-7
 - `gm12878`: L-14, L-22, L-24, L-30, L-31, L-35, L-37
-- `architecture`: L-35, L-36, L-37, L-42, D-3, D-7
 - `k562`: L-24, L-30, L-31, L-35, L-37, L-38
+- `negative-result`: L-7, L-9, L-41, L-45, D-13, D-14
 - `accessibility`: L-29, L-37, D-6, D-7, D-8
 - `bpnetlite`: L-1, L-3, L-8, L-11, D-3
 - `evaluation`: L-2, L-3, L-34, D-4, D-10
@@ -57,6 +58,7 @@ Last summarized: 2026-09-05 (heuristic)
 - `abc`: L-39, L-40, L-41, D-9
 - `chrombpnet`: L-28, L-29, L-33, D-6
 - `fragment-length`: L-12, L-33, L-37, D-8
+- `gating`: L-39, L-40, L-42, L-45
 - `multimodal`: L-27, L-29, L-36, D-7
 - `receptive-field`: L-35, L-36, L-37, D-7
 - `target-definition`: L-8, L-9, L-10, D-5
@@ -64,11 +66,10 @@ Last summarized: 2026-09-05 (heuristic)
 - `tooling`: L-4, L-6, L-20, L-32
 - `transferability`: L-14, L-22, L-24, L-31
 - `diagnosis`: L-39, L-40, L-41
-- `gating`: L-39, L-40, L-42
 - `hyperparameters`: L-1, L-13, L-16
 - `mnll`: L-8, L-11, L-13
 - `negative-control`: L-27, L-30, L-38
-- `negative-result`: L-7, L-9, L-41
+- `p300`: L-3, L-29, D-13
 - `prediction-was-wrong`: L-10, L-14, L-24
 - `profile-head`: L-11, L-36, D-3
 - `slurm`: L-4, L-19, L-21
@@ -76,16 +77,21 @@ Last summarized: 2026-09-05 (heuristic)
 - `validation`: L-19, L-28, L-33
 - `variance`: L-16, L-18, L-23
 - `window-selection`: L-7, D-1, D-2
+- `controls`: L-43, D-13
 - `crispr-benchmark`: L-41, D-9
+- `ctcf`: L-42, L-43
+- `deployment`: L-31, D-14
 - `determinism`: L-34, D-10
 - `fragment-extension`: L-8, L-9
 - `guards`: L-19, L-20
 - `inference`: L-38, D-11
+- `loss-design`: L-42, L-45
 - `methodology`: L-15, L-19
 - `mtime`: L-39, L-40
+- `negatives`: L-5, L-44
 - `nucleosome`: L-7, L-12
+- `over-prediction`: L-42, L-43
 - `overclaim`: L-16, L-17
-- `p300`: L-3, L-29
 - `paired-test`: L-27, L-29
 - `panel`: L-25, D-5
 - `qnorm`: L-41, D-9
@@ -95,6 +101,7 @@ Last summarized: 2026-09-05 (heuristic)
 - `reproducibility`: L-16, L-32
 - `reversal`: L-36, D-7
 - `reverse-complement`: L-38, D-11
+- `self-correction`: L-42, L-43
 - `sherlock`: L-4, L-21
 - `snakemake`: L-39, L-40
 - `statistics`: L-2, L-23
@@ -127,21 +134,23 @@ Last summarized: 2026-09-05 (heuristic)
 - `count-target`: L-3
 - `cpg-island`: L-42
 - `cross-validation`: L-23
-- `ctcf`: L-42
 - `data-availability`: L-25
 - `data-inspection`: L-12
 - `data-provenance`: L-26
 - `decisions`: L-6
 - `denominator`: L-22
-- `deployment`: L-31
 - `depth`: L-28
 - `dnase`: L-25
 - `documentation`: D-12
+- `documentation-drift`: L-44
 - `drift`: L-32
 - `dry-run`: L-39
+- `dynamic-range`: L-43
 - `element-centric`: D-1
 - `encode`: L-25
+- `fragment-channels`: D-14
 - `free-win`: L-38
+- `gc-matching`: L-44
 - `generalization`: L-25
 - `geo`: L-26
 - `gpu`: L-34
@@ -152,13 +161,12 @@ Last summarized: 2026-09-05 (heuristic)
 - `latent-bug`: L-34
 - `leakage`: D-9
 - `learnability`: L-10
-- `loss-design`: L-42
 - `mechanism`: L-41
 - `memory`: L-5
 - `metric-choice`: D-4
 - `model-free-baseline`: L-22
+- `multi-task`: D-13
 - `mycelium`: L-6
-- `negatives`: L-5
 - `normalization`: L-14
 - `numbers-manifest`: L-32
 - `off-by-factor`: L-3
@@ -166,10 +174,10 @@ Last summarized: 2026-09-05 (heuristic)
 - `oom`: L-5
 - `organisation`: D-12
 - `orphaned-jobs`: L-40
-- `over-prediction`: L-42
 - `owners`: L-21
 - `paired-end`: D-5
 - `patching`: L-20
+- `prediction-before-measurement`: L-45
 - `preemption`: L-21
 - `premature-conclusion`: L-36
 - `process`: L-40
@@ -185,16 +193,19 @@ Last summarized: 2026-09-05 (heuristic)
 - `sample-definition`: L-26
 - `scaling`: L-5
 - `scope`: L-25
-- `self-correction`: L-42
+- `sequence-branch`: L-44
 - `sequence-vs-accessibility`: L-18
 - `spearman-brown`: L-2
 - `str-replace`: L-20
 - `stranded`: L-3
 - `submit-scripts`: L-4
+- `superseding`: L-43
 - `target-mismatch`: L-15
 - `template-mismatch`: L-6
 - `trade-off`: D-2
+- `training-composition`: L-44
 - `training-design`: D-1
+- `transfer`: D-14
 
 _Heuristic clustering: tags with ≥2 entries, top 6 by count. To fetch matching entries: `python3 skills/core/scripts/recall_lessons.py --living-dir <path> --tag <tag>` or `--id L-N`._
 <!-- END KNOWLEDGE SUMMARY -->

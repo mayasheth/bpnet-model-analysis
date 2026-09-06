@@ -91,10 +91,36 @@ rE2G model type as TeloHAEC's), so the confound is testable rather than merely n
 test and its result are in Report 3. The ABC candidate regions used for the downstream
 benchmark are ATAC-derived, from observed K562 ATAC.
 
-**The negatives matter as much as the positives.** Training negatives are a GC-matched
-genomic background rather than non-peak regions, so the element set spans active and
-inactive elements and a large part of any unstratified correlation is the dead-versus-active
-contrast. This is the root reason the evaluation is stratified; see Report 2.
+## The training negative pool is not GC-matched, despite its filename
+
+`reference/genomewide_gc_stride_1000_flank_size_1057.gc.bed` is ChromBPNet's genome-wide
+GC-*annotated* tiling: 3,088,298 bins at 1 kb stride with GC in column 4. That file is the
+*input* to GC matching, not its output. Our training code reads only columns 1-3, discarding
+the GC column, and the sampler draws uniformly at random from a 50,000-window random
+subsample of it. So the training negatives are a uniform random sample of the genome, at mean
+GC **0.389** against **0.466-0.593** for candidate elements, and no matching to either cell
+type's positive set takes place. The same pool is used for K562 and GM12878, which would be
+wrong if matching were happening -- since the positives differ per cell type -- and is moot
+because it is not.
+
+Three things follow, two reassuring and one not.
+
+- **Negatives are not mislabelled.** They carry their *true* extracted H3K27ac signal rather
+  than a hard zero, so the 1 kb bins that happen to overlap a real candidate element get
+  their real signal. They are also restricted to each fold's training chromosomes.
+- **No reported number is computed on them.** Evaluation runs on the candidate element set
+  only (Report 2), so every correlation in these three reports is an element-only number.
+- **But it changes what the model can learn.** A positive/negative contrast separable on GC
+  content alone is a known way to turn a BPNet-style sequence branch into a coarse GC
+  detector, and a large share of the sequence branch's training signal here is that contrast:
+  negatives are 10% of every batch and differ from positives by 0.1 in mean GC. This is a
+  live hypothesis for why the sequence branch has almost no dynamic range *within* candidate
+  elements while still correlating 0.397 across them (Report 3), and it is the first item on
+  that report's open list.
+
+**Separately, the candidate element set itself spans active and inactive elements**, so most
+of it carries no H3K27ac whatever the negatives are doing. That is the reason every
+evaluation in this project is stratified, and it is independent of the issue above.
 """
 
 R1_METHODS = """## Methods
@@ -194,10 +220,12 @@ track definitions this report refers to; Report 3 holds the results.
 signal. All-element numbers may be reported alongside but never alone, and a claim supported
 only by the all-element stratum is not a finding.
 
-**Why.** Training negatives are a GC-matched genomic background rather than non-peak regions
-(Report 1), so most elements carry no H3K27ac and an unstratified correlation is dominated
-by the dead-versus-active contrast that accessibility already resolves. The two panels of
-Fig. 1 are the same models and disagree about the size of every effect.
+**Why.** Evaluation runs on the candidate element set only -- training negatives are never
+scored, so every number in these reports is an element-only number -- and that set spans
+active and inactive elements, so most of it carries no H3K27ac. An unstratified correlation
+over it is therefore dominated by the dead-versus-active contrast that accessibility already
+resolves. The two panels of Fig. 1 are the same models and disagree about the size of every
+effect.
 
 **The incidents.** Four misleading readings so far, all of the same shape.
 
@@ -214,10 +242,12 @@ Fig. 1 are the same models and disagree about the size of every effect.
   receptive-field experiment the sequence and multimodal arms disagree on the top quintile,
   so a conclusion drawn from whichever arm finished first would have inverted.
 
-**The corollary, which is the part that keeps being learned the hard way.** A single arm of a
-factorial is not a result. The receptive-field question was closed as "resolved, do not
-pursue" on the sequence arm alone and had to be reopened when the multimodal arm landed. Wait
-for the modality that the change is supposed to act on.
+**The corollary, which keeps being learned the hard way.** When an architecture change is
+being tested in several input modes at once -- sequence only, ATAC only, sequence + ATAC --
+do not draw a conclusion from whichever mode finishes training first. The receptive-field
+question was closed as "resolved, do not pursue" on the strength of the sequence-only models
+alone, then had to be reopened when the sequence + ATAC models landed and showed a
+significant gain. Wait for the input mode the change is actually supposed to act on.
 
 ## Pair within fold; the between-fold spread dominates everything
 
@@ -972,8 +1002,36 @@ Two cheap interventions target that: a gate that lets sequence modulate the acce
 representation position by position, and a loss that penalises over-prediction more than
 under-prediction. Do either help?
 
-**A:** All three arms of the 2x2 have finished training on all five folds; scoring is in
-flight (job 42219004, in-cell K562 and K562 -> GM12878). Results will be filled in here.
+**A:** Neither helps, and together they hurt. In-cell type all three arms are
+indistinguishable from the ungated symmetric baseline; transferred to GM12878 the gate is
+null, the asymmetric loss trends negative, and the combination is **significantly worse**.
+
+**Paired within-fold difference in top-quintile Pearson against the matched ungated baseline:**
+
+| arm | in-cell K562 | K562 -> GM12878 |
+|---|---|---|
+| gate | -0.0001 [-0.0152, +0.0151] *p*=0.99 | -0.0015 [-0.0190, +0.0159] *p*=0.82 |
+| asymmetric loss | +0.0001 [-0.0122, +0.0124] *p*=0.98 | -0.0078 [-0.0183, +0.0026] *p*=0.11 |
+| both | -0.0032 [-0.0157, +0.0092] *p*=0.51 | **-0.0128 [-0.0246, -0.0010]** *p*=0.039 |
+
+For scale, on the transfer arm the gated model beats the target cell type's own ATAC-only
+model by +0.0117 (*p*=0.21) and the ungated baseline beats it by +0.0132 (*p*=0.25) -- so both
+sit in the same place relative to the floor, and neither intervention moved anything.
+
+**This is the outcome the corrected sequence analysis predicted.** Both interventions assume
+the sequence branch already knows which elements are not acetylated and is being overridden
+by accessibility. The section above shows it does not know: the sequence arm's elevation is
+1.55x at the over-predicted tail and 1.44x at the under-predicted tail, where the truth
+separates them 1.00x against 31.3x. A gate cannot surface information that is not in the
+branch it gates, and reweighting the loss cannot either. The prediction was recorded before
+the scoring ran.
+
+**Why the combination is actively worse on transfer is worth one line of speculation and no
+more.** Tripling the over-prediction penalty pushes predictions down; a gate that can also
+suppress accessibility gives a second route to the same thing, and on transfer -- where the
+accessibility term is the part that generalises -- suppressing it costs more than the
+over-prediction it avoids. That is a hypothesis, not a result; the experiment was not designed
+to test it and neither arm should be pursued.
 
 **The design.** A 2x2 factorial against a matched ungated symmetric baseline -- same
 accessibility bigwig, same `n_layers`, same `count_loss_weight`, differing only in the two
@@ -996,11 +1054,10 @@ runs.
 what the fix costs where accessibility is trustworthy; K562 -> GM12878 asks whether it helps
 where over-reliance actually bites, which is the reason the gate exists.
 
-**The prior on this working just dropped.** Both interventions assume the sequence branch
-already knows which elements are not acetylated and is being overridden. The
-responsiveness-normalised analysis above says it does not know -- the sequence arm is nearly
-flat across both tails. A gate cannot surface information that is not there. They are being
-scored because they are trained and scoring is cheap, not because the hypothesis survived.
+**Verdict: both closed.** The gate and the asymmetric loss are the two cheapest
+interventions against accessibility over-reliance and neither works, for a reason that is now
+measured rather than guessed. Anything further in this direction has to make the sequence
+branch discriminative first.
 
 **Method.**
 
@@ -1048,13 +1105,35 @@ chosen accordingly.** Predicted H3K27ac does not improve ABC's CRISPR-benchmark 
 and the sequence branch does not carry the discriminating signal the obvious fixes assume it
 does. Three directions remain, in order of expected value.
 
-**1. Give the model the sequence features it is not learning.** The indicated fix from the
-responsiveness analysis. Explicit GC-content and CpG-density channels, computed by the same
-route as the existing accessibility channels, with an indicator-channel control to confirm the
-gain comes from the feature rather than from the extra capacity. Cheap, and it tests the one
-hypothesis that survived. Motif-derived channels are the heavier version of the same idea.
+**1. Fix the training-element composition, which is the most likely single cause of the
+sequence branch's flatness.** The negative pool is not GC-matched (Report 1): it is a uniform
+random genome sample at mean GC 0.389 against 0.466-0.593 for candidate elements, and it is
+10% of every batch. A sequence branch can satisfy that contrast with a coarse GC detector,
+which is exactly what its behaviour looks like -- 0.397 correlation *across* candidate
+elements and almost no dynamic range *within* them. Three experiments, cheapest first.
 
-**2. Attack the dynamic range directly.** The benchmark fails on compression, not on ranking
+- **Actually GC-match the negatives.** The GC column is already in the file and already
+  discarded; matching each fold's negative draw to the fold's positive GC distribution is a
+  change to `load_negatives` and the sampler, not new data. This is the one to run first.
+- **Harder negatives: accessible but unacetylated regions.** Sampling negatives from open
+  chromatin rather than random genome removes accessibility as a discriminator too, forcing
+  the sequence branch onto the distinction that actually matters downstream. Note these
+  elements are already in the *positive* set with near-zero targets, so the honest framing is
+  reweighting rather than relabelling -- up-weight the accessible-but-unacetylated quadrant
+  and measure what happens to the over-predicted tail.
+- **`negative_ratio` and the 50,000-window cap are untested.** Both were inherited from the
+  p300 setup and neither has been swept. They set how much of the loss is spent on the
+  positive-versus-background contrast rather than on grading elements against each other.
+
+**2. Give the model the sequence features it is not learning**, if composition alone does not
+fix it. Explicit GC-content and CpG-density channels, computed by the same route as the
+existing accessibility channels, with an indicator-channel control to confirm the gain comes
+from the feature rather than from the extra capacity. Motif-derived channels are the heavier
+version of the same idea. Run this after the composition experiments, since a GC channel and
+a GC-matched negative set are two ways of attacking the same problem and the second is
+cheaper.
+
+**3. Attack the dynamic range directly.** The benchmark fails on compression, not on ranking
 error, and no architecture change tried so far targets compression. Candidates: a loss on the
 predicted *spread* over each batch, training on rank-transformed targets, or predicting the
 composite `geomean(accessibility, H3K27ac)` that downstream consumers actually use. That last
@@ -1063,14 +1142,21 @@ accessibility term in the target, half the target is readable off the input and 
 is circular, so it must be `geomean(DHS, H3K27ac)` predicted from sequence + ATAC and
 baselined against the two-step route scored on the *same* composite.
 
-**3. Motif syntax, which is the remaining scientific question and has never been started.**
+**4. Motif syntax, which is the remaining scientific question and has never been started.**
 SHAP / TF-MoDISco / FiNeMo on the **residual-trained** model, whose predictions are forced
 onto signal accessibility cannot supply. Use the +/-500 bp window, which carries no neighbour
 contamination. Expect less attributable signal than p300 (Fig.~3).
 
 **Also open, smaller**
 
-- **Score the gate factorial** -- in flight, see above.
+- **ABC with predicted *p300* as the activity term.** Not yet run. The predicted-p300 tracks
+  over the ABC regions already exist from the learnability diagnostic, so the K562-trained
+  arms are nearly free; an observed-p300 arm is needed alongside them as the ceiling, since a
+  predicted arm with no anchor decides nothing. This is a different question from F-006 -- that
+  finding says p300 is not predictable *at the elements H3K27ac prediction fails*, not that
+  predicted p300 is a poor activity term, and its compression in ABC is untested. A
+  GM12878-trained arm needs a GM12878 p300 model, which does not exist; the EP300 data does
+  (ENCSR000DZG), so it is five folds of training away.
 - **A qnorm-off ABC arm.** `run_qnorm` is rank-based so scale is irrelevant, but the reference
   is built from observed K562 signal, so a predicted track inherits the observed
   distribution's shape. Worth one arm.
@@ -1111,8 +1197,9 @@ and a counts head trained with log1p mean-squared error; total loss is
 `profile_loss + w * count_loss`. All results here concern the counts head unless a profile
 metric is named. Baseline training uses `n_layers = 8` (a ~1.1 kb receptive field), a
 +/-500 bp counting window with the required 2,114 bp input window, `w = 10`,
-reverse-complement augmentation, chromosome-holdout 5-fold cross-validation, and a 50,000-window
-cap on the GC-matched negative pool. The wide arm uses `n_layers = 10`, whose trimming of
+reverse-complement augmentation, chromosome-holdout 5-fold cross-validation, and a random
+50,000-window subsample of the genome-wide negative pool, which is **not** GC-matched to the
+positives (Report 1). Negatives are 10% of each batch and are never evaluated on. The wide arm uses `n_layers = 10`, whose trimming of
 2,093 requires a 5,186 bp input window for the same output; the trimming is
 `47 + sum(2^i for i in 1..n_layers)`.
 
@@ -1167,11 +1254,22 @@ Per-result provenance, including which processing of the target each result file
 """
 
 
+R1_FIXUPS = [
+    # The source's Datasets row calls the negative pool GC-matched. It is not: the file is
+    # ChromBPNet's GC-ANNOTATED tiling and the sampler discards the GC column. Corrected here
+    # rather than in the superseded source, which is kept as the record of what was published.
+    (r"\| \*\*GC-matched negatives\*\* \| Genome-wide GC-binned background, hg38 \|",
+     "| **Training negative pool** | ChromBPNet genome-wide GC-*annotated* tiling, hg38; "
+     "n = 3,088,298 bins, 1 kb stride, mean GC 0.389. **Not GC-matched to the positives** "
+     "\u2014 see the negatives section below |"),
+    (r"\| Training negatives \|", "| Training negatives only; never evaluated on |"),
+]
+
 R1_MAP2 = {8: 1, 2: 2, 3: 3, 11: 4, 9: 5}
 
 
 def build(pull, write):
-    p1 = lambda t, n=None: pull(t, R1_MAP2, n)
+    p1 = lambda t, n=None: pull(t, R1_MAP2, n, R1_FIXUPS)
     p3 = lambda t, n=None: pull(t, R3_MAP, n, R3_FIXUPS)
 
     write("report1_data_characterisation.qmd",
