@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 from scipy.stats import pearsonr
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from nature_style import apply_rcparams, save_fig, add_panel_label, figsize
+from nature_style import apply_rcparams, save_fig, add_panel_label, figsize, n_label, annotate_n_fig
 
 D = "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet"
 P = f"{D}/2026_0824_H3K27ac_model"
@@ -152,6 +152,10 @@ for ax, stratum, lab, ttl in [
 add_panel_label(axes[3], "d")
 add_panel_label(axes[4], "e")
 
+# One n per cell type: these are model-free element counts, not folds.
+_a = cp[cp["stratum"] == "all"]
+annotate_n_fig(fig, "n elements: " + "; ".join(
+    f"{r['label']} {int(r['n']):,}" for _, r in _a.iterrows()))
 out = save_fig(fig, f"{P}/figures/fig8_coupling_across_celltypes.png")
 print("Wrote", out, "and .pdf")
 df = pd.DataFrame(rows)
