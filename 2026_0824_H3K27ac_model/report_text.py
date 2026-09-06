@@ -1072,6 +1072,27 @@ preserved in 100% of paired resamples, and is indistinguishable from *measured* 
 the floor with a resolvable margin. **It does not transfer**: a GM12878-trained p300 model
 applied to K562 lands at +0.009 [-0.004, +0.022] over the floor, an interval spanning zero.
 
+![](figures/fig16_p300_benchmark.png)
+
+<details>
+<summary>Figure 11 legend</summary>
+
+**Figure 11 | p300 as the ABC activity term: the gain is real in the training cell type and
+absent on transfer.** Forest plot of AUPRC against the CRISPR benchmark for all nine arms plus
+distance-to-TSS, on 10,342 element-gene pairs with 466 regulated, every arm scored on the
+identical pair set. Error bars are the pipeline's **unpaired** per-predictor 95% intervals;
+the dashed lines mark the ATAC-only floor (0.457) and observed H3K27ac (0.519). The paired
+bootstrap delta against the floor is printed at the right of each row, because the unpaired
+intervals drawn here overlap for every arm and cannot resolve any of the comparisons -- the
+figure shows both so that the misleading layer and the informative one sit together. Observed
+p300 (0.557) is the highest arm; the K562-trained predicted-p300 arm (0.512) reaches observed
+H3K27ac; the GM12878-trained arm applied to K562 (0.466) sits at the floor with an interval
+spanning zero. Geometry, floor and reference line match Fig.~1 so the two are directly
+comparable, which the two shared anchor arms agreeing to 1e-4 across the runs licenses.
+Source: `CRISPR_comparison_v3/.../results/2026_0906_p300_all/performance_summary.txt`,
+`scripts/4.17` for the paired deltas.
+</details>
+
 **AUPRC on the CRISPR benchmark, 10,342 element-gene pairs, 466 regulated:**
 
 | arm | AUPRC | unpaired 95% CI |
