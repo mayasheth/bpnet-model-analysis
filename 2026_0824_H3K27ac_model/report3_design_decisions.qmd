@@ -909,8 +909,36 @@ Two cheap interventions target that: a gate that lets sequence modulate the acce
 representation position by position, and a loss that penalises over-prediction more than
 under-prediction. Do either help?
 
-**A:** All three arms of the 2x2 have finished training on all five folds; scoring is in
-flight (job 42219004, in-cell K562 and K562 -> GM12878). Results will be filled in here.
+**A:** Neither helps, and together they hurt. In-cell type all three arms are
+indistinguishable from the ungated symmetric baseline; transferred to GM12878 the gate is
+null, the asymmetric loss trends negative, and the combination is **significantly worse**.
+
+**Paired within-fold difference in top-quintile Pearson against the matched ungated baseline:**
+
+| arm | in-cell K562 | K562 -> GM12878 |
+|---|---|---|
+| gate | -0.0001 [-0.0152, +0.0151] *p*=0.99 | -0.0015 [-0.0190, +0.0159] *p*=0.82 |
+| asymmetric loss | +0.0001 [-0.0122, +0.0124] *p*=0.98 | -0.0078 [-0.0183, +0.0026] *p*=0.11 |
+| both | -0.0032 [-0.0157, +0.0092] *p*=0.51 | **-0.0128 [-0.0246, -0.0010]** *p*=0.039 |
+
+For scale, on the transfer arm the gated model beats the target cell type's own ATAC-only
+model by +0.0117 (*p*=0.21) and the ungated baseline beats it by +0.0132 (*p*=0.25) -- so both
+sit in the same place relative to the floor, and neither intervention moved anything.
+
+**This is the outcome the corrected sequence analysis predicted.** Both interventions assume
+the sequence branch already knows which elements are not acetylated and is being overridden
+by accessibility. The section above shows it does not know: the sequence arm's elevation is
+1.55x at the over-predicted tail and 1.44x at the under-predicted tail, where the truth
+separates them 1.00x against 31.3x. A gate cannot surface information that is not in the
+branch it gates, and reweighting the loss cannot either. The prediction was recorded before
+the scoring ran.
+
+**Why the combination is actively worse on transfer is worth one line of speculation and no
+more.** Tripling the over-prediction penalty pushes predictions down; a gate that can also
+suppress accessibility gives a second route to the same thing, and on transfer -- where the
+accessibility term is the part that generalises -- suppressing it costs more than the
+over-prediction it avoids. That is a hypothesis, not a result; the experiment was not designed
+to test it and neither arm should be pursued.
 
 **The design.** A 2x2 factorial against a matched ungated symmetric baseline -- same
 accessibility bigwig, same `n_layers`, same `count_loss_weight`, differing only in the two
@@ -933,11 +961,10 @@ runs.
 what the fix costs where accessibility is trustworthy; K562 -> GM12878 asks whether it helps
 where over-reliance actually bites, which is the reason the gate exists.
 
-**The prior on this working just dropped.** Both interventions assume the sequence branch
-already knows which elements are not acetylated and is being overridden. The
-responsiveness-normalised analysis above says it does not know -- the sequence arm is nearly
-flat across both tails. A gate cannot surface information that is not there. They are being
-scored because they are trained and scoring is cheap, not because the hypothesis survived.
+**Verdict: both closed.** The gate and the asymmetric loss are the two cheapest
+interventions against accessibility over-reliance and neither works, for a reason that is now
+measured rather than guessed. Anything further in this direction has to make the sequence
+branch discriminative first.
 
 **Method.**
 
@@ -985,13 +1012,35 @@ chosen accordingly.** Predicted H3K27ac does not improve ABC's CRISPR-benchmark 
 and the sequence branch does not carry the discriminating signal the obvious fixes assume it
 does. Three directions remain, in order of expected value.
 
-**1. Give the model the sequence features it is not learning.** The indicated fix from the
-responsiveness analysis. Explicit GC-content and CpG-density channels, computed by the same
-route as the existing accessibility channels, with an indicator-channel control to confirm the
-gain comes from the feature rather than from the extra capacity. Cheap, and it tests the one
-hypothesis that survived. Motif-derived channels are the heavier version of the same idea.
+**1. Fix the training-element composition, which is the most likely single cause of the
+sequence branch's flatness.** The negative pool is not GC-matched (Report 1): it is a uniform
+random genome sample at mean GC 0.389 against 0.466-0.593 for candidate elements, and it is
+10% of every batch. A sequence branch can satisfy that contrast with a coarse GC detector,
+which is exactly what its behaviour looks like -- 0.397 correlation *across* candidate
+elements and almost no dynamic range *within* them. Three experiments, cheapest first.
 
-**2. Attack the dynamic range directly.** The benchmark fails on compression, not on ranking
+- **Actually GC-match the negatives.** The GC column is already in the file and already
+  discarded; matching each fold's negative draw to the fold's positive GC distribution is a
+  change to `load_negatives` and the sampler, not new data. This is the one to run first.
+- **Harder negatives: accessible but unacetylated regions.** Sampling negatives from open
+  chromatin rather than random genome removes accessibility as a discriminator too, forcing
+  the sequence branch onto the distinction that actually matters downstream. Note these
+  elements are already in the *positive* set with near-zero targets, so the honest framing is
+  reweighting rather than relabelling -- up-weight the accessible-but-unacetylated quadrant
+  and measure what happens to the over-predicted tail.
+- **`negative_ratio` and the 50,000-window cap are untested.** Both were inherited from the
+  p300 setup and neither has been swept. They set how much of the loss is spent on the
+  positive-versus-background contrast rather than on grading elements against each other.
+
+**2. Give the model the sequence features it is not learning**, if composition alone does not
+fix it. Explicit GC-content and CpG-density channels, computed by the same route as the
+existing accessibility channels, with an indicator-channel control to confirm the gain comes
+from the feature rather than from the extra capacity. Motif-derived channels are the heavier
+version of the same idea. Run this after the composition experiments, since a GC channel and
+a GC-matched negative set are two ways of attacking the same problem and the second is
+cheaper.
+
+**3. Attack the dynamic range directly.** The benchmark fails on compression, not on ranking
 error, and no architecture change tried so far targets compression. Candidates: a loss on the
 predicted *spread* over each batch, training on rank-transformed targets, or predicting the
 composite `geomean(accessibility, H3K27ac)` that downstream consumers actually use. That last
@@ -1000,14 +1049,21 @@ accessibility term in the target, half the target is readable off the input and 
 is circular, so it must be `geomean(DHS, H3K27ac)` predicted from sequence + ATAC and
 baselined against the two-step route scored on the *same* composite.
 
-**3. Motif syntax, which is the remaining scientific question and has never been started.**
+**4. Motif syntax, which is the remaining scientific question and has never been started.**
 SHAP / TF-MoDISco / FiNeMo on the **residual-trained** model, whose predictions are forced
 onto signal accessibility cannot supply. Use the +/-500 bp window, which carries no neighbour
 contamination. Expect less attributable signal than p300 (Fig. 3).
 
 **Also open, smaller**
 
-- **Score the gate factorial** -- in flight, see above.
+- **ABC with predicted *p300* as the activity term.** Not yet run. The predicted-p300 tracks
+  over the ABC regions already exist from the learnability diagnostic, so the K562-trained
+  arms are nearly free; an observed-p300 arm is needed alongside them as the ceiling, since a
+  predicted arm with no anchor decides nothing. This is a different question from F-006 -- that
+  finding says p300 is not predictable *at the elements H3K27ac prediction fails*, not that
+  predicted p300 is a poor activity term, and its compression in ABC is untested. A
+  GM12878-trained arm needs a GM12878 p300 model, which does not exist; the EP300 data does
+  (ENCSR000DZG), so it is five folds of training away.
 - **A qnorm-off ABC arm.** `run_qnorm` is rank-based so scale is irrelevant, but the reference
   is built from observed K562 signal, so a predicted track inherits the observed
   distribution's shape. Worth one arm.
@@ -1047,8 +1103,9 @@ and a counts head trained with log1p mean-squared error; total loss is
 `profile_loss + w * count_loss`. All results here concern the counts head unless a profile
 metric is named. Baseline training uses `n_layers = 8` (a ~1.1 kb receptive field), a
 +/-500 bp counting window with the required 2,114 bp input window, `w = 10`,
-reverse-complement augmentation, chromosome-holdout 5-fold cross-validation, and a 50,000-window
-cap on the GC-matched negative pool. The wide arm uses `n_layers = 10`, whose trimming of
+reverse-complement augmentation, chromosome-holdout 5-fold cross-validation, and a random
+50,000-window subsample of the genome-wide negative pool, which is **not** GC-matched to the
+positives (Report 1). Negatives are 10% of each batch and are never evaluated on. The wide arm uses `n_layers = 10`, whose trimming of
 2,093 requires a 5,186 bp input window for the same output; the trimming is
 `47 + sum(2^i for i in 1..n_layers)`.
 

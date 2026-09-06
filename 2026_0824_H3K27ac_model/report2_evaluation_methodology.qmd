@@ -104,10 +104,12 @@ track definitions this report refers to; Report 3 holds the results.
 signal. All-element numbers may be reported alongside but never alone, and a claim supported
 only by the all-element stratum is not a finding.
 
-**Why.** Training negatives are a GC-matched genomic background rather than non-peak regions
-(Report 1), so most elements carry no H3K27ac and an unstratified correlation is dominated
-by the dead-versus-active contrast that accessibility already resolves. The two panels of
-Fig. 1 are the same models and disagree about the size of every effect.
+**Why.** Evaluation runs on the candidate element set only -- training negatives are never
+scored, so every number in these reports is an element-only number -- and that set spans
+active and inactive elements, so most of it carries no H3K27ac. An unstratified correlation
+over it is therefore dominated by the dead-versus-active contrast that accessibility already
+resolves. The two panels of Fig. 1 are the same models and disagree about the size of every
+effect.
 
 **The incidents.** Four misleading readings so far, all of the same shape.
 
@@ -124,10 +126,12 @@ Fig. 1 are the same models and disagree about the size of every effect.
   receptive-field experiment the sequence and multimodal arms disagree on the top quintile,
   so a conclusion drawn from whichever arm finished first would have inverted.
 
-**The corollary, which is the part that keeps being learned the hard way.** A single arm of a
-factorial is not a result. The receptive-field question was closed as "resolved, do not
-pursue" on the sequence arm alone and had to be reopened when the multimodal arm landed. Wait
-for the modality that the change is supposed to act on.
+**The corollary, which keeps being learned the hard way.** When an architecture change is
+being tested in several input modes at once -- sequence only, ATAC only, sequence + ATAC --
+do not draw a conclusion from whichever mode finishes training first. The receptive-field
+question was closed as "resolved, do not pursue" on the strength of the sequence-only models
+alone, then had to be reopened when the sequence + ATAC models landed and showed a
+significant gain. Wait for the input mode the change is actually supposed to act on.
 
 ## Pair within fold; the between-fold spread dominates everything
 

@@ -124,3 +124,29 @@ The current `EP300_peak_overlap` flag (from `finemo_peaks_all_chr.chromatin_anno
 Tracked in mycelium's todo/ (canonical for this project going forward):
 [`todo/TODOLIST.md`](todo/TODOLIST.md) for the prioritized item list and waves,
 [`todo/h3k27ac-model.md`](todo/h3k27ac-model.md) for the detail and compute estimates.
+
+## Training-element composition (added 2026-09-05, now the top architecture priority)
+
+- [ ] **GC-match the negative pool.** It never was: `genomewide_gc_stride_1000_flank_size_1057.gc.bed`
+      is ChromBPNet's GC-*annotated* tiling and `load_negatives` reads `usecols=[0,1,2]`,
+      discarding the GC column; the sampler then draws uniformly. Pool mean GC 0.389 against
+      0.466-0.593 for candidate elements. Match each fold's negative draw to that fold's
+      positive GC distribution. Code change only, no new data.
+- [ ] **Reweight the accessible-but-unacetylated quadrant.** Those elements are already
+      positives with near-zero targets; up-weight them rather than relabelling. Measures
+      directly against the over-predicted tail.
+- [ ] **Sweep `negative_ratio` (0.1) and `--max-negatives` (50,000).** Both inherited from
+      the p300 setup, never swept for H3K27ac.
+- [ ] Explicit GC / CpG-density input channels with an indicator-channel control — run only
+      if the composition fixes above do not restore sequence-branch dynamic range.
+
+## ABC with predicted p300 as the activity term (added 2026-09-05)
+
+- [ ] K562-trained arms: predicted-p300 tracks over the ABC regions already exist
+      (`data/abc_predicted/predp300_{multimodal,atac}.bw`), so these are nearly free.
+- [ ] Observed-p300 arm as the ceiling — a predicted arm with no anchor decides nothing.
+      EP300 BAMs: `ENCFF466WKF`, `ENCFF163FSR` (ENCSR000EGE).
+- [ ] GM12878-trained arm needs a GM12878 p300 model, which does not exist. The data does
+      (ENCSR000DZG), so it is 5 folds of training away. Decide after the K562 arms.
+- [ ] Run in its OWN results dir, not appended to `2026_0903_predicted_activity` — re-stamping
+      Peaks in the completed run would make all nine finished arms look stale.

@@ -2,7 +2,7 @@
 topic: predicting-regulatory-element-function-at-scale
 description: Building and benchmarking models that predict regulatory element function, enhancer–gene links, and variant effects genome-wide (the question behind consortium-scale efforts such as IGVF).
 created: 2026-07-21
-last_updated: 2026-08-24
+last_updated: 2026-09-05
 status: active
 ---
 
@@ -83,3 +83,43 @@ IGVF-style consortium work — the slug avoids naming the consortium.)_
 - Does the reverse direction (train GM12878, test K562) show the same asymmetry, as it did for p300?
 - ~~Would residual training produce a sequence component that transfers better?~~ **RESOLVED 2026-09-01: no, not usefully.** On the top signal quintile the residual and multimodal models transfer indistinguishably in both directions (paired p = 0.17-0.76). The residual design does win when the accessibility baseline is fitted in the TARGET cell type rather than transferred (+0.005 to +0.011 on all elements, p < 0.01 both directions), but that requires target H3K27ac, which the deployment scenario lacks. Practical consequence: transfer the multimodal model. Secondary consequence worth acting on: a shallow target H3K27ac library, enough only to fit an ATAC-only model, would make the residual architecture preferable.
 - p300 sequence models transfer at 0.277 (from the earlier transferability work). Is the H3K27ac sequence collapse worse than p300's, evaluated identically?
+
+---
+
+## F-004: Predicted H3K27ac does not improve ABC's CRISPR-benchmark performance, and the failure is compressed dynamic range rather than inaccurate prediction
+**Status:** established
+**Claim:** In K562, substituting model-predicted H3K27ac for observed H3K27ac in ABC's `activity_base` gives a CRISPR-benchmark AUPRC of 0.482 [0.437, 0.530] at best, against a floor of 0.457 (ATAC-only activity) and a ceiling of 0.519 (ATAC x observed H3K27ac) — no resolvable improvement over the floor. The two deployment-realistic arms, GM12878-trained models applied to K562, score 0.455 and 0.452, at or below the floor. Predicted and observed H3K27ac nonetheless agree at Spearman 0.794 over all 153,545 candidate regions, so the predictions are not inaccurate; their dynamic range is compressed exactly where the benchmark is decided. On the regions carrying a CRISPR-regulated pair the predicted activity term's p99/p50 ratio is 4.03 against 6.00 observed, its top-decile mean/median ratio 4.23 against 6.46, and agreement with observed falls to Spearman 0.663.
+**Implications:** Correlation with observed H3K27ac is a poor proxy for downstream utility, and the two can be improved independently: every architecture change that raised top-quintile Pearson left this benchmark unmoved. The actionable target is the *spread* of the predicted activity term on strongly acetylated elements, which no architecture change tried so far addresses. Note also that the ceiling is only 0.062 above the floor — observed H3K27ac itself buys ABC very little in K562 — so this experiment had limited room from the start, and a negative result here bounds the value of the whole predicted-activity idea rather than only of this model.
+**Tags:** h3k27ac, abc, crispr-benchmark, dynamic-range, downstream-evaluation, k562, negative-result
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-09-04 | job 42158462 | EPCrisprBenchmark_ensemble_data_GRCh38, scE2G intGENCODEv43 universes | 2026_0824_H3K27ac_model | AUPRC: ceiling 0.519, best predicted 0.482, floor 0.457, GM12878-trained deployment arms 0.455/0.452, sequence-only arms 0.393/0.275, distance-to-TSS 0.435 | supports |
+| 2026-09-04 | job 42173879 | 153,545 ABC candidate regions | 2026_0824_H3K27ac_model | Spearman(obs, pred) 0.794 all regions / 0.663 on regions of regulated pairs; activity p99/p50 4.03 predicted against 6.00 observed; 12 of 429 regulated pairs caught by observed and missed by predicted | supports |
+
+---
+
+## F-005: In-cell-type architecture gains for H3K27ac do not transfer, and the better in-cell-type models have the larger transfer drops
+**Status:** established
+**Claim:** Across a 2x2 of receptive field (~1.1 vs ~4.2 kb) and accessibility representation (flat vs five fragment-size channels), no architecture beats the simplest by a resolvable margin when transferred between K562 and GM12878. Paired within-fold differences in top-quintile Pearson against narrow+flat transferred: wide+flat +0.0115 (*p*=0.14) and +0.0053 (*p*=0.53); fragment channels **-0.0012** (*p*=0.86) and **-0.0029** (*p*=0.75); wide+fragments +0.0159 (*p*=0.066). Fragment channels gain +0.016 (*p*=0.002) in-cell type in K562 and are exactly null transferred in both directions. The transfer drop is larger for the richer architectures: local minus transferred is +0.055/+0.085 for narrow+flat against +0.059/+0.107 for wide+flat and +0.061/+0.103 for narrow+fragments (all *p*<0.006). Transferring the best model buys only +0.013 to +0.036 over using the target cell type's own ATAC-only model (0.518 and 0.584), against locally trained models reaching 0.602 and 0.733.
+**Implications:** In-cell-type ranking is not the deployment ranking, so any architecture change intended for cross-cell-type use must be scored transferred before adoption. Fragment-length structure in particular appears to be a property of a specific ATAC library as much as of chromatin, which no paired in-cell-type test can detect. On the mechanistic metric the shortfall is larger still: transferred `residual_pearson` is 0.212-0.262 where a local model reaches 0.406-0.481, so roughly half of what a model extracts beyond accessibility does not survive the move.
+**Tags:** h3k27ac, transfer, deployment, architecture, fragment-channels, receptive-field, gm12878, k562, negative-result
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-09-05 | job 42179731 | K562 ENCSR000AKP + GM12878 ENCSR000AKC H3K27ac, 5 folds each direction | 2026_0824_H3K27ac_model | Top-quintile Pearson transferred: 0.531/0.542/0.530/0.547 (K562->GM) and 0.614/0.620/0.611 (GM->K562) against target ATAC-only floors of 0.518 and 0.584 | supports |
+
+---
+
+## F-006: p300 is not predictable at the elements where an H3K27ac model fails, so it is not usable as an auxiliary target
+**Status:** established
+**Claim:** At the elements a K562 H3K27ac multimodal model most under-predicts, observed EP300 ChIP signal is elevated 4.89x over its genome-wide median but its own **input control** is elevated 2.10x, so real enrichment is about 2.3x rather than the 6.6x that peak overlap implies. Existing p300-target models predict 1.83x (multimodal) and 1.55x (ATAC-only) there — below the input control. The same p300 models also over-predict the accessible-but-unmarked tail (1.92x and 1.79x where observed p300 is 1.36x and its control 0.50x), i.e. they fail in the same direction on the same elements.
+**Implications:** Neither a multi-task model with H3K27ac and p300 heads nor stacking predicted p300 as an input feature can recover these elements, because the auxiliary target is not learnable exactly where it would need to be. More generally, a peak-overlap enrichment is not sufficient evidence that an auxiliary target carries usable signal: without the ChIP input control the premise here looked roughly 3x stronger than it is. This does not affect F-001 — p300 remains the better substrate for sequence *attribution*, which is a claim about where motif work should be done, not about what to predict.
+**Tags:** p300, h3k27ac, multi-task, auxiliary-target, input-control, negative-result, k562
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-09-05 | job 42182188 | ENCSR000EGE p300 + control, 153,545 ABC candidate regions | 2026_0824_H3K27ac_model | Fold elevation at H3K27ac under-predicted 1%: observed H3K27ac 31.33, predicted 5.81, observed p300 4.89, p300 input control 2.10, predicted p300 1.83 (multimodal) / 1.55 (ATAC-only) | refutes |

@@ -49,7 +49,7 @@ ln -sfn "$SM_ENV/bin/mamba" "$SHIM/mamba"
 ln -sfn "$SM_ENV/bin/conda" "$SHIM/conda"
 export PATH="$PATH:$SHIM"
 command -v mamba >/dev/null || { echo "ERROR: mamba still not on PATH via $SHIM" >&2; exit 1; }
-CFG=config/mine/config_predicted_activity.yaml
+CFG=${ABC_CFG:-config/mine/config_predicted_activity.yaml}
 mkdir -p "$D/2026_0824_H3K27ac_model/log"
 # Re-stamp Peaks before every run rather than trusting whoever ran 4.3 last. If the
 # predicted bigwigs have been regenerated, the existing Peaks are older than them and
@@ -58,6 +58,7 @@ mkdir -p "$D/2026_0824_H3K27ac_model/log"
 echo "=== re-stamping Peaks against current inputs ==="
 "$D/.pixi/envs/multimodal/bin/python" \
     "$D/2026_0824_H3K27ac_model/scripts/4.3.setup_abc_arms.py" --copy-peaks --force-peaks \
+    ${ABC_ARMS:+--arms $ABC_ARMS} ${ABC_RESULTS_DIR:+--results-dir $ABC_RESULTS_DIR} \
     | tail -3
 
 cd "$A"

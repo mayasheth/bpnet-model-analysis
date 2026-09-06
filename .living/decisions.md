@@ -359,3 +359,40 @@ into deployment, and even it is only +0.0115 and +0.0053 transferred (*p*=0.14, 
 honest summary of the whole architecture programme is that its gains are in-cell-type gains.
 
 **Tags**: fragment-channels, transfer, deployment, negative-result
+
+### [2026-09-05] Close the gating / loss-reweighting direction; make training-element composition the next experiment
+
+**Context**: The multimodal model over-predicts H3K27ac at accessible, CTCF-enriched,
+CpG-rich elements. Two cheap interventions were built against that: a sequence gate on the
+accessibility representation, and a 3x over-prediction penalty in the count loss. Both were
+trained as a 2x2 factorial against a matched baseline. Separately, the corrected
+responsiveness analysis showed the sequence branch does not separate the two error tails at
+all (1.55x against 1.44x, where truth separates them 1.00x against 31.3x).
+
+**Decision**: Close both. In-cell K562 all three arms are null; transferred to GM12878 the
+gate is null, the loss reweighting trends negative, and the combination is significantly
+worse (-0.0128, *p*=0.039). Make **training-element composition** the next experiment
+instead, starting with actually GC-matching the negative pool -- which was never matched
+(see learnings, same date), and which plausibly explains why the sequence branch behaves like
+a coarse GC detector.
+
+**Alternatives considered**:
+- Tune the gate (different initialisation, wider kernel, per-element rather than per-position)
+  -- rejected: a gate can only change how existing information is combined, and the branch it
+  gates has been measured to carry no discriminative signal on these elements.
+- Raise the over-prediction weight above 3.0 -- rejected: the transferred trend is already
+  negative and the mechanism argument predicts it gets worse.
+- Go straight to explicit GC/CpG input channels -- deferred, not rejected: a GC-matched
+  negative set and a GC input channel attack the same problem and the former is cheaper and
+  changes no architecture.
+
+**Rationale**: The two interventions shared one premise, and that premise is now measured to
+be false. Composition is upstream of all of it: if the positive/negative contrast is
+separable on GC alone, the sequence branch is being trained to be exactly what we observe.
+
+**Consequences**: `--gate-accessibility` and `--overprediction-weight` stay in the code
+behind flags with their regression test, since they are harmless when unset and the negative
+result is worth being able to reproduce. Report 3 records the numbers and the prediction that
+preceded them.
+
+**Tags**: architecture, gating, loss-design, training-composition, negatives, negative-result

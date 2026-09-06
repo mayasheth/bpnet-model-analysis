@@ -78,6 +78,13 @@ PEAKS_ORDER = [
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--results-dir", default="results/2026_0903_predicted_activity")
+ap.add_argument("--arms", choices=("h3k27ac", "p300"), default="h3k27ac",
+                help="Which target's predicted tracks to build arms for. p300 arms go in "
+                     "their own results dir and config: re-stamping Peaks inside the "
+                     "completed H3K27ac run would make all nine finished arms look stale.")
+ap.add_argument("--config-tag", default=None,
+                help="Suffix for the written biosample table and yaml. Defaults to "
+                     "'predicted_activity' for h3k27ac arms and 'p300_activity' for p300.")
 ap.add_argument("--peaks-from", default=f"{JULY}/K562_ATAC_only/Peaks")
 ap.add_argument("--force-peaks", action="store_true",
                 help="Delete and re-copy each arm's Peaks/ even if present. REQUIRED after "
@@ -99,16 +106,39 @@ def add(name, atac, h3k27ac, feature):
     rows.append(r)
 
 
-for tag, _desc in MODELS:
-    bw = f"{PRED}/predk27ac_{tag}.bw"
-    if not os.path.exists(bw):
-        missing.append(bw)
-    add(f"pred_{tag}", ATAC, bw, "ATAC")
-for tag in K27ONLY:
-    bw = f"{PRED}/predk27ac_{tag}.bw"
-    add(f"k27only_{tag}", bw, "", "ATAC")
+# Observed EP300 (ENCSR000EGE), the ceiling for the p300-activity arms. A predicted arm
+# with no observed anchor decides nothing -- the H3K27ac run's own ceiling was only 0.062
+# above its floor, so the anchor is what makes a predicted number readable.
+P300_OBS = ",".join(f"{DATA}/{b}.filtered.sorted.bam"
+                    for b in ("ENCFF466WKF", "ENCFF163FSR"))
+# p300 models are K562-trained only; no GM12878 p300 model exists (the data does,
+# ENCSR000DZG, so a GM12878 arm is five folds of training away).
+P300_MODELS = [("multimodal", "K562 p300 multimodal model"),
+               ("atac", "K562 p300 ATAC-only model")]
 
-out = f"{ABC}/config/mine/config_biosamples_predicted_activity.tsv"
+if a.arms == "h3k27ac":
+    for tag, _desc in MODELS:
+        bw = f"{PRED}/predk27ac_{tag}.bw"
+        if not os.path.exists(bw):
+            missing.append(bw)
+        add(f"pred_{tag}", ATAC, bw, "ATAC")
+    for tag in K27ONLY:
+        bw = f"{PRED}/predk27ac_{tag}.bw"
+        add(f"k27only_{tag}", bw, "", "ATAC")
+else:
+    for tag, _desc in P300_MODELS:
+        bw = f"{PRED}/predp300_{tag}.bw"
+        if not os.path.exists(bw):
+            missing.append(bw)
+        add(f"p300pred_k562_{tag}", ATAC, bw, "ATAC")     # geomean with observed ATAC
+        add(f"p300only_k562_{tag}", bw, "", "ATAC")        # predicted p300 as all of activity
+    for b in P300_OBS.split(","):
+        if not os.path.exists(b):
+            missing.append(b)
+    add("p300obs_k562", ATAC, P300_OBS, "ATAC")            # the ceiling for this concept
+
+TAG = a.config_tag or ("predicted_activity" if a.arms == "h3k27ac" else "p300_activity")
+out = f"{ABC}/config/mine/config_biosamples_{TAG}.tsv"
 with open(out, "w") as f:
     f.write("\t".join(COLS) + "\n")
     for r in rows:
@@ -118,10 +148,10 @@ for r in rows:
     kind = "geomean" if r["H3K27ac"] else "k27ac-as-activity"
     print(f"  {r['biosample']:<28} {kind}")
 
-cfg = f"{ABC}/config/mine/config_predicted_activity.yaml"
+cfg = f"{ABC}/config/mine/config_{TAG}.yaml"
 base = open(f"{ABC}/config/config.yaml").read()
 base = base.replace('biosamplesTable: "config/config_biosamples_chr22.tsv"',
-                    'biosamplesTable: "config/mine/config_biosamples_predicted_activity.tsv"')
+                    f'biosamplesTable: "config/mine/config_biosamples_{TAG}.tsv"')
 base = base.replace('results_dir: "results/"', f'results_dir: "{a.results_dir}"')
 with open(cfg, "w") as f:
     f.write(base)
