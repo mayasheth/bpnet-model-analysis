@@ -23,7 +23,7 @@ import argparse
 import os
 
 _ap = argparse.ArgumentParser()
-_ap.add_argument("--arms", choices=("h3k27ac", "p300"), default="h3k27ac",
+_ap.add_argument("--arms", choices=("h3k27ac", "p300", "p300all"), default="h3k27ac",
                  help="Which activity target's arms to benchmark. The p300 set reuses the "
                       "same July floor and observed-H3K27ac ceiling, so the two "
                       "comparisons are read on one scale.")
@@ -34,6 +34,7 @@ ABC = f"{D}/ABC_working/ABC-Enhancer-Gene-Prediction/results"
 NEW = f"{ABC}/2026_0903_predicted_activity"
 JULY = f"{ABC}/2026_0721_h3k27ac_counting_comparison"
 P300 = f"{ABC}/2026_0905_p300_activity"
+P300TX = f"{ABC}/2026_0906_p300_transfer"
 CC = f"{D}/CRISPR_comparison_v3/CRISPR_comparison"
 PRED_FILE = "Predictions/EnhancerPredictionsAllPutative.tsv.gz"
 
@@ -65,10 +66,24 @@ P300_ARMS = [
     ("p300only_k562_atac",       P300, "Predicted p300 alone (ATAC model)",  "#fdae6b"),
 ]
 
+# Everything p300 in one comparison, so local and transferred arms are scored on the
+# IDENTICAL pair set and the paired bootstrap can compare them directly. Splitting them
+# across two runs would leave transfer-vs-local uncomparable except through the anchors.
+P300_ALL_ARMS = P300_ARMS + [
+    ("p300pred_gm12878_multimodal", P300TX,
+     "ATAC x predicted p300 (GM12878 model -> K562)", "#08519c"),
+    ("p300only_gm12878_multimodal", P300TX,
+     "Predicted p300 alone (GM12878 model -> K562)", "#6baed6"),
+]
+
 if _a.arms == "p300":
     ARMS = P300_ARMS
-TAG = "predicted_activity" if _a.arms == "h3k27ac" else "p300_activity"
-RUN = "2026_0904_predicted_activity" if _a.arms == "h3k27ac" else "2026_0905_p300_activity"
+elif _a.arms == "p300all":
+    ARMS = P300_ALL_ARMS
+TAG = {"h3k27ac": "predicted_activity", "p300": "p300_activity",
+       "p300all": "p300_all"}[_a.arms]
+RUN = {"h3k27ac": "2026_0904_predicted_activity", "p300": "2026_0905_p300_activity",
+       "p300all": "2026_0906_p300_all"}[_a.arms]
 
 BASELINES = [
     ("distToTSS",      "FALSE", "mean", "Inf", "TRUE",  "Distance to TSS",      "#c5cad7"),
