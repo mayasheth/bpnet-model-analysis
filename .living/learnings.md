@@ -1400,3 +1400,50 @@ own inputs, and do not apply a control designed for one arm to an arm it does no
 whether a model that ALREADY has that feature makes the same error. If the sequence-only arm
 gets these elements right, the problem is how the branches combine, not what they contain --
 and no amount of extra input will fix it.
+
+### [2026-09-05] Correcting the previous entry: sequence does NOT see the CTCF signature, and my substitute control was also wrong
+
+**Supersedes the conclusion of the entry above.** That entry recorded that my diagnostic
+printed "sequence cannot see it" while its own raw numbers said the opposite. The first half
+is right -- the accessibility-residualised error is an invalid control for the sequence-only
+arm -- but the fold-elevation numbers I trusted instead were also not a valid reading, and
+the original verdict happened to be correct.
+
+**Why residualisation cannot work here.** The over-predicted stratum is *defined* as
+"accessibility says high, H3K27ac says low", so the observed residual is strongly negative
+there. Any predictor that does not track accessibility downward -- including a constant --
+scores as over-predicting. The metric cannot separate "fails to see the signature" from "has
+no dynamic range".
+
+**Why the raw fold elevation was not enough either.** At the over-predicted tail the
+sequence arm sits at 1.55x its own genome-wide median against a truth of 1.00x, while
+multimodal is at 7.12x. Read alone that says sequence is nearly right and accessibility is
+overriding it. The opposite tail shows why it does not: where the truth is elevated **31.3x**,
+the sequence arm reaches only **1.44x**. It is not declining correctly at CTCF elements, it is
+flat everywhere. The scale-free statistic -- over-tail elevation divided by the same arm's
+under-tail elevation -- is observed 0.032, sequence 1.07, multimodal 1.22, ATAC-only 1.68.
+Sequence barely separates the two tails.
+
+**The general lesson, which is not the one I recorded last time.** When comparing predictors
+whose dynamic ranges differ, a statistic evaluated at one stratum is uninterpretable. Carry
+the opposite stratum as each predictor's own responsiveness scale, in the same table. A
+compressed predictor looks accurate at whichever tail the truth is *not* elevated at, and
+this is a general failure mode of any painted-prediction comparison, not a quirk of this
+analysis: the prediction tracks have genome-wide medians of 0.11-0.18 against 0.59 observed.
+
+**And the meta-lesson.** I corrected a wrong automated verdict by substituting a different
+reading of the same output without a control, and reported that to Maya as the finding. The
+first fix was as unvalidated as the thing it replaced. A correction needs its own control.
+
+**Consequence.** Explicit GC / CpG-density / motif channels are the indicated fix and the
+gate plus asymmetric-loss arms were built on the hypothesis this refutes. They are being
+scored because they are already trained, with the prior on them lowered, not because the
+motivation survived.
+
+**Tags**: ctcf, over-prediction, dynamic-range, controls, self-correction, superseding
+
+**mitigation_type**: structural
+
+**structural_mitigation_candidate**: Any per-stratum comparison between predictors with
+different dynamic ranges must report the opposite stratum in the same table as a
+responsiveness scale. If a script prints a verdict, the verdict must read both.

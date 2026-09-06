@@ -304,3 +304,58 @@ comparability, transfer, telohaec
 **Tags**: reporting, organisation, documentation, churn
 
 ---
+
+### [2026-09-05] Drop both p300 ideas: no second head, no stacked p300 input
+
+**Context**: The elements the H3K27ac model under-predicts overlap EP300 peaks at 57.7%
+against 8.8% in the typical stratum, a 6.6x enrichment. That suggested either a multi-task
+model with an H3K27ac head and a p300 head, or using predicted p300 as an input feature.
+Option (b) -- do p300-target models predict the elements our H3K27ac model misses? -- is the
+cheap prerequisite for both and was run first, with the pass threshold written into the
+script before it ran.
+
+**Decision**: Drop both. Observed p300 is elevated 4.89x at those elements but its own input
+control is at 2.10x, so real enrichment is ~2.3x rather than 6.6x; the existing p300 models
+predict 1.83x (multimodal) and 1.55x (ATAC-only), below the control. The p300 models also
+over-predict the accessible-but-unmarked tail (1.92x where observed is 1.36x and its control
+0.50x), so they fail in the same direction on the same elements.
+
+**Alternatives considered**:
+- Build the multi-head model anyway -- rejected: ~15 GPU jobs to learn a target that is not
+  predictable where it would need to be.
+- Use p300 as a model input -- rejected earlier on deployment grounds (the application must
+  run on any cell type with only ATAC) and now on learnability grounds as well.
+
+**Rationale**: A second target only helps if it is *predictable* exactly where the first one
+fails. The peak-overlap premise was substantially an accessibility artifact, which is why the
+input control was carried through every stratum.
+
+**Consequences**: The separate finding that p300 is the better substrate for sequence
+attribution is unaffected -- that governs where motif work should be done, not what to
+predict. Recorded in report 3.
+
+**Tags**: p300, multi-task, negative-result, controls
+
+### [2026-09-05] Do not carry fragment channels into deployment
+
+**Context**: Five fragment-size accessibility channels gain +0.016 on the top quintile in
+K562 (*p*=0.002) and +0.006 in GM12878, replicated, with the channel partition verified exact
+against the flat track. The transfer matrix scored them across cell types for the first time.
+
+**Decision**: Keep them for in-cell-type work, do not carry them into any deployment
+configuration. Transferred, they are -0.0012 (K562 -> GM12878) and -0.0029 (GM12878 -> K562)
+against flat accessibility -- exactly null in both directions.
+
+**Alternatives considered**:
+- Adopt everywhere on the strength of the in-cell-type result -- rejected: in-cell-type
+  ranking is not the deployment ranking, which is now measured rather than assumed.
+
+**Rationale**: Fragment-length structure is a property of a particular ATAC library as much
+as of the chromatin, and no paired in-cell-type test can separate those. The transfer test
+can, and says the useful part does not travel.
+
+**Consequences**: The wider receptive field is the only architecture change worth carrying
+into deployment, and even it is only +0.0115 and +0.0053 transferred (*p*=0.14, 0.53). The
+honest summary of the whole architecture programme is that its gains are in-cell-type gains.
+
+**Tags**: fragment-channels, transfer, deployment, negative-result
