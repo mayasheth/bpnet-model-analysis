@@ -1,7 +1,7 @@
 ---
 title: "Chromatin accessibility carries most of the predictable H3K27ac signal, and sequence adds a real but small complement"
 date: "2026-09-02"
-status: "draft"
+status: "superseded"
 format:
   html:
     embed-resources: true
@@ -67,6 +67,12 @@ blockquote { border-left: 3px solid #ddd; margin-left: 0; padding-left: 1rem;
 ```
 
 ## Headline figure
+
+> **Superseded on 2026-09-05.** Split into three reports ordered by how often they change:
+> [Report 1, data characterisation](report1_data_characterisation.html),
+> [Report 2, evaluation methodology](report2_evaluation_methodology.html) and
+> [Report 3, design decisions](report3_design_decisions.html). Nothing here is newer than
+> those three; every section was moved rather than rewritten. Kept for the record only.
 
 ![](figures/fig1_three_mode_comparison.png)
 

@@ -78,14 +78,51 @@ print(f"\n   genome-wide observed median {d['obs'].median():.2f}; "
       f"sequence {d['sequence'].median():.2f}, atac {d['atac'].median():.2f}, "
       f"multimodal {d['multimodal'].median():.2f}")
 
+# ---------------------------------------------------------------------------
+# Fold elevation vs each arm's OWN genome-wide median.
+#
+# This replaces the residualised error as the verdict statistic. The residualised
+# version cannot answer the question: the over-predicted stratum is BY DEFINITION
+# "accessibility says high, H3K27ac says low", so r_obs is strongly negative there
+# and ANY predictor that does not track accessibility downward -- including a
+# constant -- scores as over-predicting. It is not a test of what sequence sees.
+#
+# Fold-over-own-median removes the scale difference between arms (the painted
+# prediction tracks have medians 0.11-0.18 against 0.59 for observed RPM), but not
+# the DYNAMIC-RANGE difference: a compressed predictor has every fold elevation
+# shrunk. So the under-predicted tail, where observed signal is genuinely extreme,
+# is carried as each arm's own responsiveness scale, and the verdict uses the ratio
+# over/under, which is scale-free within an arm.
+ARMS_ALL = ["obs", "sequence", "atac", "multimodal"]
+med = {c: d[c].median() for c in ARMS_ALL}
+print("\nFold elevation vs each arm's OWN genome-wide median")
+print(f"   genome-wide medians: " + "  ".join(f"{c} {med[c]:.2f}" for c in ARMS_ALL))
+hdr = f"{'stratum':<24}{'n':>7}" + "".join(f"{c:>13}" for c in ARMS_ALL)
+print(hdr)
+elev = {}
+for lab, mask in STRATA:
+    s = d[mask]
+    row = {c: s[c].median() / med[c] for c in ARMS_ALL}
+    elev[lab] = row
+    print(f"{lab:<24}{len(s):>7,}" + "".join(f"{row[c]:>13.2f}" for c in ARMS_ALL))
+
+print("\nResponsiveness-normalised over-prediction  (over-1% elevation / under-1% elevation)")
+print("   Low = the arm distinguishes the two tails the way the truth does.")
+ratio = {c: elev["over-predicted 1%"][c] / elev["under-predicted 1%"][c] for c in ARMS_ALL}
+for c in ARMS_ALL:
+    print(f"   {c:<12}{ratio[c]:>8.3f}")
+
 print("\nVERDICT")
-mm = (s["r_multimodal"] - s["r_obs"]).median()
-sq = (s["r_sequence"] - s["r_obs"]).median()
-if sq < 0.5 * mm:
-    print("   B: sequence-only is substantially closer to the truth here, so the signal IS in")
-    print("   sequence and the accessibility channel is overriding it. Adding sequence-derived")
-    print("   features would not help; the balance or the loss is what needs changing.")
+truth, sq, mm = ratio["obs"], ratio["sequence"], ratio["multimodal"]
+if abs(sq - truth) < 0.5 * abs(mm - truth):
+    print("   B: on the scale-free statistic the sequence-only arm is substantially closer")
+    print("   to the truth than the multimodal arm, so the signal IS present in sequence and")
+    print("   the accessibility channel is overriding it. Adding sequence-derived features")
+    print("   would not help; the architecture's balance or the loss is what needs changing.")
+elif abs(sq - truth) > 0.9 * abs(mm - truth):
+    print("   A: the sequence-only arm mis-ranks these elements about as badly as the")
+    print("   multimodal arm, so the sequence branch is not capturing the CpG/CTCF")
+    print("   signature. Explicit GC / CpG-density / motif channels are the indicated fix.")
 else:
-    print("   A: sequence-only over-predicts these elements too, so the sequence branch is not")
-    print("   capturing the CpG/CTCF signature. Explicit GC / CpG-density / motif channels or")
-    print("   more sequence capacity are the indicated fix.")
+    print("   MIXED: sequence is closer to the truth than multimodal but not decisively.")
+    print("   Both fixes are live; prefer the cheaper one (gating) first.")
