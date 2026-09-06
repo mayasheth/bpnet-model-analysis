@@ -78,7 +78,7 @@ PEAKS_ORDER = [
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--results-dir", default="results/2026_0903_predicted_activity")
-ap.add_argument("--arms", choices=("h3k27ac", "p300"), default="h3k27ac",
+ap.add_argument("--arms", choices=("h3k27ac", "p300", "p300transfer"), default="h3k27ac",
                 help="Which target's predicted tracks to build arms for. p300 arms go in "
                      "their own results dir and config: re-stamping Peaks inside the "
                      "completed H3K27ac run would make all nine finished arms look stale.")
@@ -116,7 +116,19 @@ P300_OBS = ",".join(f"{DATA}/{b}.filtered.sorted.bam"
 P300_MODELS = [("multimodal", "K562 p300 multimodal model"),
                ("atac", "K562 p300 ATAC-only model")]
 
-if a.arms == "h3k27ac":
+# GM12878-trained p300 model applied to K562: the deployment arm. Given its own results dir
+# so that re-stamping Peaks cannot make the five completed p300 arms look stale, which is
+# what adding arms to a finished run does.
+P300_TX = [("gm12878_multimodal", "GM12878 p300 multimodal model, applied to K562")]
+
+if a.arms == "p300transfer":
+    for tag, _desc in P300_TX:
+        bw = f"{PRED}/predp300gm_{tag}.bw"
+        if not os.path.exists(bw):
+            missing.append(bw)
+        add(f"p300pred_{tag}", ATAC, bw, "ATAC")
+        add(f"p300only_{tag}", bw, "", "ATAC")
+elif a.arms == "h3k27ac":
     for tag, _desc in MODELS:
         bw = f"{PRED}/predk27ac_{tag}.bw"
         if not os.path.exists(bw):
@@ -137,7 +149,8 @@ else:
             missing.append(b)
     add("p300obs_k562", ATAC, P300_OBS, "ATAC")            # the ceiling for this concept
 
-TAG = a.config_tag or ("predicted_activity" if a.arms == "h3k27ac" else "p300_activity")
+TAG = a.config_tag or {"h3k27ac": "predicted_activity", "p300": "p300_activity",
+                       "p300transfer": "p300_transfer"}[a.arms]
 out = f"{ABC}/config/mine/config_biosamples_{TAG}.tsv"
 with open(out, "w") as f:
     f.write("\t".join(COLS) + "\n")
