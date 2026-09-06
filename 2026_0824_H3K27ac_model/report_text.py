@@ -506,10 +506,13 @@ every ceiling; Report 2 holds the scoring rules these results are read under, an
 read first by anyone about to quote a number from here.
 
 **Numbers in the decision table are reverse-complement-averaged**, which has been the
-default in all scoring since 2026-09-03. The figures and the per-section prose below still
-show the single-pass values they were rendered from; where the two differ the RC value in the
-table is the current one, and regenerating the figures from the `rc_*` tables is the one
-piece of outstanding bookkeeping.
+default in all scoring since 2026-09-03. The figures and the per-section prose below show the
+single-pass values they were rendered from. The two differ by +0.002 to +0.016 and change no
+verdict; the exact gap for every affected result is tabulated in Methods, so the discrepancy
+is bounded rather than merely acknowledged. Figures are deliberately left uniformly
+single-pass rather than partly migrated: two of the six affected figures have no `rc_*` table
+in the format their plot script reads, and a half-migrated figure set would be harder to
+describe correctly than a consistent one.
 
 ## Decision table
 
@@ -1263,6 +1266,37 @@ choice rests on a flat region rather than on a measured optimum.
 
 Scoring rules, metric definitions and the paired-test procedure are in Report 2; ceilings,
 track definitions and the data inventory are in Report 1.
+
+### Single-pass against reverse-complement-averaged, for every result where it matters
+
+Test-time RC averaging became the scoring default on 2026-09-03. The decision table above
+quotes the RC values; the figures and section prose quote single-pass. This is the complete
+list of differences, so no reader has to guess whether a discrepancy is material.
+
+| result, top quintile | single-pass | RC-averaged |
+|---|---|---|
+| sequence only, absolute | 0.380 | 0.397 |
+| ATAC only, absolute | 0.548 | 0.551 |
+| sequence + ATAC, absolute | 0.685 | 0.695 |
+| wider receptive field, multimodal, K562 (paired) | +0.027 | +0.028 |
+| wider receptive field, multimodal, GM12878 (paired) | +0.014 | +0.016 |
+| fragment channels, K562 (paired) | +0.0135 | +0.0157 |
+| residual *r*: sequence only | 0.149 | 0.148 |
+| residual *r*: sequence + ATAC | 0.551 | 0.559 |
+| residual *r*: residual-trained sequence | 0.459 | 0.470 |
+| residual *r*: residual-trained multimodal | 0.514 | 0.529 |
+| residual *r*: ATAC negative control | -0.003 | -0.002 |
+
+Every RC value is equal or larger except the sequence-only residual *r*, and the negative
+control stays at zero, which is what a change that removes strand-asymmetry noise rather than
+adding signal should look like. No sign, ordering or significance verdict differs between the
+two columns. Source: `results/{,rc_}{fiveprime,wide_*,fragchan_*,residual_grid_*}_*.tsv`.
+
+**Why the figures were not migrated.** `3.1` and `3.4` read the `2.2`-evaluator table format,
+for which no `rc_*` equivalent exists -- the RC re-scoring ran through `2.15`, which emits
+different columns. Migrating them means either re-running the `2.2` evaluators with RC or
+rewriting the plot scripts' data handling, both of which carry more risk of introducing an
+error than the 0.002-0.016 they would correct. Recorded as open rather than done.
 
 ### Regenerate
 

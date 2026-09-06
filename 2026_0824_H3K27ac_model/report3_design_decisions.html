@@ -132,6 +132,7 @@ details[open] > summary { margin-bottom: 0.5em; }
 <li><a href="#open-questions-next-steps">Open questions / next steps</a></li>
 <li><a href="#methods">Methods</a>
 <ul>
+<li><a href="#single-pass-against-reverse-complement-averaged-for-every-result-where-it-matters">Single-pass against reverse-complement-averaged, for every result where it matters</a></li>
 <li><a href="#regenerate">Regenerate</a></li>
 </ul></li>
 </ul>
@@ -210,7 +211,7 @@ Full legend
 <h2 id="goals">Goals</h2>
 <p>This is the workbench. It records every architecture and input change tried against the H3K27ac target, what each did to the reporting metric, and the verdict, followed by the downstream ABC/CRISPR result and the diagnosis of why it is negative.</p>
 <p>It changes most often of the three reports. Report 1 holds the data characterisation and every ceiling; Report 2 holds the scoring rules these results are read under, and should be read first by anyone about to quote a number from here.</p>
-<p><strong>Numbers in the decision table are reverse-complement-averaged</strong>, which has been the default in all scoring since 2026-09-03. The figures and the per-section prose below still show the single-pass values they were rendered from; where the two differ the RC value in the table is the current one, and regenerating the figures from the <code>rc_*</code> tables is the one piece of outstanding bookkeeping.</p>
+<p><strong>Numbers in the decision table are reverse-complement-averaged</strong>, which has been the default in all scoring since 2026-09-03. The figures and the per-section prose below show the single-pass values they were rendered from. The two differ by +0.002 to +0.016 and change no verdict; the exact gap for every affected result is tabulated in Methods, so the discrepancy is bounded rather than merely acknowledged. Figures are deliberately left uniformly single-pass rather than partly migrated: two of the six affected figures have no <code>rc_*</code> table in the format their plot script reads, and a half-migrated figure set would be harder to describe correctly than a consistent one.</p>
 <h2 id="decision-table">Decision table</h2>
 <p>Effect is the paired within-fold change in top-quintile Pearson <em>r</em> on K562 H3K27ac unless stated. Read every row against a between-fold <code>sd</code> of 0.041-0.046 (Report 2).</p>
 <table>
@@ -1320,6 +1321,76 @@ Source: <code>scripts/multimodal_bpnet.py</code>, <code>scripts/train_multimodal
 <p>Model is <code>MultiModalBPNet</code> (<code>scripts/multimodal_bpnet.py</code>), a BPNet variant with a dilated-convolution trunk, a profile head trained with multinomial negative log-likelihood, and a counts head trained with log1p mean-squared error; total loss is <code>profile_loss + w * count_loss</code>. All results here concern the counts head unless a profile metric is named. Baseline training uses <code>n_layers = 8</code> (a ~1.1 kb receptive field), a +/-500 bp counting window with the required 2,114 bp input window, <code>w = 10</code>, reverse-complement augmentation, chromosome-holdout 5-fold cross-validation, and a random 50,000-window subsample of the genome-wide negative pool, which is <strong>not</strong> GC-matched to the positives (Report 1). Negatives are 10% of each batch and are never evaluated on. The wide arm uses <code>n_layers = 10</code>, whose trimming of 2,093 requires a 5,186 bp input window for the same output; the trimming is <code>47 + sum(2^i for i in 1..n_layers)</code>.</p>
 <p><code>w = 10</code> was chosen from a single-fold sweep over 1, 3, 10, 100 and 1,000. Only the extremes are resolvable at the measured noise level: 10 clearly beats 1 (0.437) and 1,000 (0.464), while 3, 10 and 100 are within run-to-run variance of one another. With between-fold <code>sd</code> of 0.041-0.046, a single-fold sweep could not have resolved those differences at all, so this choice rests on a flat region rather than on a measured optimum.</p>
 <p>Scoring rules, metric definitions and the paired-test procedure are in Report 2; ceilings, track definitions and the data inventory are in Report 1.</p>
+<h3 id="single-pass-against-reverse-complement-averaged-for-every-result-where-it-matters">Single-pass against reverse-complement-averaged, for every result where it matters</h3>
+<p>Test-time RC averaging became the scoring default on 2026-09-03. The decision table above quotes the RC values; the figures and section prose quote single-pass. This is the complete list of differences, so no reader has to guess whether a discrepancy is material.</p>
+<table>
+<thead>
+<tr class="header">
+<th>result, top quintile</th>
+<th>single-pass</th>
+<th>RC-averaged</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>sequence only, absolute</td>
+<td>0.380</td>
+<td>0.397</td>
+</tr>
+<tr class="even">
+<td>ATAC only, absolute</td>
+<td>0.548</td>
+<td>0.551</td>
+</tr>
+<tr class="odd">
+<td>sequence + ATAC, absolute</td>
+<td>0.685</td>
+<td>0.695</td>
+</tr>
+<tr class="even">
+<td>wider receptive field, multimodal, K562 (paired)</td>
+<td>+0.027</td>
+<td>+0.028</td>
+</tr>
+<tr class="odd">
+<td>wider receptive field, multimodal, GM12878 (paired)</td>
+<td>+0.014</td>
+<td>+0.016</td>
+</tr>
+<tr class="even">
+<td>fragment channels, K562 (paired)</td>
+<td>+0.0135</td>
+<td>+0.0157</td>
+</tr>
+<tr class="odd">
+<td>residual <em>r</em>: sequence only</td>
+<td>0.149</td>
+<td>0.148</td>
+</tr>
+<tr class="even">
+<td>residual <em>r</em>: sequence + ATAC</td>
+<td>0.551</td>
+<td>0.559</td>
+</tr>
+<tr class="odd">
+<td>residual <em>r</em>: residual-trained sequence</td>
+<td>0.459</td>
+<td>0.470</td>
+</tr>
+<tr class="even">
+<td>residual <em>r</em>: residual-trained multimodal</td>
+<td>0.514</td>
+<td>0.529</td>
+</tr>
+<tr class="odd">
+<td>residual <em>r</em>: ATAC negative control</td>
+<td>-0.003</td>
+<td>-0.002</td>
+</tr>
+</tbody>
+</table>
+<p>Every RC value is equal or larger except the sequence-only residual <em>r</em>, and the negative control stays at zero, which is what a change that removes strand-asymmetry noise rather than adding signal should look like. No sign, ordering or significance verdict differs between the two columns. Source: <code>results/{,rc_}{fiveprime,wide_*,fragchan_*,residual_grid_*}_*.tsv</code>.</p>
+<p><strong>Why the figures were not migrated.</strong> <code>3.1</code> and <code>3.4</code> read the <code>2.2</code>-evaluator table format, for which no <code>rc_*</code> equivalent exists – the RC re-scoring ran through <code>2.15</code>, which emits different columns. Migrating them means either re-running the <code>2.2</code> evaluators with RC or rewriting the plot scripts’ data handling, both of which carry more risk of introducing an error than the 0.002-0.016 they would correct. Recorded as open rather than done.</p>
 <h3 id="regenerate">Regenerate</h3>
 <pre><code>Environment: pixi env `multimodal`, pixi.lock sha256:069960d36312</code></pre>
 <div class="sourceCode" id="cb18"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true"></a><span class="co"># Models: 3 modes x 5 folds, plus each architecture arm</span></span>
