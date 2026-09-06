@@ -1,20 +1,25 @@
 #!/usr/bin/env python
 """Figure: p300 as the ABC activity term, with the transfer arm.
 
-Companion to 4.8 (the H3K27ac version) and deliberately built to the same geometry, same
-floor and same observed-H3K27ac reference line, so the two figures can be read side by side.
-Both runs share those two anchor arms and they agree to 1e-4 across the runs, which is what
-licenses the comparison.
+Companion to 4.8 (the H3K27ac version), same floor and same observed-H3K27ac reference line
+so the two can be read side by side. The two runs share both anchor arms and agree on them to
+1e-4, which is what licenses the comparison.
 
-The panel is a forest plot for the same reason 4.8 is: the per-predictor intervals are ~+/-0.05
-wide while the differences are 0.01-0.10, so a bar chart would imply resolution that the
-unpaired intervals do not have. The paired-bootstrap deltas that DO resolve them are annotated
-directly on the figure rather than left in a table, because the unpaired intervals are the
-thing a reader's eye is drawn to and they are the misleading part.
+Forest plot rather than bars for the same reason as 4.8: the per-predictor intervals are
+~+/-0.05 wide while the differences are 0.004-0.099, so bars would imply resolution the
+unpaired intervals do not have. The paired-bootstrap deltas that DO resolve them are printed
+alongside, because the overlapping bars are what a reader's eye is drawn to and they are the
+misleading layer.
+
+LAYOUT. Row labels and the delta column live OUTSIDE the axes, positioned with
+`ax.get_yaxis_transform()` (x in axes fraction, y in data coordinates) and `clip_on=False`,
+with margins reserved by `subplots_adjust`. An earlier version placed the deltas inside the
+axes with ha="right", which drew them leftward straight across the error bars, and put three
+header labels at colliding data coordinates. Text that belongs beside a plot should not be
+positioned in data space.
 """
 import os
 import sys
-import numpy as np
 import pandas as pd
 import matplotlib
 matplotlib.use("Agg")
@@ -38,24 +43,23 @@ N_LABEL = (f"n = {len(_one):,} element-gene pairs, "
            f"identical pair set for every arm")
 
 FLOOR, K27 = "K562_ATAC_only", "K562_ATAC_H3K27ac_element"
-# Paired-bootstrap deltas against the floor, from 4.17. Annotated on the figure because the
-# unpaired intervals drawn here cannot resolve any of them.
+# Paired-bootstrap deltas against the floor, from 4.17.
 PAIRED = {
-    "p300obs_k562": "+0.099 [+0.079, +0.120]",
-    "p300pred_k562_multimodal": "+0.055 [+0.034, +0.074]",
-    "p300only_k562_multimodal": "+0.045 [+0.012, +0.077]",
-    "p300pred_gm12878_multimodal": "+0.009 [-0.004, +0.022]  n.s.",
-    "p300only_gm12878_multimodal": "+0.005 [-0.019, +0.028]  n.s.",
-    "p300pred_k562_atac": "+0.004 [-0.012, +0.021]  n.s.",
+    "p300obs_k562":                ("+0.099", "[+0.079, +0.120]", ""),
+    "p300pred_k562_multimodal":    ("+0.055", "[+0.034, +0.074]", ""),
+    "p300only_k562_multimodal":    ("+0.045", "[+0.012, +0.077]", ""),
+    "p300pred_gm12878_multimodal": ("+0.009", "[-0.004, +0.022]", "n.s."),
+    "p300only_gm12878_multimodal": ("+0.005", "[-0.019, +0.028]", "n.s."),
+    "p300pred_k562_atac":          ("+0.004", "[-0.012, +0.021]", "n.s."),
 }
 ORDER = [
-    ("p300obs_k562", "ATAC x observed p300", "#54278f"),
-    (K27, "ATAC x observed H3K27ac", "#404040"),
-    ("p300pred_k562_multimodal", "ATAC x predicted p300 (K562 seq+ATAC)", "#807dba"),
+    ("p300obs_k562", "ATAC × observed p300", "#54278f"),
+    (K27, "ATAC × observed H3K27ac", "#404040"),
+    ("p300pred_k562_multimodal", "ATAC × predicted p300 (K562 seq+ATAC)", "#807dba"),
     ("p300only_k562_multimodal", "Predicted p300 alone (K562 seq+ATAC)", "#9e9ac8"),
-    ("p300pred_gm12878_multimodal", "ATAC x predicted p300 (GM12878 -> K562)", "#08519c"),
-    ("p300only_gm12878_multimodal", "Predicted p300 alone (GM12878 -> K562)", "#6baed6"),
-    ("p300pred_k562_atac", "ATAC x predicted p300 (K562 ATAC-only)", "#bcbddc"),
+    ("p300pred_gm12878_multimodal", "ATAC × predicted p300 (GM12878→K562)", "#08519c"),
+    ("p300only_gm12878_multimodal", "Predicted p300 alone (GM12878→K562)", "#6baed6"),
+    ("p300pred_k562_atac", "ATAC × predicted p300 (K562 ATAC-only)", "#bcbddc"),
     (FLOOR, "ATAC only", "#bdbdbd"),
     ("p300only_k562_atac", "Predicted p300 alone (K562 ATAC-only)", "#d9d9d9"),
     ("baseline.distToTSS", "Distance to TSS", "#c5cad7"),
@@ -65,36 +69,55 @@ missing = [a for a, _l, _c in ORDER if a not in got]
 assert not missing, f"missing arms in summary: {missing}"
 
 floor_v, k27_v = float(got[FLOOR]["AUPRC"]), float(got[K27]["AUPRC"])
+N = len(ORDER)
 
 apply_rcparams()
-fig, ax = plt.subplots(figsize=(7.2, 3.9))
-ax.axvline(floor_v, color="0.55", lw=0.9, ls="--", zorder=1)
-ax.axvline(k27_v, color="0.25", lw=0.9, ls=(0, (4, 2)), zorder=1)
+fig, ax = plt.subplots(figsize=(7.8, 3.6))
+# Margins reserved for the label column (left) and the delta column (right).
+fig.subplots_adjust(left=0.315, right=0.735, top=0.86, bottom=0.16)
+trans = ax.get_yaxis_transform()          # x: axes fraction, y: data
 
-XL, XR = 0.235, 0.66
+ax.axvline(floor_v, color="0.55", lw=0.9, ls="--", zorder=1)
+ax.axvline(k27_v, color="0.30", lw=0.9, ls=(0, (4, 2)), zorder=1)
+
 for i, (arm, lab, colour) in enumerate(ORDER):
-    y = len(ORDER) - 1 - i
+    y = N - 1 - i
     r = got[arm]
     v, lo, hi = float(r["AUPRC"]), float(r["AUPRC_lowerCi"]), float(r["AUPRC_upperCi"])
     ax.errorbar(v, y, xerr=[[v - lo], [hi - v]], fmt="o", ms=4.5, color=colour,
                 lw=1.3, capsize=2.5, zorder=3)
-    ax.text(XL, y, lab, ha="right", va="center", fontsize=6.5)
+    ax.text(-0.02, y, lab, ha="right", va="center", fontsize=6.5,
+            transform=trans, clip_on=False)
     if arm in PAIRED:
-        ax.text(XR, y, PAIRED[arm], ha="right", va="center", fontsize=5.5,
-                color="#333333", family="monospace")
+        dv, ci, ns = PAIRED[arm]
+        weight = "bold" if not ns else "normal"
+        col = "#111111" if not ns else "#888888"
+        ax.text(1.03, y, dv, ha="left", va="center", fontsize=6, color=col,
+                weight=weight, family="monospace", transform=trans, clip_on=False)
+        ax.text(1.13, y, ci, ha="left", va="center", fontsize=5.6, color=col,
+                family="monospace", transform=trans, clip_on=False)
+        if ns:
+            ax.text(1.42, y, ns, ha="left", va="center", fontsize=5.6, color="#888888",
+                    style="italic", transform=trans, clip_on=False)
     print(f"{lab:<44} {v:.3f} [{lo:.3f}, {hi:.3f}]")
 
+# Column header for the delta block, outside the axes so it cannot collide with the data.
+ax.text(1.03, N - 0.35, "paired Δ vs floor (95% CI)", ha="left", va="center", fontsize=5.8,
+        color="#333333", style="italic", transform=trans, clip_on=False)
+
 ax.set_yticks([])
-ax.set_ylim(-0.8, len(ORDER) - 0.2)
-ax.set_xlim(XL, XR)
+ax.set_ylim(-0.6, N - 0.02)
+ax.set_xlim(0.38, 0.63)
 ax.set_xlabel("AUPRC against the CRISPR benchmark (unpaired 95% CI)")
-ax.text(k27_v, len(ORDER) - 0.45, " observed H3K27ac", fontsize=6, color="0.25", va="center")
-ax.text(floor_v, len(ORDER) - 0.45, "floor ", fontsize=6, color="0.55", va="center", ha="right")
-ax.text(XR, len(ORDER) - 0.45, "paired delta vs floor", fontsize=5.5, color="#333333",
-        ha="right", va="center", style="italic")
-ax.set_title("p300 as the ABC activity term: the gain is real in K562 and absent on transfer",
-             fontsize=8)
-fig.tight_layout(rect=(0.30, 0, 1, 1))
+# Reference-line labels ride above the top row, one extending left of its line and the other
+# right, so they clear each other and the tick labels. Below the axis they collided with the
+# 0.45 and 0.50 ticks.
+ax.text(floor_v, N - 0.42, "floor ", ha="right", va="center", fontsize=5.8, color="0.45")
+ax.text(k27_v, N - 0.42, " observed H3K27ac", ha="left", va="center", fontsize=5.8,
+        color="0.30")
+ax.set_title("p300 as the ABC activity term: real in K562, absent on transfer", fontsize=8)
+for s in ("top", "right", "left"):
+    ax.spines[s].set_visible(False)
 annotate_n_fig(fig, N_LABEL)
 save_fig(fig, f"{P}/figures/fig16_p300_benchmark")
 print(f"\nfloor {floor_v:.3f}, observed H3K27ac {k27_v:.3f}, "
