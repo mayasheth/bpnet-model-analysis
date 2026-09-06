@@ -1,20 +1,20 @@
 <!-- BEGIN QUICK REFERENCE -->
 # .living/ Index
-Last audit: 2026-09-05
+Last audit: 2026-09-06
 
 | File | Entries | Last updated | Key topics |
 |------|---------|--------------|------------|
 | conventions.md | 17 sections | 2026-09-04 | Layout: analyses live at the repo root, not under `analysis/`, Reports, Figures, Environments, SLURM submit scripts (mandatory) |
-| decisions.md | 15 entries | 2026-09-05 | Center H3K27ac training windows on candidate elements, not ChIP peaks, Counting window is a trade-off between signal and neighbour contamination, Keep the profile head, down-weighted, rather than removing it, Residual correlation beyond ATAC becomes the headline metric, Paired-end H3K27ac targets use read 1 only, not both mates |
+| decisions.md | 17 entries | 2026-09-06 | Center H3K27ac training windows on candidate elements, not ChIP peaks, Counting window is a trade-off between signal and neighbour contamination, Keep the profile head, down-weighted, rather than removing it, Residual correlation beyond ATAC becomes the headline metric, Paired-end H3K27ac targets use read 1 only, not both mates |
 | learnings.md | 46 entries (large — read selectively) | 2026-09-05 | count_loss_weight must be calibrated to the actual loss magnitudes, not copied, Inter-replicate r is not a model performance ceiling without two corrections, bpnetlite's count target sums ALL channels, not one strand, Three Sherlock/SLURM traps that cost a job each, Peak count scales the negative pool, which can OOM by 50x |
-| findings/ | 7 findings across 4 topics | 2026-09-05 | predicting-regulatory-element-function-at-scale, linking-noncoding-variation-to-molecular-function, mapping-regulatory-perturbations-to-phenotype, how-enhancers-control-gene-expression |
+| findings/ | 8 findings across 4 topics | 2026-09-06 | predicting-regulatory-element-function-at-scale, linking-noncoding-variation-to-molecular-function, mapping-regulatory-perturbations-to-phenotype, how-enhancers-control-gene-expression |
 
 ## Local skills
 See `.living/skills/` for project-specific skill packs.
 <!-- END QUICK REFERENCE -->
 
 <!-- BEGIN KNOWLEDGE SUMMARY -->
-Last summarized: 2026-09-05 (heuristic)
+Last summarized: 2026-09-06 (heuristic)
 
 ## Tag clusters
 
@@ -27,6 +27,8 @@ Last summarized: 2026-09-05 (heuristic)
 
 ## Most recent (10)
 
+- [2026-09-06] D-16: Make p300 the primary modelling target; train a GM12878 p300 model next
+- [2026-09-06] D-17: Use a paired bootstrap for every CRISPR-benchmark comparison
 - [2026-09-05] L-41: Why better H3K27ac does not help ABC: rank displacement of the functional elements
 - [2026-09-05] L-42: Sequence already knows which elements are not acetylated; the additive trunk ignores it
 - [2026-09-05] L-43: Correcting the previous entry: sequence does NOT see the CTCF signature, and my substitute control was also wrong
@@ -35,8 +37,6 @@ Last summarized: 2026-09-05 (heuristic)
 - [2026-09-05] L-46: Four times in one session I reported a group-level statistic as if it licensed an element-level or causal claim
 - [2026-09-05] D-13: Drop both p300 ideas: no second head, no stacked p300 input
 - [2026-09-05] D-14: Do not carry fragment channels into deployment
-- [2026-09-05] D-15: Close the gating / loss-reweighting direction; make training-element composition the next experiment
-- [2026-09-04] L-39: Reusing a Snakemake run's outputs needs the per-run files too, not just the obvious ones
 
 ## By tag
 
@@ -47,6 +47,7 @@ Last summarized: 2026-09-05 (heuristic)
 - `architecture`: L-35, L-36, L-37, L-42, L-45, D-3, D-7, D-15
 - `gm12878`: L-14, L-22, L-24, L-30, L-31, L-35, L-37
 - `negative-result`: L-7, L-9, L-41, L-45, D-13, D-14, D-15
+- `abc`: L-39, L-40, L-41, D-9, D-16, D-17
 - `k562`: L-24, L-30, L-31, L-35, L-37, L-38
 - `accessibility`: L-29, L-37, D-6, D-7, D-8
 - `bpnetlite`: L-1, L-3, L-8, L-11, D-3
@@ -56,15 +57,16 @@ Last summarized: 2026-09-05 (heuristic)
 - `residual`: L-15, L-27, L-30, L-31, D-4
 - `silent-failure`: L-6, L-15, L-19, L-20, L-21
 - `stratification`: L-17, L-18, L-31, L-35, L-36
-- `abc`: L-39, L-40, L-41, D-9
+- `transferability`: L-14, L-22, L-24, L-31, D-16
 - `chrombpnet`: L-28, L-29, L-33, D-6
+- `crispr-benchmark`: L-41, D-9, D-16, D-17
 - `fragment-length`: L-12, L-33, L-37, D-8
 - `multimodal`: L-27, L-29, L-36, D-7
+- `p300`: L-3, L-29, D-13, D-16
 - `receptive-field`: L-35, L-36, L-37, D-7
 - `target-definition`: L-8, L-9, L-10, D-5
 - `testing`: L-19, L-20, L-34, D-10
 - `tooling`: L-4, L-6, L-20, L-32
-- `transferability`: L-14, L-22, L-24, L-31
 - `controls`: L-43, L-46, D-13
 - `ctcf`: L-42, L-43, L-46
 - `diagnosis`: L-39, L-40, L-41
@@ -73,16 +75,15 @@ Last summarized: 2026-09-05 (heuristic)
 - `mnll`: L-8, L-11, L-13
 - `negative-control`: L-27, L-30, L-38
 - `negatives`: L-5, L-44, D-15
-- `p300`: L-3, L-29, D-13
 - `prediction-was-wrong`: L-10, L-14, L-24
 - `profile-head`: L-11, L-36, D-3
 - `self-correction`: L-42, L-43, L-46
 - `slurm`: L-4, L-19, L-21
+- `statistics`: L-2, L-23, D-17
 - `telohaec`: L-26, L-28, D-5
 - `validation`: L-19, L-28, L-33
 - `variance`: L-16, L-18, L-23
 - `window-selection`: L-7, D-1, D-2
-- `crispr-benchmark`: L-41, D-9
 - `deployment`: L-31, D-14
 - `determinism`: L-34, D-10
 - `fragment-extension`: L-8, L-9
@@ -104,7 +105,6 @@ Last summarized: 2026-09-05 (heuristic)
 - `reverse-complement`: L-38, D-11
 - `sherlock`: L-4, L-21
 - `snakemake`: L-39, L-40
-- `statistics`: L-2, L-23
 - `superset`: L-33, D-8
 - `tn5`: L-33, D-8
 - `tolerance`: L-34, D-10
@@ -119,6 +119,7 @@ Last summarized: 2026-09-05 (heuristic)
 - `augmentation`: L-38
 - `bash`: L-4
 - `bigwig`: L-8
+- `bootstrap`: D-17
 - `buffering`: L-4
 - `caching`: L-32
 - `causal-inference`: L-46
@@ -180,8 +181,10 @@ Last summarized: 2026-09-05 (heuristic)
 - `orphaned-jobs`: L-40
 - `owners`: L-21
 - `paired-end`: D-5
+- `paired-testing`: D-17
 - `patching`: L-20
 - `pooled-statistics`: L-46
+- `positive-result`: D-16
 - `prediction-before-measurement`: L-45
 - `preemption`: L-21
 - `premature-conclusion`: L-36
@@ -205,6 +208,7 @@ Last summarized: 2026-09-05 (heuristic)
 - `stranded`: L-3
 - `submit-scripts`: L-4
 - `superseding`: L-43
+- `target-choice`: D-16
 - `target-mismatch`: L-15
 - `template-mismatch`: L-6
 - `trade-off`: D-2
