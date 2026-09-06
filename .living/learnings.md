@@ -1566,3 +1566,70 @@ keeping as a standing question to ask of any enrichment result, including my own
 until an attributable-fraction test has been run: remove the elements carrying the proposed
 cause and report whether the phenotype survives. Report the distribution and the fraction
 above threshold alongside every mean enrichment.
+
+### [2026-09-06] bpnet-gc-background hangs rather than reporting a shortfall when the foreground is GC-rich
+
+`bpnet-gc-background` matches each foreground region to a **distinct** candidate negative in
+the same GC bin, drawing without replacement. Our candidate elements have mean GC 0.473 and
+p90 0.590 while the genome-background pool is at 0.389 with p90 0.490, so the high-GC bins
+hold far fewer candidates than 150,528 foreground regions demand. The tool does not raise, warn
+or degrade -- it **spins**. First attempt reached 93% (140,108/150,528) in 15 seconds and then
+made zero progress for 1 h 57 m before being cancelled.
+
+**Two separate traps in one job.** Before the hang it had already failed differently: the tool
+shells out to `bedtools`, which is not in the `bpnet_37` env, and the missing binary produced
+an empty candidate-negative set, a 0-byte output file, and exit status 0. Only an explicit
+`[[ -s "$f" ]]` check in the wrapper caught it. Append the pixi env to PATH -- append, not
+prepend, so `bpnet_37`'s own entry points still win; the tool is invoked by absolute path and
+its shebang pins its interpreter, so PATH order cannot mis-route it.
+
+**The fix for the hang is to subsample the foreground**, not to raise a limit. Only the GC
+*distribution* defines the matching target, so a 50,000-region random subsample of 150,528
+specifies it to well inside the 0.02 bin width, and 50,000 equals the trainer's
+`--max-negatives` cap so the pool is used whole. `shuf --random-source=/dev/zero` keeps it
+reproducible. Add `timeout 45m` so a recurrence fails fast.
+
+**What the match achieves, and what it cannot.** Mean-GC gap to the elements falls from 0.0842
+to 0.0128 in K562 (6.6x closer) and 0.0655 to 0.0141 in GM12878, with the largest per-bin
+discrepancy dropping from 0.072 to 0.015. But the matched pool still undershoots the GC-rich
+tail -- p90 0.570 against the elements' 0.590 -- because a genome-background pool does not
+contain enough very-high-GC windows. So a matched-negatives experiment is a strong test of the
+GC-shortcut hypothesis and not a complete one: a null kills the hypothesis, but a partial
+improvement leaves residual high-GC shortcut as a live alternative to a genuine ceiling. The
+complete version needs accessible-but-unacetylated regions in the pool, which sit at high GC.
+
+**Tags**: gc-matching, negatives, chrombpnet, bpnet-gc-background, silent-failure, hang
+
+**mitigation_type**: structural
+
+**structural_mitigation_candidate**: Wrap every external generator in an output assertion
+(`[[ -s ]]` plus a row count) and a `timeout`. A tool that exits 0 having written nothing, or
+that never exits at all, is indistinguishable from success to a shell script that only checks
+the exit code.
+
+### [2026-09-06] The ABC snakemake driver stalls after its last real rule; gate downstream work on files, not on the driver
+
+Three runs in a row now: the driver reaches the final steps, every child job reports
+COMPLETED, nothing is queued, and the driver then sits idle indefinitely. Observed at 18/21
+steps for the p300 activity run (idle > 1 h, cancelled at 3 h 40 m) and again on the p300
+transfer run (both arms' predictions written, driver still RUNNING at 1 h 37 m). The
+outstanding rules were `generate_qc_plot_and_summary` and aggregation, which nothing
+downstream reads. An earlier occurrence also left two orphaned children running 22 minutes
+after their driver was cancelled.
+
+**What to do.** Gate downstream work on the specific output files it consumes -- for the
+CRISPR benchmark that is `<arm>/Predictions/EnhancerPredictionsAllPutative.tsv.gz` -- and
+verify them properly (`gzip -t` plus a row count; ~10.1-10.3 M rows per arm here) rather than
+waiting on the driver's exit status. Then cancel the driver. `filter_predictions` completing
+for every arm is what makes those files final, so check that rule rather than the workflow.
+
+**Do not conclude the outputs are bad.** In every occurrence the science was complete and only
+the driver's bookkeeping was wrong. The failure mode is a stalled orchestrator, not a failed
+pipeline, and treating it as the latter would have thrown away hours of correct compute.
+
+**Tags**: abc, snakemake, orchestration, stall, sherlock, known-behaviour
+
+**mitigation_type**: process
+
+**structural_mitigation_candidate**: For any long snakemake driver, define the downstream
+gate as an explicit file manifest with integrity checks, written before the run starts.

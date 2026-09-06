@@ -40,13 +40,41 @@ OUT=$P/data
 mkdir -p "$OUT" "$P/log"
 cd "$P"
 
+# FOREGROUND SUBSAMPLE, and why it is necessary rather than an optimisation.
+#
+# bpnet-gc-background matches each foreground region to a distinct candidate negative in the
+# same GC bin, drawing without replacement. Our candidate elements are GC-rich (mean 0.49,
+# up to 0.593 in the over-predicted tail) while the genome-background pool sits at 0.389, so
+# the high-GC bins hold far fewer candidates than 150,528 foreground regions demand. The tool
+# does not report a shortfall -- it HANGS: a first attempt reached 93% (140,108/150,528) in
+# 15 seconds and then made no further progress for two hours before being cancelled.
+#
+# Subsampling the foreground fixes it because only the GC DISTRIBUTION is needed to define
+# the matching target, and a 50,000-region random subsample of 150,528 estimates that
+# distribution to well within the 0.02 bin width. 50,000 is chosen to equal the trainer's
+# --max-negatives cap, so the matched pool is used whole and nothing is discarded downstream.
+#
+# `shuf --random-source=/dev/zero` is deterministic, so the subsample is
+# reproducible across reruns.
+N_FOREGROUND=${N_FOREGROUND:-50000}
+
 run_one () {
     local label=$1 peaks=$2
     echo "=========== $label"
     echo "peaks: $peaks  ($(wc -l < "$peaks") regions)"
-    "$BP/bpnet-gc-background" \
+    local fg="$OUT/foreground_subsample_${label}.narrowPeak"
+    if [[ $(wc -l < "$peaks") -gt $N_FOREGROUND ]]; then
+        shuf --random-source=/dev/zero -n "$N_FOREGROUND" "$peaks" \
+            | sort -k1,1 -k2,2n > "$fg"
+        echo "foreground subsampled to $(wc -l < "$fg") regions (GC target is a "
+        echo "  distribution, so a subsample defines it; the tool hangs on the full set)"
+    else
+        cp "$peaks" "$fg"
+    fi
+    # Fail fast rather than burning the wall clock if it hangs again.
+    timeout 45m "$BP/bpnet-gc-background" \
         --ref_fasta "$GEN" \
-        --peaks_bed "$peaks" \
+        --peaks_bed "$fg" \
         --ref_gc_bed "$REF_GC" \
         --out_dir "$OUT" \
         --output_prefix "$OUT/gc_negatives_${label}" \
