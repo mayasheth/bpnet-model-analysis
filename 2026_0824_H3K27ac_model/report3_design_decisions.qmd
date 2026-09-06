@@ -93,8 +93,8 @@ scored by `CRISPR_comparison`. Source:
 ## Summary
 
 - **Predicted p300 clears the benchmark floor in the training cell type; predicted H3K27ac does not.** A K562 sequence + ATAC model predicting p300, substituted into ABC's activity term, beats the ATAC-only floor by **+0.055 AUPRC [+0.034, +0.074]** on a paired bootstrap, sign preserved in 100% of resamples, and is indistinguishable from *measured* H3K27ac (-0.007 [-0.032, +0.017]). No predicted-H3K27ac arm managed this (Fig. 1).
-- **It does not survive transfer, which is the case the project exists to serve.** A GM12878-trained p300 model applied to K562 scores **+0.009 [-0.004, +0.022]** over the floor -- interval spanning zero, indistinguishable from just using the target cell type's own ATAC. The transfer drop is **-0.046 [-0.061, -0.030]**, consuming 83% of the in-cell gain, and the transferred arm is **-0.053 [-0.074, -0.032]** below measured H3K27ac.
-- **Deployment now fails for both targets, so the barrier is transfer rather than target choice.** The H3K27ac deployment arms sat at 0.455 and 0.452 against a 0.457 floor; the p300 deployment arm sits at 0.466. Target choice buys a large in-cell-type gain and nothing deployable, which is the same shape as every architecture change (F-005).
+- **The benchmarked transfer direction fails, but transfer itself is strongly asymmetric and the benchmark can only test the failing direction.** GM12878-trained p300 applied to K562 scores +0.009 [-0.004, +0.022] over the floor on the benchmark, and on the correlation metric it lands exactly at the target's ATAC-only floor (0.312 against 0.306, *p*=0.72) with a *negative* accessibility residual (-0.088). But **K562-trained p300 applied to GM12878 retains 0.507 against a 0.608 local and a 0.299 floor** -- **+0.207 [+0.158, +0.257]** over the floor, 83% of the local advantage, residual *r* +0.139 [+0.067, +0.210]. CRISPR data exists only for K562, so the downstream benchmark is *structurally* unable to test the direction that works.
+- **The model-quality confound is resolved, and it was not the explanation.** Both p300 models are equally strong at home -- 0.619 (K562) against 0.608 (GM12878), with matched ATAC-only floors of 0.306 and 0.299 -- so the GM12878 model is not weaker. What fails is transferring *out of* GM12878 specifically.
 - **Observed p300 is simply a better ABC activity term than observed H3K27ac**, by +0.038 [+0.019, +0.058], independent of any model and replicated across two pipeline runs. That widens the available headroom over the floor from 0.062 to 0.099 and is a reason to prefer p300 as the target wherever it can be measured -- a conclusion about the assay, which stands regardless of the transfer result.
 - **For p300 the sequence branch earns its place**, beating the ATAC-only p300 model by +0.051 [+0.032, +0.069]. For H3K27ac the sequence arms were catastrophic (0.393 and 0.275 against a 0.457 floor). This is the clearest evidence yet that target choice, not architecture, was the binding constraint.
 - **For H3K27ac the mechanism is compressed dynamic range, not inaccuracy.** Predicted and observed H3K27ac correlate at Spearman 0.79 genome-wide, but the predicted activity term's p99/p50 ratio is 4.03 against 6.00 on the regions of regulated pairs, so ABC's ranking is displaced rather than wrong.
@@ -145,7 +145,8 @@ stated. Read every row against a between-fold `sd` of 0.041-0.046 (Report 2).
 | **Architecture choice on transfer** | no arm beats narrow+flat by a resolvable margin (best +0.016, *p*=0.066) | in-cell gains do not travel |
 | **Predicted H3K27ac as the ABC activity term** | AUPRC 0.482 against a floor of 0.457 and a ceiling of 0.519 | does not clear the floor; deployment arms at or below it |
 | **Predicted p300 as the ABC activity term, in-cell type** | **+0.055 [+0.034, +0.074]** over the floor, paired bootstrap | real; matches measured H3K27ac |
-| **Predicted p300 as the ABC activity term, transferred** | **+0.009 [-0.004, +0.022]** over the floor; drop -0.046 [-0.061, -0.030] | **null**; no better than the target's own ATAC |
+| **Predicted p300 as the ABC activity term, GM12878 -> K562** | **+0.009 [-0.004, +0.022]** over the floor | **null** in this direction |
+| **Predicted p300, correlation metric, K562 -> GM12878** | **+0.207 [+0.158, +0.257]** over the target's ATAC-only model; 83% of local | **transfers**; the benchmark cannot test this direction |
 | **Observed p300 instead of observed H3K27ac as the activity term** | **+0.038 [+0.019, +0.058]** | use p300 where it is measured; model-independent |
 | **p300 as a second head alongside H3K27ac** | predicted p300 1.83x elevation against a 2.10x input control at the H3K27ac failure elements | **dropped**; p300 as the *primary* target is the version that works |
 | **Sequence-gated accessibility, and asymmetric count loss** | in-cell null; **-0.013 (*p*=0.039) transferred when combined** | **closed** |
@@ -1056,13 +1057,53 @@ deployment arms scored 0.455 and 0.452 against the 0.457 floor, the p300 one sco
 the barrier is transfer, not target choice, which is the same conclusion the architecture
 programme reached (F-005) by a completely different route.
 
-**One control is missing and it bounds how strongly this can be stated.** The transfer drop
-conflates two things: what is lost by moving cell type, and the possibility that the GM12878
-p300 model is simply weaker than the K562 one -- different experiment (ENCSR000DZG against
-ENCSR000EGE), different depth, and it was trained in a different project. Separating them
-needs the GM12878 p300 model scored *in GM12878*, the local-versus-transferred pairing the
-H3K27ac transfer matrix used throughout. Until that runs, "the p300 gain does not transfer"
-is the honest reading and "transfer specifically destroys it" is not yet established.
+**The missing control has now run, and it changes the conclusion.** Scoring both p300 models
+in both cell types on their own targets -- the local-versus-transferred 2x2 the H3K27ac matrix
+used throughout -- separates "transfer is fatal" from "one model is weaker", and the answer is
+neither. Top-quintile Pearson on each cell type's own EP300:
+
+| | evaluated on K562 | evaluated on GM12878 |
+|---|---|---|
+| K562-trained p300 | **0.619** (local) | **0.507** (transferred) |
+| GM12878-trained p300 | **0.312** (transferred) | **0.608** (local) |
+| that cell type's ATAC-only p300 | 0.306 (floor) | 0.299 (floor) |
+
+| paired within-fold comparison | delta | 95% CI | *p* |
+|---|---|---|---|
+| K562 local - K562 floor | +0.313 | [+0.286, +0.340] | <1e-4 |
+| GM12878 local - GM12878 floor | +0.309 | [+0.263, +0.355] | 1e-4 |
+| **K562 -> GM12878, transferred - GM12878 floor** | **+0.207** | **[+0.158, +0.257]** | 3e-4 |
+| **GM12878 -> K562, transferred - K562 floor** | **+0.006** | **[-0.038, +0.050]** | **0.72** |
+| K562 -> GM12878 drop (transferred - local) | -0.102 | [-0.121, -0.083] | 1e-4 |
+| GM12878 -> K562 drop (transferred - local) | -0.307 | [-0.327, -0.286] | <1e-4 |
+
+**Both models are equally strong at home**, +0.313 and +0.309 over matched floors of 0.306 and
+0.299, so the GM12878 model is not the weaker model and that confound is closed.
+
+**Transfer is strongly asymmetric, and the benchmark could only test the failing direction.**
+K562-trained transferred to GM12878 keeps 0.507 of its 0.619, which is **+0.207 over the
+target cell type's own accessibility model** and 83% of the local advantage, with a positive
+accessibility residual (+0.139 [+0.067, +0.210]). GM12878-trained transferred to K562 lands
+at 0.312 against a 0.306 floor -- indistinguishable, *p*=0.72 -- with a **negative** residual
+(-0.088 [-0.140, -0.035]), meaning it is worse than the accessibility baseline at the thing
+the baseline already does. CRISPR data exists only for K562, so the downstream benchmark can
+*only* run the GM12878 -> K562 direction. Its null is real for that direction and says nothing
+about the other.
+
+**What this does and does not license.** It does not license "predicted p300 deploys": the
++0.207 is top-quintile Pearson on p300, not benchmark AUPRC, and no downstream test of the
+working direction is possible with K562-only CRISPR data. It does retire two earlier readings
+-- that the p300 gain simply does not transfer, and that the GM12878 model was weak. And it
+makes the training cell type a first-class design variable: the same architecture and target
+gives +0.207 or +0.006 over the floor depending only on which cell type it was trained in.
+
+**Why the asymmetry, and how to test it.** Both cell types are equally *predictable* locally,
+so the H3K27ac explanation for its own transfer asymmetry -- that GM12878 is the harder cell
+type -- cannot apply here. The remaining candidate is that the K562 EP300 experiment
+(ENCSR000EGE) supports a more portable sequence model than GM12878's (ENCSR000DZG) even
+though both fit their own cell type equally well; peak count, depth and signal-to-noise are
+the obvious things to compare, and a third cell type would show whether K562-trained models
+are portable in general or just portable to GM12878.
 
 **This does not contradict the earlier p300 negative, and the distinction matters.** The
 learnability test below shows p300 is *not* predictable at the specific elements where the
@@ -1223,22 +1264,21 @@ for planning: the p300 target is where the effort should go, and the H3K27ac dia
 (compressed dynamic range, a sequence branch that does not discriminate) explain why *that*
 target underperformed rather than describing the approach as a whole.
 
-**1. Score the GM12878 p300 model in GM12878, to finish the transfer comparison.** The
-transferred arm is a null (+0.009 over the floor), but the drop conflates transfer with the
-possibility that the GM12878 p300 model is weaker in absolute terms -- it comes from a
-different experiment and a different project. The local-versus-transferred pairing that the
-H3K27ac transfer matrix used throughout is the missing control, and it is cheap: the model
-exists, GM12878 EP300 data exists, and the scoring path exists. Without it the result reads as
-"the gain does not transfer" and cannot be sharpened to "transfer is what destroys it".
+**1. Explain the transfer asymmetry, because it is now the largest lever in the project.**
+The same architecture and target gives +0.207 or +0.006 over the target's floor depending
+only on which cell type it was trained in, and both models fit their own cell type equally
+well. Compare the two EP300 experiments directly -- peak count, depth, FRiP,
+signal-to-noise for ENCSR000EGE against ENCSR000DZG -- and add a third cell type to
+distinguish "K562-trained models are portable in general" from "K562 happens to transfer to
+GM12878". TeloHAEC is the cheapest third cell type, and it has no EP300, so this needs either
+a DNase/H3K27ac proxy there or a fourth cell type with EP300.
 
-**2. Decide whether the deployment goal is reachable at all with this design.** Both targets
-now fail deployment: H3K27ac arms at 0.455 and 0.452, p300 at 0.466, against a 0.457 floor.
-Every architecture change also failed to travel (F-005). Before more variants are tried it is
-worth asking what a transferred model would have to get right that none so far does -- the
-common structure is that all of them lean on accessibility, and accessibility is the part that
-does travel, so the transferred model reduces towards the floor arm by construction. A
-multi-cell-type training run is the obvious next design, and TeloHAEC plus its four conditions
-is the cheapest way to get a third cell type.
+**2. Get a downstream test of the working transfer direction, or accept that there is none.**
+The CRISPR benchmark exists only for K562, so it can only ever run GM12878 -> K562, which is
+the direction that fails. Every deployment claim therefore rests on correlation metrics unless
+a benchmark in another cell type becomes available. This is a structural limitation worth
+stating in any write-up rather than discovering later: the project's terminal metric cannot
+evaluate its best transfer result.
 
 Then, in order of expected value:
 
