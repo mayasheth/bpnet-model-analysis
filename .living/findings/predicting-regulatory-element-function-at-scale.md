@@ -123,3 +123,17 @@ IGVF-style consortium work — the slug avoids naming the consortium.)_
 | Date | Run/Session | Dataset | Project | Result | Direction |
 |------|-------------|---------|---------|--------|-----------|
 | 2026-09-05 | job 42182188 | ENCSR000EGE p300 + control, 153,545 ABC candidate regions | 2026_0824_H3K27ac_model | Fold elevation at H3K27ac under-predicted 1%: observed H3K27ac 31.33, predicted 5.81, observed p300 4.89, p300 input control 2.10, predicted p300 1.83 (multimodal) / 1.55 (ATAC-only) | refutes |
+
+---
+
+## F-007: The elements an H3K27ac model over-predicts are accessible-but-unacetylated, and CTCF binding is a passenger rather than the cause
+**Status:** established
+**Claim:** In K562, over the 153,545 ABC candidate regions, the elements a sequence + ATAC H3K27ac model most over-predicts are accessible (ATAC 9.9 against 0.9 RPM typical), GC-rich (0.593 against 0.490), CpG-rich (o/e 0.551 against 0.277) and promoter-enriched (31.6% against 13.1%), and carry no more H3K27ac than a random element (0.94x typical RPKM) with IgG *below* background (0.33 against 0.48). Pooled CTCF signal is enriched 2.6x there, but this is a minority effect and is not causal: the tail's per-element CTCF median is 0.72 RPKM against 0.55 typical, only 15.7% of the 1% tail (26.5% of the 5% tail) exceeds the 90th percentile of typical-stratum CTCF, and splitting the tail at that threshold leaves the CTCF-low 73.5% over-predicted *more* than the CTCF-high 26.5% (median residualised error 0.821 against 0.759; predicted fold-elevation 3.83 against 1.63). Within accessibility deciles, Spearman rho(error, GC) is 0.24-0.37 in every decile against rho(error, CTCF) of 0.02-0.23 (median 0.084). The opposite tail is unambiguous: EP300 3.4x, H3K4me1 3.3x, H3K27ac 14x, H3K27me3 depleted to 0.31x and no element overlapping an H3K27me3 peak.
+**Implications:** The failure mode is "accessible but unacetylated" as a general phenotype, of which CTCF sites are one instance covering about a quarter. Interventions aimed specifically at CTCF -- motif channels for CTCF, insulator annotations -- would address a minority of the problem. GC content being the stronger correlate points instead at the training-element composition: the negative pool is a uniform genome sample at mean GC 0.389 against 0.466-0.593 for candidate elements, so a sequence branch can satisfy much of its training objective with a GC detector, which is consistent with both this correlation and its measured lack of dynamic range within candidate elements.
+**Tags:** h3k27ac, error-analysis, ctcf, gc-content, attributable-fraction, training-composition, k562
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-09-05 | jobs 42179002, 42179552, 42181781 | K562 CTCF/EP300/H3K4me1/H3K27me3/H3K27ac/IgG BAMs and peak calls | 2026_0824_H3K27ac_model | Stratum-level RPKM: over-predicted 5% CTCF 4.69 against 1.79 typical, IgG 0.39 against 0.48; under-predicted 1% EP300 2.90, H3K4me1 4.35, H3K27ac 17.52, H3K27me3 0.31 | supports |
+| 2026-09-05 | job 42221086 | per-element CTCF/IgG counts over 153,545 ABC regions | 2026_0824_H3K27ac_model | CTCF-high = 26.5% of the over-predicted 5%; median error 0.759 CTCF-high against 0.821 CTCF-low; rho(err,CTCF) median 0.084 within ATAC deciles against rho(err,GC) 0.24-0.37 | refutes |

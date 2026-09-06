@@ -95,7 +95,7 @@ scored by `CRISPR_comparison`. Source:
 - **The downstream benchmark is negative.** No predicted-H3K27ac arm clears the ATAC-only floor with a resolvable margin, and the deployment arms -- GM12878-trained models applied to K562, which is the actual use case -- sit at or below it (Fig. 1). This is the project's terminal metric, so it is the headline result.
 - **The mechanism is compressed dynamic range, not inaccuracy.** Predicted and observed H3K27ac correlate at Spearman 0.79 genome-wide, but the predicted activity term's p99/p50 ratio is 4.03 against 6.00 on the regions of regulated pairs, so ABC's ranking is displaced rather than wrong.
 - **In-cell-type architecture gains do not travel.** Every transferred architecture is within 0.016 of the simplest one, and the richer models have the *larger* transfer drops. Transferring the best model buys +0.013 to +0.036 over simply using the target cell type's own ATAC-only model.
-- **The failures have a clean signature.** Over-predicted elements are specifically CTCF-enriched (2.6x by quantitative signal, with IgG *below* background) and carry no more H3K27ac or H3K4me1 than typical; under-predicted elements are canonical active enhancers (EP300 3.4x, H3K4me1 3.3x, zero H3K27me3).
+- **The failures have a clean signature, but it is not CTCF.** Over-predicted elements are accessible, GC-rich, CpG-rich, promoter-enriched and carry no more H3K27ac than a random element; CTCF-high elements are only 27% of that tail and removing them leaves the rest over-predicted more, not less, so the 2.6x pooled CTCF enrichment is a passenger. GC content correlates with the error 3-4x more strongly than CTCF does. Under-predicted elements are canonical active enhancers (EP300 3.4x, H3K4me1 3.3x, zero H3K27me3).
 - **p300 as a second target is dropped.** Where the H3K27ac model fails, observed p300 is elevated only ~2.3x over its own input control and the p300 models predict it at 1.83x -- below that control -- so neither a multi-head model nor stacking can help.
 
 ## Goals
@@ -681,14 +681,38 @@ sbatch scripts/4.9.submit_diagnose.sh
 Source: `scripts/4.9.diagnose_abc_gap.py`
 </details>
 
-## What the mis-predicted elements are: CTCF on one side, canonical enhancers on the other
+## What the mis-predicted elements are: accessible but unacetylated, and CTCF is only a quarter of it
 
 **Q:** Do the over- and under-predicted elements have a chromatin signature, and in
 particular is the over-prediction the CTCF-site pattern -- open but not acetylated?
 
-**A:** Yes, and it is specific. By quantitative signal the over-predicted tail is CTCF-enriched
-2.6x with IgG *below* background, while its H3K27ac and H3K4me1 sit at or below typical; the
-under-predicted tail is canonical active enhancer -- EP300 3.4x, H3K4me1 3.3x, zero H3K27me3.
+**A:** The under-predicted tail is unambiguous: canonical active enhancer, EP300 3.4x and
+H3K4me1 3.3x above typical with zero H3K27me3. The over-predicted tail is **not** explained
+by CTCF, despite a real 2.6x CTCF enrichment in pooled signal. Element by element, CTCF-high
+elements are only **27%** of that tail, and removing them leaves the remaining 73% over-predicted
+just as badly -- median error 0.82 against 0.76 for the CTCF-high subset, with the CTCF-*low*
+subset over-predicted more (3.8x against 1.6x). CTCF is a passenger. The phenotype is
+"accessible but unacetylated", of which CTCF sites are one instance.
+
+![](figures/fig15_error_strata.png)
+
+<details>
+<summary>Figure 10 legend</summary>
+
+**Figure 10 | The two error tails, what marks them, and why CTCF does not explain the
+over-predicted one.** Strata defined by the multimodal model's accessibility-residualised
+prediction error over 153,545 K562 ABC candidate regions; the 1% tails are n = 1,536 each and
+the typical stratum is the middle 50%, n = 76,771. **a**, The phenotype in
+(accessibility, H3K27ac) space. Grey is all regions; over-predicted elements are open and
+unacetylated, under-predicted ones acetylated and comparatively closed. **b**, RPKM by mark as
+fold change over the typical stratum, log axis, with IgG as the background control -- this is
+a *pooled* per-stratum statistic and panel **c** shows why that matters. **c**, Peak overlap
+against quantitative signal for the over-predicted tail: peaks report enrichment for every
+mark, signal reports CTCF only. **d**, The attributable fraction. Splitting the over-predicted
+tail at the 90th percentile of typical-stratum CTCF signal leaves 27% CTCF-high and 73%
+CTCF-low, and both are over-predicted; the CTCF-low subset more so. Source:
+`results/error_strata_{rpkm,peak_overlap,elements,ctcf_elements}.tsv`.
+</details>
 
 Strata are defined by the multimodal model's accessibility-residualised prediction error over
 the 153,545 ABC regions.
@@ -730,12 +754,40 @@ with an IgG control, says something much sharper:
 | under-predicted 1% | 1.20 | **2.90** | **4.35** | 0.31 | **17.52** | 0.68 |
 | under-predicted 5% | 1.31 | 2.42 | 3.78 | 0.31 | 12.57 | 0.65 |
 
-**The over-predicted tail is specifically CTCF.** 4.69 against 1.79 typical, a 2.6x
-enrichment, while IgG is *lower* there than typical (0.39 against 0.48), so it is not an
-antibody-accessibility artifact. H3K27ac itself is at 0.9x and H3K4me1 at 0.95x -- these
-elements genuinely carry no more of the mark than a random element, despite being 5-10x more
-accessible. EP300 at 1.4x is weak. The peak-based reading that they were enriched for
-everything was peaks being called on regions with no signal elevation.
+**The CTCF enrichment is real but it is a pooled statistic, and pooled statistics are how
+this analysis went wrong twice.** RPKM per stratum is total reads over total kilobases, so a
+minority of strongly bound elements sets the value. Element by element the over-predicted 1%
+has CTCF **median 0.72 RPKM against 0.55 typical** -- a 1.3x difference, not 2.6x -- and only
+**15.7%** of it exceeds the 90th percentile of typical-stratum CTCF (against 10.0% of typical
+by construction). For the over-predicted 5% the figures are 26.5% CTCF-high and a median of
+1.10. So the tail is not a set of CTCF sites; it contains rather more CTCF sites than average.
+
+**The decisive test is what happens when the CTCF-high elements are removed, and CTCF fails
+it.** Splitting the over-predicted 5% at that threshold:
+
+| subset | *n* | % of tail | observed fold | predicted fold | median error | CTCF median |
+|---|---|---|---|---|---|---|
+| whole tail | 7,678 | 100 | 0.87 | 3.10 | 0.800 | 1.10 |
+| CTCF-high | 2,038 | 26.5 | 0.74 | 1.63 | 0.759 | 13.46 |
+| **CTCF-low** | **5,640** | **73.5** | 0.94 | **3.83** | **0.821** | 0.65 |
+| typical | 76,771 | -- | 0.74 | 0.78 | 0.042 | 0.55 |
+
+The CTCF-low three-quarters is over-predicted *more* than the CTCF-high quarter, on both the
+error and the predicted-fold columns. Whatever causes the over-prediction is present with or
+without CTCF binding.
+
+**GC content is a much better correlate of the error than CTCF is.** Within accessibility
+deciles -- necessary because CTCF sites are open and the model reads accessibility -- Spearman
+rho(error, CTCF) is 0.02 to 0.23 with a median of 0.084, while rho(error, GC) is 0.24 to 0.37
+in **every** decile. Partialling accessibility, GC, CpG and promoter class out leaves
+rho(error, CTCF) at +0.191, above the IgG control's -0.126 in magnitude but with a control
+that is not cleanly zero, so read that number as suggestive at best.
+
+**What survives.** H3K27ac itself is at 0.9x in the over-predicted tail and H3K4me1 at 0.95x,
+so these elements genuinely carry no more of the mark than a random element despite being
+5-10x more accessible; and IgG is *below* typical there (0.39 against 0.48), so none of it is
+an antibody-accessibility artifact. The description "accessible, GC-rich, CpG-rich,
+promoter-enriched and unacetylated" is supported element by element. "CTCF sites" is not.
 
 **The under-predicted tail is canonical active enhancer.** EP300 3.4x and H3K4me1 3.3x above
 typical, against an IgG elevation of only 1.4x, so both are real; H3K27me3 is *depleted*

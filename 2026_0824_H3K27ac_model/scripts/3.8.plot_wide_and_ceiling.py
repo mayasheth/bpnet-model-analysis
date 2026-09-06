@@ -27,7 +27,7 @@ import matplotlib.pyplot as plt
 from scipy.stats import ttest_rel, t as tdist
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from nature_style import apply_rcparams, save_fig, add_panel_label
+from nature_style import apply_rcparams, save_fig, add_panel_label, n_label, annotate_n_fig
 
 P = "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model"
 SEQ = "#B2182B"
@@ -84,6 +84,7 @@ def fig10():
             ax.set_title(f"{mlab} — {title}", fontsize=8)
             add_panel_label(ax, next(letters))
     fig.tight_layout(rect=(0, 0.04, 1, 1))
+    annotate_n_fig(fig, n_label(df))
     save_fig(fig, f"{P}/figures/fig10_wide_receptive_field.png")
     print("wrote fig10")
 
@@ -117,6 +118,7 @@ def fig11():
     axes[0].legend(loc="upper left", fontsize=5.5)
     add_panel_label(axes[0], "a"); add_panel_label(axes[1], "b")
     fig.tight_layout()
+    annotate_n_fig(fig, n_label(n=len(d), unit="elements with non-flat profiles in both replicates"))
     save_fig(fig, f"{P}/figures/fig11_profile_ceiling.png")
     print("wrote fig11")
 

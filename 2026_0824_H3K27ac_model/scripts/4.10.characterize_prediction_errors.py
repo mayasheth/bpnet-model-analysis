@@ -29,6 +29,9 @@ _ap = argparse.ArgumentParser()
 _ap.add_argument("--emit-beds", default=None,
                  help="Directory to write one sorted BED per stratum, for overlap testing "
                       "against ENCODE peak calls (see 4.11).")
+_ap.add_argument("--emit-elements", default=None,
+                 help="TSV of per-element stratum assignment, so figures and tables share "
+                      "one definition of the strata instead of each recomputing the cuts.")
 _args = _ap.parse_args()
 
 D = "/oak/stanford/groups/engreitz/Users/sheth"
@@ -124,6 +127,17 @@ if _args.emit_beds:
                    header=False, index=False)
 
 pd.DataFrame(rows).round(4).to_csv(OUT, sep="\t", index=False)
+
+# Per-element stratum assignment, so any figure reads the SAME stratum definition as these
+# tables rather than recomputing the quantile cuts and drifting from them.
+if _args.emit_elements:
+    e = d[["chr", "start", "end", "k27_obs", "k27_pred", "ATAC.RPM", "err"]].copy()
+    e["stratum"] = "other"
+    for lab, mask in STRATA:
+        if "middle" in lab or "1%" in lab:      # 1% tails and the middle; 5% would overwrite
+            e.loc[mask, "stratum"] = lab
+    e.round(5).to_csv(_args.emit_elements, sep="\t", index=False)
+    print(f"wrote {_args.emit_elements}")
 print(f"\nwrote {OUT}")
 print("\nATAC/k27 is the accessible-but-unacetylated signature: high in a stratum means those")
 print("elements are open without being acetylated, which is what a CTCF-site explanation")

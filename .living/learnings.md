@@ -1513,3 +1513,56 @@ since a branch with no dynamic range looks accurate wherever the truth is flat.
 
 **structural_mitigation_candidate**: Before building a mechanism that reweights or gates an
 existing branch, verify that branch is discriminative on the cases the mechanism targets.
+
+### [2026-09-05] Four times in one session I reported a group-level statistic as if it licensed an element-level or causal claim
+
+Each of these was a separate analysis, and only after the fourth did the shape become
+obvious. They are the same error.
+
+1. **Peak overlap for the error strata.** 36.9% of the over-predicted tail overlaps a CTCF
+   peak against 17.4% typical, and EP300 and H3K27ac look enriched too. Read as biology, the
+   tail is "enriched for everything". Quantitative RPKM showed H3K27ac and H3K4me1 at
+   background: peaks were being called on regions with no signal elevation.
+2. **Accessibility-residualised error at an accessibility-defined stratum.** The stratum is
+   *defined* as accessibility-high and H3K27ac-low, so the observed residual is strongly
+   negative and any predictor that does not track accessibility downward -- including a
+   constant -- scores as over-predicting. The metric could not answer the question asked.
+3. **Fold elevation without a dynamic-range control.** The sequence arm sits at 1.55x where
+   truth is 1.00x, which looks nearly correct, until the opposite tail shows it reaches only
+   1.44x where truth is 31.3x. It was flat, not right.
+4. **Pooled RPKM enrichment read causally.** CTCF RPKM is 2.6x in the over-predicted tail,
+   IgG below background, so the CTCF-site story looked settled -- and I told Maya it was
+   "much better supported than the peak analysis suggested". Element by element the tail's
+   CTCF *median* is 0.72 against 0.55 typical, only 15.7% of it is CTCF-high, and removing
+   the CTCF-high quarter leaves the remaining three quarters over-predicted MORE (median
+   error 0.821 against 0.759). RPKM per stratum is total reads over total kilobases, so a
+   minority sets the value. Meanwhile rho(error, GC) is 0.24-0.37 within every accessibility
+   decile against 0.08 for CTCF -- the better correlate was never tested until asked for.
+
+**The pattern.** A statistic computed over a group answers a question about the group. It
+does not identify which members carry it, and it never establishes cause. Every one of these
+four went wrong at the step from "the stratum is enriched" to "the stratum is explained".
+
+**What actually catches it.** Three cheap tests, and the third is the one that matters:
+
+- **Distribution, not mean.** Report quartiles and the fraction above a threshold. A 2.6x
+  mean with an unchanged median is a minority effect and reads completely differently.
+- **Match the confounders.** Correlate within deciles of the obvious confounder and put a
+  background track through the identical computation.
+- **Attributable fraction.** Remove the elements carrying the proposed cause and see whether
+  the phenotype survives. If it does, the cause is a passenger. This single test would have
+  caught #4 immediately, and it is the one I did not run until Maya asked whether I had
+  checked the actual signal at the elements.
+
+**The prompt that found it** was "does your conclusion check the actual signal at the
+elements we think are binding CTCF, to make sure we aren't assuming that's the issue". Worth
+keeping as a standing question to ask of any enrichment result, including my own.
+
+**Tags**: controls, enrichment, causal-inference, ctcf, error-strata, self-correction, pooled-statistics
+
+**mitigation_type**: structural
+
+**structural_mitigation_candidate**: No enrichment result may be stated as an explanation
+until an attributable-fraction test has been run: remove the elements carrying the proposed
+cause and report whether the phenotype survives. Report the distribution and the fraction
+above threshold alongside every mean enrichment.

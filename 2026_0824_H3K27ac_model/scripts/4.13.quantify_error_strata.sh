@@ -49,6 +49,9 @@ for m in CTCF EP300 H3K4me1 H3K27me3 H3K27ac IgG; do
 done
 
 echo
+OUT_TSV="$P/results/error_strata_rpkm.tsv"
+{ printf 'stratum\tn'; for m in CTCF EP300 H3K4me1 H3K27me3 H3K27ac IgG; do printf '\t%s' "$m"; done; printf '\n'; } > "$OUT_TSV"
+{ printf 'mark\tmapped_reads\n'; for m in CTCF EP300 H3K4me1 H3K27me3 H3K27ac IgG; do printf '%s\t%s\n' "$m" "${TOT[$m]}"; done; } > "$P/results/error_strata_rpkm_denominators.tsv"
 printf '%-26s %8s' stratum n
 for m in CTCF EP300 H3K4me1 H3K27me3 H3K27ac IgG; do printf ' %9s' "$m"; done; printf '\n'
 for f in "$W"/stratum_*.bed; do
@@ -56,12 +59,17 @@ for f in "$W"/stratum_*.bed; do
     n=$(wc -l < "$f")
     kb=$(awk '{s += ($3-$2)} END {printf "%.6f", s/1000}' "$f")
     printf '%-26s %8d' "$lab" "$n"
+    printf '%s\t%s' "$lab" "$n" >> "$OUT_TSV"
     for m in CTCF EP300 H3K4me1 H3K27me3 H3K27ac IgG; do
         c=$(samtools view -c -F 0x400 -@ 4 -L "$f" "$E/${BAM[$m]}")
-        printf ' %9.2f' "$(echo "scale=6; 1000000*$c/(${TOT[$m]}*$kb)" | bc)"
+        v=$(echo "scale=6; 1000000*$c/(${TOT[$m]}*$kb)" | bc)
+        printf ' %9.2f' "$v"
+        printf '\t%s' "$v" >> "$OUT_TSV"
     done
     printf '\n'
+    printf '\n' >> "$OUT_TSV"
 done
+echo "wrote $OUT_TSV"
 echo
 echo "RPKM per stratum. IgG is the background control: a mark whose pattern tracks IgG is"
 echo "reporting chromatin accessibility to the antibody rather than the mark itself."
