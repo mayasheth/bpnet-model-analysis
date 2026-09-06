@@ -19,12 +19,21 @@ it adds nothing over accessibility.
 
 Colours: greys for baselines, one hue per model family, darkening with input richness.
 """
+import argparse
 import os
+
+_ap = argparse.ArgumentParser()
+_ap.add_argument("--arms", choices=("h3k27ac", "p300"), default="h3k27ac",
+                 help="Which activity target's arms to benchmark. The p300 set reuses the "
+                      "same July floor and observed-H3K27ac ceiling, so the two "
+                      "comparisons are read on one scale.")
+_a = _ap.parse_args()
 
 D = "/oak/stanford/groups/engreitz/Users/sheth"
 ABC = f"{D}/ABC_working/ABC-Enhancer-Gene-Prediction/results"
 NEW = f"{ABC}/2026_0903_predicted_activity"
 JULY = f"{ABC}/2026_0721_h3k27ac_counting_comparison"
+P300 = f"{ABC}/2026_0905_p300_activity"
 CC = f"{D}/CRISPR_comparison_v3/CRISPR_comparison"
 PRED_FILE = "Predictions/EnhancerPredictionsAllPutative.tsv.gz"
 
@@ -43,6 +52,24 @@ ARMS = [
     ("k27only_k562_multimodal", NEW, "Predicted H3K27ac alone (K562 multimodal model)", "#238b45"),
 ]
 
+# p300 as the activity term. Same two anchors as above, so an AUPRC here is directly
+# comparable to the H3K27ac run, plus observed p300 as this concept's own ceiling -- without
+# it a predicted-p300 number has nothing to be read against.
+P300_ARMS = [
+    ("K562_ATAC_only",           JULY, "ATAC only (floor)",                 "#bdbdbd"),
+    ("K562_ATAC_H3K27ac_element", JULY, "ATAC x observed H3K27ac",           "#404040"),
+    ("p300obs_k562",             P300, "ATAC x observed p300 (ceiling)",     "#54278f"),
+    ("p300pred_k562_multimodal", P300, "ATAC x predicted p300 (multimodal)", "#807dba"),
+    ("p300pred_k562_atac",       P300, "ATAC x predicted p300 (ATAC model)", "#bcbddc"),
+    ("p300only_k562_multimodal", P300, "Predicted p300 alone (multimodal)",  "#d94801"),
+    ("p300only_k562_atac",       P300, "Predicted p300 alone (ATAC model)",  "#fdae6b"),
+]
+
+if _a.arms == "p300":
+    ARMS = P300_ARMS
+TAG = "predicted_activity" if _a.arms == "h3k27ac" else "p300_activity"
+RUN = "2026_0904_predicted_activity" if _a.arms == "h3k27ac" else "2026_0905_p300_activity"
+
 BASELINES = [
     ("distToTSS",      "FALSE", "mean", "Inf", "TRUE",  "Distance to TSS",      "#c5cad7"),
     ("nearestTSS",     "TRUE",  "max",  "0",   "FALSE", "Nearest TSS",          "#6e788d"),
@@ -60,7 +87,7 @@ if missing:
 
 # --- pred_config -------------------------------------------------------------
 os.makedirs(f"{CC}/resources/pred_config", exist_ok=True)
-pc = f"{CC}/resources/pred_config/pred_config_predicted_activity.tsv"
+pc = f"{CC}/resources/pred_config/pred_config_{TAG}.tsv"
 with open(pc, "w") as f:
     f.write("pred_id\tpred_col\tboolean\talpha\taggregate_function\tfill_value\t"
             "inverse_predictor\tpred_name_long\tcolor\n")
@@ -87,11 +114,11 @@ for p in (GENE_U, TSS_U, EXPT):
     if not os.path.exists(p):
         raise SystemExit(f"missing reference: {p}")
 
-cfg = f"{CC}/config/config_predicted_activity.yml"
+cfg = f"{CC}/config/config_{TAG}.yml"
 with open(cfg, "w") as f:
     f.write("# Predicted H3K27ac as the ABC activity term, benchmarked against CRISPR data.\n")
-    f.write("# All eleven arms score the identical candidate-region set (md5 7d5995ce).\n\n")
-    f.write("comparisons:\n  2026_0904_predicted_activity:\n    pred:\n")
+    f.write(f"# All {len(ARMS)} arms score the identical candidate-region set (md5 7d5995ce).\n\n")
+    f.write(f"comparisons:\n  {RUN}:\n    pred:\n")
     for arm, root, _n, _c in ARMS:
         f.write(f"      {arm}: {root}/{arm}/{PRED_FILE}\n")
     f.write(f"    expt: {EXPT}\n")
@@ -105,5 +132,5 @@ with open(cfg, "w") as f:
     f.write("    include_col: Null\n    gene_features: Null\n")
     f.write("    enh_features: Null\n    enh_assays: Null\n")
 print("wrote", cfg)
-print(f"\n{len(ARMS)} arms wired: floor=K562_ATAC_only, "
-      f"ceiling=K562_ATAC_H3K27ac_element, 9 predicted")
+print(f"\n{len(ARMS)} arms wired for {_a.arms}: floor=K562_ATAC_only, "
+      f"{len(ARMS) - 2} non-anchor arms, run name {RUN}")

@@ -37,7 +37,7 @@ C=/oak/stanford/groups/engreitz/Users/sheth/CRISPR_comparison_v3/CRISPR_comparis
 SM_ENV=/oak/stanford/groups/engreitz/Users/sheth/.conda/envs/run_snakemake
 SM=$SM_ENV/bin/snakemake
 CONDA_ENV=$C/workflow/.snakemake/conda/a5c95d47c3f0a63f7a24cdab52a16531_
-CFG=$C/config/config_predicted_activity.yml
+CFG=${CC_CFG:-$C/config/config_predicted_activity.yml}
 mkdir -p "$D/2026_0824_H3K27ac_model/log"
 
 SHIM=$D/2026_0824_H3K27ac_model/.mamba_shim
