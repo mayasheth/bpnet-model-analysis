@@ -464,3 +464,45 @@ an estimator difference, not a data difference, which is why deltas rather than 
 values are the quotable output.
 
 **Tags**: statistics, paired-testing, crispr-benchmark, abc, bootstrap
+
+### [2026-09-06] Close training-element composition: GC-matching the negatives changes nothing
+
+**Context**: Every model in this repository -- H3K27ac and p300, both cell types -- was
+trained with ChromBPNet's genome-wide GC-*annotated* tiling passed straight to `--negatives`.
+That file is the matching input, not its output; the trainer reads three of its four columns
+and samples uniformly, so the pool sat at mean GC 0.389 against 0.466-0.593 for candidate
+elements while making up 10% of every batch. This was the leading hypothesis for why the
+H3K27ac sequence branch has almost no dynamic range within candidate elements -- a coarse GC
+detector would satisfy most of that contrast.
+
+**Decision**: Closed. Retraining the multimodal model on GC-matched negatives built with
+`bpnet-gc-background` gives **+0.0011 [-0.0080, +0.0102]** in-cell type (*p*=0.76) and
+**-0.0024 [-0.0083, +0.0036]** transferred to GM12878 (*p*=0.33). Absolutes 0.700 against
+0.699 and 0.529 against 0.531. The transferred model still beats the target's own ATAC-only
+model by the same non-significant ~0.011.
+
+**Alternatives considered**:
+- Blame the residual mismatch -- rejected as the primary reading, though recorded: the matched
+  pool undershoots the GC-rich tail (p90 0.570 against the elements' 0.590) because a
+  genome-background pool lacks enough very-high-GC windows. But closing 85% of the mean-GC gap
+  and 80% of the largest per-bin discrepancy moved the metric by 0.001, so any surviving
+  shortcut is too small to chase.
+- Reimplement matching to reach the high-GC tail -- rejected: it would require negatives drawn
+  from accessible-but-unacetylated regions, which is the separate reweighting idea, and the
+  effect size here gives no reason to expect it to matter.
+
+**Rationale**: The match was verified before the result was read (`scripts/0.29`, joining the
+matched pool back to the tiling's own GC annotation so both sides use one estimator), and the
+transfer arm -- where a GC shortcut should cost most, since accessibility is the part that
+generalises -- is the arm that moved least. A null with a verified manipulation and a
+pre-committed failure condition is a real answer, not a failed intervention.
+
+**Consequences**: The cheapest remaining fix for the sequence branch is gone, and the two
+survivors in this family (explicit GC/CpG channels, accessible-but-unacetylated reweighting)
+are both weaker a priori than the one just refuted -- the GC-shortcut result says the flatness
+is not caused by what the branch was trained *against*, so a GC channel is now a bet on
+representation rather than on removing a confound. `--gc-match-negatives` was NOT added to the
+trainer: the matched file drops in through the existing `--negatives`, and a second matching
+implementation would risk diverging from `bpnet-gc-background`.
+
+**Tags**: negatives, gc-matching, training-composition, sequence-branch, negative-result
