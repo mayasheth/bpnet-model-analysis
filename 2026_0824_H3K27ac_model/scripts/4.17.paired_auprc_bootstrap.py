@@ -24,6 +24,10 @@ ap.add_argument("merged", help="expt_pred_merged_annot.txt.gz")
 ap.add_argument("--pair", nargs=2, action="append", required=True,
                 metavar=("A", "B"), help="report AUPRC(A) - AUPRC(B). Repeatable.")
 ap.add_argument("--n-boot", type=int, default=2000)
+ap.add_argument("--out-tsv", default=None,
+                help="Write the deltas, CIs and sign-retention to a TSV so the report's "
+                     "headline numbers are registerable in the numbers manifest instead of "
+                     "being read off a log and hand-typed.")
 ap.add_argument("--seed", type=int, default=0)
 a = ap.parse_args()
 
@@ -92,3 +96,18 @@ for A, B in a.pair:
 
 print("\n'sign kept' is the fraction of resamples preserving the observed ordering. Read it as")
 print("the reproducibility of the ranking, not as a p-value; the CI is the effect size.")
+
+if a.out_tsv:
+    rows = []
+    for A, B in a.pair:
+        dl = boot[A] - boot[B]
+        lo, hi = np.percentile(dl, [2.5, 97.5])
+        frac = float((dl > 0).mean()) if obs[A] >= obs[B] else float((dl < 0).mean())
+        rows.append({"arm_a": A, "arm_b": B,
+                     "auprc_a": obs[A], "auprc_b": obs[B],
+                     "delta": obs[A] - obs[B], "ci_lo": lo, "ci_hi": hi,
+                     "sign_kept_frac": frac, "sign_kept_pct": 100.0 * frac,
+                     "n_pairs": len(sub), "n_regulated": int(y.sum()),
+                     "n_boot": a.n_boot})
+    pd.DataFrame(rows).round(6).to_csv(a.out_tsv, sep="\t", index=False)
+    print(f"\nwrote {a.out_tsv}")
