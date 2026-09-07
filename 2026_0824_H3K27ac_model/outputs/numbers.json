@@ -12862,6 +12862,4689 @@
    "note": "nuclear read-count ratio (rounded to 1 dp as quoted)"
   },
   {
+   "name": "strata_under-predicted_1pct_n",
+   "value": 1536.0,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_under-predicted_1pct_k27_obs",
+   "value": 18.5624,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_under-predicted_1pct_k27_obs__r3",
+   "value": 18.562,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "strata_under-predicted_1pct_k27_obs__r2",
+   "value": 18.56,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "strata_under-predicted_1pct_k27_obs__r1",
+   "value": 18.6,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "strata_under-predicted_1pct_k27_pred",
+   "value": 0.6494,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_under-predicted_1pct_k27_pred__r3",
+   "value": 0.649,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "strata_under-predicted_1pct_k27_pred__r2",
+   "value": 0.65,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "strata_under-predicted_1pct_k27_pred__r1",
+   "value": 0.6,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "strata_under-predicted_1pct_atac",
+   "value": 3.9026,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_under-predicted_1pct_atac__r3",
+   "value": 3.903,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "strata_under-predicted_1pct_atac__r2",
+   "value": 3.9,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "strata_under-predicted_1pct_atac_over_k27",
+   "value": 0.2067,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_under-predicted_1pct_atac_over_k27__r3",
+   "value": 0.207,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "strata_under-predicted_1pct_atac_over_k27__r2",
+   "value": 0.21,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "strata_under-predicted_1pct_atac_over_k27__r1",
+   "value": 0.2,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "strata_under-predicted_1pct_gc",
+   "value": 0.466,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_under-predicted_1pct_gc__r2",
+   "value": 0.47,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "strata_under-predicted_1pct_gc__r1",
+   "value": 0.5,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "strata_under-predicted_1pct_cpg_oe",
+   "value": 0.2888,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_under-predicted_1pct_cpg_oe__r3",
+   "value": 0.289,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "strata_under-predicted_1pct_cpg_oe__r2",
+   "value": 0.29,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "strata_under-predicted_1pct_cpg_oe__r1",
+   "value": 0.3,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "strata_under-predicted_1pct_pct_promoter",
+   "value": 15.5599,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_under-predicted_1pct_pct_promoter__r3",
+   "value": 15.56,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "strata_under-predicted_1pct_pct_promoter__r1",
+   "value": 15.6,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "strata_under-predicted_5pct_n",
+   "value": 7678.0,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_under-predicted_5pct_k27_obs",
+   "value": 11.0895,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_under-predicted_5pct_k27_obs__r3",
+   "value": 11.089,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "strata_under-predicted_5pct_k27_obs__r2",
+   "value": 11.09,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "strata_under-predicted_5pct_k27_obs__r1",
+   "value": 11.1,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "strata_under-predicted_5pct_k27_pred",
+   "value": 0.5919,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_under-predicted_5pct_k27_pred__r3",
+   "value": 0.592,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "strata_under-predicted_5pct_k27_pred__r2",
+   "value": 0.59,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "strata_under-predicted_5pct_k27_pred__r1",
+   "value": 0.6,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "strata_under-predicted_5pct_atac",
+   "value": 3.5757,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_under-predicted_5pct_atac__r3",
+   "value": 3.576,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "strata_under-predicted_5pct_atac__r2",
+   "value": 3.58,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "strata_under-predicted_5pct_atac__r1",
+   "value": 3.6,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "strata_under-predicted_5pct_atac_over_k27",
+   "value": 0.3315,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_under-predicted_5pct_atac_over_k27__r3",
+   "value": 0.332,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "strata_under-predicted_5pct_atac_over_k27__r2",
+   "value": 0.33,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "strata_under-predicted_5pct_atac_over_k27__r1",
+   "value": 0.3,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "strata_under-predicted_5pct_gc",
+   "value": 0.4745,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_under-predicted_5pct_gc__r3",
+   "value": 0.474,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "strata_under-predicted_5pct_gc__r2",
+   "value": 0.47,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "strata_under-predicted_5pct_gc__r1",
+   "value": 0.5,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "strata_under-predicted_5pct_cpg_oe",
+   "value": 0.3168,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_under-predicted_5pct_cpg_oe__r3",
+   "value": 0.317,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "strata_under-predicted_5pct_cpg_oe__r2",
+   "value": 0.32,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "strata_under-predicted_5pct_cpg_oe__r1",
+   "value": 0.3,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "strata_under-predicted_5pct_pct_promoter",
+   "value": 18.4944,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_under-predicted_5pct_pct_promoter__r3",
+   "value": 18.494,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "strata_under-predicted_5pct_pct_promoter__r2",
+   "value": 18.49,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "strata_under-predicted_5pct_pct_promoter__r1",
+   "value": 18.5,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "strata_typical_middle_50pct_n",
+   "value": 76771.0,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_typical_middle_50pct_k27_obs",
+   "value": 0.4365,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_typical_middle_50pct_k27_obs__r3",
+   "value": 0.436,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "strata_typical_middle_50pct_k27_obs__r2",
+   "value": 0.44,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "strata_typical_middle_50pct_k27_obs__r1",
+   "value": 0.4,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "strata_typical_middle_50pct_k27_pred",
+   "value": 0.0867,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_typical_middle_50pct_k27_pred__r3",
+   "value": 0.087,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "strata_typical_middle_50pct_k27_pred__r2",
+   "value": 0.09,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "strata_typical_middle_50pct_k27_pred__r1",
+   "value": 0.1,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "strata_typical_middle_50pct_atac",
+   "value": 0.9286,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_typical_middle_50pct_atac__r3",
+   "value": 0.929,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "strata_typical_middle_50pct_atac__r2",
+   "value": 0.93,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "strata_typical_middle_50pct_atac__r1",
+   "value": 0.9,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "strata_typical_middle_50pct_atac_over_k27",
+   "value": 2.1984,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_typical_middle_50pct_atac_over_k27__r3",
+   "value": 2.198,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "strata_typical_middle_50pct_atac_over_k27__r2",
+   "value": 2.2,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "strata_typical_middle_50pct_gc",
+   "value": 0.4896,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_typical_middle_50pct_gc__r3",
+   "value": 0.49,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "strata_typical_middle_50pct_gc__r1",
+   "value": 0.5,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "strata_typical_middle_50pct_cpg_oe",
+   "value": 0.2771,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_typical_middle_50pct_cpg_oe__r3",
+   "value": 0.277,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "strata_typical_middle_50pct_cpg_oe__r2",
+   "value": 0.28,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "strata_typical_middle_50pct_cpg_oe__r1",
+   "value": 0.3,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "strata_typical_middle_50pct_pct_promoter",
+   "value": 13.1104,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_typical_middle_50pct_pct_promoter__r3",
+   "value": 13.11,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "strata_typical_middle_50pct_pct_promoter__r1",
+   "value": 13.1,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "strata_over-predicted_5pct_n",
+   "value": 7678.0,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_over-predicted_5pct_k27_obs",
+   "value": 0.5164,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_over-predicted_5pct_k27_obs__r3",
+   "value": 0.516,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "strata_over-predicted_5pct_k27_obs__r2",
+   "value": 0.52,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "strata_over-predicted_5pct_k27_obs__r1",
+   "value": 0.5,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "strata_over-predicted_5pct_k27_pred",
+   "value": 0.3459,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_over-predicted_5pct_k27_pred__r3",
+   "value": 0.346,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "strata_over-predicted_5pct_k27_pred__r2",
+   "value": 0.35,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "strata_over-predicted_5pct_k27_pred__r1",
+   "value": 0.3,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "strata_over-predicted_5pct_atac",
+   "value": 5.2309,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_over-predicted_5pct_atac__r3",
+   "value": 5.231,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "strata_over-predicted_5pct_atac__r2",
+   "value": 5.23,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "strata_over-predicted_5pct_atac__r1",
+   "value": 5.2,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "strata_over-predicted_5pct_atac_over_k27",
+   "value": 9.0886,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_over-predicted_5pct_atac_over_k27__r3",
+   "value": 9.089,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "strata_over-predicted_5pct_atac_over_k27__r2",
+   "value": 9.09,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "strata_over-predicted_5pct_atac_over_k27__r1",
+   "value": 9.1,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "strata_over-predicted_5pct_gc",
+   "value": 0.5743,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_over-predicted_5pct_gc__r3",
+   "value": 0.574,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "strata_over-predicted_5pct_gc__r2",
+   "value": 0.57,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "strata_over-predicted_5pct_gc__r1",
+   "value": 0.6,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "strata_over-predicted_5pct_cpg_oe",
+   "value": 0.4746,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_over-predicted_5pct_cpg_oe__r3",
+   "value": 0.475,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "strata_over-predicted_5pct_cpg_oe__r2",
+   "value": 0.47,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "strata_over-predicted_5pct_cpg_oe__r1",
+   "value": 0.5,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "strata_over-predicted_5pct_pct_promoter",
+   "value": 25.0195,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_over-predicted_5pct_pct_promoter__r3",
+   "value": 25.02,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "strata_over-predicted_5pct_pct_promoter__r1",
+   "value": 25.0,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "strata_over-predicted_1pct_n",
+   "value": 1536.0,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_over-predicted_1pct_k27_obs",
+   "value": 0.5944,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_over-predicted_1pct_k27_obs__r3",
+   "value": 0.594,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "strata_over-predicted_1pct_k27_obs__r2",
+   "value": 0.59,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "strata_over-predicted_1pct_k27_obs__r1",
+   "value": 0.6,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "strata_over-predicted_1pct_k27_pred",
+   "value": 0.7951,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_over-predicted_1pct_k27_pred__r3",
+   "value": 0.795,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "strata_over-predicted_1pct_k27_pred__r2",
+   "value": 0.8,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "strata_over-predicted_1pct_atac",
+   "value": 9.9317,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_over-predicted_1pct_atac__r3",
+   "value": 9.932,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "strata_over-predicted_1pct_atac__r2",
+   "value": 9.93,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "strata_over-predicted_1pct_atac__r1",
+   "value": 9.9,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "strata_over-predicted_1pct_atac_over_k27",
+   "value": 13.251,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_over-predicted_1pct_atac_over_k27__r2",
+   "value": 13.25,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "strata_over-predicted_1pct_atac_over_k27__r1",
+   "value": 13.3,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "strata_over-predicted_1pct_gc",
+   "value": 0.5928,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_over-predicted_1pct_gc__r3",
+   "value": 0.593,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "strata_over-predicted_1pct_gc__r2",
+   "value": 0.59,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "strata_over-predicted_1pct_gc__r1",
+   "value": 0.6,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "strata_over-predicted_1pct_cpg_oe",
+   "value": 0.5515,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_over-predicted_1pct_cpg_oe__r3",
+   "value": 0.551,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "strata_over-predicted_1pct_cpg_oe__r2",
+   "value": 0.55,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "strata_over-predicted_1pct_cpg_oe__r1",
+   "value": 0.6,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "strata_over-predicted_1pct_pct_promoter",
+   "value": 31.5755,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "strata_over-predicted_1pct_pct_promoter__r3",
+   "value": 31.576,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "strata_over-predicted_1pct_pct_promoter__r2",
+   "value": 31.58,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "strata_over-predicted_1pct_pct_promoter__r1",
+   "value": 31.6,
+   "source": "results/prediction_error_strata.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "peakov_over-predicted_1pct_CTCF",
+   "value": 23.3723,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "peakov_over-predicted_1pct_CTCF__r3",
+   "value": 23.372,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "peakov_over-predicted_1pct_CTCF__r2",
+   "value": 23.37,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "peakov_over-predicted_1pct_CTCF__r1",
+   "value": 23.4,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "peakov_over-predicted_1pct_EP300",
+   "value": 16.5364,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "peakov_over-predicted_1pct_EP300__r3",
+   "value": 16.536,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "peakov_over-predicted_1pct_EP300__r2",
+   "value": 16.54,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "peakov_over-predicted_1pct_EP300__r1",
+   "value": 16.5,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "peakov_over-predicted_1pct_H3K4me1",
+   "value": 30.4036,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "peakov_over-predicted_1pct_H3K4me1__r3",
+   "value": 30.404,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "peakov_over-predicted_1pct_H3K4me1__r2",
+   "value": 30.4,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "peakov_over-predicted_1pct_H3K27me3",
+   "value": 8.0729,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "peakov_over-predicted_1pct_H3K27me3__r3",
+   "value": 8.073,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "peakov_over-predicted_1pct_H3K27me3__r2",
+   "value": 8.07,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "peakov_over-predicted_1pct_H3K27me3__r1",
+   "value": 8.1,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "peakov_over-predicted_1pct_H3K27ac",
+   "value": 33.3333,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "peakov_over-predicted_1pct_H3K27ac__r3",
+   "value": 33.333,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "peakov_over-predicted_1pct_H3K27ac__r2",
+   "value": 33.33,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "peakov_over-predicted_1pct_H3K27ac__r1",
+   "value": 33.3,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "peakov_over-predicted_1pct_n",
+   "value": 1536.0,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "peakov_over-predicted_5pct_CTCF",
+   "value": 36.8715,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "peakov_over-predicted_5pct_CTCF__r3",
+   "value": 36.871,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "peakov_over-predicted_5pct_CTCF__r2",
+   "value": 36.87,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "peakov_over-predicted_5pct_CTCF__r1",
+   "value": 36.9,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "peakov_over-predicted_5pct_EP300",
+   "value": 16.4105,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "peakov_over-predicted_5pct_EP300__r3",
+   "value": 16.41,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "peakov_over-predicted_5pct_EP300__r1",
+   "value": 16.4,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "peakov_over-predicted_5pct_H3K4me1",
+   "value": 35.4519,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "peakov_over-predicted_5pct_H3K4me1__r3",
+   "value": 35.452,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "peakov_over-predicted_5pct_H3K4me1__r2",
+   "value": 35.45,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "peakov_over-predicted_5pct_H3K4me1__r1",
+   "value": 35.5,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "peakov_over-predicted_5pct_H3K27me3",
+   "value": 9.6249,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "peakov_over-predicted_5pct_H3K27me3__r3",
+   "value": 9.625,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "peakov_over-predicted_5pct_H3K27me3__r2",
+   "value": 9.62,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "peakov_over-predicted_5pct_H3K27me3__r1",
+   "value": 9.6,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "peakov_over-predicted_5pct_H3K27ac",
+   "value": 30.6329,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "peakov_over-predicted_5pct_H3K27ac__r3",
+   "value": 30.633,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "peakov_over-predicted_5pct_H3K27ac__r2",
+   "value": 30.63,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "peakov_over-predicted_5pct_H3K27ac__r1",
+   "value": 30.6,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "peakov_over-predicted_5pct_n",
+   "value": 7678.0,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "peakov_typical_middle_50pct_CTCF",
+   "value": 17.3685,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "peakov_typical_middle_50pct_CTCF__r3",
+   "value": 17.369,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "peakov_typical_middle_50pct_CTCF__r2",
+   "value": 17.37,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "peakov_typical_middle_50pct_CTCF__r1",
+   "value": 17.4,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "peakov_typical_middle_50pct_EP300",
+   "value": 8.7897,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "peakov_typical_middle_50pct_EP300__r3",
+   "value": 8.79,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "peakov_typical_middle_50pct_EP300__r1",
+   "value": 8.8,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "peakov_typical_middle_50pct_H3K4me1",
+   "value": 28.2815,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "peakov_typical_middle_50pct_H3K4me1__r3",
+   "value": 28.282,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "peakov_typical_middle_50pct_H3K4me1__r2",
+   "value": 28.28,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "peakov_typical_middle_50pct_H3K4me1__r1",
+   "value": 28.3,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "peakov_typical_middle_50pct_H3K27me3",
+   "value": 11.4756,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "peakov_typical_middle_50pct_H3K27me3__r3",
+   "value": 11.476,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "peakov_typical_middle_50pct_H3K27me3__r2",
+   "value": 11.48,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "peakov_typical_middle_50pct_H3K27me3__r1",
+   "value": 11.5,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "peakov_typical_middle_50pct_H3K27ac",
+   "value": 15.7754,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "peakov_typical_middle_50pct_H3K27ac__r3",
+   "value": 15.775,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "peakov_typical_middle_50pct_H3K27ac__r2",
+   "value": 15.78,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "peakov_typical_middle_50pct_H3K27ac__r1",
+   "value": 15.8,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "peakov_typical_middle_50pct_n",
+   "value": 76771.0,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "peakov_under-predicted_1pct_CTCF",
+   "value": 9.3098,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "peakov_under-predicted_1pct_CTCF__r3",
+   "value": 9.31,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "peakov_under-predicted_1pct_CTCF__r1",
+   "value": 9.3,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "peakov_under-predicted_1pct_EP300",
+   "value": 57.7473,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "peakov_under-predicted_1pct_EP300__r3",
+   "value": 57.747,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "peakov_under-predicted_1pct_EP300__r2",
+   "value": 57.75,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "peakov_under-predicted_1pct_EP300__r1",
+   "value": 57.7,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "peakov_under-predicted_1pct_H3K4me1",
+   "value": 86.7838,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "peakov_under-predicted_1pct_H3K4me1__r3",
+   "value": 86.784,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "peakov_under-predicted_1pct_H3K4me1__r2",
+   "value": 86.78,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "peakov_under-predicted_1pct_H3K4me1__r1",
+   "value": 86.8,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "peakov_under-predicted_1pct_H3K27me3",
+   "value": 0.0,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "peakov_under-predicted_1pct_H3K27ac",
+   "value": 100.0,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "peakov_under-predicted_1pct_n",
+   "value": 1536.0,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "peakov_under-predicted_5pct_CTCF",
+   "value": 10.8231,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "peakov_under-predicted_5pct_CTCF__r3",
+   "value": 10.823,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "peakov_under-predicted_5pct_CTCF__r2",
+   "value": 10.82,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "peakov_under-predicted_5pct_CTCF__r1",
+   "value": 10.8,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "peakov_under-predicted_5pct_EP300",
+   "value": 52.3052,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "peakov_under-predicted_5pct_EP300__r3",
+   "value": 52.305,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "peakov_under-predicted_5pct_EP300__r2",
+   "value": 52.31,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "peakov_under-predicted_5pct_EP300__r1",
+   "value": 52.3,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "peakov_under-predicted_5pct_H3K4me1",
+   "value": 83.1596,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "peakov_under-predicted_5pct_H3K4me1__r3",
+   "value": 83.16,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "peakov_under-predicted_5pct_H3K4me1__r1",
+   "value": 83.2,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "peakov_under-predicted_5pct_H3K27me3",
+   "value": 0.013,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "peakov_under-predicted_5pct_H3K27me3__r2",
+   "value": 0.01,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "peakov_under-predicted_5pct_H3K27me3__r1",
+   "value": 0.0,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "peakov_under-predicted_5pct_H3K27ac",
+   "value": 99.5832,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "peakov_under-predicted_5pct_H3K27ac__r3",
+   "value": 99.583,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "peakov_under-predicted_5pct_H3K27ac__r2",
+   "value": 99.58,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "peakov_under-predicted_5pct_H3K27ac__r1",
+   "value": 99.6,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "peakov_under-predicted_5pct_n",
+   "value": 7678.0,
+   "source": "results/error_strata_peak_overlap.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "rpkm_over-predicted_1pct_CTCF",
+   "value": 3.336653,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "rpkm_over-predicted_1pct_CTCF__r3",
+   "value": 3.337,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rpkm_over-predicted_1pct_CTCF__r2",
+   "value": 3.34,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rpkm_over-predicted_1pct_CTCF__r1",
+   "value": 3.3,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "rpkm_over-predicted_1pct_EP300",
+   "value": 1.072089,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "rpkm_over-predicted_1pct_EP300__r3",
+   "value": 1.072,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rpkm_over-predicted_1pct_EP300__r2",
+   "value": 1.07,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rpkm_over-predicted_1pct_EP300__r1",
+   "value": 1.1,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "rpkm_over-predicted_1pct_H3K4me1",
+   "value": 0.966208,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "rpkm_over-predicted_1pct_H3K4me1__r3",
+   "value": 0.966,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rpkm_over-predicted_1pct_H3K4me1__r2",
+   "value": 0.97,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rpkm_over-predicted_1pct_H3K4me1__r1",
+   "value": 1.0,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "rpkm_over-predicted_1pct_H3K27me3",
+   "value": 0.441956,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "rpkm_over-predicted_1pct_H3K27me3__r3",
+   "value": 0.442,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rpkm_over-predicted_1pct_H3K27me3__r2",
+   "value": 0.44,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rpkm_over-predicted_1pct_H3K27me3__r1",
+   "value": 0.4,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "rpkm_over-predicted_1pct_H3K27ac",
+   "value": 0.939956,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "rpkm_over-predicted_1pct_H3K27ac__r3",
+   "value": 0.94,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rpkm_over-predicted_1pct_H3K27ac__r1",
+   "value": 0.9,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "rpkm_over-predicted_1pct_IgG",
+   "value": 0.328228,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "rpkm_over-predicted_1pct_IgG__r3",
+   "value": 0.328,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rpkm_over-predicted_1pct_IgG__r2",
+   "value": 0.33,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rpkm_over-predicted_1pct_IgG__r1",
+   "value": 0.3,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "rpkm_over-predicted_1pct_n",
+   "value": 1536.0,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "rpkm_over-predicted_5pct_CTCF",
+   "value": 4.689165,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "rpkm_over-predicted_5pct_CTCF__r3",
+   "value": 4.689,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rpkm_over-predicted_5pct_CTCF__r2",
+   "value": 4.69,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rpkm_over-predicted_5pct_CTCF__r1",
+   "value": 4.7,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "rpkm_over-predicted_5pct_EP300",
+   "value": 1.164153,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "rpkm_over-predicted_5pct_EP300__r3",
+   "value": 1.164,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rpkm_over-predicted_5pct_EP300__r2",
+   "value": 1.16,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rpkm_over-predicted_5pct_EP300__r1",
+   "value": 1.2,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "rpkm_over-predicted_5pct_H3K4me1",
+   "value": 1.240559,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "rpkm_over-predicted_5pct_H3K4me1__r3",
+   "value": 1.241,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rpkm_over-predicted_5pct_H3K4me1__r2",
+   "value": 1.24,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rpkm_over-predicted_5pct_H3K4me1__r1",
+   "value": 1.2,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "rpkm_over-predicted_5pct_H3K27me3",
+   "value": 0.500358,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "rpkm_over-predicted_5pct_H3K27me3__r3",
+   "value": 0.5,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rpkm_over-predicted_5pct_H3K27ac",
+   "value": 1.167893,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "rpkm_over-predicted_5pct_H3K27ac__r3",
+   "value": 1.168,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rpkm_over-predicted_5pct_H3K27ac__r2",
+   "value": 1.17,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rpkm_over-predicted_5pct_H3K27ac__r1",
+   "value": 1.2,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "rpkm_over-predicted_5pct_IgG",
+   "value": 0.389071,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "rpkm_over-predicted_5pct_IgG__r3",
+   "value": 0.389,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rpkm_over-predicted_5pct_IgG__r2",
+   "value": 0.39,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rpkm_over-predicted_5pct_IgG__r1",
+   "value": 0.4,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "rpkm_over-predicted_5pct_n",
+   "value": 7678.0,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "rpkm_typical_middle_50pct_CTCF",
+   "value": 1.785548,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "rpkm_typical_middle_50pct_CTCF__r3",
+   "value": 1.786,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rpkm_typical_middle_50pct_CTCF__r2",
+   "value": 1.79,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rpkm_typical_middle_50pct_CTCF__r1",
+   "value": 1.8,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "rpkm_typical_middle_50pct_EP300",
+   "value": 0.849175,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "rpkm_typical_middle_50pct_EP300__r3",
+   "value": 0.849,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rpkm_typical_middle_50pct_EP300__r2",
+   "value": 0.85,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rpkm_typical_middle_50pct_EP300__r1",
+   "value": 0.8,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "rpkm_typical_middle_50pct_H3K4me1",
+   "value": 1.310332,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "rpkm_typical_middle_50pct_H3K4me1__r3",
+   "value": 1.31,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rpkm_typical_middle_50pct_H3K4me1__r1",
+   "value": 1.3,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "rpkm_typical_middle_50pct_H3K27me3",
+   "value": 0.534616,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "rpkm_typical_middle_50pct_H3K27me3__r3",
+   "value": 0.535,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rpkm_typical_middle_50pct_H3K27me3__r2",
+   "value": 0.53,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rpkm_typical_middle_50pct_H3K27me3__r1",
+   "value": 0.5,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "rpkm_typical_middle_50pct_H3K27ac",
+   "value": 1.241968,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "rpkm_typical_middle_50pct_H3K27ac__r3",
+   "value": 1.242,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rpkm_typical_middle_50pct_H3K27ac__r2",
+   "value": 1.24,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rpkm_typical_middle_50pct_H3K27ac__r1",
+   "value": 1.2,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "rpkm_typical_middle_50pct_IgG",
+   "value": 0.479053,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "rpkm_typical_middle_50pct_IgG__r3",
+   "value": 0.479,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rpkm_typical_middle_50pct_IgG__r2",
+   "value": 0.48,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rpkm_typical_middle_50pct_IgG__r1",
+   "value": 0.5,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "rpkm_typical_middle_50pct_n",
+   "value": 76771.0,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "rpkm_under-predicted_1pct_CTCF",
+   "value": 1.200394,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "rpkm_under-predicted_1pct_CTCF__r3",
+   "value": 1.2,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rpkm_under-predicted_1pct_EP300",
+   "value": 2.895128,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "rpkm_under-predicted_1pct_EP300__r3",
+   "value": 2.895,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rpkm_under-predicted_1pct_EP300__r2",
+   "value": 2.9,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rpkm_under-predicted_1pct_H3K4me1",
+   "value": 4.354798,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "rpkm_under-predicted_1pct_H3K4me1__r3",
+   "value": 4.355,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rpkm_under-predicted_1pct_H3K4me1__r2",
+   "value": 4.35,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rpkm_under-predicted_1pct_H3K4me1__r1",
+   "value": 4.4,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "rpkm_under-predicted_1pct_H3K27me3",
+   "value": 0.311681,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "rpkm_under-predicted_1pct_H3K27me3__r3",
+   "value": 0.312,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rpkm_under-predicted_1pct_H3K27me3__r2",
+   "value": 0.31,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rpkm_under-predicted_1pct_H3K27me3__r1",
+   "value": 0.3,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "rpkm_under-predicted_1pct_H3K27ac",
+   "value": 17.521072,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "rpkm_under-predicted_1pct_H3K27ac__r3",
+   "value": 17.521,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rpkm_under-predicted_1pct_H3K27ac__r2",
+   "value": 17.52,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rpkm_under-predicted_1pct_H3K27ac__r1",
+   "value": 17.5,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "rpkm_under-predicted_1pct_IgG",
+   "value": 0.682488,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "rpkm_under-predicted_1pct_IgG__r3",
+   "value": 0.682,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rpkm_under-predicted_1pct_IgG__r2",
+   "value": 0.68,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rpkm_under-predicted_1pct_IgG__r1",
+   "value": 0.7,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "rpkm_under-predicted_1pct_n",
+   "value": 1536.0,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "rpkm_under-predicted_5pct_CTCF",
+   "value": 1.30567,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "rpkm_under-predicted_5pct_CTCF__r3",
+   "value": 1.306,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rpkm_under-predicted_5pct_CTCF__r2",
+   "value": 1.31,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rpkm_under-predicted_5pct_CTCF__r1",
+   "value": 1.3,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "rpkm_under-predicted_5pct_EP300",
+   "value": 2.420006,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "rpkm_under-predicted_5pct_EP300__r3",
+   "value": 2.42,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rpkm_under-predicted_5pct_EP300__r1",
+   "value": 2.4,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "rpkm_under-predicted_5pct_H3K4me1",
+   "value": 3.784652,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "rpkm_under-predicted_5pct_H3K4me1__r3",
+   "value": 3.785,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rpkm_under-predicted_5pct_H3K4me1__r2",
+   "value": 3.78,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rpkm_under-predicted_5pct_H3K4me1__r1",
+   "value": 3.8,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "rpkm_under-predicted_5pct_H3K27me3",
+   "value": 0.309243,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "rpkm_under-predicted_5pct_H3K27me3__r3",
+   "value": 0.309,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rpkm_under-predicted_5pct_H3K27me3__r2",
+   "value": 0.31,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rpkm_under-predicted_5pct_H3K27me3__r1",
+   "value": 0.3,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "rpkm_under-predicted_5pct_H3K27ac",
+   "value": 12.574574,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "rpkm_under-predicted_5pct_H3K27ac__r3",
+   "value": 12.575,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rpkm_under-predicted_5pct_H3K27ac__r2",
+   "value": 12.57,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rpkm_under-predicted_5pct_H3K27ac__r1",
+   "value": 12.6,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "rpkm_under-predicted_5pct_IgG",
+   "value": 0.650597,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "rpkm_under-predicted_5pct_IgG__r3",
+   "value": 0.651,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "rpkm_under-predicted_5pct_IgG__r2",
+   "value": 0.65,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "rpkm_under-predicted_5pct_IgG__r1",
+   "value": 0.7,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "rpkm_under-predicted_5pct_n",
+   "value": 7678.0,
+   "source": "results/error_strata_rpkm.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "ctcf_high_threshold_rpkm",
+   "value": 5.74754,
+   "source": "results/error_strata_ctcf_elements.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "ctcf_high_threshold_rpkm__r3",
+   "value": 5.748,
+   "source": "results/error_strata_ctcf_elements.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "ctcf_high_threshold_rpkm__r2",
+   "value": 5.75,
+   "source": "results/error_strata_ctcf_elements.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "ctcf_high_threshold_rpkm__r1",
+   "value": 5.7,
+   "source": "results/error_strata_ctcf_elements.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "ctcf_high_frac_of_over5",
+   "value": 0.265434,
+   "source": "results/error_strata_ctcf_elements.tsv",
+   "derived": true,
+   "note": "fraction of the over-predicted 5% tail above the CTCF-high threshold"
+  },
+  {
+   "name": "ctcf_high_frac_of_over5__r3",
+   "value": 0.265,
+   "source": "results/error_strata_ctcf_elements.tsv",
+   "derived": true,
+   "note": "fraction of the over-predicted 5% tail above the CTCF-high threshold (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "ctcf_high_frac_of_over5__r2",
+   "value": 0.27,
+   "source": "results/error_strata_ctcf_elements.tsv",
+   "derived": true,
+   "note": "fraction of the over-predicted 5% tail above the CTCF-high threshold (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "ctcf_high_frac_of_over5__r1",
+   "value": 0.3,
+   "source": "results/error_strata_ctcf_elements.tsv",
+   "derived": true,
+   "note": "fraction of the over-predicted 5% tail above the CTCF-high threshold (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "ctcf_high_pct_of_over5",
+   "value": 26.543371,
+   "source": "results/error_strata_ctcf_elements.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "ctcf_high_pct_of_over5__r3",
+   "value": 26.543,
+   "source": "results/error_strata_ctcf_elements.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "ctcf_high_pct_of_over5__r2",
+   "value": 26.54,
+   "source": "results/error_strata_ctcf_elements.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "ctcf_high_pct_of_over5__r1",
+   "value": 26.5,
+   "source": "results/error_strata_ctcf_elements.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "ctcf_high_median_err",
+   "value": 0.759225,
+   "source": "results/error_strata_ctcf_elements.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "ctcf_high_median_err__r3",
+   "value": 0.759,
+   "source": "results/error_strata_ctcf_elements.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "ctcf_high_median_err__r2",
+   "value": 0.76,
+   "source": "results/error_strata_ctcf_elements.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "ctcf_high_median_err__r1",
+   "value": 0.8,
+   "source": "results/error_strata_ctcf_elements.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "ctcf_high_n",
+   "value": 2038.0,
+   "source": "results/error_strata_ctcf_elements.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "ctcf_low_median_err",
+   "value": 0.821145,
+   "source": "results/error_strata_ctcf_elements.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "ctcf_low_median_err__r3",
+   "value": 0.821,
+   "source": "results/error_strata_ctcf_elements.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "ctcf_low_median_err__r2",
+   "value": 0.82,
+   "source": "results/error_strata_ctcf_elements.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "ctcf_low_median_err__r1",
+   "value": 0.8,
+   "source": "results/error_strata_ctcf_elements.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "ctcf_low_n",
+   "value": 5640.0,
+   "source": "results/error_strata_ctcf_elements.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "ctcf_high_pct_of_over1",
+   "value": 15.690104,
+   "source": "results/error_strata_ctcf_elements.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "ctcf_high_pct_of_over1__r3",
+   "value": 15.69,
+   "source": "results/error_strata_ctcf_elements.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "ctcf_high_pct_of_over1__r1",
+   "value": 15.7,
+   "source": "results/error_strata_ctcf_elements.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300obs_k562_vs_K562_ATAC_H3K27ac_element_delta",
+   "value": 0.037666,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300obs_k562_vs_K562_ATAC_H3K27ac_element_delta__r4",
+   "value": 0.0377,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300obs_k562_vs_K562_ATAC_H3K27ac_element_delta__r3",
+   "value": 0.038,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300obs_k562_vs_K562_ATAC_H3K27ac_element_delta__r2",
+   "value": 0.04,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300obs_k562_vs_K562_ATAC_H3K27ac_element_ci_lo",
+   "value": 0.01866,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300obs_k562_vs_K562_ATAC_H3K27ac_element_ci_lo__r4",
+   "value": 0.0187,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300obs_k562_vs_K562_ATAC_H3K27ac_element_ci_lo__r3",
+   "value": 0.019,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300obs_k562_vs_K562_ATAC_H3K27ac_element_ci_hi",
+   "value": 0.058302,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300obs_k562_vs_K562_ATAC_H3K27ac_element_ci_hi__r4",
+   "value": 0.0583,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300obs_k562_vs_K562_ATAC_H3K27ac_element_ci_hi__r3",
+   "value": 0.058,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300obs_k562_vs_K562_ATAC_H3K27ac_element_auprc_a",
+   "value": 0.567311,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300obs_k562_vs_K562_ATAC_H3K27ac_element_auprc_a__r4",
+   "value": 0.5673,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300obs_k562_vs_K562_ATAC_H3K27ac_element_auprc_a__r3",
+   "value": 0.567,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300obs_k562_vs_K562_ATAC_H3K27ac_element_auprc_b",
+   "value": 0.529646,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300obs_k562_vs_K562_ATAC_H3K27ac_element_auprc_b__r4",
+   "value": 0.5296,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300obs_k562_vs_K562_ATAC_H3K27ac_element_auprc_b__r3",
+   "value": 0.53,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300obs_k562_vs_K562_ATAC_H3K27ac_element_sign_kept_pct",
+   "value": 99.9,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300obs_k562_vs_K562_ATAC_H3K27ac_element_sign_kept_pct__r0",
+   "value": 100.0,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 0 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300obs_k562_vs_K562_ATAC_only_delta",
+   "value": 0.099303,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300obs_k562_vs_K562_ATAC_only_delta__r4",
+   "value": 0.0993,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300obs_k562_vs_K562_ATAC_only_delta__r3",
+   "value": 0.099,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300obs_k562_vs_K562_ATAC_only_delta__r2",
+   "value": 0.1,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300obs_k562_vs_K562_ATAC_only_ci_lo",
+   "value": 0.078564,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300obs_k562_vs_K562_ATAC_only_ci_lo__r4",
+   "value": 0.0786,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300obs_k562_vs_K562_ATAC_only_ci_lo__r3",
+   "value": 0.079,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300obs_k562_vs_K562_ATAC_only_ci_hi",
+   "value": 0.119849,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300obs_k562_vs_K562_ATAC_only_ci_hi__r4",
+   "value": 0.1198,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300obs_k562_vs_K562_ATAC_only_ci_hi__r3",
+   "value": 0.12,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300obs_k562_vs_K562_ATAC_only_auprc_a",
+   "value": 0.567311,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300obs_k562_vs_K562_ATAC_only_auprc_a__r4",
+   "value": 0.5673,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300obs_k562_vs_K562_ATAC_only_auprc_a__r3",
+   "value": 0.567,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300obs_k562_vs_K562_ATAC_only_auprc_b",
+   "value": 0.468009,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300obs_k562_vs_K562_ATAC_only_auprc_b__r4",
+   "value": 0.468,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300obs_k562_vs_K562_ATAC_only_sign_kept_pct",
+   "value": 100.0,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_K562_ATAC_only_delta",
+   "value": 0.05487,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_K562_ATAC_only_delta__r4",
+   "value": 0.0549,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_K562_ATAC_only_delta__r3",
+   "value": 0.055,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_K562_ATAC_only_delta__r2",
+   "value": 0.05,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_K562_ATAC_only_ci_lo",
+   "value": 0.034303,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_K562_ATAC_only_ci_lo__r4",
+   "value": 0.0343,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_K562_ATAC_only_ci_lo__r3",
+   "value": 0.034,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_K562_ATAC_only_ci_hi",
+   "value": 0.074142,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_K562_ATAC_only_ci_hi__r4",
+   "value": 0.0741,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_K562_ATAC_only_ci_hi__r3",
+   "value": 0.074,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_K562_ATAC_only_auprc_a",
+   "value": 0.522878,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_K562_ATAC_only_auprc_a__r4",
+   "value": 0.5229,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_K562_ATAC_only_auprc_a__r3",
+   "value": 0.523,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_K562_ATAC_only_auprc_b",
+   "value": 0.468009,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_K562_ATAC_only_auprc_b__r4",
+   "value": 0.468,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_K562_ATAC_only_sign_kept_pct",
+   "value": 100.0,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_K562_ATAC_H3K27ac_element_delta",
+   "value": -0.006767,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_K562_ATAC_H3K27ac_element_delta__r4",
+   "value": -0.0068,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_K562_ATAC_H3K27ac_element_delta__r3",
+   "value": -0.007,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_K562_ATAC_H3K27ac_element_delta__r2",
+   "value": -0.01,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_K562_ATAC_H3K27ac_element_ci_lo",
+   "value": -0.031681,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_K562_ATAC_H3K27ac_element_ci_lo__r4",
+   "value": -0.0317,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_K562_ATAC_H3K27ac_element_ci_lo__r3",
+   "value": -0.032,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_K562_ATAC_H3K27ac_element_ci_hi",
+   "value": 0.016756,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_K562_ATAC_H3K27ac_element_ci_hi__r4",
+   "value": 0.0168,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_K562_ATAC_H3K27ac_element_ci_hi__r3",
+   "value": 0.017,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_K562_ATAC_H3K27ac_element_auprc_a",
+   "value": 0.522878,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_K562_ATAC_H3K27ac_element_auprc_a__r4",
+   "value": 0.5229,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_K562_ATAC_H3K27ac_element_auprc_a__r3",
+   "value": 0.523,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_K562_ATAC_H3K27ac_element_auprc_b",
+   "value": 0.529646,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_K562_ATAC_H3K27ac_element_auprc_b__r4",
+   "value": 0.5296,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_K562_ATAC_H3K27ac_element_auprc_b__r3",
+   "value": 0.53,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_K562_ATAC_H3K27ac_element_sign_kept_pct",
+   "value": 71.15,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_K562_ATAC_H3K27ac_element_sign_kept_pct__r1",
+   "value": 71.2,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_K562_ATAC_H3K27ac_element_sign_kept_pct__r0",
+   "value": 71.0,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 0 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300only_k562_multimodal_vs_K562_ATAC_only_delta",
+   "value": 0.045189,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300only_k562_multimodal_vs_K562_ATAC_only_delta__r4",
+   "value": 0.0452,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300only_k562_multimodal_vs_K562_ATAC_only_delta__r3",
+   "value": 0.045,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300only_k562_multimodal_vs_K562_ATAC_only_delta__r2",
+   "value": 0.05,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300only_k562_multimodal_vs_K562_ATAC_only_ci_lo",
+   "value": 0.011889,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300only_k562_multimodal_vs_K562_ATAC_only_ci_lo__r4",
+   "value": 0.0119,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300only_k562_multimodal_vs_K562_ATAC_only_ci_lo__r3",
+   "value": 0.012,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300only_k562_multimodal_vs_K562_ATAC_only_ci_hi",
+   "value": 0.076536,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300only_k562_multimodal_vs_K562_ATAC_only_ci_hi__r4",
+   "value": 0.0765,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300only_k562_multimodal_vs_K562_ATAC_only_ci_hi__r3",
+   "value": 0.077,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300only_k562_multimodal_vs_K562_ATAC_only_auprc_a",
+   "value": 0.513197,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300only_k562_multimodal_vs_K562_ATAC_only_auprc_a__r4",
+   "value": 0.5132,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300only_k562_multimodal_vs_K562_ATAC_only_auprc_a__r3",
+   "value": 0.513,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300only_k562_multimodal_vs_K562_ATAC_only_auprc_b",
+   "value": 0.468009,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300only_k562_multimodal_vs_K562_ATAC_only_auprc_b__r4",
+   "value": 0.468,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300only_k562_multimodal_vs_K562_ATAC_only_sign_kept_pct",
+   "value": 99.55,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300only_k562_multimodal_vs_K562_ATAC_only_sign_kept_pct__r1",
+   "value": 99.5,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300only_k562_multimodal_vs_K562_ATAC_only_sign_kept_pct__r0",
+   "value": 100.0,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 0 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_atac_vs_K562_ATAC_only_delta",
+   "value": 0.004367,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_k562_atac_vs_K562_ATAC_only_delta__r4",
+   "value": 0.0044,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_atac_vs_K562_ATAC_only_delta__r3",
+   "value": 0.004,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_atac_vs_K562_ATAC_only_delta__r2",
+   "value": 0.0,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_atac_vs_K562_ATAC_only_ci_lo",
+   "value": -0.012299,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_k562_atac_vs_K562_ATAC_only_ci_lo__r4",
+   "value": -0.0123,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_atac_vs_K562_ATAC_only_ci_lo__r3",
+   "value": -0.012,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_atac_vs_K562_ATAC_only_ci_hi",
+   "value": 0.020848,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_k562_atac_vs_K562_ATAC_only_ci_hi__r4",
+   "value": 0.0208,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_atac_vs_K562_ATAC_only_ci_hi__r3",
+   "value": 0.021,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_atac_vs_K562_ATAC_only_auprc_a",
+   "value": 0.472375,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_k562_atac_vs_K562_ATAC_only_auprc_a__r4",
+   "value": 0.4724,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_atac_vs_K562_ATAC_only_auprc_a__r3",
+   "value": 0.472,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_atac_vs_K562_ATAC_only_auprc_b",
+   "value": 0.468009,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_k562_atac_vs_K562_ATAC_only_auprc_b__r4",
+   "value": 0.468,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_atac_vs_K562_ATAC_only_sign_kept_pct",
+   "value": 69.65,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_k562_atac_vs_K562_ATAC_only_sign_kept_pct__r1",
+   "value": 69.7,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_atac_vs_K562_ATAC_only_sign_kept_pct__r0",
+   "value": 70.0,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 0 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_p300pred_k562_atac_delta",
+   "value": 0.050503,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_p300pred_k562_atac_delta__r4",
+   "value": 0.0505,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_p300pred_k562_atac_delta__r3",
+   "value": 0.051,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_p300pred_k562_atac_delta__r2",
+   "value": 0.05,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_p300pred_k562_atac_ci_lo",
+   "value": 0.031502,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_p300pred_k562_atac_ci_lo__r4",
+   "value": 0.0315,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_p300pred_k562_atac_ci_lo__r3",
+   "value": 0.032,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_p300pred_k562_atac_ci_hi",
+   "value": 0.069043,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_p300pred_k562_atac_ci_hi__r4",
+   "value": 0.069,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_p300pred_k562_atac_auprc_a",
+   "value": 0.522878,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_p300pred_k562_atac_auprc_a__r4",
+   "value": 0.5229,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_p300pred_k562_atac_auprc_a__r3",
+   "value": 0.523,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_p300pred_k562_atac_auprc_b",
+   "value": 0.472375,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_p300pred_k562_atac_auprc_b__r4",
+   "value": 0.4724,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_p300pred_k562_atac_auprc_b__r3",
+   "value": 0.472,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_p300pred_k562_atac_sign_kept_pct",
+   "value": 100.0,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_gm12878_multimodal_vs_K562_ATAC_only_delta",
+   "value": 0.009093,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_gm12878_multimodal_vs_K562_ATAC_only_delta__r4",
+   "value": 0.0091,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_gm12878_multimodal_vs_K562_ATAC_only_delta__r3",
+   "value": 0.009,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_gm12878_multimodal_vs_K562_ATAC_only_delta__r2",
+   "value": 0.01,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_gm12878_multimodal_vs_K562_ATAC_only_ci_lo",
+   "value": -0.004158,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_gm12878_multimodal_vs_K562_ATAC_only_ci_lo__r4",
+   "value": -0.0042,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_gm12878_multimodal_vs_K562_ATAC_only_ci_lo__r3",
+   "value": -0.004,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_gm12878_multimodal_vs_K562_ATAC_only_ci_hi",
+   "value": 0.022238,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_gm12878_multimodal_vs_K562_ATAC_only_ci_hi__r4",
+   "value": 0.0222,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_gm12878_multimodal_vs_K562_ATAC_only_ci_hi__r3",
+   "value": 0.022,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_gm12878_multimodal_vs_K562_ATAC_only_auprc_a",
+   "value": 0.477101,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_gm12878_multimodal_vs_K562_ATAC_only_auprc_a__r4",
+   "value": 0.4771,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_gm12878_multimodal_vs_K562_ATAC_only_auprc_a__r3",
+   "value": 0.477,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_gm12878_multimodal_vs_K562_ATAC_only_auprc_b",
+   "value": 0.468009,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_gm12878_multimodal_vs_K562_ATAC_only_auprc_b__r4",
+   "value": 0.468,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_gm12878_multimodal_vs_K562_ATAC_only_sign_kept_pct",
+   "value": 91.4,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_gm12878_multimodal_vs_K562_ATAC_only_sign_kept_pct__r0",
+   "value": 91.0,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 0 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300only_gm12878_multimodal_vs_K562_ATAC_only_delta",
+   "value": 0.005067,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300only_gm12878_multimodal_vs_K562_ATAC_only_delta__r4",
+   "value": 0.0051,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300only_gm12878_multimodal_vs_K562_ATAC_only_delta__r3",
+   "value": 0.005,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300only_gm12878_multimodal_vs_K562_ATAC_only_delta__r2",
+   "value": 0.01,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300only_gm12878_multimodal_vs_K562_ATAC_only_ci_lo",
+   "value": -0.018823,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300only_gm12878_multimodal_vs_K562_ATAC_only_ci_lo__r4",
+   "value": -0.0188,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300only_gm12878_multimodal_vs_K562_ATAC_only_ci_lo__r3",
+   "value": -0.019,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300only_gm12878_multimodal_vs_K562_ATAC_only_ci_hi",
+   "value": 0.028351,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300only_gm12878_multimodal_vs_K562_ATAC_only_ci_hi__r4",
+   "value": 0.0284,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300only_gm12878_multimodal_vs_K562_ATAC_only_ci_hi__r3",
+   "value": 0.028,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300only_gm12878_multimodal_vs_K562_ATAC_only_auprc_a",
+   "value": 0.473076,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300only_gm12878_multimodal_vs_K562_ATAC_only_auprc_a__r4",
+   "value": 0.4731,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300only_gm12878_multimodal_vs_K562_ATAC_only_auprc_a__r3",
+   "value": 0.473,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300only_gm12878_multimodal_vs_K562_ATAC_only_auprc_b",
+   "value": 0.468009,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300only_gm12878_multimodal_vs_K562_ATAC_only_auprc_b__r4",
+   "value": 0.468,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300only_gm12878_multimodal_vs_K562_ATAC_only_sign_kept_pct",
+   "value": 65.0,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_p300pred_gm12878_multimodal_delta",
+   "value": 0.045777,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_p300pred_gm12878_multimodal_delta__r4",
+   "value": 0.0458,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_p300pred_gm12878_multimodal_delta__r3",
+   "value": 0.046,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_p300pred_gm12878_multimodal_delta__r2",
+   "value": 0.05,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_p300pred_gm12878_multimodal_ci_lo",
+   "value": 0.029588,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_p300pred_gm12878_multimodal_ci_lo__r4",
+   "value": 0.0296,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_p300pred_gm12878_multimodal_ci_lo__r3",
+   "value": 0.03,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_p300pred_gm12878_multimodal_ci_hi",
+   "value": 0.060966,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_p300pred_gm12878_multimodal_ci_hi__r4",
+   "value": 0.061,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_p300pred_gm12878_multimodal_auprc_a",
+   "value": 0.522878,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_p300pred_gm12878_multimodal_auprc_a__r4",
+   "value": 0.5229,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_p300pred_gm12878_multimodal_auprc_a__r3",
+   "value": 0.523,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_p300pred_gm12878_multimodal_auprc_b",
+   "value": 0.477101,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_p300pred_gm12878_multimodal_auprc_b__r4",
+   "value": 0.4771,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_p300pred_gm12878_multimodal_auprc_b__r3",
+   "value": 0.477,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_k562_multimodal_vs_p300pred_gm12878_multimodal_sign_kept_pct",
+   "value": 100.0,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_gm12878_multimodal_vs_K562_ATAC_H3K27ac_element_delta",
+   "value": -0.052544,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_gm12878_multimodal_vs_K562_ATAC_H3K27ac_element_delta__r4",
+   "value": -0.0525,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_gm12878_multimodal_vs_K562_ATAC_H3K27ac_element_delta__r3",
+   "value": -0.053,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_gm12878_multimodal_vs_K562_ATAC_H3K27ac_element_delta__r2",
+   "value": -0.05,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_gm12878_multimodal_vs_K562_ATAC_H3K27ac_element_ci_lo",
+   "value": -0.074048,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_gm12878_multimodal_vs_K562_ATAC_H3K27ac_element_ci_lo__r4",
+   "value": -0.074,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_gm12878_multimodal_vs_K562_ATAC_H3K27ac_element_ci_hi",
+   "value": -0.031579,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_gm12878_multimodal_vs_K562_ATAC_H3K27ac_element_ci_hi__r4",
+   "value": -0.0316,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_gm12878_multimodal_vs_K562_ATAC_H3K27ac_element_ci_hi__r3",
+   "value": -0.032,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_gm12878_multimodal_vs_K562_ATAC_H3K27ac_element_auprc_a",
+   "value": 0.477101,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_gm12878_multimodal_vs_K562_ATAC_H3K27ac_element_auprc_a__r4",
+   "value": 0.4771,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_gm12878_multimodal_vs_K562_ATAC_H3K27ac_element_auprc_a__r3",
+   "value": 0.477,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_gm12878_multimodal_vs_K562_ATAC_H3K27ac_element_auprc_b",
+   "value": 0.529646,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_p300_p300pred_gm12878_multimodal_vs_K562_ATAC_H3K27ac_element_auprc_b__r4",
+   "value": 0.5296,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_gm12878_multimodal_vs_K562_ATAC_H3K27ac_element_auprc_b__r3",
+   "value": 0.53,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_p300_p300pred_gm12878_multimodal_vs_K562_ATAC_H3K27ac_element_sign_kept_pct",
+   "value": 100.0,
+   "source": "results/paired_auprc_p300.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_k27_k27only_k562_multimodal_vs_K562_ATAC_only_delta",
+   "value": 0.024779,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_k27_k27only_k562_multimodal_vs_K562_ATAC_only_delta__r4",
+   "value": 0.0248,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_k27only_k562_multimodal_vs_K562_ATAC_only_delta__r3",
+   "value": 0.025,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_k27only_k562_multimodal_vs_K562_ATAC_only_delta__r2",
+   "value": 0.02,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_k27only_k562_multimodal_vs_K562_ATAC_only_ci_lo",
+   "value": -0.003414,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_k27_k27only_k562_multimodal_vs_K562_ATAC_only_ci_lo__r4",
+   "value": -0.0034,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_k27only_k562_multimodal_vs_K562_ATAC_only_ci_lo__r3",
+   "value": -0.003,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_k27only_k562_multimodal_vs_K562_ATAC_only_ci_hi",
+   "value": 0.051817,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_k27_k27only_k562_multimodal_vs_K562_ATAC_only_ci_hi__r4",
+   "value": 0.0518,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_k27only_k562_multimodal_vs_K562_ATAC_only_ci_hi__r3",
+   "value": 0.052,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_k27only_k562_multimodal_vs_K562_ATAC_only_auprc_a",
+   "value": 0.492788,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_k27_k27only_k562_multimodal_vs_K562_ATAC_only_auprc_a__r4",
+   "value": 0.4928,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_k27only_k562_multimodal_vs_K562_ATAC_only_auprc_a__r3",
+   "value": 0.493,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_k27only_k562_multimodal_vs_K562_ATAC_only_auprc_b",
+   "value": 0.468009,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_k27_k27only_k562_multimodal_vs_K562_ATAC_only_auprc_b__r4",
+   "value": 0.468,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_k27only_k562_multimodal_vs_K562_ATAC_only_sign_kept_pct",
+   "value": 95.35,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_k27_k27only_k562_multimodal_vs_K562_ATAC_only_sign_kept_pct__r1",
+   "value": 95.3,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_k27only_k562_multimodal_vs_K562_ATAC_only_sign_kept_pct__r0",
+   "value": 95.0,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 0 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_pred_k562_multimodal_vs_K562_ATAC_only_delta",
+   "value": 0.012133,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_k27_pred_k562_multimodal_vs_K562_ATAC_only_delta__r4",
+   "value": 0.0121,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_pred_k562_multimodal_vs_K562_ATAC_only_delta__r3",
+   "value": 0.012,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_pred_k562_multimodal_vs_K562_ATAC_only_delta__r2",
+   "value": 0.01,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_pred_k562_multimodal_vs_K562_ATAC_only_ci_lo",
+   "value": -0.005318,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_k27_pred_k562_multimodal_vs_K562_ATAC_only_ci_lo__r4",
+   "value": -0.0053,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_pred_k562_multimodal_vs_K562_ATAC_only_ci_lo__r3",
+   "value": -0.005,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_pred_k562_multimodal_vs_K562_ATAC_only_ci_hi",
+   "value": 0.028499,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_k27_pred_k562_multimodal_vs_K562_ATAC_only_ci_hi__r4",
+   "value": 0.0285,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_pred_k562_multimodal_vs_K562_ATAC_only_ci_hi__r3",
+   "value": 0.028,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_pred_k562_multimodal_vs_K562_ATAC_only_auprc_a",
+   "value": 0.480142,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_k27_pred_k562_multimodal_vs_K562_ATAC_only_auprc_a__r4",
+   "value": 0.4801,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_pred_k562_multimodal_vs_K562_ATAC_only_auprc_a__r3",
+   "value": 0.48,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_pred_k562_multimodal_vs_K562_ATAC_only_auprc_b",
+   "value": 0.468009,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_k27_pred_k562_multimodal_vs_K562_ATAC_only_auprc_b__r4",
+   "value": 0.468,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_pred_k562_multimodal_vs_K562_ATAC_only_sign_kept_pct",
+   "value": 91.05,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_k27_pred_k562_multimodal_vs_K562_ATAC_only_sign_kept_pct__r1",
+   "value": 91.0,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_K562_ATAC_H3K27ac_element_vs_K562_ATAC_only_delta",
+   "value": 0.061637,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_k27_K562_ATAC_H3K27ac_element_vs_K562_ATAC_only_delta__r4",
+   "value": 0.0616,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_K562_ATAC_H3K27ac_element_vs_K562_ATAC_only_delta__r3",
+   "value": 0.062,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_K562_ATAC_H3K27ac_element_vs_K562_ATAC_only_delta__r2",
+   "value": 0.06,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_K562_ATAC_H3K27ac_element_vs_K562_ATAC_only_ci_lo",
+   "value": 0.043748,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_k27_K562_ATAC_H3K27ac_element_vs_K562_ATAC_only_ci_lo__r4",
+   "value": 0.0437,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_K562_ATAC_H3K27ac_element_vs_K562_ATAC_only_ci_lo__r3",
+   "value": 0.044,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_K562_ATAC_H3K27ac_element_vs_K562_ATAC_only_ci_hi",
+   "value": 0.080399,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_k27_K562_ATAC_H3K27ac_element_vs_K562_ATAC_only_ci_hi__r4",
+   "value": 0.0804,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_K562_ATAC_H3K27ac_element_vs_K562_ATAC_only_ci_hi__r3",
+   "value": 0.08,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_K562_ATAC_H3K27ac_element_vs_K562_ATAC_only_auprc_a",
+   "value": 0.529646,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_k27_K562_ATAC_H3K27ac_element_vs_K562_ATAC_only_auprc_a__r4",
+   "value": 0.5296,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_K562_ATAC_H3K27ac_element_vs_K562_ATAC_only_auprc_a__r3",
+   "value": 0.53,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_K562_ATAC_H3K27ac_element_vs_K562_ATAC_only_auprc_b",
+   "value": 0.468009,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_k27_K562_ATAC_H3K27ac_element_vs_K562_ATAC_only_auprc_b__r4",
+   "value": 0.468,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_K562_ATAC_H3K27ac_element_vs_K562_ATAC_only_sign_kept_pct",
+   "value": 100.0,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_k27_k27only_k562_multimodal_vs_K562_ATAC_H3K27ac_element_delta",
+   "value": -0.036858,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_k27_k27only_k562_multimodal_vs_K562_ATAC_H3K27ac_element_delta__r4",
+   "value": -0.0369,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_k27only_k562_multimodal_vs_K562_ATAC_H3K27ac_element_delta__r3",
+   "value": -0.037,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_k27only_k562_multimodal_vs_K562_ATAC_H3K27ac_element_delta__r2",
+   "value": -0.04,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_k27only_k562_multimodal_vs_K562_ATAC_H3K27ac_element_ci_lo",
+   "value": -0.061845,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_k27_k27only_k562_multimodal_vs_K562_ATAC_H3K27ac_element_ci_lo__r4",
+   "value": -0.0618,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_k27only_k562_multimodal_vs_K562_ATAC_H3K27ac_element_ci_lo__r3",
+   "value": -0.062,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_k27only_k562_multimodal_vs_K562_ATAC_H3K27ac_element_ci_hi",
+   "value": -0.013381,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_k27_k27only_k562_multimodal_vs_K562_ATAC_H3K27ac_element_ci_hi__r4",
+   "value": -0.0134,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_k27only_k562_multimodal_vs_K562_ATAC_H3K27ac_element_ci_hi__r3",
+   "value": -0.013,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_k27only_k562_multimodal_vs_K562_ATAC_H3K27ac_element_auprc_a",
+   "value": 0.492788,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_k27_k27only_k562_multimodal_vs_K562_ATAC_H3K27ac_element_auprc_a__r4",
+   "value": 0.4928,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_k27only_k562_multimodal_vs_K562_ATAC_H3K27ac_element_auprc_a__r3",
+   "value": 0.493,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_k27only_k562_multimodal_vs_K562_ATAC_H3K27ac_element_auprc_b",
+   "value": 0.529646,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_k27_k27only_k562_multimodal_vs_K562_ATAC_H3K27ac_element_auprc_b__r4",
+   "value": 0.5296,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_k27only_k562_multimodal_vs_K562_ATAC_H3K27ac_element_auprc_b__r3",
+   "value": 0.53,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_k27only_k562_multimodal_vs_K562_ATAC_H3K27ac_element_sign_kept_pct",
+   "value": 99.9,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_k27_k27only_k562_multimodal_vs_K562_ATAC_H3K27ac_element_sign_kept_pct__r0",
+   "value": 100.0,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 0 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_pred_gm12878_multimodal_vs_K562_ATAC_only_delta",
+   "value": -0.004808,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_k27_pred_gm12878_multimodal_vs_K562_ATAC_only_delta__r4",
+   "value": -0.0048,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_pred_gm12878_multimodal_vs_K562_ATAC_only_delta__r3",
+   "value": -0.005,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_pred_gm12878_multimodal_vs_K562_ATAC_only_delta__r2",
+   "value": -0.0,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_pred_gm12878_multimodal_vs_K562_ATAC_only_ci_lo",
+   "value": -0.02157,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_k27_pred_gm12878_multimodal_vs_K562_ATAC_only_ci_lo__r4",
+   "value": -0.0216,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_pred_gm12878_multimodal_vs_K562_ATAC_only_ci_lo__r3",
+   "value": -0.022,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_pred_gm12878_multimodal_vs_K562_ATAC_only_ci_hi",
+   "value": 0.01104,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_k27_pred_gm12878_multimodal_vs_K562_ATAC_only_ci_hi__r4",
+   "value": 0.011,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_pred_gm12878_multimodal_vs_K562_ATAC_only_auprc_a",
+   "value": 0.4632,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_k27_pred_gm12878_multimodal_vs_K562_ATAC_only_auprc_a__r3",
+   "value": 0.463,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_pred_gm12878_multimodal_vs_K562_ATAC_only_auprc_b",
+   "value": 0.468009,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_k27_pred_gm12878_multimodal_vs_K562_ATAC_only_auprc_b__r4",
+   "value": 0.468,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_pred_gm12878_multimodal_vs_K562_ATAC_only_sign_kept_pct",
+   "value": 72.7,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_k27_pred_gm12878_multimodal_vs_K562_ATAC_only_sign_kept_pct__r0",
+   "value": 73.0,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 0 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_pred_gm12878_atac_vs_K562_ATAC_only_delta",
+   "value": -0.002815,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_k27_pred_gm12878_atac_vs_K562_ATAC_only_delta__r4",
+   "value": -0.0028,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_pred_gm12878_atac_vs_K562_ATAC_only_delta__r3",
+   "value": -0.003,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_pred_gm12878_atac_vs_K562_ATAC_only_delta__r2",
+   "value": -0.0,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_pred_gm12878_atac_vs_K562_ATAC_only_ci_lo",
+   "value": -0.013153,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_k27_pred_gm12878_atac_vs_K562_ATAC_only_ci_lo__r4",
+   "value": -0.0132,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_pred_gm12878_atac_vs_K562_ATAC_only_ci_lo__r3",
+   "value": -0.013,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_pred_gm12878_atac_vs_K562_ATAC_only_ci_hi",
+   "value": 0.007812,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_k27_pred_gm12878_atac_vs_K562_ATAC_only_ci_hi__r4",
+   "value": 0.0078,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_pred_gm12878_atac_vs_K562_ATAC_only_ci_hi__r3",
+   "value": 0.008,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_pred_gm12878_atac_vs_K562_ATAC_only_auprc_a",
+   "value": 0.465194,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_k27_pred_gm12878_atac_vs_K562_ATAC_only_auprc_a__r4",
+   "value": 0.4652,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_pred_gm12878_atac_vs_K562_ATAC_only_auprc_a__r3",
+   "value": 0.465,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_pred_gm12878_atac_vs_K562_ATAC_only_auprc_b",
+   "value": 0.468009,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_k27_pred_gm12878_atac_vs_K562_ATAC_only_auprc_b__r4",
+   "value": 0.468,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 4 dp as quoted)"
+  },
+  {
+   "name": "paired_k27_pred_gm12878_atac_vs_K562_ATAC_only_sign_kept_pct",
+   "value": 73.2,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "paired_k27_pred_gm12878_atac_vs_K562_ATAC_only_sign_kept_pct__r0",
+   "value": 73.0,
+   "source": "results/paired_auprc_h3k27ac.tsv",
+   "derived": true,
+   "note": " (rounded to 0 dp as quoted)"
+  },
+  {
+   "name": "n_gc_tiling_bins",
+   "value": 3088298.0,
+   "source": "reference/genomewide_gc_*.gc.bed",
+   "derived": true,
+   "note": "rows in the GC-annotated tiling used as the negative pool"
+  },
+  {
+   "name": "pct_of_ceiling_topq_sequence5p",
+   "value": 42.717794,
+   "source": "results/rc_fiveprime_fold_summary.tsv + ceiling",
+   "derived": true,
+   "note": "top-quintile r as a percentage of the corrected ceiling"
+  },
+  {
+   "name": "pct_of_ceiling_topq_sequence5p__r1",
+   "value": 42.7,
+   "source": "results/rc_fiveprime_fold_summary.tsv + ceiling",
+   "derived": true,
+   "note": "top-quintile r as a percentage of the corrected ceiling (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "pct_of_ceiling_topq_sequence5p__r0",
+   "value": 43.0,
+   "source": "results/rc_fiveprime_fold_summary.tsv + ceiling",
+   "derived": true,
+   "note": "top-quintile r as a percentage of the corrected ceiling (rounded to 0 dp as quoted)"
+  },
+  {
+   "name": "pct_of_ceiling_topq_atac5p",
+   "value": 59.288424,
+   "source": "results/rc_fiveprime_fold_summary.tsv + ceiling",
+   "derived": true,
+   "note": "top-quintile r as a percentage of the corrected ceiling"
+  },
+  {
+   "name": "pct_of_ceiling_topq_atac5p__r1",
+   "value": 59.3,
+   "source": "results/rc_fiveprime_fold_summary.tsv + ceiling",
+   "derived": true,
+   "note": "top-quintile r as a percentage of the corrected ceiling (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "pct_of_ceiling_topq_atac5p__r0",
+   "value": 59.0,
+   "source": "results/rc_fiveprime_fold_summary.tsv + ceiling",
+   "derived": true,
+   "note": "top-quintile r as a percentage of the corrected ceiling (rounded to 0 dp as quoted)"
+  },
+  {
+   "name": "pct_of_ceiling_topq_multimodal5p",
+   "value": 74.783039,
+   "source": "results/rc_fiveprime_fold_summary.tsv + ceiling",
+   "derived": true,
+   "note": "top-quintile r as a percentage of the corrected ceiling"
+  },
+  {
+   "name": "pct_of_ceiling_topq_multimodal5p__r1",
+   "value": 74.8,
+   "source": "results/rc_fiveprime_fold_summary.tsv + ceiling",
+   "derived": true,
+   "note": "top-quintile r as a percentage of the corrected ceiling (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "pct_of_ceiling_topq_multimodal5p__r0",
+   "value": 75.0,
+   "source": "results/rc_fiveprime_fold_summary.tsv + ceiling",
+   "derived": true,
+   "note": "top-quintile r as a percentage of the corrected ceiling (rounded to 0 dp as quoted)"
+  },
+  {
+   "name": "gate_unmatched_init_pct_diff",
+   "value": 108.0,
+   "source": null,
+   "derived": false,
+   "note": "percent difference between gate and baseline when RNG draws are not matched (scripts/test_asymmetric_loss.py)"
+  },
+  {
    "name": "n_folds",
    "value": 5.0,
    "source": null,

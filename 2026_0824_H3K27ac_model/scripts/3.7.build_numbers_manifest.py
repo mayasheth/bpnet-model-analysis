@@ -323,6 +323,132 @@ try:
 except Exception as e:                     # pyBigWig missing or a track absent
     print(f"  SKIP depth ratios: {e}")
 
+# --- prediction-error strata: composition, peak overlap, quantitative signal --------------
+# These three tables are quoted heavily in Report 3's error-strata section and in Report 2's
+# aggregate-statistics rule, and every number in them was hand-typed until now. Registering
+# them is what makes those sections drift-proof: if 4.10/4.11/4.13 re-run and a stratum
+# shifts, the report's prose stops matching and the lint says so.
+def _strata_tables():
+    required = ("prediction_error_strata.tsv", "error_strata_peak_overlap.tsv",
+                "error_strata_rpkm.tsv", "error_strata_ctcf_elements.tsv")
+    absent = [f for f in required if tsv(f) is None]
+    if absent:
+        raise SystemExit(
+            "3.7: error-strata tables missing, so their numbers would go unregistered "
+            "and the report lint would keep flagging them: " + ", ".join(absent) +
+            "\n  regenerate with 4.10 --emit-elements, 4.11, 4.13 and 4.15")
+    d = tsv("prediction_error_strata.tsv")
+    if d is not None:
+        key = "stratum" if "stratum" in d.columns else d.columns[0]
+        for _, r in d.iterrows():
+            lab = (str(r[key]).replace(" ", "_").replace("%", "pct")
+                   .replace("(", "").replace(")", ""))
+            for col in ("n", "k27_obs", "k27_pred", "atac", "atac_over_k27", "gc",
+                        "cpg_oe", "pct_promoter"):
+                if col in d.columns:
+                    add(f"strata_{lab}_{col}", r[col],
+                        "results/prediction_error_strata.tsv")
+    # Peak overlap and RPKM are written as percentages / RPKM by 4.11 and 4.13.
+    for fn, tag in (("error_strata_peak_overlap.tsv", "peakov"),
+                    ("error_strata_rpkm.tsv", "rpkm")):
+        d = tsv(fn)
+        if d is None:
+            continue
+        for _, r in d.iterrows():
+            lab = str(r["stratum"])
+            for m in ("CTCF", "EP300", "H3K4me1", "H3K27me3", "H3K27ac", "IgG"):
+                if m in d.columns:
+                    add(f"{tag}_{lab}_{m}", r[m], f"results/{fn}")
+            if "n" in d.columns:
+                add(f"{tag}_{lab}_n", r["n"], f"results/{fn}", roundings=())
+    # The CTCF attributable-fraction split, recomputed from the per-element table so the
+    # 26.5% / 15.7% figures in both reports are backed rather than typed.
+    d = tsv("error_strata_ctcf_elements.tsv")
+    if d is not None and {"over5", "CTCF_rpkm", "stratum"} <= set(d.columns):
+        typ = d[d["stratum"] == "typical (middle 50%)"]
+        over5 = d[d["over5"] == 1]
+        if len(typ) and len(over5):
+            thr = typ["CTCF_rpkm"].quantile(0.90)
+            add("ctcf_high_threshold_rpkm", thr,
+                "results/error_strata_ctcf_elements.tsv")
+            hi = over5[over5["CTCF_rpkm"] > thr]
+            add("ctcf_high_frac_of_over5", len(hi) / len(over5),
+                "results/error_strata_ctcf_elements.tsv",
+                "fraction of the over-predicted 5% tail above the CTCF-high threshold")
+            add("ctcf_high_pct_of_over5", 100.0 * len(hi) / len(over5),
+                "results/error_strata_ctcf_elements.tsv")
+            for lab, sub in (("high", hi), ("low", over5[over5["CTCF_rpkm"] <= thr])):
+                add(f"ctcf_{lab}_median_err", sub["err"].median(),
+                    "results/error_strata_ctcf_elements.tsv")
+                add(f"ctcf_{lab}_n", len(sub),
+                    "results/error_strata_ctcf_elements.tsv", roundings=())
+            over1 = d[d["stratum"] == "over-predicted 1%"]
+            if len(over1):
+                add("ctcf_high_pct_of_over1",
+                    100.0 * (over1["CTCF_rpkm"] > thr).mean(),
+                    "results/error_strata_ctcf_elements.tsv")
+
+
+_strata_tables()
+
+
+# --- paired-bootstrap benchmark deltas ---------------------------------------
+# These are the report's headline downstream numbers. They were read off a log and hand-typed
+# until 4.17 gained --out-tsv; registering them means a re-run that shifts a delta stops
+# matching the prose.
+for _tag, _fn in (("p300", "paired_auprc_p300.tsv"),
+                  ("k27", "paired_auprc_h3k27ac.tsv")):
+    _d = tsv(_fn)
+    if _d is None:
+        print(f"  SKIP paired bootstrap {_tag}: {_fn} absent (run 4.17 --out-tsv)")
+        continue
+    for _, r in _d.iterrows():
+        a_ = str(r["arm_a"]).replace(".ABC.Score", "")
+        b_ = str(r["arm_b"]).replace(".ABC.Score", "")
+        stem = f"paired_{_tag}_{a_}_vs_{b_}"
+        for col, nd in (("delta", (4, 3, 2)), ("ci_lo", (4, 3)), ("ci_hi", (4, 3)),
+                        ("auprc_a", (4, 3)), ("auprc_b", (4, 3)),
+                        ("sign_kept_pct", (1, 0))):
+            add(f"{stem}_{col}", r[col], f"results/{_fn}", roundings=nd)
+
+# The negative pool's size, quoted in Report 1 when explaining that the file is a genome-wide
+# tiling rather than a matched set.
+_neg = os.path.join(os.path.dirname(P), "reference",
+                    "genomewide_gc_stride_1000_flank_size_1057.gc.bed")
+if os.path.exists(_neg):
+    with open(_neg, "rb") as _f:
+        add("n_gc_tiling_bins", sum(1 for _ in _f), "reference/genomewide_gc_*.gc.bed",
+            "rows in the GC-annotated tiling used as the negative pool", roundings=())
+
+
+# Fraction-of-ceiling figures quoted in prose, derived here rather than typed so they track
+# the underlying values. Ceiling is the corrected bound from Report 1.
+try:
+    _c = tsv("fiveprime_replicate_ceiling_by_window.tsv")
+    _f = tsv("rc_fiveprime_fold_summary.tsv")
+    if _c is not None and _f is not None:
+        _row = _c[_c["half_window"] == 500].iloc[0]
+        _rel = 2 * float(_row["pearson_top_quintile"]) / (1 + float(_row["pearson_top_quintile"]))
+        _ceil = _rel ** 0.5
+        for _lab in ("sequence5p", "atac5p", "multimodal5p"):
+            _m = _f[_f["config"] == _lab]
+            if len(_m):
+                _v = float(str(_m["overall_pearson_topq"].iloc[0]).split()[0])
+                add(f"pct_of_ceiling_topq_{_lab}", 100.0 * _v / _ceil,
+                    "results/rc_fiveprime_fold_summary.tsv + ceiling",
+                    "top-quintile r as a percentage of the corrected ceiling",
+                    roundings=(1, 0))
+except Exception as _e:
+    print(f"  SKIP ceiling fractions: {_e}")
+
+# A regression-test diagnostic, not a result: how far apart two gate models sit when their
+# initialisations are NOT matched, which is why the test matches them. Registered so the
+# number in Report 3's methods is traceable to the test that produced it.
+const("gate_unmatched_init_pct_diff", 108,
+      "percent difference between gate and baseline when RNG draws are not matched "
+      "(scripts/test_asymmetric_loss.py)")
+
+
 # --- structural constants ----------------------------------------------------
 const("n_folds", 5, "chromosome-holdout cross-validation folds")
 const("ci_level_pct", 95, "confidence interval level used throughout")

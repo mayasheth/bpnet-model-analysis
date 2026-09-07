@@ -110,13 +110,22 @@ Three things follow, two reassuring and one not.
   their real signal. They are also restricted to each fold's training chromosomes.
 - **No reported number is computed on them.** Evaluation runs on the candidate element set
   only (Report 2), so every correlation in these three reports is an element-only number.
-- **But it changes what the model can learn.** A positive/negative contrast separable on GC
-  content alone is a known way to turn a BPNet-style sequence branch into a coarse GC
-  detector, and a large share of the sequence branch's training signal here is that contrast:
-  negatives are 10% of every batch and differ from positives by 0.1 in mean GC. This is a
-  live hypothesis for why the sequence branch has almost no dynamic range *within* candidate
-  elements while still correlating 0.397 across them (Report 3), and it is the first item on
-  that report's open list.
+- **It was a plausible cause of the sequence branch's flatness, and it is not the cause.**
+  A positive/negative contrast separable on GC alone is a known way to turn a BPNet-style
+  sequence branch into a coarse GC detector, and negatives are 10% of every batch differing
+  from positives by ~0.1 in mean GC. **Tested and refuted**: retraining on properly GC-matched
+  negatives gives +0.001 in-cell type (*p*=0.76) and -0.002 transferred (*p*=0.33), with the
+  match verified beforehand -- mean-GC gap to the elements closed 6.6x and the largest per-bin
+  discrepancy 5x (Report 3). So the mismatch is real and documented here for anyone
+  reproducing the training, but it is not load-bearing for any result.
+
+**Practical consequence for reproduction.** Nothing needs re-running on account of the
+unmatched pool. If you build new models, `data/gc_negatives_{k562,gm12878}_h3k27ac.bed` are
+matched sets produced by `scripts/0.28`; they change nothing measurable, and using the tiling
+directly keeps new numbers comparable to every existing one. Two failure modes of the matching
+tool are recorded in the repository learnings -- it exits 0 having written nothing when
+`bedtools` is absent, and it hangs rather than reporting a shortfall when the foreground is
+GC-rich enough to exhaust the high-GC bins.
 
 **Separately, the candidate element set itself spans active and inactive elements**, so most
 of it carries no H3K27ac whatever the negatives are doing. That is the reason every
@@ -379,6 +388,92 @@ top-decile mean/median ratios on the tested regions, and by counting the pairs e
 catches that the other misses. Run that diagnostic before concluding anything about the
 model from an AUPRC.
 
+## An aggregate statistic never licenses an element-level or causal claim
+
+**The rule.** A statistic computed over a group answers a question about the group. It does not
+identify which members carry it, and it never establishes cause. Before describing a stratum
+as *explained*, run the attributable-fraction test: remove the elements carrying the proposed
+cause and report whether the phenotype survives.
+
+**Why it has its own section.** This went wrong four times in one week, in four separate
+analyses, and only after the fourth did the shape become obvious.
+
+- **Peak overlap.** 36.9% of the over-predicted stratum overlaps a CTCF peak against 17.4%
+  typical, with EP300 and H3K27ac apparently enriched too, so the tail read as "enriched for
+  everything". Quantitative RPKM put H3K27ac and H3K4me1 *at background*: peaks were being
+  called on regions with no signal elevation.
+- **A control applied to the wrong arm.** The over-predicted stratum is *defined* as
+  accessibility-high and H3K27ac-low, so its observed residual is strongly negative and **any**
+  predictor that does not track accessibility downward -- including a constant -- scores as
+  over-predicting. The metric could not answer the question it was being asked.
+- **Fold elevation without a dynamic-range control.** The sequence arm sits at 1.55x its own
+  median where the truth is 1.00x, which looks nearly right, until the opposite tail shows it
+  reaches only 1.44x where the truth is 31.3x. It was flat, not accurate.
+- **A pooled mean read causally.** CTCF RPKM is 2.6x in the over-predicted stratum with IgG
+  below background, which looked decisive. Element by element the tail's CTCF *median* is 0.72
+  against 0.55 typical, only 15.7% of it is CTCF-high, and **removing the CTCF-high quarter
+  leaves the rest over-predicted more, not less**. Meanwhile GC correlates with the error 3-4x
+  more strongly than CTCF does, and had never been tested.
+
+**Three cheap tests, and the third is the one that matters.**
+
+1. **Distribution, not mean.** Report quartiles and the fraction above a threshold. A 2.6x mean
+   with an unchanged median is a minority effect and reads completely differently.
+2. **Match the confounders.** Correlate within deciles of the obvious confounder, and put a
+   background track through the identical computation.
+3. **Attributable fraction.** Remove the elements carrying the proposed cause. If the
+   phenotype survives, the cause is a passenger however real the enrichment.
+
+**The standing question to ask of any enrichment result, including your own:** does this check
+the actual signal at the elements we think carry the mechanism, or does it assume that is what
+the enrichment means?
+
+## Compare benchmark arms with a paired bootstrap, never with the unpaired intervals
+
+**The rule.** `performance_summary.txt` reports an independent bootstrap CI per predictor.
+Those are ~+/-0.05 wide while the differences of interest are 0.004-0.099, so **every** arm's
+interval overlaps every other's and no comparison can be made from them. Use
+`scripts/4.17.paired_auprc_bootstrap.py`: resample the shared element-gene pair set once per
+iteration and recompute every arm on that same resample. Report the delta, a percentile CI,
+and the fraction of resamples preserving the sign.
+
+**Why.** All arms are scored on the identical pair set, so shared pair-sampling variance
+dominates and pairing removes it. This is the same argument as the within-fold pairing used
+for the model metrics above, and it was applied upstream but not downstream purely by
+oversight.
+
+**The incident.** The H3K27ac benchmark was read off overlapping unpaired intervals and
+reported as "no arm clears the floor". The p300 run then showed a +0.055 difference sitting
+inside two overlapping unpaired intervals resolving at **100% sign retention**, and a +0.009
+difference resolving as a clean null. The H3K27ac conclusion is still pending a paired re-test
+and should not be treated as settled until it has one.
+
+**One thing to check when adopting the paired test.** `4.17` computes average precision
+directly and reports values a constant +0.0105 above the pipeline's for every arm -- an
+estimator difference in tie handling, not a difference in the data. Quote the paired *deltas*,
+not `4.17`'s absolute values.
+
+## Verify a manipulation before reading its result, with the failure condition written first
+
+**The rule.** When an experiment turns on having successfully changed something -- matched a
+distribution, added a channel, shifted a track -- verify the change itself and pre-commit what
+would count as failure, in code, before looking at the outcome metric.
+
+**Why.** It is the difference between a null result and a failed intervention, and the two
+call for opposite next steps. The GC-matched-negatives experiment is the worked example:
+`scripts/0.29` recovered GC by joining the matched pool's coordinates back to the tiling's own
+annotation so both sides used one estimator, printed the elements' distribution against the
+matched and unmatched pools, and **raised a warning if matching failed to close at least half
+the mean-GC gap**. It closed 85% of it, so the +0.001 outcome is a real answer about the
+hypothesis rather than a report on a botched setup.
+
+**The same rule caught two silent failures upstream.** `bpnet-gc-background` exits **0** having
+written a 0-byte file when `bedtools` is missing from its environment, and it hangs
+indefinitely rather than reporting a shortfall when the foreground is GC-rich enough to
+exhaust the high-GC bins. Wrap every external generator in an output assertion (`[[ -s ]]` plus
+a row count) **and** a `timeout`: "exited 0 with no output" and "never exited" are both
+indistinguishable from success to a script that checks only the exit code.
+
 ## Regression gates, and what tolerance to set
 
 **Do not byte-diff numerical output.** The first regression gate on the per-fold scoring
@@ -465,39 +560,37 @@ R3_FIXUPS = [
 
 R3_HEAD = """## Headline figure
 
-![](figures/fig14_crispr_benchmark.png)
+![](figures/fig16_p300_benchmark.png)
 
-**Figure 1 | No predicted-H3K27ac arm clears the ATAC-only floor on the CRISPR benchmark, and the deployment arms sit at or below it.** **Headline figure.** Superseded in part: switching the target to p300 does clear the floor, by +0.055 with a paired-bootstrap interval excluding zero -- see "Predicted p300 works where predicted H3K27ac does not" below. This figure remains the H3K27ac result.
+**Figure 1 | Predicted p300 clears the ABC benchmark floor in the training cell type and not on transfer.** **Headline figure.**
 
 <details>
 <summary>Full legend</summary>
 
-**Figure 1 | CRISPR-benchmark AUPRC for eleven predicted-activity arms, K562.** Forest plot
-rather than bars because the confidence intervals are the point: they are roughly +/-0.05
-wide while the differences under discussion are ~0.02. Vertical lines mark the floor
-(ATAC-only activity, 0.457) and the ceiling (ATAC x observed H3K27ac, 0.519). Best predicted
-arm is predicted H3K27ac used as the entire activity term from the K562 multimodal model, at
-**0.482 [0.437, 0.530]** -- above the floor point estimate, interval overlapping both
-anchors. The geometric mean of observed ATAC with predicted H3K27ac scores **0.469**, and the
-two GM12878-trained deployment arms score **0.455** and **0.452**, at or below the floor.
-Every sequence-only arm is far below distance-to-TSS (0.435): 0.393 for the geometric mean
-and 0.275 for predicted-alone. Benchmark is
-`EPCrisprBenchmark_ensemble_data_GRCh38.tsv.gz` with the scE2G intGENCODEv43 universes,
-scored by `CRISPR_comparison`. Source:
-`CRISPR_comparison_v3/.../results/2026_0904_predicted_activity/performance_summary.txt`.
+**Figure 1 | p300 as the ABC activity term, K562 CRISPR benchmark, all nine arms plus
+distance-to-TSS.** 10,342 element-gene pairs with 466 regulated, every arm scored on the
+identical pair set. Error bars are the pipeline's **unpaired** per-predictor 95% intervals and
+they overlap for every arm, resolving nothing; the paired-bootstrap delta against the floor is
+printed at the right of each row, bold where resolvable and grey with `n.s.` where the
+interval spans zero. Both layers are shown deliberately, because the overlapping bars are what
+the eye is drawn to and they are the misleading half. Dashed lines mark the ATAC-only floor
+(0.457) and observed H3K27ac (0.519). Observed p300 is the highest arm at **0.557**
+(+0.099 [+0.079, +0.120] over the floor); the K562-trained predicted-p300 arm reaches
+**0.512** (+0.055 [+0.034, +0.074]), matching measured H3K27ac; the **GM12878-trained arm
+applied to K562 sits at 0.466** (+0.009 [-0.004, +0.022], n.s.) in a cluster at the floor
+alongside the K562 ATAC-only p300 model. The H3K27ac equivalent of this figure, in which no
+arm clears the floor, is Fig.~10. Source:
+`CRISPR_comparison_v3/.../results/2026_0906_p300_all/performance_summary.txt`, paired deltas
+from `scripts/4.17`.
 </details>
 
 ## Summary
 
-- **Predicted p300 clears the benchmark floor in the training cell type; predicted H3K27ac does not.** A K562 sequence + ATAC model predicting p300, substituted into ABC's activity term, beats the ATAC-only floor by **+0.055 AUPRC [+0.034, +0.074]** on a paired bootstrap, sign preserved in 100% of resamples, and is indistinguishable from *measured* H3K27ac (-0.007 [-0.032, +0.017]). No predicted-H3K27ac arm managed this (Fig. 1).
-- **The benchmarked transfer direction fails, but transfer itself is strongly asymmetric and the benchmark can only test the failing direction.** GM12878-trained p300 applied to K562 scores +0.009 [-0.004, +0.022] over the floor on the benchmark, and on the correlation metric it lands exactly at the target's ATAC-only floor (0.312 against 0.306, *p*=0.72) with a *negative* accessibility residual (-0.088). But **K562-trained p300 applied to GM12878 retains 0.507 against a 0.608 local and a 0.299 floor** -- **+0.207 [+0.158, +0.257]** over the floor, 83% of the local advantage, residual *r* +0.139 [+0.067, +0.210]. CRISPR data exists only for K562, so the downstream benchmark is *structurally* unable to test the direction that works.
-- **The model-quality confound is resolved, and it was not the explanation.** Both p300 models are equally strong at home -- 0.619 (K562) against 0.608 (GM12878), with matched ATAC-only floors of 0.306 and 0.299 -- so the GM12878 model is not weaker. What fails is transferring *out of* GM12878 specifically.
-- **Observed p300 is simply a better ABC activity term than observed H3K27ac**, by +0.038 [+0.019, +0.058], independent of any model and replicated across two pipeline runs. That widens the available headroom over the floor from 0.062 to 0.099 and is a reason to prefer p300 as the target wherever it can be measured -- a conclusion about the assay, which stands regardless of the transfer result.
-- **For p300 the sequence branch earns its place**, beating the ATAC-only p300 model by +0.051 [+0.032, +0.069]. For H3K27ac the sequence arms were catastrophic (0.393 and 0.275 against a 0.457 floor). This is the clearest evidence yet that target choice, not architecture, was the binding constraint.
-- **For H3K27ac the mechanism is compressed dynamic range, not inaccuracy.** Predicted and observed H3K27ac correlate at Spearman 0.79 genome-wide, but the predicted activity term's p99/p50 ratio is 4.03 against 6.00 on the regions of regulated pairs, so ABC's ranking is displaced rather than wrong.
-- **In-cell-type architecture gains do not travel.** Every transferred architecture is within 0.016 of the simplest one, and the richer models have the *larger* transfer drops. Transferring the best model buys +0.013 to +0.036 over simply using the target cell type's own ATAC-only model.
-- **The failures have a clean signature, but it is not CTCF.** Over-predicted elements are accessible, GC-rich, CpG-rich, promoter-enriched and carry no more H3K27ac than a random element; CTCF-high elements are only 27% of that tail and removing them leaves the rest over-predicted more, not less, so the 2.6x pooled CTCF enrichment is a passenger. GC content correlates with the error 3-4x more strongly than CTCF does. Under-predicted elements are canonical active enhancers (EP300 3.4x, H3K4me1 3.3x, zero H3K27me3).
-- **p300 as a second target is dropped.** Where the H3K27ac model fails, observed p300 is elevated only ~2.3x over its own input control and the p300 models predict it at 1.83x -- below that control -- so neither a multi-head model nor stacking can help.
+- **Target choice was the binding constraint, not architecture.** Predicted p300 as ABC's activity term clears the ATAC-only floor by **+0.055 [+0.034, +0.074]** (paired bootstrap, sign kept 100%) and matches *measured* H3K27ac; the best predicted-H3K27ac arm reaches only +0.025 [-0.003, +0.052]. The direction of the sequence contribution flips too -- for p300 the sequence + ATAC model beats the ATAC-only one by +0.051, while for H3K27ac the sequence arms were the worst in the panel (0.393 and 0.275 against a 0.457 floor). Same architecture, same accessibility input, same benchmark (Figs. 1, 10).
+- **Transfer is strongly asymmetric, and the benchmark can only test the direction that fails.** K562-trained p300 applied to GM12878 keeps **+0.207 [+0.158, +0.257]** over that cell type's own accessibility model, 83% of its local advantage; GM12878-trained applied to K562 keeps **+0.006** (*p*=0.72) with a *negative* accessibility residual. Both models are equally strong at home (+0.313 and +0.309 over matched floors), so this is not model quality. CRISPR data exists only for K562, so the downstream metric is structurally unable to evaluate the working direction.
+- **Observed p300 is a better ABC activity term than observed H3K27ac**, by +0.038 [+0.019, +0.058], independent of any model and replicated across two runs. That is a fact about the assay, it widens the headroom over the floor from 0.062 to 0.099, and it survives every negative result below.
+- **In-cell-type gains do not travel, and four mechanism-targeted interventions are closed with controlled nulls.** No architecture beats the simplest transferred (best +0.016, *p*=0.066; fragment channels exactly null in both directions). Sequence-gated accessibility, an asymmetric count loss, GC-matched training negatives, and p300 as an auxiliary head all failed -- the last three with the manipulation verified before the outcome was read.
+- **The failures are accessible-but-unacetylated elements, and CTCF is a passenger.** CTCF-high elements are 27% of the over-predicted tail and removing them leaves the remainder over-predicted *more*; GC content correlates with the error 3-4x more strongly than CTCF does. Under-predicted elements are canonical active enhancers (EP300 3.4x, H3K4me1 3.3x, zero H3K27me3). Predicted H3K27ac fails through compressed dynamic range rather than inaccuracy (Fig. 11).
 
 ## Goals
 
@@ -692,12 +785,48 @@ recover CRISPR-benchmark performance?
 clear the floor with a resolvable margin -- and the two deployment arms, GM12878-trained
 models applied to K562, land at 0.455 and 0.452, at or below it.
 
-See Fig.~1 for all eleven arms with their intervals.
+![](figures/fig14_crispr_benchmark.png)
+
+<details>
+<summary>Figure 10 legend</summary>
+
+**Figure 10 | CRISPR-benchmark AUPRC for eleven predicted-H3K27ac arms, K562.** Same geometry,
+floor and ceiling as Fig.~1, so the two targets can be read against each other; the two runs
+share both anchor arms and agree on them to 1e-4. Best predicted arm is predicted H3K27ac used
+as the entire activity term from the K562 multimodal model, at **0.482 [0.437, 0.530]** --
+above the floor's point estimate with an interval overlapping both anchors. The geometric mean
+with observed ATAC scores 0.469, and the two GM12878-trained deployment arms score 0.455 and
+0.452, at or below the floor. Every sequence-only arm is far below distance-to-TSS (0.435):
+0.393 for the geometric mean and 0.275 for predicted-alone -- the opposite of the p300 result,
+where the sequence-containing arm is the best predicted one. **Re-tested with the paired
+bootstrap and confirmed**: best arm minus floor is +0.025 [-0.003, +0.052] with the sign kept
+in 95.3% of resamples, so it is suggestive and not resolvable, against p300's +0.055 at 100%.
+Source: `.../results/2026_0904_predicted_activity/performance_summary.txt`,
+`results/paired_auprc_h3k27ac.tsv`.
+</details>
 
 **The ceiling is only 0.062 above the floor.** Observed H3K27ac itself buys ABC very little
-here, so the experiment had limited room from the start. Any conclusion about the model has
-to be read against that: a predicted track cannot demonstrate much when the observed track
-it replaces demonstrates 0.062.
+here -- paired, +0.062 [+0.044, +0.080], sign kept 100% -- so the experiment had limited room
+from the start. Any conclusion about the model has to be read against that: a predicted track
+cannot demonstrate much when the observed track it replaces demonstrates 0.062.
+
+**The paired re-test confirms the negative rather than overturning it.** These arms were
+originally read off overlapping unpaired intervals, which the p300 run later showed cannot
+resolve differences of this size (Report 2), so the conclusion was re-run through the same
+paired bootstrap:
+
+| comparison | delta | paired 95% CI | sign kept |
+|---|---|---|---|
+| observed H3K27ac - floor | +0.062 | [+0.044, +0.080] | 100% |
+| best predicted arm - floor | **+0.025** | **[-0.003, +0.052]** | 95.3% |
+| ATAC x predicted - floor | +0.012 | [-0.005, +0.029] | 91.0% |
+| best predicted - observed H3K27ac | -0.037 | [-0.062, -0.013] | 99.9% |
+| GM12878 deployment arm - floor | -0.005 | [-0.022, +0.011] | 72.7% |
+
+The best H3K27ac arm is suggestive at 95.3% sign retention but its interval includes zero, and
+it is clearly below observed H3K27ac. The deployment arms are flatly null. So "no
+predicted-H3K27ac arm clears the floor" survives the better test -- and the contrast with
+p300's +0.055 at 100% sign retention is a difference in kind, not in how it was measured.
 
 **Sequence-only arms are far below distance-to-TSS.** 0.393 for the geometric mean with
 observed ATAC and 0.275 for predicted-alone, against 0.435 for distance to TSS. A
@@ -800,9 +929,9 @@ subset over-predicted more (3.8x against 1.6x). CTCF is a passenger. The phenoty
 ![](figures/fig15_error_strata.png)
 
 <details>
-<summary>Figure 10 legend</summary>
+<summary>Figure 11 legend</summary>
 
-**Figure 10 | The two error tails, what marks them, and why CTCF does not explain the
+**Figure 11 | The two error tails, what marks them, and why CTCF does not explain the
 over-predicted one.** Strata defined by the multimodal model's accessibility-residualised
 prediction error over 153,545 K562 ABC candidate regions; the 1% tails are n = 1,536 each and
 the typical stratum is the middle 50%, n = 76,771. **a**, The phenotype in
@@ -1059,7 +1188,7 @@ Source: `scripts/4.4`, `scripts/4.14.p300_at_h3k27ac_failures.py`
 
 
 
-R3_P300_ABC = """## Predicted p300 works where predicted H3K27ac does not
+R3_P300_ABC = """## Predicted p300 improves ABC in the training cell type, and not on transfer
 
 **Q:** The H3K27ac arms failed the benchmark. p300 is one step closer to the
 sequence-specified events -- does substituting *predicted p300* for the activity term do
@@ -1074,10 +1203,11 @@ preserved in 100% of paired resamples, and is indistinguishable from *measured* 
 the floor with a resolvable margin. **It does not transfer**: a GM12878-trained p300 model
 applied to K562 lands at +0.009 [-0.004, +0.022] over the floor, an interval spanning zero.
 
-![](figures/fig16_p300_benchmark.png)
+Fig.~1 is this result; its legend carries the full arm list. The tables below give the
+numbers, including the transfer arms that the figure shows clustered at the floor.
 
 <details>
-<summary>Figure 11 legend</summary>
+<summary>Figure 1, restated (see Headline figure)</summary>
 
 **Figure 11 | p300 as the ABC activity term: the gain is real in the training cell type and
 absent on transfer.** Forest plot of AUPRC against the CRISPR benchmark for all nine arms plus

@@ -263,6 +263,92 @@ top-decile mean/median ratios on the tested regions, and by counting the pairs e
 catches that the other misses. Run that diagnostic before concluding anything about the
 model from an AUPRC.
 
+## An aggregate statistic never licenses an element-level or causal claim
+
+**The rule.** A statistic computed over a group answers a question about the group. It does not
+identify which members carry it, and it never establishes cause. Before describing a stratum
+as *explained*, run the attributable-fraction test: remove the elements carrying the proposed
+cause and report whether the phenotype survives.
+
+**Why it has its own section.** This went wrong four times in one week, in four separate
+analyses, and only after the fourth did the shape become obvious.
+
+- **Peak overlap.** 36.9% of the over-predicted stratum overlaps a CTCF peak against 17.4%
+  typical, with EP300 and H3K27ac apparently enriched too, so the tail read as "enriched for
+  everything". Quantitative RPKM put H3K27ac and H3K4me1 *at background*: peaks were being
+  called on regions with no signal elevation.
+- **A control applied to the wrong arm.** The over-predicted stratum is *defined* as
+  accessibility-high and H3K27ac-low, so its observed residual is strongly negative and **any**
+  predictor that does not track accessibility downward -- including a constant -- scores as
+  over-predicting. The metric could not answer the question it was being asked.
+- **Fold elevation without a dynamic-range control.** The sequence arm sits at 1.55x its own
+  median where the truth is 1.00x, which looks nearly right, until the opposite tail shows it
+  reaches only 1.44x where the truth is 31.3x. It was flat, not accurate.
+- **A pooled mean read causally.** CTCF RPKM is 2.6x in the over-predicted stratum with IgG
+  below background, which looked decisive. Element by element the tail's CTCF *median* is 0.72
+  against 0.55 typical, only 15.7% of it is CTCF-high, and **removing the CTCF-high quarter
+  leaves the rest over-predicted more, not less**. Meanwhile GC correlates with the error 3-4x
+  more strongly than CTCF does, and had never been tested.
+
+**Three cheap tests, and the third is the one that matters.**
+
+1. **Distribution, not mean.** Report quartiles and the fraction above a threshold. A 2.6x mean
+   with an unchanged median is a minority effect and reads completely differently.
+2. **Match the confounders.** Correlate within deciles of the obvious confounder, and put a
+   background track through the identical computation.
+3. **Attributable fraction.** Remove the elements carrying the proposed cause. If the
+   phenotype survives, the cause is a passenger however real the enrichment.
+
+**The standing question to ask of any enrichment result, including your own:** does this check
+the actual signal at the elements we think carry the mechanism, or does it assume that is what
+the enrichment means?
+
+## Compare benchmark arms with a paired bootstrap, never with the unpaired intervals
+
+**The rule.** `performance_summary.txt` reports an independent bootstrap CI per predictor.
+Those are ~+/-0.05 wide while the differences of interest are 0.004-0.099, so **every** arm's
+interval overlaps every other's and no comparison can be made from them. Use
+`scripts/4.17.paired_auprc_bootstrap.py`: resample the shared element-gene pair set once per
+iteration and recompute every arm on that same resample. Report the delta, a percentile CI,
+and the fraction of resamples preserving the sign.
+
+**Why.** All arms are scored on the identical pair set, so shared pair-sampling variance
+dominates and pairing removes it. This is the same argument as the within-fold pairing used
+for the model metrics above, and it was applied upstream but not downstream purely by
+oversight.
+
+**The incident.** The H3K27ac benchmark was read off overlapping unpaired intervals and
+reported as "no arm clears the floor". The p300 run then showed a +0.055 difference sitting
+inside two overlapping unpaired intervals resolving at **100% sign retention**, and a +0.009
+difference resolving as a clean null. The H3K27ac conclusion is still pending a paired re-test
+and should not be treated as settled until it has one.
+
+**One thing to check when adopting the paired test.** `4.17` computes average precision
+directly and reports values a constant +0.0105 above the pipeline's for every arm -- an
+estimator difference in tie handling, not a difference in the data. Quote the paired *deltas*,
+not `4.17`'s absolute values.
+
+## Verify a manipulation before reading its result, with the failure condition written first
+
+**The rule.** When an experiment turns on having successfully changed something -- matched a
+distribution, added a channel, shifted a track -- verify the change itself and pre-commit what
+would count as failure, in code, before looking at the outcome metric.
+
+**Why.** It is the difference between a null result and a failed intervention, and the two
+call for opposite next steps. The GC-matched-negatives experiment is the worked example:
+`scripts/0.29` recovered GC by joining the matched pool's coordinates back to the tiling's own
+annotation so both sides used one estimator, printed the elements' distribution against the
+matched and unmatched pools, and **raised a warning if matching failed to close at least half
+the mean-GC gap**. It closed 85% of it, so the +0.001 outcome is a real answer about the
+hypothesis rather than a report on a botched setup.
+
+**The same rule caught two silent failures upstream.** `bpnet-gc-background` exits **0** having
+written a 0-byte file when `bedtools` is missing from its environment, and it hangs
+indefinitely rather than reporting a shortfall when the foreground is GC-rich enough to
+exhaust the high-GC bins. Wrap every external generator in an output assertion (`[[ -s ]]` plus
+a row count) **and** a `timeout`: "exited 0 with no output" and "never exited" are both
+indistinguishable from success to a script that checks only the exit code.
+
 ## Regression gates, and what tolerance to set
 
 **Do not byte-diff numerical output.** The first regression gate on the per-fold scoring
