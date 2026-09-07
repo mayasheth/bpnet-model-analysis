@@ -1097,13 +1097,32 @@ working direction is possible with K562-only CRISPR data. It does retire two ear
 makes the training cell type a first-class design variable: the same architecture and target
 gives +0.207 or +0.006 over the floor depending only on which cell type it was trained in.
 
-**Why the asymmetry, and how to test it.** Both cell types are equally *predictable* locally,
-so the H3K27ac explanation for its own transfer asymmetry -- that GM12878 is the harder cell
-type -- cannot apply here. The remaining candidate is that the K562 EP300 experiment
-(ENCSR000EGE) supports a more portable sequence model than GM12878's (ENCSR000DZG) even
-though both fit their own cell type equally well; peak count, depth and signal-to-noise are
-the obvious things to compare, and a third cell type would show whether K562-trained models
-are portable in general or just portable to GM12878.
+**Why the asymmetry: more training signal in K562, but not cleaner training signal.** Both
+cell types are equally *predictable* locally, so the H3K27ac explanation for its own transfer
+asymmetry -- that GM12878 is the harder cell type -- cannot apply here. Comparing the two
+EP300 experiments directly:
+
+| | K562, ENCSR000EGE | GM12878, ENCSR000DZG | ratio |
+|---|---|---|---|
+| peaks | 28,532 | 21,068 | 1.35x |
+| mean peak width | 296 bp | 337 bp | 0.88x |
+| mapped reads (pooled) | 51,127,010 | 30,001,681 | 1.70x |
+| reads in peaks | 3,590,540 | 1,562,462 | **2.30x** |
+| FRiP (pooled) | 0.070 | 0.052 | 1.35x |
+| FRiP (per replicate) | 0.053, 0.086 | 0.067, 0.038 | -- |
+
+**The quantity of training signal differs materially; its purity does not.** K562 carries
+2.3x more reads inside peaks, from 1.7x the depth over 1.35x the peaks. But FRiP does **not**
+separate the two experiments once replicate variance is accounted for: the within-experiment
+spread is 1.6x in K562 (0.053 to 0.086) and 1.8x in GM12878 (0.038 to 0.067), both wider than
+the 1.35x pooled difference, and GM12878's better replicate has a *higher* FRiP than K562's
+worse one. So the specific "cleaner target" version of the hypothesis is not supported; the
+"more signal to learn portable features from" version is consistent with the data and remains
+untested.
+
+This is diagnostic, not decisive -- two experiments cannot establish a relationship between
+training-signal volume and portability. What it does is narrow the next step: a third cell
+type is required, and it should be chosen for EP300 depth rather than convenience.
 
 **This does not contradict the earlier p300 negative, and the distinction matters.** The
 learnability test below shows p300 is *not* predictable at the specific elements where the
