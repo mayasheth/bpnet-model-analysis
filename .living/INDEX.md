@@ -5,7 +5,7 @@ Last audit: 2026-09-06
 | File | Entries | Last updated | Key topics |
 |------|---------|--------------|------------|
 | conventions.md | 17 sections | 2026-09-04 | Layout: analyses live at the repo root, not under `analysis/`, Reports, Figures, Environments, SLURM submit scripts (mandatory) |
-| decisions.md | 17 entries | 2026-09-06 | Center H3K27ac training windows on candidate elements, not ChIP peaks, Counting window is a trade-off between signal and neighbour contamination, Keep the profile head, down-weighted, rather than removing it, Residual correlation beyond ATAC becomes the headline metric, Paired-end H3K27ac targets use read 1 only, not both mates |
+| decisions.md | 18 entries (large — read selectively) | 2026-09-06 | Center H3K27ac training windows on candidate elements, not ChIP peaks, Counting window is a trade-off between signal and neighbour contamination, Keep the profile head, down-weighted, rather than removing it, Residual correlation beyond ATAC becomes the headline metric, Paired-end H3K27ac targets use read 1 only, not both mates |
 | learnings.md | 48 entries (large — read selectively) | 2026-09-06 | count_loss_weight must be calibrated to the actual loss magnitudes, not copied, Inter-replicate r is not a model performance ceiling without two corrections, bpnetlite's count target sums ALL channels, not one strand, Three Sherlock/SLURM traps that cost a job each, Peak count scales the negative pool, which can OOM by 50x |
 | findings/ | 9 findings across 4 topics | 2026-09-06 | predicting-regulatory-element-function-at-scale, linking-noncoding-variation-to-molecular-function, mapping-regulatory-perturbations-to-phenotype, how-enhancers-control-gene-expression |
 
@@ -23,7 +23,7 @@ Last summarized: 2026-09-06 (heuristic)
 - **atac** (9 entries) — L-29, L-33, D-4, D-6, D-8
 - **ceiling** (9 entries) — L-14, L-17, L-18, L-24, D-2
 - **architecture** (8 entries) — L-42, L-45, D-3, D-7, D-15
-- **abc** (7 entries) — L-41, L-48, D-9, D-16, D-17
+- **negative-result** (8 entries) — L-45, D-13, D-14, D-15, D-18
 
 ## Most recent (10)
 
@@ -31,12 +31,12 @@ Last summarized: 2026-09-06 (heuristic)
 - [2026-09-06] L-48: The ABC snakemake driver stalls after its last real rule; gate downstream work on files, not on the driver
 - [2026-09-06] D-16: Make p300 the primary modelling target; train a GM12878 p300 model next
 - [2026-09-06] D-17: Use a paired bootstrap for every CRISPR-benchmark comparison
+- [2026-09-06] D-18: Close training-element composition: GC-matching the negatives changes nothing
 - [2026-09-05] L-41: Why better H3K27ac does not help ABC: rank displacement of the functional elements
 - [2026-09-05] L-42: Sequence already knows which elements are not acetylated; the additive trunk ignores it
 - [2026-09-05] L-43: Correcting the previous entry: sequence does NOT see the CTCF signature, and my substitute control was also wrong
 - [2026-09-05] L-44: The training negative pool was never GC-matched, and the filename says otherwise
 - [2026-09-05] L-45: The gate and the asymmetric loss both fail, as the corrected sequence reading predicted
-- [2026-09-05] L-46: Four times in one session I reported a group-level statistic as if it licensed an element-level or causal claim
 
 ## By tag
 
@@ -45,9 +45,9 @@ Last summarized: 2026-09-06 (heuristic)
 - `atac`: L-12, L-22, L-25, L-28, L-29, L-33, D-4, D-6, D-8
 - `ceiling`: L-2, L-7, L-9, L-10, L-14, L-17, L-18, L-24, D-2
 - `architecture`: L-35, L-36, L-37, L-42, L-45, D-3, D-7, D-15
+- `negative-result`: L-7, L-9, L-41, L-45, D-13, D-14, D-15, D-18
 - `abc`: L-39, L-40, L-41, L-48, D-9, D-16, D-17
 - `gm12878`: L-14, L-22, L-24, L-30, L-31, L-35, L-37
-- `negative-result`: L-7, L-9, L-41, L-45, D-13, D-14, D-15
 - `k562`: L-24, L-30, L-31, L-35, L-37, L-38
 - `silent-failure`: L-6, L-15, L-19, L-20, L-21, L-47
 - `accessibility`: L-29, L-37, D-6, D-7, D-8
@@ -56,13 +56,13 @@ Last summarized: 2026-09-06 (heuristic)
 - `evaluation`: L-2, L-3, L-34, D-4, D-10
 - `gating`: L-39, L-40, L-42, L-45, D-15
 - `loss-weighting`: L-1, L-11, L-13, L-16, D-3
+- `negatives`: L-5, L-44, L-47, D-15, D-18
 - `residual`: L-15, L-27, L-30, L-31, D-4
 - `stratification`: L-17, L-18, L-31, L-35, L-36
 - `transferability`: L-14, L-22, L-24, L-31, D-16
 - `crispr-benchmark`: L-41, D-9, D-16, D-17
 - `fragment-length`: L-12, L-33, L-37, D-8
 - `multimodal`: L-27, L-29, L-36, D-7
-- `negatives`: L-5, L-44, L-47, D-15
 - `p300`: L-3, L-29, D-13, D-16
 - `receptive-field`: L-35, L-36, L-37, D-7
 - `target-definition`: L-8, L-9, L-10, D-5
@@ -71,6 +71,7 @@ Last summarized: 2026-09-06 (heuristic)
 - `controls`: L-43, L-46, D-13
 - `ctcf`: L-42, L-43, L-46
 - `diagnosis`: L-39, L-40, L-41
+- `gc-matching`: L-44, L-47, D-18
 - `hyperparameters`: L-1, L-13, L-16
 - `loss-design`: L-42, L-45, D-15
 - `mnll`: L-8, L-11, L-13
@@ -83,13 +84,13 @@ Last summarized: 2026-09-06 (heuristic)
 - `snakemake`: L-39, L-40, L-48
 - `statistics`: L-2, L-23, D-17
 - `telohaec`: L-26, L-28, D-5
+- `training-composition`: L-44, D-15, D-18
 - `validation`: L-19, L-28, L-33
 - `variance`: L-16, L-18, L-23
 - `window-selection`: L-7, D-1, D-2
 - `deployment`: L-31, D-14
 - `determinism`: L-34, D-10
 - `fragment-extension`: L-8, L-9
-- `gc-matching`: L-44, L-47
 - `guards`: L-19, L-20
 - `inference`: L-38, D-11
 - `methodology`: L-15, L-19
@@ -106,12 +107,12 @@ Last summarized: 2026-09-06 (heuristic)
 - `reproducibility`: L-16, L-32
 - `reversal`: L-36, D-7
 - `reverse-complement`: L-38, D-11
+- `sequence-branch`: L-44, D-18
 - `superset`: L-33, D-8
 - `tn5`: L-33, D-8
 - `tolerance`: L-34, D-10
 - `top-quintile`: L-35, L-37
 - `training`: L-1, L-5
-- `training-composition`: L-44, D-15
 - `training-objective`: L-27, L-30
 - `activity`: D-9
 - `adoption`: D-11
@@ -205,7 +206,6 @@ Last summarized: 2026-09-06 (heuristic)
 - `sample-definition`: L-26
 - `scaling`: L-5
 - `scope`: L-25
-- `sequence-branch`: L-44
 - `sequence-vs-accessibility`: L-18
 - `spearman-brown`: L-2
 - `stall`: L-48

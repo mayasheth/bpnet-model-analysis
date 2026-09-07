@@ -547,6 +547,7 @@ stated. Read every row against a between-fold `sd` of 0.041-0.046 (Report 2).
 | **Observed p300 instead of observed H3K27ac as the activity term** | **+0.038 [+0.019, +0.058]** | use p300 where it is measured; model-independent |
 | **p300 as a second head alongside H3K27ac** | predicted p300 1.83x elevation against a 2.10x input control at the H3K27ac failure elements | **dropped**; p300 as the *primary* target is the version that works |
 | **Sequence-gated accessibility, and asymmetric count loss** | in-cell null; **-0.013 (*p*=0.039) transferred when combined** | **closed** |
+| **GC-matching the training negatives** | +0.001 (*p*=0.76) in-cell; -0.002 (*p*=0.33) transferred | **closed**; the GC-shortcut explanation is refuted |
 """
 
 R3_INPUTS = """## Inputs: accessibility carries most of it, and sequence adds a real but small complement
@@ -1266,6 +1267,85 @@ Source: `scripts/4.3`, `4.5`-`4.7`, `4.17.paired_auprc_bootstrap.py`
 </details>
 """
 
+
+R3_GCMATCH = """## GC-matching the training negatives changes nothing
+
+**Q:** Every model in this repository was trained with ChromBPNet's genome-wide GC-*annotated*
+tiling passed straight to `--negatives`, which is the matching INPUT rather than its output
+(Report 1). The pool sits at mean GC 0.389 against 0.466-0.593 for candidate elements, and it
+is 10% of every batch, so a sequence branch could satisfy much of that contrast with a coarse
+GC detector -- the leading explanation for why the H3K27ac sequence branch has almost no
+dynamic range within candidate elements. Does actually GC-matching the pool help?
+
+**A:** No, and not marginally: **+0.0011 [-0.0080, +0.0102]** in-cell type (*p*=0.76) and
+**-0.0024 [-0.0083, +0.0036]** transferred to GM12878 (*p*=0.33). Absolute top-quintile
+Pearson is 0.700 against 0.699 locally and 0.529 against 0.531 transferred. The hypothesis is
+refuted.
+
+| | matched negatives | unmatched (baseline) | paired difference |
+|---|---|---|---|
+| in-cell K562 | 0.700 [0.689, 0.711] | 0.699 [0.695, 0.703] | +0.0011 (*p*=0.76) |
+| K562 -> GM12878 | 0.529 [0.501, 0.556] | 0.531 [0.500, 0.562] | -0.0024 (*p*=0.33) |
+| transferred vs the target's own ATAC-only model | +0.0108 (*p*=0.28) | +0.0132 (*p*=0.25) | -- |
+
+**The transfer arm was the one the hypothesis actually predicted**, since a GC shortcut should
+cost most where accessibility does not generalise. It moved by -0.002. The transferred model
+still beats the target's own ATAC-only model by the same non-significant ~0.011 it did before.
+
+**The match was verified before the result was read**, which is what makes this a real null
+rather than a failed intervention. `scripts/0.29` recovers GC by joining the matched pool's
+coordinates back to the tiling's own annotation, so both sides are measured with one
+estimator: the mean-GC gap to the elements fell from 0.0842 to 0.0128 (6.6x closer) in K562
+and 0.0655 to 0.0141 in GM12878, and the largest per-bin discrepancy fell from 0.072 to 0.015.
+
+**The one caveat, stated in advance.** The matched pool still undershoots the GC-rich tail --
+p90 0.570 against the elements' 0.590 -- because a genome-background pool does not contain
+enough very-high-GC windows, which is also why the matching tool hangs on the full element set
+(Methods). So this does not exclude a shortcut confined to the extreme high-GC end. It does
+exclude one large enough to be worth chasing: closing 85% of the mean gap and 80% of the
+per-bin discrepancy moved the metric by 0.001.
+
+**Consequence.** Training-element composition is closed as an explanation for the sequence
+branch's flatness, and with it the cheapest remaining fix. The two hypotheses that survived
+the session -- explicit GC/CpG input channels, and the accessible-but-unacetylated reweighting
+-- are now the only composition-adjacent ideas left, and both are weaker a priori than the one
+just refuted.
+
+**Method.**
+
+- `1.20` is `1.11` with exactly two changes, verified by diff on the comment-stripped scripts:
+  the negatives file and the output directory. The baseline is `1.11`'s own output with
+  identical settings, so the paired comparison isolates the negatives.
+- Negatives built with `bpnet-gc-background`, the same tool used for the p300 v3 negatives in
+  Oct 2025, rather than a reimplementation -- so a matched-versus-unmatched comparison cannot
+  be confounded by two different matching algorithms.
+- Scored in-cell type and transferred, paired within fold, RC-averaged.
+
+<details>
+<summary>Full methods &amp; code</summary>
+
+`residual_pearson` is reported in these tables against the **unmatched multimodal model**,
+because that is this config's baseline entry -- not against an ATAC-only model as everywhere
+else in this report. It is therefore not comparable to any other `residual_pearson` here and
+is not quoted.
+
+Two failure modes of `bpnet-gc-background` are recorded in the repository learnings: it exits
+0 having written a 0-byte file when `bedtools` is absent from its environment, and it hangs
+rather than reporting a shortfall when the foreground is GC-rich enough to exhaust the high-GC
+bins -- 93% in 15 seconds, then no progress for two hours. The fix for the second is to
+subsample the foreground to 50,000 regions, since only the GC distribution defines the
+matching target and 50,000 equals the trainer's `--max-negatives` cap.
+
+```bash
+sbatch scripts/0.28.make_gc_matched_negatives.sh
+pixi run python scripts/0.29.verify_gc_match.py      # before reading the retrain
+for F in 0 1 2 3 4; do sbatch scripts/1.20.submit_training_gcmatched.sh multimodal $F; done
+sbatch scripts/2.26.submit_gcmatch_eval.sh
+```
+Source: `scripts/0.28`, `0.29`, `1.20`, `2.26`
+</details>
+"""
+
 R3_GATE = """## Sequence-gated accessibility and an asymmetric count loss
 
 **Q:** The multimodal trunk merges a sequence branch and an accessibility branch additively,
@@ -1396,17 +1476,15 @@ evaluate its best transfer result.
 
 Then, in order of expected value:
 
-**2. Fix the training-element composition, which is the most likely single cause of the
-H3K27ac sequence branch's flatness** -- and which should be applied to the p300 models too,
-since they share the negative pool. The negative pool is not GC-matched (Report 1): it is a uniform
+**3. Training-element composition, now largely closed.** GC-matching the negative pool was
+the leading hypothesis for the sequence branch's flatness and it is refuted: +0.001 in-cell
+and -0.002 transferred, with the match verified beforehand (see above). Two weaker ideas
+remain in this family and neither is a priority: The negative pool is not GC-matched (Report 1): it is a uniform
 random genome sample at mean GC 0.389 against 0.466-0.593 for candidate elements, and it is
 10% of every batch. A sequence branch can satisfy that contrast with a coarse GC detector,
 which is exactly what its behaviour looks like -- 0.397 correlation *across* candidate
 elements and almost no dynamic range *within* them. Three experiments, cheapest first.
 
-- **Actually GC-match the negatives.** The GC column is already in the file and already
-  discarded; matching each fold's negative draw to the fold's positive GC distribution is a
-  change to `load_negatives` and the sampler, not new data. This is the one to run first.
 - **Harder negatives: accessible but unacetylated regions.** Sampling negatives from open
   chromatin rather than random genome removes accessibility as a discriminator too, forcing
   the sequence branch onto the distinction that actually matters downstream. Note these
@@ -1417,15 +1495,17 @@ elements and almost no dynamic range *within* them. Three experiments, cheapest 
   p300 setup and neither has been swept. They set how much of the loss is spent on the
   positive-versus-background contrast rather than on grading elements against each other.
 
-**3. Give the model the sequence features it is not learning**, if composition alone does not
-fix it. Explicit GC-content and CpG-density channels, computed by the same route as the
+**4. Give the model the sequence features it is not learning.** Now the strongest surviving
+idea in this family, though weakened: the GC-shortcut result says the branch's flatness is not
+caused by what it was trained *against*, so explicit GC/CpG channels are a bet on
+representation rather than on removing a confound. Explicit GC-content and CpG-density channels, computed by the same route as the
 existing accessibility channels, with an indicator-channel control to confirm the gain comes
 from the feature rather than from the extra capacity. Motif-derived channels are the heavier
 version of the same idea. Run this after the composition experiments, since a GC channel and
 a GC-matched negative set are two ways of attacking the same problem and the second is
 cheaper.
 
-**4. Attack the dynamic range directly.** The benchmark fails on compression, not on ranking
+**5. Attack the dynamic range directly.** The benchmark fails on compression, not on ranking
 error, and no architecture change tried so far targets compression. Candidates: a loss on the
 predicted *spread* over each batch, training on rank-transformed targets, or predicting the
 composite `geomean(accessibility, H3K27ac)` that downstream consumers actually use. That last
@@ -1434,7 +1514,7 @@ accessibility term in the target, half the target is readable off the input and 
 is circular, so it must be `geomean(DHS, H3K27ac)` predicted from sequence + ATAC and
 baselined against the two-step route scored on the *same* composite.
 
-**5. Motif syntax, which is the remaining scientific question and has never been started.**
+**6. Motif syntax, which is the remaining scientific question and has never been started.**
 SHAP / TF-MoDISco / FiNeMo on the **residual-trained** model, whose predictions are forced
 onto signal accessibility cannot supply. Use the +/-500 bp window, which carries no neighbour
 contamination. Expect less attributable signal than p300 (Fig.~3).
@@ -1629,5 +1709,6 @@ def build(pull, write):
            p3("Deploying to a new cell type: transfer the multimodal model"),
            R3_TRANSFER,
            R3_P300_ABC,
+           R3_GCMATCH,
            R3_GATE,
            R3_METHODS])
