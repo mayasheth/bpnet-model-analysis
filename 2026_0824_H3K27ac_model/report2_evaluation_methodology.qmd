@@ -70,14 +70,14 @@ blockquote { border-left: 3px solid #ddd; margin-left: 0; padding-left: 1rem;
 
 ![](figures/fig1_three_mode_comparison.png)
 
-**Figure 1 | The same five models, two strata, two different conclusions -- which is why the top quintile leads every comparison in this project.** **Headline figure.**
+**Figure 1 | The same five models, two strata, two different conclusions, which is why the top quintile leads every comparison in this project.** **Headline figure.**
 
 <details>
 <summary>Full legend</summary>
 
 **Figure 1 | Predicting K562 H3K27ac at candidate elements, by input modality.** Pearson *r*
 between predicted and observed log counts. **a**, All elements. **b**, Top quintile by
-observed H3K27ac -- the elements carrying the mark. Colour encodes input modality throughout
+observed H3K27ac, the elements carrying the mark. Colour encodes input modality throughout
 all three reports: **red sequence only, blue ATAC only, purple sequence + ATAC**. Dashed line
 is the achievable ceiling; 0.957 all elements, 0.929 top quintile. The panels are not a
 rescaling of one another: sequence-only falls from 0.494 to 0.380 while ATAC-only falls from
@@ -104,8 +104,8 @@ track definitions this report refers to; Report 3 holds the results.
 signal. All-element numbers may be reported alongside but never alone, and a claim supported
 only by the all-element stratum is not a finding.
 
-**Why.** Evaluation runs on the candidate element set only -- training negatives are never
-scored, so every number in these reports is an element-only number -- and that set spans
+**Why.** Evaluation runs on the candidate element set only, training negatives are never
+scored, so every number in these reports is an element-only number, and that set spans
 active and inactive elements, so most of it carries no H3K27ac. An unstratified correlation
 over it is therefore dominated by the dead-versus-active contrast that accessibility already
 resolves. The two panels of Fig. 1 are the same models and disagree about the size of every
@@ -127,8 +127,7 @@ effect.
   so a conclusion drawn from whichever arm finished first would have inverted.
 
 **The corollary, which keeps being learned the hard way.** When an architecture change is
-being tested in several input modes at once -- sequence only, ATAC only, sequence + ATAC --
-do not draw a conclusion from whichever mode finishes training first. The receptive-field
+being tested in several input modes at once (sequence only, ATAC only, sequence + ATAC) do not draw a conclusion from whichever mode finishes training first. The receptive-field
 question was closed as "resolved, do not pursue" on the strength of the sequence-only models
 alone, then had to be reopened when the sequence + ATAC models landed and showed a
 significant gain. Wait for the input mode the change is actually supposed to act on.
@@ -137,7 +136,7 @@ significant gain. Wait for the input mode the change is actually supposed to act
 
 **The rule.** Report the mean across the five chromosome-holdout folds with a t-based 95%
 confidence interval, showing individual folds as points. For any comparison between two
-models, difference them **within each fold and then average** -- a paired test.
+models, difference them **within each fold and then average**: a paired test.
 
 **Why.** Fold `sd` is 0.041-0.046 for single-input models, giving CI half-widths near 0.05,
 against a run-to-run variance of 0.018. Nearly every architecture effect in this project is
@@ -153,9 +152,9 @@ no error bar and can be biased when folds differ in mean or scale.
 cannot be resolved with five folds, and either needs more folds or should not be run. State
 the expected effect size before submitting.
 
-## What the residual metric means, and the controls it needs
+## The residual metric, and the controls it needs
 
-**Definition.** `residual_pearson = r(observed - atac_pred, model_pred - atac_pred)`, where
+**Definition.** `residual_pearson = r(observed (atac_pred, model_pred) atac_pred)`, where
 `atac_pred` is an **ATAC-only model's held-out prediction**, not the raw ATAC track. So the
 residual is what accessibility genuinely cannot explain rather than what a linear function of
 one bigwig cannot explain. Reported alongside incremental *R^2* against the observed signal,
@@ -166,11 +165,11 @@ anti-correlated with `atac_pred` might earn positive residual *r* for free. It l
 cannot: `obs - atac_pred` is near-orthogonal to `atac_pred` by the least-squares residual
 property. But the argument is not enough on its own, so three controls run with it.
 
-1. **A negative control model.** An ATAC-input model trained on the residual -- asked to
-   predict an ATAC model's own errors from the same ATAC input -- must score zero. It does:
+1. **A negative control model.** An ATAC-input model trained on the residual, asked to
+   predict an ATAC model's own errors from the same ATAC input, must score zero. It does:
    -0.003 [-0.065, 0.060], incremental *R^2* -0.000, flat across all |residual| quintiles,
    while its output correlates -0.620 with `atac_pred`, so the leak channel is wide open and
-   still yields nothing. This control is load-bearing; a clearly positive value here would
+   still yields nothing. This control is decisive; a clearly positive value here would
    have made the whole residual result an artifact.
 2. **Partialling.** Removing `atac_pred` from both sides leaves the residual-trained sequence
    model unchanged at 0.459, against 0.149 to 0.205 for the more entangled
@@ -178,27 +177,26 @@ property. But the argument is not enough on its own, so three controls run with 
 3. **Incremental *R^2* against observed signal**, which cannot be faked out of sample.
 
 **A trap for anyone re-running this.** `MultiModalBPNet.forward()` does **not** add the count
-offset -- that happens only inside `fit()` when scoring the loss -- so an offset-trained
+offset (that happens only inside `fit()` when scoring the loss), so an offset-trained
 model's raw output *is* the residual. The first evaluator subtracted `atac_pred` anyway,
 double-counting the baseline and correlating a residual against observed signal for
 `overall_pearson`. Both bugs produced plausible wrong numbers rather than failing. The fix
 sits behind a `"residual": true` config key so earlier results stay reproducible, and
 `scripts/2.7.diagnose_residual_offset.py` verifies the semantics empirically before any
-scoring: a residual predictor's output must centre near 0 (measured -0.044) and a logcounts
+scoring: a residual predictor's output must centre near 0 (measured -0.044), and a logcounts
 predictor near the observed mean (2.835 against 2.786), with a plain sequence model as a
 control proving the test discriminates.
 
 **Residualisation is the wrong control for a stratum defined by accessibility disagreement.**
 Later, and separately: the elements where the multimodal model over-predicts are by
 construction "accessibility says high, H3K27ac says low", so the observed residual is
-strongly negative there and **any** predictor that does not track accessibility downward --
-including a constant -- scores as over-predicting. A residualised error column therefore
+strongly negative there and **any** predictor that does not track accessibility downward (including a constant) scores as over-predicting. A residualised error column therefore
 cannot distinguish "the sequence branch fails to see this" from "the sequence branch has no
 dynamic range". It produced exactly that wrong verdict once (`scripts/4.12`), which is now
 scored as fold elevation over each arm's own median, carrying the opposite tail as the arm's
 own responsiveness scale. Report 3 has the corrected reading.
 
-## Designing a transfer evaluation so that it is interpretable
+## Transfer evaluations need four arms to be interpretable
 
 A raw cross-cell-type correlation cannot distinguish a model that fails to generalise from a
 target that is simply harder to predict. Four design requirements follow, and all four came
@@ -222,7 +220,7 @@ accessibility-H3K27ac coupling there (Report 1, Fig. 1), not by any failure of t
 ATAC could have given for free". Without that arm a transfer table can look successful while
 describing a model nobody should deploy.
 
-**In-cell-type ranking is not the deployment ranking**, so any architecture change intended
+**In-cell-type ranking differs from the deployment ranking**, so any architecture change intended
 for deployment is scored transferred as well as locally. The two rankings do in fact differ;
 Report 3 has the matrix.
 
@@ -243,7 +241,7 @@ comparable. It does not need to be: `run_qnorm` is **rank-based**, so any monoto
 of the activity term leaves the quantile-normalised value unchanged, and only the *ordering*
 of the predictions matters. What does deserve a check is that the qnorm reference itself is
 built from observed K562 signal, so a predicted track inherits the observed distribution's
-shape -- which is why a qnorm-off arm is worth running and is listed as open.
+shape, which is why a qnorm-off arm is worth running and is listed as open.
 
 **Two anchors are mandatory.** A floor of ATAC-only activity and a ceiling of ATAC with
 observed H3K27ac. Every predicted arm is read as a position between them, and a predicted arm
@@ -256,7 +254,7 @@ the floor. Present it as a forest plot with the CIs visible; bars hide the only 
 matters.
 
 **The mechanism check that goes with it.** A benchmark result of "no better than the floor"
-is compatible with two very different causes -- inaccurate predictions, or accurate
+is compatible with two very different causes, inaccurate predictions, or accurate
 predictions whose *dynamic range* is compressed so that ABC's ranking is displaced. These are
 distinguished by comparing observed and predicted `activity_base` percentile ratios and
 top-decile mean/median ratios on the tested regions, and by counting the pairs each arm
@@ -270,33 +268,33 @@ identify which members carry it, and it never establishes cause. Before describi
 as *explained*, run the attributable-fraction test: remove the elements carrying the proposed
 cause and report whether the phenotype survives.
 
-**Why it has its own section.** This went wrong four times in one week, in four separate
+**Why it has its own section.** This went wrong four times in one week, in separate
 analyses, and only after the fourth did the shape become obvious.
 
-- **Peak overlap.** 36.9% of the over-predicted stratum overlaps a CTCF peak against 17.4%
+- Peak overlap: 36.9% of the over-predicted stratum overlaps a CTCF peak against 17.4%
   typical, with EP300 and H3K27ac apparently enriched too, so the tail read as "enriched for
   everything". Quantitative RPKM put H3K27ac and H3K4me1 *at background*: peaks were being
   called on regions with no signal elevation.
-- **A control applied to the wrong arm.** The over-predicted stratum is *defined* as
+- A control applied to the wrong arm. The over-predicted stratum is *defined* as
   accessibility-high and H3K27ac-low, so its observed residual is strongly negative and **any**
-  predictor that does not track accessibility downward -- including a constant -- scores as
+  predictor that does not track accessibility downward (including a constant) scores as
   over-predicting. The metric could not answer the question it was being asked.
-- **Fold elevation without a dynamic-range control.** The sequence arm sits at 1.55x its own
+- Fold elevation without a dynamic-range control: the sequence arm sits at 1.55x its own
   median where the truth is 1.00x, which looks nearly right, until the opposite tail shows it
   reaches only 1.44x where the truth is 31.3x. It was flat, not accurate.
-- **A pooled mean read causally.** CTCF RPKM is 2.6x in the over-predicted stratum with IgG
+- A pooled mean read causally: CTCF RPKM is 2.6x in the over-predicted stratum with IgG
   below background, which looked decisive. Element by element the tail's CTCF *median* is 0.72
   against 0.55 typical, only 15.7% of it is CTCF-high, and **removing the CTCF-high quarter
   leaves the rest over-predicted more, not less**. Meanwhile GC correlates with the error 3-4x
   more strongly than CTCF does, and had never been tested.
 
-**Three cheap tests, and the third is the one that matters.**
+**The tests that catch it, in the order they should be run:**
 
-1. **Distribution, not mean.** Report quartiles and the fraction above a threshold. A 2.6x mean
+1. Report the distribution, not the mean: quartiles and the fraction above a threshold. A 2.6x mean
    with an unchanged median is a minority effect and reads completely differently.
-2. **Match the confounders.** Correlate within deciles of the obvious confounder, and put a
+2. Match the confounders. Correlate within deciles of the obvious confounder, and put a
    background track through the identical computation.
-3. **Attributable fraction.** Remove the elements carrying the proposed cause. If the
+3. Take the attributable fraction. Remove the elements carrying the proposed cause. If the
    phenotype survives, the cause is a passenger however real the enrichment.
 
 **The standing question to ask of any enrichment result, including your own:** does this check
@@ -324,14 +322,14 @@ difference resolving as a clean null. The H3K27ac conclusion is still pending a 
 and should not be treated as settled until it has one.
 
 **One thing to check when adopting the paired test.** `4.17` computes average precision
-directly and reports values a constant +0.0105 above the pipeline's for every arm -- an
+directly and reports values a constant +0.0105 above the pipeline's for every arm, an
 estimator difference in tie handling, not a difference in the data. Quote the paired *deltas*,
 not `4.17`'s absolute values.
 
 ## Verify a manipulation before reading its result, with the failure condition written first
 
-**The rule.** When an experiment turns on having successfully changed something -- matched a
-distribution, added a channel, shifted a track -- verify the change itself and pre-commit what
+**The rule.** When an experiment turns on having successfully changed something, matched a
+distribution, added a channel, shifted a track, verify the change itself and pre-commit what
 would count as failure, in code, before looking at the outcome metric.
 
 **Why.** It is the difference between a null result and a failed intervention, and the two
@@ -362,8 +360,8 @@ reported and skipped; missing columns fail.
 asymmetric-loss test passed while verifying nothing: its over-prediction check had zero
 over-predicted elements in the sample, and its gate comparison compared two models whose
 random initialisations were never matched, because adding the gate consumed extra RNG draws.
-Both now assert their own preconditions -- `3 <= n_over <= N-3`, and weight-matched
-initialisation -- so a vacuous pass is impossible.
+Both now assert their own preconditions, `3 <= n_over <= N-3`, and weight-matched
+initialisation, so a vacuous pass is impossible.
 
 **Never quote a metric from a training log as a preliminary result.** Validation count Pearson
 in the training log is unstratified, so it is the all-element number this report's first rule
@@ -372,17 +370,17 @@ quintile. Wait for `scripts/2.15.perfold_from_config.py`.
 
 ## Conventions
 
-- **Reverse-complement averaging is on by default** in all scoring since 2026-09-03
+- Reverse-complement averaging is on by default in all scoring since 2026-09-03
   (`--no-rc-average` to disable). It is free, positive for every model, and applying it
   everywhere keeps tables comparable; the tables named `rc_*` are the re-scored set.
-- **One scoring code path.** In-cell grids, transfer runs and input-definition swaps are all
+- One scoring code path: in-cell grids, transfer runs and input-definition swaps are all
   driven by the same config JSON through `2.15.perfold_from_config.py`, so a difference
   between two results cannot come from which evaluator ran. Model geometry is read per entry
   from `model.trimming` rather than hardcoded, after an earlier version silently could not
   score the wide models.
-- **Report the change, the stratum and the *p* together**, or the number is not usable by
+- Report the change, the stratum and the *p* together, or the number is not usable by
   anyone else.
-- **Non-GPU work goes to the lab's `engreitz` partition**; see the repository `CLAUDE.md`.
+- Non-GPU work goes to the lab's `engreitz` partition; see the repository `CLAUDE.md`.
 
 ## Methods
 
