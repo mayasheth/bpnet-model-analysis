@@ -62,6 +62,52 @@ def renumber(body, mapping):
     # them; restore the space once this report's own numbers are settled.
     return re.sub(r"\b(Figs?\.?|Figures?)~", r"\1 ", body)
 
+# Sections pulled from the superseded source predate the writing conventions in
+# ~/.claude/skills/writing-whip, so they still carry em dashes as dramatic pauses and unicode
+# typography. Normalise the assembled body rather than editing the superseded source, which is
+# kept as the record of what was published.
+DASH = re.compile(r"\s+[\u2014\u2013]\s+|\s+--\s+")
+
+
+def plain_punctuation(body):
+    # Protect the CSS block and fenced code, where semicolons and dashes are syntax.
+    holes = []
+
+    def stash(m):
+        holes.append(m.group(0))
+        return f"\x00{len(holes) - 1}\x00"
+
+    body = re.sub(r"```.*?```", stash, body, flags=re.S)
+
+    # Paired dashes become parentheses; a subordinator takes a comma; an independent clause
+    # takes a semicolon; anything else takes a comma.
+    body = re.sub(r"\s+[\u2014\u2013-]{1,2}\s+([^.;:\n]{3,110}?)\s+[\u2014\u2013-]{1,2}\s+",
+                  r" (\1) ", body)
+    body = DASH.sub(lambda m: "\x01", body)
+    body = re.sub(r"\x01(which|since|because|whose|so that|leaving|meaning|giving|making)\b",
+                  r", \1", body)
+    body = re.sub(r"\x01(it |they |this |that |these |those |there |and |but )", r"; \1", body)
+    body = body.replace("\x01", ", ")
+
+    # Unicode typography the conventions ban.
+    for a, b in (("\u2192", "->"), ("\u2190", "<-"), ("\u2018", "'"), ("\u2019", "'"),
+                 ("\u201c", '"'), ("\u201d", '"'), ("\u00b1", "+/-"), ("\u2032", "'"),
+                 ("\u2013", "-"), ("\u2014", ", ")):
+        body = body.replace(a, b)
+
+    body = re.sub(r",\s+,", ",", body)
+    body = re.sub(r";\s+;", ";", body)
+    body = re.sub(r"\(\s+", "(", body)
+    body = re.sub(r"\s+\)", ")", body)
+    body = re.sub(r"\s+([,;.])", r"\1", body)
+    # A dash pair carried the pause that a bare closing paren now drops, so restore the comma
+    # when a coordinator or relative follows.
+    body = re.sub(r"\)\s+(so|and|but|which|while|though|because|since)\b",
+                  r"), \1", body)
+
+    return re.sub(r"\x00(\d+)\x00", lambda m: holes[int(m.group(1))], body)
+
+
 def front(title, date, status="draft"):
     return (f'---\ntitle: "{title}"\ndate: "{date}"\nstatus: "{status}"\n'
             "format:\n  html:\n    embed-resources: true\n    toc: true\n"
@@ -70,6 +116,7 @@ def front(title, date, status="draft"):
 def write(name, title, date, parts):
     body = "\n".join(parts)
     body = re.sub(r"\b(Figs?\.?|Figures?)~", r"\1 ", body)
+    body = plain_punctuation(body)
     p = OUT / name
     p.write_text(front(title, date) + "\n" + body)
     figs = len(re.findall(r"^!\[\]\(", body, re.M))
