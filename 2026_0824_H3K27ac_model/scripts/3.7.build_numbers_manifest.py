@@ -449,6 +449,18 @@ const("gate_unmatched_init_pct_diff", 108,
       "(scripts/test_asymmetric_loss.py)")
 
 
+# --- DNase profile and count ceilings ----------------------------------------
+for _ct in ("k562", "gm12878"):
+    _d = tsv(f"profile_ceiling_binsize_{_ct}_dnase.tsv")
+    if _d is None:
+        print(f"  SKIP DNase ceiling {_ct}: run 0.33")
+        continue
+    for _, r in _d.iterrows():
+        for col in ("shape_r_unstranded", "ceiling_unstranded"):
+            add(f"dnase_{_ct}_{r['stratum']}_bin{int(r['bin_bp'])}_{col}", r[col],
+                f"results/profile_ceiling_binsize_{_ct}_dnase.tsv")
+
+
 # --- structural constants ----------------------------------------------------
 const("n_folds", 5, "chromosome-holdout cross-validation folds")
 const("ci_level_pct", 95, "confidence interval level used throughout")

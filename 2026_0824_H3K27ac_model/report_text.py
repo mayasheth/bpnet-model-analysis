@@ -53,6 +53,69 @@ Three companion documents:
   including which assays exist where and which files must not be used.
 """
 
+
+R1_DNASE = """## DNase cut sites are reproducible at base resolution
+
+**Q:** H3K27ac has almost no reproducible 1 bp profile, which caps what any profile head can
+score. Does DNase behave the same way, or are cut sites reproducible where acetylation is not?
+
+**A:** Reproducible, by roughly a factor of four. The 1 bp top-quintile ceiling is **0.848** in
+K562 and **0.686** in GM12878, against 0.21 and 0.18 for H3K27ac in the same cell types and by
+the same method (Fig. 4).
+
+| 1 bp, top quintile | DNase | H3K27ac |
+|---|---|---|
+| K562 | 0.848 | 0.21 |
+| GM12878 | 0.686 | 0.18 |
+
+K562 DNase saturates quickly: 0.921 at 5 bp and 0.946 at 10 bp, so a model predicting DNase at
+5-10 bp rather than 1 bp would give up almost nothing.
+
+**Why this matters beyond characterisation.** An ATAC-to-DNase converter has to emit something
+the downstream model can consume, and that model reads accessibility as a base-resolution 5'
+insertion track. A converter predicting only per-element DNase counts and painting them flat
+would strip the structure the accessibility branch uses. These ceilings say the profile is
+there to be predicted, which makes the profile head the decisive component of a converter,
+having been near-useless everywhere else in this project.
+
+**The two DNase libraries are not of equal quality, and the gap is large.** The count ceiling
+over the same +/-500 bp windows is *r* = 0.925 in K562 and **0.445** in GM12878 on the top
+quintile. Usable depth on the main chromosomes is 301.2M reads for K562 against 67.9M for
+GM12878, a 4.4x gap, where the two cell types' ATAC libraries are matched at 545.7M and
+571.4M. GM12878's DNase also carries 9.5% mitochondrial reads against K562's 0.075%.
+
+Any DNase-versus-ATAC comparison in GM12878 therefore confounds assay with library quality,
+and a cross-cell-type DNase comparison confounds it with a 4.4x depth difference. The K562
+in-cell comparison is the clean one, and it is conservative: DNase is the *shallower* input
+there (301.2M against ATAC's 545.7M), so a DNase advantage would hold despite the handicap.
+
+**Method.**
+
+- Same script and same procedure as the H3K27ac ceilings, so the numbers sit on one scale:
+  within-element correlation across positions between two replicates, which removes the count
+  signal and leaves shape.
+- Stranded per-replicate 5' tracks, read 1 only for paired BAMs, detected per file rather than
+  read from the metadata table.
+
+<details>
+<summary>Full methods &amp; code</summary>
+
+**A recorded constraint says mixed run types make an inter-replicate ceiling uncomputable**,
+which is why HCT116's H3K27ac was excluded. K562's ENCSR000EOT is listed as pe + se, so that
+objection applies here in principle. It is weaker under 5' counting, which takes one cut site
+per read regardless of length and uses read 1 only for paired data, making a PE and an SE
+library comparable at the cut-site level. GM12878's ENCSR000EMT is two clean SE replicates and
+was run as the control: it gives the same shape of curve, so the mixed run type is not
+generating K562's result. K562's replicates agree *better* (0.562 at 1 bp on the top quintile)
+than GM12878's two matched SE replicates do (0.307).
+
+```bash
+sbatch scripts/0.33.dnase_profile_ceiling.sh
+```
+Source: `scripts/0.33`, `scripts/0.25.profile_ceiling_by_binsize.py`,
+`results/profile_ceiling_binsize_{k562,gm12878}_dnase.tsv`
+"""
+
 R1_CONVENTIONS = """## Accessibility track conventions, and the read-length confound they hide
 
 Two conventions are in play for the accessibility input and they are different quantities.
@@ -1812,6 +1875,14 @@ R1_FIXUPS = [
      "n = 3,088,298 bins, 1 kb stride, mean GC 0.389. **Not GC-matched to the positives** "
      "\u2014 see the negatives section below |"),
     (r"\| Training negatives \|", "| Training negatives only; never evaluated on |"),
+    # DNase entered the project after the source report was written
+    (r"\| \*\*hg38 CV folds\*\* \|",
+     "| **K562 DNase** | DNase-seq, ENCSR000EOT (pe + se) and ENCSR000EKS (se); 301.2M usable "
+     "reads | ENCODE | Alternative accessibility input |\n"
+     "| **GM12878 DNase** | DNase-seq, ENCSR000EMT (se); 67.9M usable reads, 9.5% chrM, count "
+     "ceiling 0.445 on the top quintile | ENCODE | Alternative accessibility input, materially "
+     "weaker than K562's |\n"
+     "| **hg38 CV folds** |"),
 ]
 
 R1_MAP2 = {8: 1, 2: 2, 3: 3, 11: 4, 9: 5}
@@ -1832,6 +1903,7 @@ def build(pull, write):
            p1("A 1 kb counting window is the best trade-off between signal and neighbour contamination"),
            p1("H3K27ac has no reproducible base-resolution profile"),
            p1("The ATAC library supports fragment-size stratification"),
+           R1_DNASE,
            R1_CONVENTIONS,
            R1_METHODS])
 

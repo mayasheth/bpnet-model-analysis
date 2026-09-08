@@ -17545,6 +17545,1448 @@
    "note": "percent difference between gate and baseline when RNG draws are not matched (scripts/test_asymmetric_loss.py)"
   },
   {
+   "name": "dnase_k562_all_bin1_shape_r_unstranded",
+   "value": 0.2496,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_k562_all_bin1_shape_r_unstranded__r3",
+   "value": 0.25,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_all_bin1_shape_r_unstranded__r1",
+   "value": 0.2,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_all_bin1_ceiling_unstranded",
+   "value": 0.6321,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_k562_all_bin1_ceiling_unstranded__r3",
+   "value": 0.632,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_all_bin1_ceiling_unstranded__r2",
+   "value": 0.63,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_all_bin1_ceiling_unstranded__r1",
+   "value": 0.6,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_topq_bin1_shape_r_unstranded",
+   "value": 0.562,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_k562_topq_bin1_shape_r_unstranded__r2",
+   "value": 0.56,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_topq_bin1_shape_r_unstranded__r1",
+   "value": 0.6,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_topq_bin1_ceiling_unstranded",
+   "value": 0.8483,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_k562_topq_bin1_ceiling_unstranded__r3",
+   "value": 0.848,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_topq_bin1_ceiling_unstranded__r2",
+   "value": 0.85,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_topq_bin1_ceiling_unstranded__r1",
+   "value": 0.8,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_all_bin5_shape_r_unstranded",
+   "value": 0.3827,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_k562_all_bin5_shape_r_unstranded__r3",
+   "value": 0.383,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_all_bin5_shape_r_unstranded__r2",
+   "value": 0.38,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_all_bin5_shape_r_unstranded__r1",
+   "value": 0.4,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_all_bin5_ceiling_unstranded",
+   "value": 0.744,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_k562_all_bin5_ceiling_unstranded__r2",
+   "value": 0.74,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_all_bin5_ceiling_unstranded__r1",
+   "value": 0.7,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_topq_bin5_shape_r_unstranded",
+   "value": 0.7358,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_k562_topq_bin5_shape_r_unstranded__r3",
+   "value": 0.736,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_topq_bin5_shape_r_unstranded__r2",
+   "value": 0.74,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_topq_bin5_shape_r_unstranded__r1",
+   "value": 0.7,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_topq_bin5_ceiling_unstranded",
+   "value": 0.9207,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_k562_topq_bin5_ceiling_unstranded__r3",
+   "value": 0.921,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_topq_bin5_ceiling_unstranded__r2",
+   "value": 0.92,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_topq_bin5_ceiling_unstranded__r1",
+   "value": 0.9,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_all_bin10_shape_r_unstranded",
+   "value": 0.467,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_k562_all_bin10_shape_r_unstranded__r2",
+   "value": 0.47,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_all_bin10_shape_r_unstranded__r1",
+   "value": 0.5,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_all_bin10_ceiling_unstranded",
+   "value": 0.7979,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_k562_all_bin10_ceiling_unstranded__r3",
+   "value": 0.798,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_all_bin10_ceiling_unstranded__r2",
+   "value": 0.8,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_topq_bin10_shape_r_unstranded",
+   "value": 0.8099,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_k562_topq_bin10_shape_r_unstranded__r3",
+   "value": 0.81,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_topq_bin10_shape_r_unstranded__r1",
+   "value": 0.8,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_topq_bin10_ceiling_unstranded",
+   "value": 0.946,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_k562_topq_bin10_ceiling_unstranded__r2",
+   "value": 0.95,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_topq_bin10_ceiling_unstranded__r1",
+   "value": 0.9,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_all_bin25_shape_r_unstranded",
+   "value": 0.5908,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_k562_all_bin25_shape_r_unstranded__r3",
+   "value": 0.591,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_all_bin25_shape_r_unstranded__r2",
+   "value": 0.59,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_all_bin25_shape_r_unstranded__r1",
+   "value": 0.6,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_all_bin25_ceiling_unstranded",
+   "value": 0.8618,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_k562_all_bin25_ceiling_unstranded__r3",
+   "value": 0.862,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_all_bin25_ceiling_unstranded__r2",
+   "value": 0.86,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_all_bin25_ceiling_unstranded__r1",
+   "value": 0.9,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_topq_bin25_shape_r_unstranded",
+   "value": 0.885,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_k562_topq_bin25_shape_r_unstranded__r2",
+   "value": 0.89,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_topq_bin25_shape_r_unstranded__r1",
+   "value": 0.9,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_topq_bin25_ceiling_unstranded",
+   "value": 0.969,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_k562_topq_bin25_ceiling_unstranded__r2",
+   "value": 0.97,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_topq_bin25_ceiling_unstranded__r1",
+   "value": 1.0,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_all_bin50_shape_r_unstranded",
+   "value": 0.6848,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_k562_all_bin50_shape_r_unstranded__r3",
+   "value": 0.685,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_all_bin50_shape_r_unstranded__r2",
+   "value": 0.68,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_all_bin50_shape_r_unstranded__r1",
+   "value": 0.7,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_all_bin50_ceiling_unstranded",
+   "value": 0.9016,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_k562_all_bin50_ceiling_unstranded__r3",
+   "value": 0.902,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_all_bin50_ceiling_unstranded__r2",
+   "value": 0.9,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_topq_bin50_shape_r_unstranded",
+   "value": 0.9266,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_k562_topq_bin50_shape_r_unstranded__r3",
+   "value": 0.927,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_topq_bin50_shape_r_unstranded__r2",
+   "value": 0.93,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_topq_bin50_shape_r_unstranded__r1",
+   "value": 0.9,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_topq_bin50_ceiling_unstranded",
+   "value": 0.9808,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_k562_topq_bin50_ceiling_unstranded__r3",
+   "value": 0.981,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_topq_bin50_ceiling_unstranded__r2",
+   "value": 0.98,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_topq_bin50_ceiling_unstranded__r1",
+   "value": 1.0,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_all_bin100_shape_r_unstranded",
+   "value": 0.7625,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_k562_all_bin100_shape_r_unstranded__r3",
+   "value": 0.762,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_all_bin100_shape_r_unstranded__r2",
+   "value": 0.76,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_all_bin100_shape_r_unstranded__r1",
+   "value": 0.8,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_all_bin100_ceiling_unstranded",
+   "value": 0.9302,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_k562_all_bin100_ceiling_unstranded__r3",
+   "value": 0.93,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_all_bin100_ceiling_unstranded__r1",
+   "value": 0.9,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_topq_bin100_shape_r_unstranded",
+   "value": 0.9554,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_k562_topq_bin100_shape_r_unstranded__r3",
+   "value": 0.955,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_topq_bin100_shape_r_unstranded__r2",
+   "value": 0.96,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_topq_bin100_shape_r_unstranded__r1",
+   "value": 1.0,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_topq_bin100_ceiling_unstranded",
+   "value": 0.9885,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_k562_topq_bin100_ceiling_unstranded__r3",
+   "value": 0.989,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_topq_bin100_ceiling_unstranded__r2",
+   "value": 0.99,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_topq_bin100_ceiling_unstranded__r1",
+   "value": 1.0,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_all_bin250_shape_r_unstranded",
+   "value": 0.7894,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_k562_all_bin250_shape_r_unstranded__r3",
+   "value": 0.789,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_all_bin250_shape_r_unstranded__r2",
+   "value": 0.79,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_all_bin250_shape_r_unstranded__r1",
+   "value": 0.8,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_all_bin250_ceiling_unstranded",
+   "value": 0.9393,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_k562_all_bin250_ceiling_unstranded__r3",
+   "value": 0.939,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_all_bin250_ceiling_unstranded__r2",
+   "value": 0.94,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_all_bin250_ceiling_unstranded__r1",
+   "value": 0.9,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_topq_bin250_shape_r_unstranded",
+   "value": 0.964,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_k562_topq_bin250_shape_r_unstranded__r2",
+   "value": 0.96,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_topq_bin250_shape_r_unstranded__r1",
+   "value": 1.0,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_topq_bin250_ceiling_unstranded",
+   "value": 0.9908,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_k562_topq_bin250_ceiling_unstranded__r3",
+   "value": 0.991,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_topq_bin250_ceiling_unstranded__r2",
+   "value": 0.99,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_k562_topq_bin250_ceiling_unstranded__r1",
+   "value": 1.0,
+   "source": "results/profile_ceiling_binsize_k562_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_all_bin1_shape_r_unstranded",
+   "value": 0.1138,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_gm12878_all_bin1_shape_r_unstranded__r3",
+   "value": 0.114,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_all_bin1_shape_r_unstranded__r2",
+   "value": 0.11,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_all_bin1_shape_r_unstranded__r1",
+   "value": 0.1,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_all_bin1_ceiling_unstranded",
+   "value": 0.452,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_gm12878_all_bin1_ceiling_unstranded__r2",
+   "value": 0.45,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_all_bin1_ceiling_unstranded__r1",
+   "value": 0.5,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_topq_bin1_shape_r_unstranded",
+   "value": 0.3073,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_gm12878_topq_bin1_shape_r_unstranded__r3",
+   "value": 0.307,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_topq_bin1_shape_r_unstranded__r2",
+   "value": 0.31,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_topq_bin1_shape_r_unstranded__r1",
+   "value": 0.3,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_topq_bin1_ceiling_unstranded",
+   "value": 0.6857,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_gm12878_topq_bin1_ceiling_unstranded__r3",
+   "value": 0.686,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_topq_bin1_ceiling_unstranded__r2",
+   "value": 0.69,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_topq_bin1_ceiling_unstranded__r1",
+   "value": 0.7,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_all_bin5_shape_r_unstranded",
+   "value": 0.1807,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_gm12878_all_bin5_shape_r_unstranded__r3",
+   "value": 0.181,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_all_bin5_shape_r_unstranded__r2",
+   "value": 0.18,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_all_bin5_shape_r_unstranded__r1",
+   "value": 0.2,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_all_bin5_ceiling_unstranded",
+   "value": 0.5532,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_gm12878_all_bin5_ceiling_unstranded__r3",
+   "value": 0.553,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_all_bin5_ceiling_unstranded__r2",
+   "value": 0.55,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_all_bin5_ceiling_unstranded__r1",
+   "value": 0.6,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_topq_bin5_shape_r_unstranded",
+   "value": 0.4388,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_gm12878_topq_bin5_shape_r_unstranded__r3",
+   "value": 0.439,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_topq_bin5_shape_r_unstranded__r2",
+   "value": 0.44,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_topq_bin5_shape_r_unstranded__r1",
+   "value": 0.4,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_topq_bin5_ceiling_unstranded",
+   "value": 0.781,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_gm12878_topq_bin5_ceiling_unstranded__r2",
+   "value": 0.78,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_topq_bin5_ceiling_unstranded__r1",
+   "value": 0.8,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_all_bin10_shape_r_unstranded",
+   "value": 0.2341,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_gm12878_all_bin10_shape_r_unstranded__r3",
+   "value": 0.234,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_all_bin10_shape_r_unstranded__r2",
+   "value": 0.23,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_all_bin10_shape_r_unstranded__r1",
+   "value": 0.2,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_all_bin10_ceiling_unstranded",
+   "value": 0.616,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_gm12878_all_bin10_ceiling_unstranded__r2",
+   "value": 0.62,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_all_bin10_ceiling_unstranded__r1",
+   "value": 0.6,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_topq_bin10_shape_r_unstranded",
+   "value": 0.5225,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_gm12878_topq_bin10_shape_r_unstranded__r3",
+   "value": 0.522,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_topq_bin10_shape_r_unstranded__r2",
+   "value": 0.52,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_topq_bin10_shape_r_unstranded__r1",
+   "value": 0.5,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_topq_bin10_ceiling_unstranded",
+   "value": 0.8285,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_gm12878_topq_bin10_ceiling_unstranded__r3",
+   "value": 0.829,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_topq_bin10_ceiling_unstranded__r2",
+   "value": 0.83,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_topq_bin10_ceiling_unstranded__r1",
+   "value": 0.8,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_all_bin25_shape_r_unstranded",
+   "value": 0.3312,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_gm12878_all_bin25_shape_r_unstranded__r3",
+   "value": 0.331,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_all_bin25_shape_r_unstranded__r2",
+   "value": 0.33,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_all_bin25_shape_r_unstranded__r1",
+   "value": 0.3,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_all_bin25_ceiling_unstranded",
+   "value": 0.7054,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_gm12878_all_bin25_ceiling_unstranded__r3",
+   "value": 0.705,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_all_bin25_ceiling_unstranded__r2",
+   "value": 0.71,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_all_bin25_ceiling_unstranded__r1",
+   "value": 0.7,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_topq_bin25_shape_r_unstranded",
+   "value": 0.643,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_gm12878_topq_bin25_shape_r_unstranded__r2",
+   "value": 0.64,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_topq_bin25_shape_r_unstranded__r1",
+   "value": 0.6,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_topq_bin25_ceiling_unstranded",
+   "value": 0.8847,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_gm12878_topq_bin25_ceiling_unstranded__r3",
+   "value": 0.885,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_topq_bin25_ceiling_unstranded__r2",
+   "value": 0.88,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_topq_bin25_ceiling_unstranded__r1",
+   "value": 0.9,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_all_bin50_shape_r_unstranded",
+   "value": 0.4234,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_gm12878_all_bin50_shape_r_unstranded__r3",
+   "value": 0.423,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_all_bin50_shape_r_unstranded__r2",
+   "value": 0.42,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_all_bin50_shape_r_unstranded__r1",
+   "value": 0.4,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_all_bin50_ceiling_unstranded",
+   "value": 0.7713,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_gm12878_all_bin50_ceiling_unstranded__r3",
+   "value": 0.771,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_all_bin50_ceiling_unstranded__r2",
+   "value": 0.77,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_all_bin50_ceiling_unstranded__r1",
+   "value": 0.8,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_topq_bin50_shape_r_unstranded",
+   "value": 0.7276,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_gm12878_topq_bin50_shape_r_unstranded__r3",
+   "value": 0.728,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_topq_bin50_shape_r_unstranded__r2",
+   "value": 0.73,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_topq_bin50_shape_r_unstranded__r1",
+   "value": 0.7,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_topq_bin50_ceiling_unstranded",
+   "value": 0.9178,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_gm12878_topq_bin50_ceiling_unstranded__r3",
+   "value": 0.918,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_topq_bin50_ceiling_unstranded__r2",
+   "value": 0.92,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_topq_bin50_ceiling_unstranded__r1",
+   "value": 0.9,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_all_bin100_shape_r_unstranded",
+   "value": 0.5214,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_gm12878_all_bin100_shape_r_unstranded__r3",
+   "value": 0.521,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_all_bin100_shape_r_unstranded__r2",
+   "value": 0.52,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_all_bin100_shape_r_unstranded__r1",
+   "value": 0.5,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_all_bin100_ceiling_unstranded",
+   "value": 0.8279,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_gm12878_all_bin100_ceiling_unstranded__r3",
+   "value": 0.828,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_all_bin100_ceiling_unstranded__r2",
+   "value": 0.83,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_all_bin100_ceiling_unstranded__r1",
+   "value": 0.8,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_topq_bin100_shape_r_unstranded",
+   "value": 0.7947,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_gm12878_topq_bin100_shape_r_unstranded__r3",
+   "value": 0.795,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_topq_bin100_shape_r_unstranded__r2",
+   "value": 0.79,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_topq_bin100_shape_r_unstranded__r1",
+   "value": 0.8,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_topq_bin100_ceiling_unstranded",
+   "value": 0.9411,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_gm12878_topq_bin100_ceiling_unstranded__r3",
+   "value": 0.941,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_topq_bin100_ceiling_unstranded__r2",
+   "value": 0.94,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_topq_bin100_ceiling_unstranded__r1",
+   "value": 0.9,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_all_bin250_shape_r_unstranded",
+   "value": 0.5866,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_gm12878_all_bin250_shape_r_unstranded__r3",
+   "value": 0.587,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_all_bin250_shape_r_unstranded__r2",
+   "value": 0.59,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_all_bin250_shape_r_unstranded__r1",
+   "value": 0.6,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_all_bin250_ceiling_unstranded",
+   "value": 0.8599,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_gm12878_all_bin250_ceiling_unstranded__r3",
+   "value": 0.86,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_all_bin250_ceiling_unstranded__r1",
+   "value": 0.9,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_topq_bin250_shape_r_unstranded",
+   "value": 0.8301,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_gm12878_topq_bin250_shape_r_unstranded__r3",
+   "value": 0.83,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_topq_bin250_shape_r_unstranded__r1",
+   "value": 0.8,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_topq_bin250_ceiling_unstranded",
+   "value": 0.9525,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": ""
+  },
+  {
+   "name": "dnase_gm12878_topq_bin250_ceiling_unstranded__r3",
+   "value": 0.953,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 3 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_topq_bin250_ceiling_unstranded__r2",
+   "value": 0.95,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 2 dp as quoted)"
+  },
+  {
+   "name": "dnase_gm12878_topq_bin250_ceiling_unstranded__r1",
+   "value": 1.0,
+   "source": "results/profile_ceiling_binsize_gm12878_dnase.tsv",
+   "derived": true,
+   "note": " (rounded to 1 dp as quoted)"
+  },
+  {
    "name": "n_folds",
    "value": 5.0,
    "source": null,
