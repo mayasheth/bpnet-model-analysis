@@ -80,14 +80,14 @@ having been near-useless everywhere else in this project.
 
 **The two DNase libraries are not of equal quality, and the gap is large.** The count ceiling
 over the same +/-500 bp windows is *r* = 0.925 in K562 and **0.445** in GM12878 on the top
-quintile. Usable depth on the main chromosomes is 301.2M reads for K562 against 67.9M for
-GM12878, a 4.4x gap, where the two cell types' ATAC libraries are matched at 545.7M and
+quintile. Usable depth on the main chromosomes is 301.1M reads for K562 against 53.8M for
+GM12878, a 5.6x gap, where the two cell types' ATAC libraries are matched at 545.7M and
 571.4M. GM12878's DNase also carries 9.5% mitochondrial reads against K562's 0.075%.
 
 Any DNase-versus-ATAC comparison in GM12878 therefore confounds assay with library quality,
-and a cross-cell-type DNase comparison confounds it with a 4.4x depth difference. The K562
+and a cross-cell-type DNase comparison confounds it with a 5.6x depth difference. The K562
 in-cell comparison is the clean one, and it is conservative: DNase is the *shallower* input
-there (301.2M against ATAC's 545.7M), so a DNase advantage would hold despite the handicap.
+there (301.1M against ATAC's 545.7M), so a DNase advantage would hold despite the handicap.
 
 **Method.**
 
@@ -1877,9 +1877,9 @@ R1_FIXUPS = [
     (r"\| Training negatives \|", "| Training negatives only; never evaluated on |"),
     # DNase entered the project after the source report was written
     (r"\| \*\*hg38 CV folds\*\* \|",
-     "| **K562 DNase** | DNase-seq, ENCSR000EOT (pe + se) and ENCSR000EKS (se); 301.2M usable "
+     "| **K562 DNase** | DNase-seq, ENCSR000EOT (pe + se) and ENCSR000EKS (se); 301.1M usable "
      "reads | ENCODE | Alternative accessibility input |\n"
-     "| **GM12878 DNase** | DNase-seq, ENCSR000EMT (se); 67.9M usable reads, 9.5% chrM, count "
+     "| **GM12878 DNase** | DNase-seq, ENCSR000EMT (se); 53.8M usable reads, 9.5% chrM, count "
      "ceiling 0.445 on the top quintile | ENCODE | Alternative accessibility input, materially "
      "weaker than K562's |\n"
      "| **hg38 CV folds** |"),

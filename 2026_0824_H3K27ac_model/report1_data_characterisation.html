@@ -268,13 +268,13 @@ See the coupling section below for the complete legend. The two points that make
 </tr>
 <tr class="even">
 <td><strong>K562 DNase</strong></td>
-<td>DNase-seq, ENCSR000EOT (pe + se), and ENCSR000EKS (se); 301.2M usable reads</td>
+<td>DNase-seq, ENCSR000EOT (pe + se), and ENCSR000EKS (se); 301.1M usable reads</td>
 <td>ENCODE</td>
 <td>Alternative accessibility input</td>
 </tr>
 <tr class="odd">
 <td><strong>GM12878 DNase</strong></td>
-<td>DNase-seq, ENCSR000EMT (se); 67.9M usable reads, 9.5% chrM, count ceiling 0.445 on the top quintile</td>
+<td>DNase-seq, ENCSR000EMT (se); 53.8M usable reads, 9.5% chrM, count ceiling 0.445 on the top quintile</td>
 <td>ENCODE</td>
 <td>Alternative accessibility input, materially weaker than K562’s</td>
 </tr>
@@ -477,8 +477,8 @@ Source: <code>scripts/0.10.plot_fragment_lengths.py</code>, <code>scripts/0.9.ma
 </table>
 <p>K562 DNase saturates quickly: 0.921 at 5 bp and 0.946 at 10 bp, so a model predicting DNase at 5-10 bp rather than 1 bp would give up almost nothing.</p>
 <p><strong>Why this matters beyond characterisation.</strong> An ATAC-to-DNase converter has to emit something the downstream model can consume, and that model reads accessibility as a base-resolution 5’ insertion track. A converter predicting only per-element DNase counts and painting them flat would strip the structure the accessibility branch uses. These ceilings say the profile is there to be predicted, which makes the profile head the decisive component of a converter, having been near-useless everywhere else in this project.</p>
-<p><strong>The two DNase libraries are not of equal quality, and the gap is large.</strong> The count ceiling over the same +/-500 bp windows is <em>r</em> = 0.925 in K562 and <strong>0.445</strong> in GM12878 on the top quintile. Usable depth on the main chromosomes is 301.2M reads for K562 against 67.9M for GM12878, a 4.4x gap, where the two cell types’ ATAC libraries are matched at 545.7M and 571.4M. GM12878’s DNase also carries 9.5% mitochondrial reads against K562’s 0.075%.</p>
-<p>Any DNase-versus-ATAC comparison in GM12878 therefore confounds assay with library quality, and a cross-cell-type DNase comparison confounds it with a 4.4x depth difference. The K562 in-cell comparison is the clean one, and it is conservative: DNase is the <em>shallower</em> input there (301.2M against ATAC’s 545.7M), so a DNase advantage would hold despite the handicap.</p>
+<p><strong>The two DNase libraries are not of equal quality, and the gap is large.</strong> The count ceiling over the same +/-500 bp windows is <em>r</em> = 0.925 in K562 and <strong>0.445</strong> in GM12878 on the top quintile. Usable depth on the main chromosomes is 301.1M reads for K562 against 53.8M for GM12878, a 5.6x gap, where the two cell types’ ATAC libraries are matched at 545.7M and 571.4M. GM12878’s DNase also carries 9.5% mitochondrial reads against K562’s 0.075%.</p>
+<p>Any DNase-versus-ATAC comparison in GM12878 therefore confounds assay with library quality, and a cross-cell-type DNase comparison confounds it with a 5.6x depth difference. The K562 in-cell comparison is the clean one, and it is conservative: DNase is the <em>shallower</em> input there (301.1M against ATAC’s 545.7M), so a DNase advantage would hold despite the handicap.</p>
 <p><strong>Method.</strong></p>
 <ul>
 <li>Same script and same procedure as the H3K27ac ceilings, so the numbers sit on one scale: within-element correlation across positions between two replicates, which removes the count signal and leaves shape.</li>
