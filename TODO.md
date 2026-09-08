@@ -162,7 +162,10 @@ thinner ones. Order below reflects that.
 
 ### Running now
 
-- [ ] **Depth-subsampling causal test.** Subsample K562 EP300 to GM12878's 30.0M mapped reads
+- [x] **Depth-subsampling causal test. REFUTED 2026-09-08**: the depth-matched K562 model
+      still transfers at +0.202 against the full-depth +0.207 (paired -0.005, *p*=0.40), and
+      peak-set geometry is excluded too. The asymmetry survives equalising volume, so a third
+      cell type is now required rather than merely desirable. Original plan: Subsample K562 EP300 to GM12878's 30.0M mapped reads
       and 21,068 peaks, retrain the multimodal p300 model, re-run the transfer 2x2 (`2.27`).
       If the subsampled K562 model stops transferring, training-signal volume explains the
       asymmetry and the answer is more sequencing. If it still transfers, something else about

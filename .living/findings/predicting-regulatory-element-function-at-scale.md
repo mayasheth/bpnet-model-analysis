@@ -197,3 +197,25 @@ than "the gain does not transfer".
 | Date | Run/Session | Dataset | Project | Result | Direction |
 |------|-------------|---------|---------|--------|-----------|
 | 2026-09-06 | job 42280519 (`2.27`) | K562 EP300 ENCSR000EGE + GM12878 EP300 ENCSR000DZG, candidate elements in both, 5 folds | 2026_0824_H3K27ac_model | local 0.619 / 0.608 against floors 0.306 / 0.299; transferred 0.507 (K562→GM) and 0.312 (GM→K562); drops -0.102 and -0.307 | supports |
+
+**Update 2026-09-08: training-signal volume does not explain the asymmetry.** Retraining the
+K562 p300 model on GM12878's exact budget (30.0M mapped reads from 51.1M, 21,068 peaks from
+28,532) leaves the transfer intact: +0.202 [+0.147, +0.257] over GM12878's ATAC-only floor
+against the full-depth model's +0.207 [+0.158, +0.257], a paired difference of -0.005
+[-0.021, +0.010] (*p*=0.40). In-cell it costs -0.020 [-0.040, +0.001] (*p*=0.056), so the
+depth-matched model is barely worse at home and is not simply a weaker model. A K562 model on
+GM12878's budget transfers at +0.202; the GM12878 model on that same budget transfers at
++0.006.
+
+Peak-set geometry is also excluded: both training sets are summit-centred fixed-width (316 bp
+K562, 350 bp GM12878), the trainer centres on `start + summit`, and GM12878's summits are the
+tighter of the two (|summit - midpoint| p90 0 bp against 6 bp).
+
+The asymmetry is therefore a property of K562 and GM12878 as training cell types that survives
+equalising volume. Two cell types cannot separate "K562-trained models are portable in general"
+from "K562 happens to transfer to GM12878", so a third cell type is required rather than
+merely desirable.
+
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-09-08 | build 42400234, training 42402641-49, scoring 42440125 | K562 EP300 subsampled to GM12878's read and peak budget | 2026_0824_H3K27ac_model | depth-matched transferred +0.202 vs full-depth +0.207, paired -0.005 (*p*=0.40); in-cell 0.599 vs 0.619 | refutes |
