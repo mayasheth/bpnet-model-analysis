@@ -150,3 +150,71 @@ Tracked in mycelium's todo/ (canonical for this project going forward):
       (ENCSR000DZG), so it is 5 folds of training away. Decide after the K562 arms.
 - [ ] Run in its OWN results dir, not appended to `2026_0903_predicted_activity` — re-stamping
       Peaks in the completed run would make all nine finished arms look stale.
+
+## Where the project goes next (added 2026-09-07, after the transfer results)
+
+Every model so far fits one cell type's accessibility-to-signal mapping. Accessibility is the
+part that generalises, so a transferred model decays toward the ATAC-only floor by
+construction. The one arm that transferred well (K562-trained p300, +0.207 over the target's
+floor, 83% of its local advantage) is also the one trained on 2.3x more reads in peaks, so
+portable sequence grammar is learnable here and the models that failed to learn it were the
+thinner ones. Order below reflects that.
+
+### Running now
+
+- [ ] **Depth-subsampling causal test.** Subsample K562 EP300 to GM12878's 30.0M mapped reads
+      and 21,068 peaks, retrain the multimodal p300 model, re-run the transfer 2x2 (`2.27`).
+      If the subsampled K562 model stops transferring, training-signal volume explains the
+      asymmetry and the answer is more sequencing. If it still transfers, something else about
+      K562 as a training cell type does, and a third cell type becomes urgent.
+      Five folds, no new tooling beyond the subsampling and bigwig rebuild.
+
+### Top section
+
+- [ ] **Swap ATAC for DNase as the accessibility input**, scored in-cell type and transferred.
+      DNase couples to H3K27ac and to enhancer activity better than ATAC does, and observed
+      DNase already beats observed ATAC inside ABC. If a DNase-input model beats its ATAC
+      counterpart on either axis it also justifies the ATAC->DNase converter as a front end,
+      since the converter is only worth building if the DNase representation is the better one
+      to be in. K562 has DNase (ENCSR000EOT, ENCSR000EKS) and GM12878 has DNase (ENCSR000EMT),
+      so both the in-cell and the transfer arm are runnable today.
+- [ ] **Multi-cell-type joint training, leave-one-cell-type-out.** K562 + GM12878 + TeloHAEC,
+      shared sequence trunk, per-cell-type accessibility input, held-out cell type as the
+      evaluation. Measures the deployment case directly instead of inferring it from a two-way
+      transfer. Needs a cell-type-invariant target scale, which the quantile item supplies.
+- [ ] **Quantile-normalised targets within cell type, plus a ranking loss** in place of log1p
+      MSE on counts. ABC consumes an ordering; the measured downstream failure is compressed
+      dynamic range on the strongly acetylated elements; nothing tried so far targets spread.
+      Also makes targets commensurable across cell types, which joint training requires.
+- [ ] **Pretrained sequence trunk** (Borzoi or Enformer embeddings, frozen first, then
+      fine-tuned) replacing the 8-layer dilated stack. Those representations were fit across
+      hundreds of cell types, so cross-cell-type grammar is imported rather than learned from
+      two experiments.
+- [ ] **DNase-input panel across six or more cell types** instead of ATAC across three. The
+      confound that ruled DNase out was about mixing assays inside one comparison; a
+      DNase-only panel is internally consistent and doubles the available cell types.
+
+### Lower confidence, cheap once the above exist
+
+- [ ] Gradient-reversal on a cell-type classifier reading the sequence embedding, penalising
+      anything cell-type-identifiable in the sequence representation. Meaningless before joint
+      training exists.
+- [ ] Multiplicative two-tower factorisation: sequence predicts regulatory potential,
+      accessibility predicts availability, output is their product. The additive trunk lets
+      accessibility dominate. The gate tested sequence modulating accessibility and failed;
+      the reverse conditioning is untested.
+- [ ] Multi-task across marks available in six cell types (H3K4me1, H3K27me3, CTCF) rather
+      than p300, which exists in two. The p300 multi-head died on p300's learnability at
+      specific elements, not on the multi-task idea.
+
+### Do not reopen without new evidence
+
+- Further single-cell-type architecture variants. Wide receptive field, fragment channels,
+  the sequence gate, the asymmetric loss and GC-matched negatives have all either failed
+  outright or failed to travel.
+
+### Structural blocker
+
+- [ ] **A downstream benchmark in a second cell type.** CRISPR data exists only for K562, so
+      the terminal metric can only test the transfer direction that already fails. MPRA or
+      eQTL data in a second cell type would be worth more right now than another model.
