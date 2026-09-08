@@ -90,16 +90,28 @@ def fig10():
 
 
 def fig11():
+    """Profile ceilings for both marks.
+
+    DNase is overlaid on the same axes as H3K27ac because the comparison is the point: the
+    two differ by roughly 4x at 1 bp, which is what decides whether a model's profile head
+    can produce a usable base-resolution track for that mark. Only the top quintile is drawn
+    for DNase, since showing both strata for both marks puts eight lines on one panel.
+    """
     apply_rcparams()
     fig, axes = plt.subplots(1, 2, figsize=(7.2, 3.0), sharex=True)
-    for key, title, col in [("k562", "K562", K562_C), ("gm12878", "GM12878", GM_C)]:
+    series = [("k562", "K562 H3K27ac", K562_C, ("topq", "all")),
+              ("gm12878", "GM12878 H3K27ac", GM_C, ("topq", "all")),
+              ("k562_dnase", "K562 DNase", "#2b8cbe", ("topq",)),
+              ("gm12878_dnase", "GM12878 DNase", "#7bccc4", ("topq",))]
+    for key, title, col, strata in series:
         f = f"{P}/results/profile_ceiling_binsize_{key}.tsv"
         if not os.path.exists(f):
             continue
         d = pd.read_csv(f, sep="\t")
-        for strat, ls, mk in [("topq", "-", "o"), ("all", "--", "s")]:
+        for strat in strata:
+            ls, mk = ("-", "o") if strat == "topq" else ("--", "s")
             g = d[d["stratum"] == strat].sort_values("bin_bp")
-            lab = f"{title}, {'top quintile' if strat == 'topq' else 'all elements'}"
+            lab = title if strat == "topq" else f"{title}, all elements"
             axes[0].plot(g["bin_bp"], g["shape_r_unstranded"], ls, color=col,
                          marker=mk, ms=3, lw=1.2, label=lab)
             axes[1].plot(g["bin_bp"], g["ceiling_unstranded"], ls, color=col,
@@ -115,10 +127,23 @@ def fig11():
         ax.set_ylim(0, 1)
         ax.set_title(ttl, fontsize=8)
     axes[1].axhline(1.0, color="0.8", lw=0.6, ls=":")
-    axes[0].legend(loc="upper left", fontsize=5.5)
+    axes[0].legend(loc="upper left", fontsize=5, ncol=1, frameon=False,
+               handlelength=1.6, labelspacing=0.25)
     add_panel_label(axes[0], "a"); add_panel_label(axes[1], "b")
     fig.tight_layout()
-    annotate_n_fig(fig, n_label(n=len(d), unit="elements with non-flat profiles in both replicates"))
+    # n comes from the table's own n_elements column, not from len(d), which is the number of
+    # (bin size, stratum) rows and was silently reporting "n = 14 elements".
+    _ns = []
+    for key, title, _c, _s in series:
+        f = f"{P}/results/profile_ceiling_binsize_{key}.tsv"
+        if not os.path.exists(f):
+            continue
+        _g = pd.read_csv(f, sep="\t")
+        _g = _g[(_g["stratum"] == "topq") & (_g["bin_bp"] == 1)]
+        if len(_g):
+            _ns.append(f"{title} {int(_g['n_elements'].iloc[0]):,}")
+    annotate_n_fig(fig, "elements with non-flat profiles in both replicates, top quintile: "
+                        + "; ".join(_ns))
     save_fig(fig, f"{P}/figures/fig11_profile_ceiling.png")
     print("wrote fig11")
 
