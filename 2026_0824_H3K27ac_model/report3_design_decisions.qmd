@@ -97,6 +97,7 @@ from `scripts/4.17`.
 - Target choice was the binding constraint, not architecture. Predicted p300 as ABC's activity term clears the ATAC-only floor by **+0.055 [+0.034, +0.074]** (paired bootstrap, sign kept 100%), and matches *measured* H3K27ac; the best predicted-H3K27ac arm reaches only +0.025 [-0.003, +0.052]. The direction of the sequence contribution flips too: for p300 the sequence + ATAC model beats the ATAC-only one by +0.051, while for H3K27ac the sequence arms were the worst in the panel (0.393 and 0.275 against a 0.457 floor). Same architecture, same accessibility input, same benchmark (Figs. 1, 10).
 - Transfer is strongly asymmetric, and the benchmark can only test the direction that fails. K562-trained p300 applied to GM12878 keeps **+0.207 [+0.158, +0.257]** over that cell type's own accessibility model, 83% of its local advantage; GM12878-trained applied to K562 keeps **+0.006** (*p*=0.72) with a *negative* accessibility residual. Both models are equally strong at home (+0.313 and +0.309 over matched floors), so this is not model quality. CRISPR data exists only for K562, so the downstream metric cannot evaluate the working direction.
 - Observed p300 beats observed H3K27ac as an ABC activity term by +0.038 [+0.019, +0.058], independent of any model and replicated across two runs. That is a fact about the assay, it widens the headroom over the floor from 0.062 to 0.099, and it survives every negative result below.
+- Swapping DNase for ATAC as the accessibility input is the first change that survives transfer. It gains +0.037 in-cell K562 and +0.086 in-cell GM12878, and transferred it clears the target cell type's own ATAC-only floor by **+0.056 [+0.014, +0.099]** where the ATAC-input model manages +0.013 (*p*=0.25). DNase is the shallower library in both cell types, so the depth confound runs against the result.
 - In-cell-type gains do not travel, and the mechanism-targeted interventions are closed with controlled nulls. No architecture beats the simplest transferred (best +0.016, *p*=0.066; fragment channels exactly null in both directions). Sequence-gated accessibility, an asymmetric count loss, GC-matched training negatives, and p300 as an auxiliary head all failed, the last three with the manipulation verified before the outcome was read.
 - The failures are accessible-but-unacetylated elements, and CTCF is a passenger. CTCF-high elements are 27% of the over-predicted tail and removing them leaves the remainder over-predicted *more*; GC content correlates with the error 3-4x more strongly than CTCF does. Under-predicted elements are canonical active enhancers (EP300 3.4x, H3K4me1 3.3x, zero H3K27me3). Predicted H3K27ac fails through compressed dynamic range rather than inaccuracy (Fig. 11).
 
@@ -147,6 +148,7 @@ stated. Read every row against a between-fold `sd` of 0.041-0.046 (Report 2).
 | **Predicted p300, correlation metric, K562 -> GM12878** | **+0.207 [+0.158, +0.257]** over the target's ATAC-only model; 83% of local | **transfers**; the benchmark cannot test this direction |
 | **Observed p300 instead of observed H3K27ac as the activity term** | **+0.038 [+0.019, +0.058]** | use p300 where it is measured; model-independent |
 | **p300 as a second head alongside H3K27ac** | predicted p300 1.83x elevation against a 2.10x input control at the H3K27ac failure elements | **dropped**; p300 as the *primary* target is the version that works |
+| **DNase instead of ATAC as the accessibility input** | **+0.037** in-cell K562, **+0.086** in-cell GM12878, **+0.043** transferred; clears the target's floor by **+0.056** | **adopted**; the first model to clear the floor on transfer |
 | **Sequence-gated accessibility, and asymmetric count loss** | in-cell null; **-0.013 (*p*=0.039) transferred when combined** | **closed** |
 | **GC-matching the training negatives** | +0.001 (*p*=0.76) in-cell; -0.002 (*p*=0.33) transferred | **closed**; the GC-shortcut explanation is refuted |
 
@@ -1219,6 +1221,84 @@ pixi run python scripts/4.17.paired_auprc_bootstrap.py <merged.txt.gz> --pair A 
 ```
 Source: `scripts/4.3`, `4.5`-`4.7`, `4.17.paired_auprc_bootstrap.py`
 </details>
+
+## DNase beats ATAC as the accessibility input, and it is the first H3K27ac model to clear the floor on transfer
+
+**Q:** DNase couples to H3K27ac and to enhancer activity better than ATAC does, and observed
+DNase already beats observed ATAC inside ABC. Does that carry into a model's input?
+
+**A:** Yes, in every arm, and by more where DNase is the shallower library. In-cell type DNase
+gains **+0.037 [+0.019, +0.056]** in K562 and **+0.086 [+0.076, +0.095]** in GM12878.
+Transferred from K562 to GM12878 it gains **+0.043 [+0.003, +0.084]** over the ATAC-input
+model, and it is **the first H3K27ac model in this project to clear the target cell type's own
+ATAC-only floor with a resolvable margin: +0.056 [+0.014, +0.099]**, where the ATAC-input
+model manages +0.013 (*p*=0.25).
+
+| top-quintile Pearson | ATAC input | DNase input |
+|---|---|---|
+| in-cell K562 | 0.699 | **0.736** |
+| in-cell GM12878 | 0.585 | **0.671** |
+| K562 -> GM12878, transferred | 0.531 | **0.574** |
+| GM12878's own ATAC-only floor | 0.518 | 0.518 |
+
+| paired within-fold comparison | delta | 95% CI | *p* |
+|---|---|---|---|
+| in-cell K562, DNase - ATAC | +0.037 | [+0.019, +0.056] | 0.005 |
+| in-cell GM12878, DNase - ATAC | +0.086 | [+0.076, +0.095] | <1e-4 |
+| transferred, DNase - ATAC | +0.043 | [+0.003, +0.084] | 0.041 |
+| **transferred DNase - GM12878's ATAC-only floor** | **+0.056** | **[+0.014, +0.099]** | **0.020** |
+| transferred ATAC - that same floor | +0.013 | [-0.014, +0.041] | 0.25 |
+
+**The accessibility residual is where the gap is widest.** Transferred, the DNase-input model
+scores *r* = 0.236 [0.211, 0.262] against accessibility, the ATAC-input model 0.041
+[0.003, 0.079], and the floor arm 0.026. On the metric that asks what a model adds beyond
+accessibility, the transferred ATAC model adds nothing and the transferred DNase model adds
+real signal.
+
+**The depth confound runs against the result, which makes it a lower bound.** DNase is the
+*shallower* input in both cell types: 301.1M usable reads against ATAC's 545.7M in K562, and
+53.8M against 571.4M in GM12878 (Report 1). GM12878's DNase is also the weaker library by its
+own inter-replicate count ceiling, 0.445 against K562's 0.925. Before running this I flagged
+the GM12878 arms as confounded and said I would not read an assay conclusion off them. The
+confound is real and it is pointed the wrong way for the conclusion: DNase wins by **+0.086**
+in the cell type where it is 10.6x shallower, against **+0.037** where it is only 1.8x
+shallower. Depth-matching would be expected to widen the gap, not close it.
+
+**Consequence for the converter.** The premise it needed is now measured rather than assumed:
+DNase is the better representation to be in, the advantage survives transfer, and DNase has a
+reproducible base-resolution profile for a converter to target (Report 1). All three had to
+hold and all three do.
+
+**Method.**
+
+- Each scoring entry carries its own accessibility bigwig, so a DNase-trained model is always
+  fed DNase and an ATAC-trained model always ATAC, transferred included. The comparison is
+  assay-versus-assay end to end rather than a model being handed the wrong input.
+- `1.22` and `1.23` are `1.11` and `1.12` with exactly two changes each, the accessibility
+  bigwig and the output directory, verified by diff on the comment-stripped scripts.
+- The transfer arm is scored against GM12878's own ATAC-only model, which is the floor a
+  deployed model has to beat to be worth anything.
+
+<details>
+<summary>Full methods &amp; code</summary>
+
+The DNase inputs are `genomecov -bg -5` unstranded, matching how `atac_5p.bw` was built, so
+the swap changes the assay and nothing else. Replicates are pooled by merging the filtered
+BAMs and calling `genomecov` once; an earlier version summed per-replicate bedGraphs through
+`bedtools merge`, which collapses bookended intervals and produced a K562 track with 34x the
+correct signal that exited 0 and looked valid. The build now asserts that the track sum equals
+the main-chromosome read count exactly, with the contig list read from the same chrom-sizes
+file the track filters on.
+
+```bash
+sbatch scripts/0.32.make_dnase_5prime.sh
+for F in 0 1 2 3 4; do
+    sbatch scripts/1.22.submit_training_dnase_k562.sh multimodal $F
+    sbatch scripts/1.23.submit_training_dnase_gm12878.sh multimodal $F
+done
+sbatch scripts/2.29.submit_dnase_swap_eval.sh
+```
+Source: `scripts/0.32`, `1.22`, `1.23`, `2.29`
 
 ## GC-matching the training negatives changes nothing
 
