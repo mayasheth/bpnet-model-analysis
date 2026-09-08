@@ -129,6 +129,7 @@ details[open] > summary { margin-bottom: 0.5em; }
 <li><a href="#the-sequence-branch-does-not-separate-either-error-tail">The sequence branch does not separate either error tail</a></li>
 <li><a href="#p300-as-a-second-target-not-learnable-where-h3k27ac-fails">p300 as a second target: not learnable where H3K27ac fails</a></li>
 <li><a href="#predicted-p300-improves-abc-in-the-training-cell-type-and-not-on-transfer">Predicted p300 improves ABC in the training cell type, and not on transfer</a></li>
+<li><a href="#dnase-beats-atac-as-the-accessibility-input-and-it-is-the-first-h3k27ac-model-to-clear-the-floor-on-transfer">DNase beats ATAC as the accessibility input, and it is the first H3K27ac model to clear the floor on transfer</a></li>
 <li><a href="#gc-matching-the-training-negatives-changes-nothing">GC-matching the training negatives changes nothing</a></li>
 <li><a href="#sequence-gated-accessibility-and-an-asymmetric-count-loss">Sequence-gated accessibility and an asymmetric count loss</a></li>
 <li><a href="#open-questions-next-steps">Open questions / next steps</a></li>
@@ -207,6 +208,7 @@ Full legend
 <li>Target choice was the binding constraint, not architecture. Predicted p300 as ABC’s activity term clears the ATAC-only floor by <strong>+0.055 [+0.034, +0.074]</strong> (paired bootstrap, sign kept 100%), and matches <em>measured</em> H3K27ac; the best predicted-H3K27ac arm reaches only +0.025 [-0.003, +0.052]. The direction of the sequence contribution flips too: for p300 the sequence + ATAC model beats the ATAC-only one by +0.051, while for H3K27ac the sequence arms were the worst in the panel (0.393 and 0.275 against a 0.457 floor). Same architecture, same accessibility input, same benchmark (Figs. 1, 10).</li>
 <li>Transfer is strongly asymmetric, and the benchmark can only test the direction that fails. K562-trained p300 applied to GM12878 keeps <strong>+0.207 [+0.158, +0.257]</strong> over that cell type’s own accessibility model, 83% of its local advantage; GM12878-trained applied to K562 keeps <strong>+0.006</strong> (<em>p</em>=0.72) with a <em>negative</em> accessibility residual. Both models are equally strong at home (+0.313 and +0.309 over matched floors), so this is not model quality. CRISPR data exists only for K562, so the downstream metric cannot evaluate the working direction.</li>
 <li>Observed p300 beats observed H3K27ac as an ABC activity term by +0.038 [+0.019, +0.058], independent of any model and replicated across two runs. That is a fact about the assay, it widens the headroom over the floor from 0.062 to 0.099, and it survives every negative result below.</li>
+<li>Swapping DNase for ATAC as the accessibility input is the first change that survives transfer. It gains +0.037 in-cell K562 and +0.086 in-cell GM12878, and transferred it clears the target cell type’s own ATAC-only floor by <strong>+0.056 [+0.014, +0.099]</strong> where the ATAC-input model manages +0.013 (<em>p</em>=0.25). DNase is the shallower library in both cell types, so the depth confound runs against the result.</li>
 <li>In-cell-type gains do not travel, and the mechanism-targeted interventions are closed with controlled nulls. No architecture beats the simplest transferred (best +0.016, <em>p</em>=0.066; fragment channels exactly null in both directions). Sequence-gated accessibility, an asymmetric count loss, GC-matched training negatives, and p300 as an auxiliary head all failed, the last three with the manipulation verified before the outcome was read.</li>
 <li>The failures are accessible-but-unacetylated elements, and CTCF is a passenger. CTCF-high elements are 27% of the over-predicted tail and removing them leaves the remainder over-predicted <em>more</em>; GC content correlates with the error 3-4x more strongly than CTCF does. Under-predicted elements are canonical active enhancers (EP300 3.4x, H3K4me1 3.3x, zero H3K27me3). Predicted H3K27ac fails through compressed dynamic range rather than inaccuracy (Fig. 11).</li>
 </ul>
@@ -336,11 +338,16 @@ Full legend
 <td><strong>dropped</strong>; p300 as the <em>primary</em> target is the version that works</td>
 </tr>
 <tr class="even">
+<td><strong>DNase instead of ATAC as the accessibility input</strong></td>
+<td><strong>+0.037</strong> in-cell K562, <strong>+0.086</strong> in-cell GM12878, <strong>+0.043</strong> transferred; clears the target’s floor by <strong>+0.056</strong></td>
+<td><strong>adopted</strong>; the first model to clear the floor on transfer</td>
+</tr>
+<tr class="odd">
 <td><strong>Sequence-gated accessibility, and asymmetric count loss</strong></td>
 <td>in-cell null; <strong>-0.013 (<em>p</em>=0.039) transferred when combined</strong></td>
 <td><strong>closed</strong></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><strong>GC-matching the training negatives</strong></td>
 <td>+0.001 (<em>p</em>=0.76) in-cell; -0.002 (<em>p</em>=0.33) transferred</td>
 <td><strong>closed</strong>; the GC-shortcut explanation is refuted</td>
@@ -1627,6 +1634,103 @@ Full methods &amp; code
 <span id="cb16-7"><a href="#cb16-7" aria-hidden="true"></a><span class="ex">pixi</span> run python scripts/4.17.paired_auprc_bootstrap.py <span class="op">&lt;</span>merged.txt.gz<span class="op">&gt;</span> --pair A B ...</span></code></pre></div>
 Source: <code>scripts/4.3</code>, <code>4.5</code>-<code>4.7</code>, <code>4.17.paired_auprc_bootstrap.py</code>
 </details>
+<h2 id="dnase-beats-atac-as-the-accessibility-input-and-it-is-the-first-h3k27ac-model-to-clear-the-floor-on-transfer">DNase beats ATAC as the accessibility input, and it is the first H3K27ac model to clear the floor on transfer</h2>
+<p><strong>Q:</strong> DNase couples to H3K27ac and to enhancer activity better than ATAC does, and observed DNase already beats observed ATAC inside ABC. Does that carry into a model’s input?</p>
+<p><strong>A:</strong> Yes, in every arm, and by more where DNase is the shallower library. In-cell type DNase gains <strong>+0.037 [+0.019, +0.056]</strong> in K562 and <strong>+0.086 [+0.076, +0.095]</strong> in GM12878. Transferred from K562 to GM12878 it gains <strong>+0.043 [+0.003, +0.084]</strong> over the ATAC-input model, and it is <strong>the first H3K27ac model in this project to clear the target cell type’s own ATAC-only floor with a resolvable margin: +0.056 [+0.014, +0.099]</strong>, where the ATAC-input model manages +0.013 (<em>p</em>=0.25).</p>
+<table>
+<thead>
+<tr class="header">
+<th>top-quintile Pearson</th>
+<th>ATAC input</th>
+<th>DNase input</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>in-cell K562</td>
+<td>0.699</td>
+<td><strong>0.736</strong></td>
+</tr>
+<tr class="even">
+<td>in-cell GM12878</td>
+<td>0.585</td>
+<td><strong>0.671</strong></td>
+</tr>
+<tr class="odd">
+<td>K562 -&gt; GM12878, transferred</td>
+<td>0.531</td>
+<td><strong>0.574</strong></td>
+</tr>
+<tr class="even">
+<td>GM12878’s own ATAC-only floor</td>
+<td>0.518</td>
+<td>0.518</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr class="header">
+<th>paired within-fold comparison</th>
+<th>delta</th>
+<th>95% CI</th>
+<th><em>p</em></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>in-cell K562, DNase - ATAC</td>
+<td>+0.037</td>
+<td>[+0.019, +0.056]</td>
+<td>0.005</td>
+</tr>
+<tr class="even">
+<td>in-cell GM12878, DNase - ATAC</td>
+<td>+0.086</td>
+<td>[+0.076, +0.095]</td>
+<td>&lt;1e-4</td>
+</tr>
+<tr class="odd">
+<td>transferred, DNase - ATAC</td>
+<td>+0.043</td>
+<td>[+0.003, +0.084]</td>
+<td>0.041</td>
+</tr>
+<tr class="even">
+<td><strong>transferred DNase - GM12878’s ATAC-only floor</strong></td>
+<td><strong>+0.056</strong></td>
+<td><strong>[+0.014, +0.099]</strong></td>
+<td><strong>0.020</strong></td>
+</tr>
+<tr class="odd">
+<td>transferred ATAC - that same floor</td>
+<td>+0.013</td>
+<td>[-0.014, +0.041]</td>
+<td>0.25</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The accessibility residual is where the gap is widest.</strong> Transferred, the DNase-input model scores <em>r</em> = 0.236 [0.211, 0.262] against accessibility, the ATAC-input model 0.041 [0.003, 0.079], and the floor arm 0.026. On the metric that asks what a model adds beyond accessibility, the transferred ATAC model adds nothing and the transferred DNase model adds real signal.</p>
+<p><strong>The depth confound runs against the result, which makes it a lower bound.</strong> DNase is the <em>shallower</em> input in both cell types: 301.1M usable reads against ATAC’s 545.7M in K562, and 53.8M against 571.4M in GM12878 (Report 1). GM12878’s DNase is also the weaker library by its own inter-replicate count ceiling, 0.445 against K562’s 0.925. Before running this I flagged the GM12878 arms as confounded and said I would not read an assay conclusion off them. The confound is real and it is pointed the wrong way for the conclusion: DNase wins by <strong>+0.086</strong> in the cell type where it is 10.6x shallower, against <strong>+0.037</strong> where it is only 1.8x shallower. Depth-matching would be expected to widen the gap, not close it.</p>
+<p><strong>Consequence for the converter.</strong> The premise it needed is now measured rather than assumed: DNase is the better representation to be in, the advantage survives transfer, and DNase has a reproducible base-resolution profile for a converter to target (Report 1). All three had to hold and all three do.</p>
+<p><strong>Method.</strong></p>
+<ul>
+<li>Each scoring entry carries its own accessibility bigwig, so a DNase-trained model is always fed DNase and an ATAC-trained model always ATAC, transferred included. The comparison is assay-versus-assay end to end rather than a model being handed the wrong input.</li>
+<li><code>1.22</code> and <code>1.23</code> are <code>1.11</code> and <code>1.12</code> with exactly two changes each, the accessibility bigwig and the output directory, verified by diff on the comment-stripped scripts.</li>
+<li>The transfer arm is scored against GM12878’s own ATAC-only model, which is the floor a deployed model has to beat to be worth anything.</li>
+</ul>
+<details>
+<summary>
+Full methods &amp; code
+</summary>
+<p>The DNase inputs are <code>genomecov -bg -5</code> unstranded, matching how <code>atac_5p.bw</code> was built, so the swap changes the assay and nothing else. Replicates are pooled by merging the filtered BAMs and calling <code>genomecov</code> once; an earlier version summed per-replicate bedGraphs through <code>bedtools merge</code>, which collapses bookended intervals and produced a K562 track with 34x the correct signal that exited 0 and looked valid. The build now asserts that the track sum equals the main-chromosome read count exactly, with the contig list read from the same chrom-sizes file the track filters on.</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true"></a><span class="ex">sbatch</span> scripts/0.32.make_dnase_5prime.sh</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true"></a><span class="kw">for</span> <span class="ex">F</span> in 0 1 2 3 4<span class="kw">;</span> <span class="kw">do</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true"></a>    <span class="ex">sbatch</span> scripts/1.22.submit_training_dnase_k562.sh multimodal <span class="va">$F</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true"></a>    <span class="ex">sbatch</span> scripts/1.23.submit_training_dnase_gm12878.sh multimodal <span class="va">$F</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true"></a><span class="kw">done</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true"></a><span class="ex">sbatch</span> scripts/2.29.submit_dnase_swap_eval.sh</span></code></pre></div>
+<p>Source: <code>scripts/0.32</code>, <code>1.22</code>, <code>1.23</code>, <code>2.29</code></p>
 <h2 id="gc-matching-the-training-negatives-changes-nothing">GC-matching the training negatives changes nothing</h2>
 <p><strong>Q:</strong> Every model in this repository was trained with ChromBPNet’s genome-wide GC-<em>annotated</em> tiling passed straight to <code>--negatives</code>, which is the matching INPUT rather than its output (Report 1). The pool sits at mean GC 0.389 against 0.466-0.593 for candidate elements, and it is 10% of every batch, so a sequence branch could satisfy much of that contrast with a coarse GC detector, the leading explanation for why the H3K27ac sequence branch has almost no dynamic range within candidate elements. Does actually GC-matching the pool help?</p>
 <p><strong>A:</strong> No, and not marginally: <strong>+0.0011 [-0.0080, +0.0102]</strong> in-cell type (<em>p</em>=0.76), and <strong>-0.0024 [-0.0083, +0.0036]</strong> transferred to GM12878 (<em>p</em>=0.33). Absolute top-quintile Pearson is 0.700 against 0.699 locally and 0.529 against 0.531 transferred. The hypothesis is refuted.</p>
@@ -1682,10 +1786,10 @@ Full methods &amp; code
 </summary>
 <p><code>residual_pearson</code> is reported in these tables against the <strong>unmatched multimodal model</strong>, because that is this config’s baseline entry, not against an ATAC-only model as everywhere else in this report. It is therefore not comparable to any other <code>residual_pearson</code> here and is not quoted.</p>
 <p>Failure modes of <code>bpnet-gc-background</code> are recorded in the repository learnings: it exits 0 having written a 0-byte file when <code>bedtools</code> is absent from its environment, and it hangs rather than reporting a shortfall when the foreground is GC-rich enough to exhaust the high-GC bins, 93% in 15 seconds, then no progress for two hours. The fix for the second is to subsample the foreground to 50,000 regions, since only the GC distribution defines the matching target and 50,000 equals the trainer’s <code>--max-negatives</code> cap.</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true"></a><span class="ex">sbatch</span> scripts/0.28.make_gc_matched_negatives.sh</span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true"></a><span class="ex">pixi</span> run python scripts/0.29.verify_gc_match.py      # before reading the retrain</span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true"></a><span class="kw">for</span> <span class="ex">F</span> in 0 1 2 3 4<span class="kw">;</span> <span class="kw">do</span> <span class="ex">sbatch</span> scripts/1.20.submit_training_gcmatched.sh multimodal <span class="va">$F</span><span class="kw">;</span> <span class="kw">done</span></span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true"></a><span class="ex">sbatch</span> scripts/2.26.submit_gcmatch_eval.sh</span></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true"></a><span class="ex">sbatch</span> scripts/0.28.make_gc_matched_negatives.sh</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true"></a><span class="ex">pixi</span> run python scripts/0.29.verify_gc_match.py      # before reading the retrain</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true"></a><span class="kw">for</span> <span class="ex">F</span> in 0 1 2 3 4<span class="kw">;</span> <span class="kw">do</span> <span class="ex">sbatch</span> scripts/1.20.submit_training_gcmatched.sh multimodal <span class="va">$F</span><span class="kw">;</span> <span class="kw">done</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true"></a><span class="ex">sbatch</span> scripts/2.26.submit_gcmatch_eval.sh</span></code></pre></div>
 Source: <code>scripts/0.28</code>, <code>0.29</code>, <code>1.20</code>, <code>2.26</code>
 </details>
 <h2 id="sequence-gated-accessibility-and-an-asymmetric-count-loss">Sequence-gated accessibility and an asymmetric count loss</h2>
@@ -1745,14 +1849,14 @@ Full methods &amp; code
 </summary>
 <p>The asymmetric loss mirrors bpnetlite’s <code>_mixture_loss</code> so that <code>overprediction_weight = 1.0</code> reproduces it exactly; both the train and validation paths route through the same function via <code>getattr(self, &quot;overprediction_weight&quot;, 1.0)</code>, so a pre-gate checkpoint still loads and scores identically.</p>
 <p>The regression gate asserts its own preconditions after a first version that verified nothing, see Report 2. Its checks: weight 1.0 matches bpnetlite to a relative tolerance of 1e-5; a weight above 1 raises the loss by exactly the predicted amount, with <code>3 &lt;= n_over &lt;= N-3</code> asserted so the check cannot be vacuous; a pre-gate checkpoint loads and is deterministic, and a <strong>weight-matched</strong> gate comparison differs by 0.39%, the matching being necessary because adding <code>gate_conv</code> consumes extra RNG draws and unmatched initialisations differ by 108%.</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true"></a><span class="ex">pixi</span> run python scripts/test_asymmetric_loss.py</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true"></a><span class="ex">pixi</span> run python scripts/make_gate_scripts.py</span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true"></a><span class="kw">for</span> <span class="ex">F</span> in 0 1 2 3 4<span class="kw">;</span> <span class="kw">do</span></span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true"></a>    <span class="ex">sbatch</span> scripts/1.19.submit_training_gate.sh multimodal <span class="va">$F</span></span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true"></a>    <span class="ex">sbatch</span> scripts/1.19.submit_training_asym.sh multimodal <span class="va">$F</span></span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true"></a>    <span class="ex">sbatch</span> scripts/1.19.submit_training_gate_asym.sh multimodal <span class="va">$F</span></span>
-<span id="cb18-7"><a href="#cb18-7" aria-hidden="true"></a><span class="kw">done</span></span>
-<span id="cb18-8"><a href="#cb18-8" aria-hidden="true"></a><span class="ex">sbatch</span> scripts/2.25.submit_gate_factorial.sh</span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true"></a><span class="ex">pixi</span> run python scripts/test_asymmetric_loss.py</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true"></a><span class="ex">pixi</span> run python scripts/make_gate_scripts.py</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true"></a><span class="kw">for</span> <span class="ex">F</span> in 0 1 2 3 4<span class="kw">;</span> <span class="kw">do</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true"></a>    <span class="ex">sbatch</span> scripts/1.19.submit_training_gate.sh multimodal <span class="va">$F</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true"></a>    <span class="ex">sbatch</span> scripts/1.19.submit_training_asym.sh multimodal <span class="va">$F</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true"></a>    <span class="ex">sbatch</span> scripts/1.19.submit_training_gate_asym.sh multimodal <span class="va">$F</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true"></a><span class="kw">done</span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true"></a><span class="ex">sbatch</span> scripts/2.25.submit_gate_factorial.sh</span></code></pre></div>
 Source: <code>scripts/multimodal_bpnet.py</code>, <code>scripts/train_multimodal_bpnet.py</code>, <code>scripts/1.19.*</code>, <code>scripts/2.25.submit_gate_factorial.sh</code>
 </details>
 <h2 id="open-questions-next-steps">Open questions / next steps</h2>
@@ -1863,34 +1967,34 @@ Source: <code>scripts/multimodal_bpnet.py</code>, <code>scripts/train_multimodal
 <p><strong>Why the figures were not migrated.</strong> <code>3.1</code> and <code>3.4</code> read the <code>2.2</code>-evaluator table format, for which no <code>rc_*</code> equivalent exists, the RC re-scoring ran through <code>2.15</code>, which emits different columns. Migrating them means either re-running the <code>2.2</code> evaluators with RC or rewriting the plot scripts’ data handling, both of which carry more risk of introducing an error than the 0.002-0.016 they would correct. Recorded as open rather than done.</p>
 <h3 id="regenerate">Regenerate</h3>
 <pre><code>Environment: pixi env `multimodal`, pixi.lock sha256:069960d36312</code></pre>
-<div class="sourceCode" id="cb20"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true"></a><span class="co"># Models: 3 modes x 5 folds, plus each architecture arm</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true"></a><span class="kw">for</span> <span class="ex">MODE</span> in atac multimodal sequence<span class="kw">;</span> <span class="kw">do</span> <span class="kw">for</span> <span class="ex">F</span> in 0 1 2 3 4<span class="kw">;</span> <span class="kw">do</span></span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true"></a>    <span class="ex">sbatch</span> scripts/1.4.submit_training_5prime.sh <span class="va">$MODE</span> <span class="va">$F</span>        # K562 baseline</span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true"></a>    <span class="ex">sbatch</span> scripts/1.8.submit_training_gm12878.sh <span class="va">$MODE</span> <span class="va">$F</span>       # GM12878 baseline</span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true"></a>    <span class="ex">sbatch</span> scripts/1.9.submit_training_residual.sh <span class="va">$MODE</span> <span class="va">$F</span>      # residual objective</span>
-<span id="cb20-6"><a href="#cb20-6" aria-hidden="true"></a>    <span class="ex">sbatch</span> scripts/1.13.submit_training_5prime_wide.sh <span class="va">$MODE</span> <span class="va">$F</span>  # wide receptive field</span>
-<span id="cb20-7"><a href="#cb20-7" aria-hidden="true"></a><span class="kw">done</span>; <span class="kw">done</span></span>
-<span id="cb20-8"><a href="#cb20-8" aria-hidden="true"></a><span class="kw">for</span> <span class="ex">F</span> in 0 1 2 3 4<span class="kw">;</span> <span class="kw">do</span></span>
-<span id="cb20-9"><a href="#cb20-9" aria-hidden="true"></a>    <span class="ex">sbatch</span> scripts/1.15.submit_training_fragchan.sh multimodal <span class="va">$F</span>   # fragment channels</span>
-<span id="cb20-10"><a href="#cb20-10" aria-hidden="true"></a>    <span class="ex">sbatch</span> scripts/1.19.submit_training_gate.sh multimodal <span class="va">$F</span>       # gate</span>
-<span id="cb20-11"><a href="#cb20-11" aria-hidden="true"></a><span class="kw">done</span></span>
-<span id="cb20-12"><a href="#cb20-12" aria-hidden="true"></a></span>
-<span id="cb20-13"><a href="#cb20-13" aria-hidden="true"></a><span class="co"># Evaluation: one code path, one config JSON per comparison</span></span>
-<span id="cb20-14"><a href="#cb20-14" aria-hidden="true"></a><span class="ex">sbatch</span> scripts/2.22.submit_rc_rescore.sh          # the rc_* tables the decision table quotes</span>
-<span id="cb20-15"><a href="#cb20-15" aria-hidden="true"></a><span class="ex">sbatch</span> scripts/2.23.submit_final_comparisons.sh   # factorial + element-derivation arms</span>
-<span id="cb20-16"><a href="#cb20-16" aria-hidden="true"></a><span class="ex">sbatch</span> scripts/2.24.submit_transfer_matrix.sh     # transfer matrix</span>
-<span id="cb20-17"><a href="#cb20-17" aria-hidden="true"></a><span class="ex">sbatch</span> scripts/2.25.submit_gate_factorial.sh      # gate 2x2</span>
-<span id="cb20-18"><a href="#cb20-18" aria-hidden="true"></a></span>
-<span id="cb20-19"><a href="#cb20-19" aria-hidden="true"></a><span class="co"># Downstream: ABC + CRISPR benchmark, then the diagnostics</span></span>
-<span id="cb20-20"><a href="#cb20-20" aria-hidden="true"></a><span class="ex">pixi</span> run python scripts/4.3.setup_abc_arms.py <span class="kw">&amp;&amp;</span> <span class="fu">bash</span> scripts/4.5.submit_abc.sh</span>
-<span id="cb20-21"><a href="#cb20-21" aria-hidden="true"></a><span class="ex">pixi</span> run python scripts/4.6.setup_crispr_comparison.py</span>
-<span id="cb20-22"><a href="#cb20-22" aria-hidden="true"></a><span class="fu">bash</span> scripts/4.7.submit_crispr_comparison.sh</span>
-<span id="cb20-23"><a href="#cb20-23" aria-hidden="true"></a><span class="ex">sbatch</span> scripts/4.9.submit_diagnose.sh</span>
-<span id="cb20-24"><a href="#cb20-24" aria-hidden="true"></a><span class="ex">sbatch</span> scripts/4.13.quantify_error_strata.sh</span>
-<span id="cb20-25"><a href="#cb20-25" aria-hidden="true"></a></span>
-<span id="cb20-26"><a href="#cb20-26" aria-hidden="true"></a><span class="co"># Figures and this report</span></span>
-<span id="cb20-27"><a href="#cb20-27" aria-hidden="true"></a><span class="ex">pixi</span> run python scripts/3.7.build_numbers_manifest.py</span>
-<span id="cb20-28"><a href="#cb20-28" aria-hidden="true"></a><span class="ex">python</span> render_report.py report3_design_decisions.qmd</span></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true"></a><span class="co"># Models: 3 modes x 5 folds, plus each architecture arm</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true"></a><span class="kw">for</span> <span class="ex">MODE</span> in atac multimodal sequence<span class="kw">;</span> <span class="kw">do</span> <span class="kw">for</span> <span class="ex">F</span> in 0 1 2 3 4<span class="kw">;</span> <span class="kw">do</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true"></a>    <span class="ex">sbatch</span> scripts/1.4.submit_training_5prime.sh <span class="va">$MODE</span> <span class="va">$F</span>        # K562 baseline</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true"></a>    <span class="ex">sbatch</span> scripts/1.8.submit_training_gm12878.sh <span class="va">$MODE</span> <span class="va">$F</span>       # GM12878 baseline</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true"></a>    <span class="ex">sbatch</span> scripts/1.9.submit_training_residual.sh <span class="va">$MODE</span> <span class="va">$F</span>      # residual objective</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true"></a>    <span class="ex">sbatch</span> scripts/1.13.submit_training_5prime_wide.sh <span class="va">$MODE</span> <span class="va">$F</span>  # wide receptive field</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true"></a><span class="kw">done</span>; <span class="kw">done</span></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true"></a><span class="kw">for</span> <span class="ex">F</span> in 0 1 2 3 4<span class="kw">;</span> <span class="kw">do</span></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true"></a>    <span class="ex">sbatch</span> scripts/1.15.submit_training_fragchan.sh multimodal <span class="va">$F</span>   # fragment channels</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true"></a>    <span class="ex">sbatch</span> scripts/1.19.submit_training_gate.sh multimodal <span class="va">$F</span>       # gate</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true"></a><span class="kw">done</span></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true"></a></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true"></a><span class="co"># Evaluation: one code path, one config JSON per comparison</span></span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true"></a><span class="ex">sbatch</span> scripts/2.22.submit_rc_rescore.sh          # the rc_* tables the decision table quotes</span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true"></a><span class="ex">sbatch</span> scripts/2.23.submit_final_comparisons.sh   # factorial + element-derivation arms</span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true"></a><span class="ex">sbatch</span> scripts/2.24.submit_transfer_matrix.sh     # transfer matrix</span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true"></a><span class="ex">sbatch</span> scripts/2.25.submit_gate_factorial.sh      # gate 2x2</span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true"></a></span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true"></a><span class="co"># Downstream: ABC + CRISPR benchmark, then the diagnostics</span></span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true"></a><span class="ex">pixi</span> run python scripts/4.3.setup_abc_arms.py <span class="kw">&amp;&amp;</span> <span class="fu">bash</span> scripts/4.5.submit_abc.sh</span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true"></a><span class="ex">pixi</span> run python scripts/4.6.setup_crispr_comparison.py</span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true"></a><span class="fu">bash</span> scripts/4.7.submit_crispr_comparison.sh</span>
+<span id="cb21-23"><a href="#cb21-23" aria-hidden="true"></a><span class="ex">sbatch</span> scripts/4.9.submit_diagnose.sh</span>
+<span id="cb21-24"><a href="#cb21-24" aria-hidden="true"></a><span class="ex">sbatch</span> scripts/4.13.quantify_error_strata.sh</span>
+<span id="cb21-25"><a href="#cb21-25" aria-hidden="true"></a></span>
+<span id="cb21-26"><a href="#cb21-26" aria-hidden="true"></a><span class="co"># Figures and this report</span></span>
+<span id="cb21-27"><a href="#cb21-27" aria-hidden="true"></a><span class="ex">pixi</span> run python scripts/3.7.build_numbers_manifest.py</span>
+<span id="cb21-28"><a href="#cb21-28" aria-hidden="true"></a><span class="ex">python</span> render_report.py report3_design_decisions.qmd</span></code></pre></div>
 <p>Per-result provenance, including which processing of the target each result file used, is in <code>results/TARGET_PROVENANCE.md</code>.</p>
 </body>
 </html>

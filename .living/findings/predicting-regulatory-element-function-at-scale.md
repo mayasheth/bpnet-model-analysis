@@ -219,3 +219,17 @@ merely desirable.
 | Date | Run/Session | Dataset | Project | Result | Direction |
 |------|-------------|---------|---------|--------|-----------|
 | 2026-09-08 | build 42400234, training 42402641-49, scoring 42440125 | K562 EP300 subsampled to GM12878's read and peak budget | 2026_0824_H3K27ac_model | depth-matched transferred +0.202 vs full-depth +0.207, paired -0.005 (*p*=0.40); in-cell 0.599 vs 0.619 | refutes |
+
+---
+
+## F-010: Swapping DNase for ATAC as the model's accessibility input beats ATAC in both cell types and is the first H3K27ac model to clear the floor on transfer
+**Status:** established
+**Claim:** Retraining the multimodal H3K27ac model with a DNase 5'-insertion track in place of the ATAC one gains **+0.037 [+0.019, +0.056]** top-quintile Pearson in-cell K562 (*p*=0.005) and **+0.086 [+0.076, +0.095]** in-cell GM12878 (*p*<1e-4). Transferred K562 to GM12878 it gains **+0.043 [+0.003, +0.084]** over the ATAC-input model (*p*=0.041) and clears GM12878's own ATAC-only floor by **+0.056 [+0.014, +0.099]** (*p*=0.020), where the ATAC-input model manages +0.013 (*p*=0.25). Absolute top-quintile: in-cell 0.736 against 0.699 (K562) and 0.671 against 0.585 (GM12878); transferred 0.574 against 0.531, floor 0.518. On the accessibility residual the transferred DNase model scores 0.236 [0.211, 0.262] against the transferred ATAC model's 0.041 [0.003, 0.079] and the floor's 0.026.
+**Implications:** This is the first architecture or input change in the project to survive transfer with a resolvable margin, against a background where the receptive field, fragment channels, the sequence gate, the asymmetric loss and GC-matched negatives all failed to travel (F-005) and where predicted-H3K27ac ABC arms never cleared the benchmark floor (F-004). It also supplies the premise the ATAC-to-DNase converter needed: DNase is the better representation to be in, the advantage survives transfer, and DNase has a reproducible base-resolution profile to target (0.848 and 0.686 at 1 bp against H3K27ac's 0.21 and 0.18). The residual numbers locate the effect: transferred, the ATAC-input model adds essentially nothing beyond accessibility while the DNase-input model adds real signal.
+**Caveats:** The comparison is depth-confounded, but against the result rather than for it: DNase is the shallower input in both cell types (301.1M usable reads against ATAC's 545.7M in K562; 53.8M against 571.4M in GM12878) and GM12878's DNase is the weaker library by its own count ceiling (0.445 against K562's 0.925). The advantage is nonetheless larger where the handicap is larger (+0.086 at 10.6x shallower against +0.037 at 1.8x), so depth-matching would be expected to widen the gap. Not yet tested downstream: no ABC or CRISPR-benchmark arm has been run with a DNase-input model.
+**Tags:** dnase, atac, accessibility-input, transfer, deployment, h3k27ac, k562, gm12878, positive-result
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-09-08 | tracks 42491539, training 42499405-19, scoring 42514074 | K562 DNase ENCSR000EOT+ENCSR000EKS, GM12878 DNase ENCSR000EMT, H3K27ac targets in both | 2026_0824_H3K27ac_model | in-cell +0.037 (K562) and +0.086 (GM12878); transferred +0.043 over ATAC and +0.056 over the target's own ATAC-only floor | supports |
