@@ -1525,7 +1525,7 @@ Figure 1, restated (see Headline figure)
 <p><strong>Both models are equally strong at home</strong>, +0.313 and +0.309 over matched floors of 0.306 and 0.299, so the GM12878 model is not the weaker model and that confound is closed.</p>
 <p><strong>Transfer is strongly asymmetric, and the benchmark could only test the failing direction.</strong> K562-trained transferred to GM12878 keeps 0.507 of its 0.619, which is <strong>+0.207 over the target cell type’s own accessibility model</strong> and 83% of the local advantage, with a positive accessibility residual (+0.139 [+0.067, +0.210]). GM12878-trained transferred to K562 lands at 0.312 against a 0.306 floor, indistinguishable, <em>p</em>=0.72, with a <strong>negative</strong> residual (-0.088 [-0.140, -0.035]), meaning it is worse than the accessibility baseline at the thing the baseline already does. CRISPR data exists only for K562, so the downstream benchmark can <em>only</em> run the GM12878 -&gt; K562 direction. Its null is real for that direction and says nothing about the other.</p>
 <p><strong>What this does and does not license.</strong> It does not license “predicted p300 deploys”: the +0.207 is top-quintile Pearson on p300, not benchmark AUPRC, and no downstream test of the working direction is possible with K562-only CRISPR data. It does retire two earlier readings; that the p300 gain simply does not transfer, and that the GM12878 model was weak. And it makes the training cell type a first-class design variable: the same architecture and target gives +0.207 or +0.006 over the floor depending only on which cell type it was trained in.</p>
-<p><strong>Why the asymmetry: more training signal in K562, but not cleaner training signal.</strong> Both cell types are equally <em>predictable</em> locally, so the H3K27ac explanation for its own transfer asymmetry (that GM12878 is the harder cell type) cannot apply here. Comparing the two EP300 experiments directly:</p>
+<p><strong>The asymmetry is not explained by training-signal volume, and that has now been tested directly.</strong> Both cell types are equally <em>predictable</em> locally, so the H3K27ac explanation for its own transfer asymmetry (that GM12878 is the harder cell type) cannot apply here. The two EP300 experiments do differ in volume:</p>
 <table>
 <thead>
 <tr class="header">
@@ -1543,30 +1543,24 @@ Figure 1, restated (see Headline figure)
 <td>1.35x</td>
 </tr>
 <tr class="even">
-<td>mean peak width</td>
-<td>296 bp</td>
-<td>337 bp</td>
-<td>0.88x</td>
-</tr>
-<tr class="odd">
 <td>mapped reads (pooled)</td>
 <td>51,127,010</td>
 <td>30,001,681</td>
 <td>1.70x</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>reads in peaks</td>
 <td>3,590,540</td>
 <td>1,562,462</td>
 <td><strong>2.30x</strong></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>FRiP (pooled)</td>
 <td>0.070</td>
 <td>0.052</td>
 <td>1.35x</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>FRiP (per replicate)</td>
 <td>0.053, 0.086</td>
 <td>0.067, 0.038</td>
@@ -1574,8 +1568,42 @@ Figure 1, restated (see Headline figure)
 </tr>
 </tbody>
 </table>
-<p><strong>The quantity of training signal differs materially; its purity does not.</strong> K562 carries 2.3x more reads inside peaks, from 1.7x the depth over 1.35x the peaks. But FRiP does <strong>not</strong> separate the two experiments once replicate variance is accounted for: the within-experiment spread is 1.6x in K562 (0.053 to 0.086), and 1.8x in GM12878 (0.038 to 0.067), both wider than the 1.35x pooled difference, and GM12878’s better replicate has a <em>higher</em> FRiP than K562’s worse one. So the specific “cleaner target” version of the hypothesis is not supported; the “more signal to learn portable features from” version is consistent with the data and remains untested.</p>
-<p>This is diagnostic only, two experiments cannot establish a relationship between training-signal volume and portability. What it does is narrow the next step: a third cell type is required, and it should be chosen for EP300 depth rather than convenience.</p>
+<p>FRiP does not separate the two once replicate variance is accounted for: the within-experiment spread is 1.6x in K562 (0.053 to 0.086), and 1.8x in GM12878 (0.038 to 0.067), both wider than the 1.35x pooled difference, and GM12878’s better replicate has a <em>higher</em> FRiP than K562’s worse one. So the “cleaner target” version of the hypothesis was out from the start, leaving “more signal to learn portable features from”.</p>
+<p><strong>That version is now refuted.</strong> Retraining K562 on GM12878’s exact budget (30.0M mapped reads and 21,068 peaks, <code>scripts/0.31</code> and <code>1.21</code>) costs almost nothing in-cell type and nothing at all on transfer:</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>in-cell K562</th>
+<th>transferred to GM12878</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>full-depth K562 model</td>
+<td>0.619</td>
+<td>0.507 (+0.207 [+0.158, +0.257] over GM12878’s floor)</td>
+</tr>
+<tr class="even">
+<td>depth-matched K562 model</td>
+<td>0.599</td>
+<td><strong>0.501 (+0.202 [+0.147, +0.257] over that floor)</strong></td>
+</tr>
+<tr class="odd">
+<td>paired difference</td>
+<td>-0.020 [-0.040, +0.001] (<em>p</em>=0.056)</td>
+<td><strong>-0.005 [-0.021, +0.010]</strong> (<em>p</em>=0.40)</td>
+</tr>
+</tbody>
+</table>
+<p>A K562 model trained on 41% fewer reads and 26% fewer peaks still transfers at +0.202 while the GM12878 model, trained on that same budget, transfers at +0.006. The in-cell arm is the control that keeps this readable: the depth-matched model is barely worse at home, so it is not simply a weaker model.</p>
+<p><strong>Peak-set geometry is also ruled out.</strong> Both training sets are summit-centred fixed-width (316 bp for K562, 350 bp for GM12878), and the trainer centres its window on <code>start + summit</code>, so neither set is mis-registered against the p300 summit; GM12878’s summits are the tighter of the two (|summit - midpoint| p90 of 0 bp against 6 bp).</p>
+<p><strong>What remains.</strong> The asymmetry is a property of K562 and GM12878 as training cell types that survives equalising volume and is not an artifact of peak geometry. Two cell types cannot distinguish “K562-trained models are portable in general” from “K562 happens to transfer to GM12878”, so a third cell type is now required rather than merely desirable. The construction control for these tracks is recorded in <code>0.31</code>: the full-depth rebuild matched the existing target at <em>r</em> = 1.0000 on both strands with a sum ratio of 0.9984, which is what licenses using the existing K562 model as the full-depth arm instead of retraining it.</p>
 <p><strong>This does not contradict the earlier p300 negative, and the distinction matters.</strong> The learnability test below shows p300 is <em>not</em> predictable at the specific elements where the H3K27ac model fails, which correctly killed the multi-head and stacking ideas. It says nothing about p300 as the <em>primary</em> target, where the relevant question is whether the predicted track ranks elements well enough for ABC, a different quantity, now measured, and positive.</p>
 <p><strong>Method.</strong></p>
 <ul>

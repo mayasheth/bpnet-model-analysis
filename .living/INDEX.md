@@ -1,20 +1,20 @@
 <!-- BEGIN QUICK REFERENCE -->
 # .living/ Index
-Last audit: 2026-09-06
+Last audit: 2026-09-08
 
 | File | Entries | Last updated | Key topics |
 |------|---------|--------------|------------|
 | conventions.md | 17 sections | 2026-09-04 | Layout: analyses live at the repo root, not under `analysis/`, Reports, Figures, Environments, SLURM submit scripts (mandatory) |
 | decisions.md | 18 entries (large — read selectively) | 2026-09-06 | Center H3K27ac training windows on candidate elements, not ChIP peaks, Counting window is a trade-off between signal and neighbour contamination, Keep the profile head, down-weighted, rather than removing it, Residual correlation beyond ATAC becomes the headline metric, Paired-end H3K27ac targets use read 1 only, not both mates |
 | learnings.md | 48 entries (large — read selectively) | 2026-09-06 | count_loss_weight must be calibrated to the actual loss magnitudes, not copied, Inter-replicate r is not a model performance ceiling without two corrections, bpnetlite's count target sums ALL channels, not one strand, Three Sherlock/SLURM traps that cost a job each, Peak count scales the negative pool, which can OOM by 50x |
-| findings/ | 9 findings across 4 topics | 2026-09-06 | predicting-regulatory-element-function-at-scale, linking-noncoding-variation-to-molecular-function, mapping-regulatory-perturbations-to-phenotype, how-enhancers-control-gene-expression |
+| findings/ | 9 findings across 4 topics | 2026-09-08 | predicting-regulatory-element-function-at-scale, linking-noncoding-variation-to-molecular-function, mapping-regulatory-perturbations-to-phenotype, how-enhancers-control-gene-expression |
 
 ## Local skills
 See `.living/skills/` for project-specific skill packs.
 <!-- END QUICK REFERENCE -->
 
 <!-- BEGIN KNOWLEDGE SUMMARY -->
-Last summarized: 2026-09-06 (heuristic)
+Last summarized: 2026-09-08 (heuristic)
 
 ## Tag clusters
 
