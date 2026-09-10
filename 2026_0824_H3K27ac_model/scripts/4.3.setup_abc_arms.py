@@ -11,7 +11,7 @@ ORDER MATTERS: Snakemake compares mtimes, so Peaks must be copied AFTER the pred
 bigwigs exist. Otherwise the newer bigwig makes Peaks look stale and MACS2 runs anyway --
 on a bigwig, for the activity-only arms, which would fail.
 
-THREE ARM FAMILIES.
+FOUR ARM FAMILIES.
   geomean arms   H3K27ac column = predicted bigwig, ATAC column = the real tagAligns.
                  ABC computes activity_base = sqrt(norm_h3k27ac * norm_atac).
   k27only arms   ATAC column = predicted bigwig, no H3K27ac column. compute_activity then
@@ -19,6 +19,18 @@ THREE ARM FAMILIES.
                  how "predicted H3K27ac alone as activity" is expressed without patching ABC.
   baselines      already complete in the July run and reused as-is:
                  K562_ATAC_only and K562_ATAC_H3K27ac_element.
+  accessibility  ATAC column = an accessibility track, no H3K27ac column, so activity is
+                 the track itself. Four arms: real ATAC, real DNase, and DNase predicted
+                 from ATAC by the K562- and GM12878-trained converters.
+
+                 ALL FOUR ARE BIGWIGS ON PURPOSE. The July run already scored real ATAC
+                 (0.457) and real DHS (0.576) from read files, but those go through
+                 count_bam/count_tagalign while a painted prediction goes through
+                 count_bigwig. Comparing a converted track to a read-file arm would
+                 confound the conversion with the counting path, and the converter-vs-real
+                 gap is the entire question. Feeding the 5-prime bigwigs of the same
+                 libraries puts every arm on count_bigwig. The July numbers remain useful
+                 as external reference points and are NOT reproduced by these arms.
 
 WHY THE SCALE OF THE PREDICTION DOES NOT MATTER: run_qnorm is rank-based, mapping each
 region's within-sample quantile onto the K562 reference. Keep use_qnorm True.
@@ -78,7 +90,8 @@ PEAKS_ORDER = [
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--results-dir", default="results/2026_0903_predicted_activity")
-ap.add_argument("--arms", choices=("h3k27ac", "p300", "p300transfer"), default="h3k27ac",
+ap.add_argument("--arms", choices=("h3k27ac", "p300", "p300transfer", "accessibility"),
+                default="h3k27ac",
                 help="Which target's predicted tracks to build arms for. p300 arms go in "
                      "their own results dir and config: re-stamping Peaks inside the "
                      "completed H3K27ac run would make all nine finished arms look stale.")
@@ -121,7 +134,26 @@ P300_MODELS = [("multimodal", "K562 p300 multimodal model"),
 # what adding arms to a finished run does.
 P300_TX = [("gm12878_multimodal", "GM12878 p300 multimodal model, applied to K562")]
 
-if a.arms == "p300transfer":
+# Accessibility-as-activity arms. The two real tracks are the 5-prime insertion bigwigs
+# built by 0.20 and 0.32; the two converted tracks are painted by 4.1 from the converters.
+P = f"{D}/EP300_BPNet/2026_0824_H3K27ac_model"
+ACCESSIBILITY = [
+    ("acc_real_atac",     f"{D}/EP300_BPNet/2026_0529_multimodal_p300_model/data/atac_5p.bw",
+     "real ATAC, 5-prime insertions"),
+    ("acc_real_dnase",    f"{P}/data/k562_dnase_5p.bw",
+     "real DNase, 5-prime insertions"),
+    ("acc_conv_k562",     f"{PRED}/convdnase_k562.bw",
+     "DNase predicted from ATAC, K562-trained converter"),
+    ("acc_conv_gm12878",  f"{PRED}/convdnase_gm12878.bw",
+     "DNase predicted from ATAC, GM12878-trained converter, applied to K562"),
+]
+
+if a.arms == "accessibility":
+    for name, path, _desc in ACCESSIBILITY:
+        if not os.path.exists(path):
+            missing.append(path)
+        add(name, path, "", "ATAC")
+elif a.arms == "p300transfer":
     for tag, _desc in P300_TX:
         bw = f"{PRED}/predp300gm_{tag}.bw"
         if not os.path.exists(bw):
@@ -150,7 +182,8 @@ else:
     add("p300obs_k562", ATAC, P300_OBS, "ATAC")            # the ceiling for this concept
 
 TAG = a.config_tag or {"h3k27ac": "predicted_activity", "p300": "p300_activity",
-                       "p300transfer": "p300_transfer"}[a.arms]
+                       "p300transfer": "p300_transfer",
+                       "accessibility": "accessibility_activity"}[a.arms]
 out = f"{ABC}/config/mine/config_biosamples_{TAG}.tsv"
 with open(out, "w") as f:
     f.write("\t".join(COLS) + "\n")
@@ -158,7 +191,7 @@ with open(out, "w") as f:
         f.write("\t".join(r[c] for c in COLS) + "\n")
 print(f"wrote {out} with {len(rows)} arms")
 for r in rows:
-    kind = "geomean" if r["H3K27ac"] else "k27ac-as-activity"
+    kind = "geomean" if r["H3K27ac"] else "track-as-activity"
     print(f"  {r['biosample']:<28} {kind}")
 
 cfg = f"{ABC}/config/mine/config_{TAG}.yaml"
