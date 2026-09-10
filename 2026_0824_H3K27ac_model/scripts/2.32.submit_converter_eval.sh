@@ -35,7 +35,7 @@ cd "$P"
 
 echo "########## STEP 1: counts + paired comparison vs the ATAC-only control ##########"
 $PY scripts/2.15.perfold_from_config.py config/converter_k562_configs.json \
-    converter_k562_ "$K5EL_ATAC" --no-rc-average \
+    converter_k562_ "$K5EL_ATAC" --no-rc-average --folds 0 \
     --pair seq_atac_clw10 atac_only_clw10 \
     --pair seq_atac_clw1 atac_only_clw10 \
     --pair seq_atac_clw1 seq_atac_clw10

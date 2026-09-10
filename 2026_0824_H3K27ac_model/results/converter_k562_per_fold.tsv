@@ -1,0 +1,4 @@
+fold	config	n	n_topq	overall_pearson	overall_pearson_topq	residual_pearson	incremental_r2	incremental_r2_topq	profile_pearson	profile_jsd	profile_pearson_topq
+0	seq_atac_clw10	9856	1973	0.9039	0.878	0.468	0.0513	0.1184	0.5013	0.3595	0.7741
+0	seq_atac_clw1	9856	1973	0.895	0.8705	0.4053	0.0352	0.1052	0.5009	0.3596	0.7732
+0	atac_only_clw10	9856	1973	0.8751	0.8078		0.0	0.0	0.274	0.4387	0.4687

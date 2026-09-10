@@ -1,0 +1,4 @@
+config	overall_pearson	overall_pearson_topq	residual_pearson	incremental_r2	incremental_r2_topq	profile_pearson	profile_pearson_topq	profile_jsd
+seq_atac_clw10	0.904 (1 fold, no CI)	0.878 (1 fold, no CI)	0.468 (1 fold, no CI)	0.051 (1 fold, no CI)	0.118 (1 fold, no CI)	0.501 (1 fold, no CI)	0.774 (1 fold, no CI)	0.359 (1 fold, no CI)
+seq_atac_clw1	0.895 (1 fold, no CI)	0.870 (1 fold, no CI)	0.405 (1 fold, no CI)	0.035 (1 fold, no CI)	0.105 (1 fold, no CI)	0.501 (1 fold, no CI)	0.773 (1 fold, no CI)	0.360 (1 fold, no CI)
+atac_only_clw10	0.875 (1 fold, no CI)	0.808 (1 fold, no CI)	-	0.000 (1 fold, no CI)	0.000 (1 fold, no CI)	0.274 (1 fold, no CI)	0.469 (1 fold, no CI)	0.439 (1 fold, no CI)
