@@ -23,7 +23,8 @@ import argparse
 import os
 
 _ap = argparse.ArgumentParser()
-_ap.add_argument("--arms", choices=("h3k27ac", "p300", "p300all"), default="h3k27ac",
+_ap.add_argument("--arms", choices=("h3k27ac", "p300", "p300all", "accessibility"),
+                 default="h3k27ac",
                  help="Which activity target's arms to benchmark. The p300 set reuses the "
                       "same July floor and observed-H3K27ac ceiling, so the two "
                       "comparisons are read on one scale.")
@@ -35,6 +36,7 @@ NEW = f"{ABC}/2026_0903_predicted_activity"
 JULY = f"{ABC}/2026_0721_h3k27ac_counting_comparison"
 P300 = f"{ABC}/2026_0905_p300_activity"
 P300TX = f"{ABC}/2026_0906_p300_transfer"
+ACC = f"{ABC}/2026_0910_accessibility_activity"
 CC = f"{D}/CRISPR_comparison_v3/CRISPR_comparison"
 PRED_FILE = "Predictions/EnhancerPredictionsAllPutative.tsv.gz"
 
@@ -76,14 +78,34 @@ P300_ALL_ARMS = P300_ARMS + [
      "Predicted p300 alone (GM12878 model -> K562)", "#6baed6"),
 ]
 
-if _a.arms == "p300":
+# The accessibility assay as the whole activity term. Asks what the ABC activity slot is
+# worth before any H3K27ac model is involved: real ATAC against real DNase, and then whether
+# DNase predicted from ATAC recovers the difference.
+#
+# NO JULY ANCHORS HERE, DELIBERATELY. The July ATAC-only (0.457) and DHS-only (0.576) arms
+# count reads through count_bam/count_tagalign while these four count bigwig values, so
+# mixing them into one comparison would put a counting-path difference inside the very
+# contrast the run exists to measure. The two real-track arms below are this run's own
+# floor and ceiling; the July numbers stay external reference points.
+ACC_ARMS = [
+    ("acc_real_atac",    ACC, "Real ATAC (floor)",                          "#bdbdbd"),
+    ("acc_real_dnase",   ACC, "Real DNase (ceiling for this concept)",      "#404040"),
+    ("acc_conv_k562",    ACC, "DNase predicted from ATAC (K562 converter)", "#762A83"),
+    ("acc_conv_gm12878", ACC, "DNase predicted from ATAC (GM12878 converter -> K562)",
+     "#9970ab"),
+]
+
+if _a.arms == "accessibility":
+    ARMS = ACC_ARMS
+elif _a.arms == "p300":
     ARMS = P300_ARMS
 elif _a.arms == "p300all":
     ARMS = P300_ALL_ARMS
 TAG = {"h3k27ac": "predicted_activity", "p300": "p300_activity",
-       "p300all": "p300_all"}[_a.arms]
+       "p300all": "p300_all", "accessibility": "accessibility_activity"}[_a.arms]
 RUN = {"h3k27ac": "2026_0904_predicted_activity", "p300": "2026_0905_p300_activity",
-       "p300all": "2026_0906_p300_all"}[_a.arms]
+       "p300all": "2026_0906_p300_all",
+       "accessibility": "2026_0910_accessibility_activity"}[_a.arms]
 
 BASELINES = [
     ("distToTSS",      "FALSE", "mean", "Inf", "TRUE",  "Distance to TSS",      "#c5cad7"),
@@ -131,7 +153,7 @@ for p in (GENE_U, TSS_U, EXPT):
 
 cfg = f"{CC}/config/config_{TAG}.yml"
 with open(cfg, "w") as f:
-    f.write("# Predicted H3K27ac as the ABC activity term, benchmarked against CRISPR data.\n")
+    f.write("# ABC activity term benchmarked against CRISPR data.\n")
     f.write(f"# All {len(ARMS)} arms score the identical candidate-region set (md5 7d5995ce).\n\n")
     f.write(f"comparisons:\n  {RUN}:\n    pred:\n")
     for arm, root, _n, _c in ARMS:
