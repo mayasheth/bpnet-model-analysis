@@ -70,6 +70,11 @@ dev = "cuda" if torch.cuda.is_available() else "cpu"
 ap = argparse.ArgumentParser()
 ap.add_argument("config"); ap.add_argument("out_prefix"); ap.add_argument("elements")
 ap.add_argument("--pair", nargs=2, action="append", default=[])
+ap.add_argument("--folds", type=int, nargs="+", default=None,
+                help="Score only these folds. Default is all five, which is what every "
+                     "table in results/ was built with and what 2.18's regression gate "
+                     "compares -- so pass this ONLY for a pilot, and expect the CIs and "
+                     "paired tests below to be undefined or meaningless on one fold.")
 ap.add_argument("--no-rc-average", dest="rc_average", action="store_false",
                 default=True,
                 help="Disable test-time reverse-complement averaging. RC averaging is ON "
@@ -206,7 +211,11 @@ def profile_metrics(logits, sigs, logcounts, top):
 
 rows = []
 folds_json = json.load(open(FOLDS))
-for fold in range(5):
+FOLDS_TO_SCORE = a.folds if a.folds is not None else list(range(5))
+if a.folds is not None:
+    print(f"scoring folds {FOLDS_TO_SCORE} only; per-fold CIs and paired tests need all "
+          f"five and are suppressed\n")
+for fold in FOLDS_TO_SCORE:
     els = load_peaks(a.elements, folds_json[str(fold)]["val"])
     b = spec["baseline"]
     accs_by_spec, seqs, sigs, ref_valid = {}, None, None, None
@@ -269,7 +278,14 @@ for label, g in df.groupby("config", sort=False):
         if np.isnan(v).all():
             r[m] = "-"
             continue
-        mu = v.mean(); half = TC * v.std(ddof=1) / np.sqrt(len(v))
+        mu = v.mean()
+        if len(v) < 2:
+            # One fold has no spread to estimate. TC is t(0.975, df=4), so pairing it
+            # with a single-fold std would print an interval that looks like a 5-fold CI
+            # and is not one. Print the point estimate and say what it is.
+            r[m] = f"{mu:.3f} (1 fold, no CI)"
+            continue
+        half = TC * v.std(ddof=1) / np.sqrt(len(v))
         r[m] = f"{mu:.3f} [{mu-half:.3f}, {mu+half:.3f}]"
     srows.append(r)
 summ = pd.DataFrame(srows)
@@ -285,6 +301,13 @@ if a.pair:
         for m in ["overall_pearson", "overall_pearson_topq",
                   "profile_pearson", "profile_pearson_topq"]:
             d = (piv[m][A] - piv[m][B]).to_numpy()
-            mu = d.mean(); half = TC * d.std(ddof=1) / np.sqrt(len(d))
+            mu = d.mean()
+            if len(d) < 2:
+                # A paired test over one fold has no degrees of freedom. The difference is
+                # still the quantity of interest on a pilot, so print it -- but without a
+                # CI or a p-value, which is what makes it a pilot rather than a result.
+                print(f"  {m:<22} {A} - {B}: {mu:+.4f}  (1 fold, no CI or test)")
+                continue
+            half = TC * d.std(ddof=1) / np.sqrt(len(d))
             p = ttest_rel(piv[m][A], piv[m][B]).pvalue
             print(f"  {m:<22} {A} - {B}: {mu:+.4f} [{mu-half:+.4f}, {mu+half:+.4f}]  p={p:.4f}")
