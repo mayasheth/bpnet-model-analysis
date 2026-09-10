@@ -34,7 +34,7 @@ import matplotlib.pyplot as plt
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from nature_style import (apply_rcparams, save_fig, figsize, add_panel_label,
-                          n_label, annotate_n_fig)
+                          n_label, n_parts, fold_n_range, annotate_n_fig)
 
 # Modality colours, as requested: blue ATAC, red sequence, purple both.
 COLOR = {"atac": "#2166AC", "sequence": "#B2182B", "multimodal": "#762A83"}
@@ -133,7 +133,11 @@ def fig_three_mode(pf, results, figdir):
                         title=ttl)
         add_panel_label(ax, panel)
     fig.tight_layout()
-    annotate_n_fig(fig, n_label(pf[pf["stratum"] == "all"]))
+    # Panel a is every element and panel b a fifth of them, so a single number would be
+    # wrong for one of the two panels whichever stratum it was taken from.
+    annotate_n_fig(fig, n_parts(
+        ("a, all elements", fold_n_range(pf[pf["stratum"] == "all"])),
+        ("b, top quintile", fold_n_range(pf[pf["stratum"] == "top_quintile"]))))
     return save_fig(fig, os.path.join(figdir, "fig1_three_mode_comparison.png"))
 
 
@@ -215,7 +219,12 @@ def fig_p300_vs_h3k27ac(pf, figdir):
     add_panel_label(ax, "b")
 
     fig.tight_layout()
-    annotate_n_fig(fig, n_label(pf[pf["stratum"] == "all"]))
+    # BOTH panels are drawn on the top quintile, so the all-element count that used to be
+    # annotated here overstated the sample size by roughly fivefold. The two targets share
+    # the K562 candidate set and score identically per fold, so one range covers both.
+    annotate_n_fig(fig, n_parts(
+        ("top quintile, same elements for both targets",
+         fold_n_range(pf[pf["stratum"] == "top_quintile"]))))
     return save_fig(fig, os.path.join(figdir, "fig4_p300_vs_h3k27ac.png"))
 
 
@@ -278,15 +287,17 @@ def fig_transfer(pf_gm, pf_k562, results, figdir):
     fig.tight_layout()
     # Two cell types with different element sets, so both counts are stated. Read from the
     # same per-fold tables the bars come from rather than from the unused pf_* arguments,
-    # which this function does not receive.
+    # which this function does not receive. Every bar above is filtered to the top quintile,
+    # so the counts must come from that stratum and not from `all`.
     _parts = []
     for _lab, _pre in (("K562", "fiveprime_"), ("GM12878", "gm_incell_")):
         _p = os.path.join(results, f"{_pre}stratified_per_fold.tsv")
         if os.path.exists(_p):
             _d = pd.read_csv(_p, sep="\t")
-            _parts.append(f"{_lab} " + n_label(_d[_d["stratum"] == "all"]).replace("n = ", ""))
+            _parts.append((f"{_lab}, top quintile",
+                           fold_n_range(_d[_d["stratum"] == "top_quintile"])))
     if _parts:
-        annotate_n_fig(fig, "n = " + "; ".join(_parts))
+        annotate_n_fig(fig, n_parts(*_parts))
     return save_fig(fig, os.path.join(figdir, "fig6_transfer.png"))
 
 

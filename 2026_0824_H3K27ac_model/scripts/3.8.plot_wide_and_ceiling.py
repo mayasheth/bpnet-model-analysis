@@ -27,7 +27,8 @@ import matplotlib.pyplot as plt
 from scipy.stats import ttest_rel, t as tdist
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from nature_style import apply_rcparams, save_fig, add_panel_label, n_label, annotate_n_fig
+from nature_style import (apply_rcparams, save_fig, add_panel_label, n_label, n_parts,
+                          fold_n_range, annotate_n_fig)
 
 P = "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model"
 SEQ = "#B2182B"
@@ -53,6 +54,12 @@ def fig10():
     apply_rcparams()
     fig, axes = plt.subplots(2, 2, figsize=(7.2, 5.4))
     letters = iter("abcd")
+    # Collected per cell type rather than left to the loop variable. This annotation used
+    # to read `n_label(df)` after the loops had finished, so a four-panel figure covering
+    # two cell types with different element sets (K562 9,298-14,392, GM12878 10,463-14,362)
+    # was labelled with whichever one the loop happened to read last -- and raised NameError
+    # outright if the first tables were missing.
+    seen = {}
     for i, (mode, mlab, colour) in enumerate(MODES):
         for j, (key, title) in enumerate(CELLS):
             ax = axes[i][j]
@@ -61,6 +68,7 @@ def fig10():
                 ax.text(.5, .5, "not yet scored", ha="center", transform=ax.transAxes)
                 continue
             df = pd.read_csv(f, sep="\t")
+            seen[title] = df
             if f"{mode}_WIDE" not in set(df["config"]):
                 ax.text(.5, .5, "not yet scored", ha="center", transform=ax.transAxes)
                 continue
@@ -84,7 +92,15 @@ def fig10():
             ax.set_title(f"{mlab} — {title}", fontsize=8)
             add_panel_label(ax, next(letters))
     fig.tight_layout(rect=(0, 0.04, 1, 1))
-    annotate_n_fig(fig, n_label(df))
+    # Every panel draws both strata side by side, so both counts are stated for each cell
+    # type. n_topq is the table's own column (2.30), not n/5: `overall_pearson_topq` is
+    # computed on a VALUE threshold, obs >= quantile(obs, 0.8), which ties push past a fifth.
+    if seen:
+        annotate_n_fig(fig, n_parts(*[
+            part
+            for title, d in seen.items()
+            for part in ((f"{title} all", fold_n_range(d)),
+                         (f"{title} top q.", fold_n_range(d, n_col="n_topq")))]))
     save_fig(fig, f"{P}/figures/fig10_wide_receptive_field.png")
     print("wrote fig10")
 

@@ -287,6 +287,46 @@ def n_label(df=None, *, n=None, unit="elements", per_fold=True, **kw):
     return f"n = {lo:,}–{hi:,} {unit} per fold, {k} folds"
 
 
+# A single unqualified n on a figure whose panels rest on different element counts is wrong,
+# and this project has already shipped it: fig4, fig6 and fig13 are drawn entirely on the top
+# signal quintile but were annotated with the all-element count, roughly fivefold too large,
+# and fig10's whole-figure label came from whichever cell type the panel loop happened to
+# read last. Both mistakes are invisible in the output -- the annotation is present and
+# plausibly sized -- so the fix is a helper that cannot produce a count without a caption
+# saying what it counts.
+#
+# NOTE ON WHICH COLUMN TO ASK FOR. `n` and `n_topq` come from different definitions of the
+# top quintile and are not interchangeable:
+#   2.2  ranks with pd.qcut, so its `top_quintile` STRATUM ROWS are exactly a fifth of `all`
+#   2.15 thresholds on np.quantile(obs, 0.8), so ties land inside the quintile and `n_topq`
+#        (backfilled by 2.30) is a bit MORE than a fifth of `n`
+# Never derive one from the other by dividing.
+
+def n_parts(*parts):
+    """One n annotation covering several strata, cell types or panels.
+
+    Each part is (caption, (lo, hi, k)) with the triple straight from `fold_n_range`, or
+    (caption, int) for a plain count. The caption is mandatory: if a figure needs this
+    helper at all, it is because a bare number would be read as applying to every panel.
+    """
+    out, folds, plain = [], set(), False
+    for caption, val in parts:
+        if isinstance(val, int):
+            plain = True
+            out.append(f"{val:,} ({caption})")
+            continue
+        lo, hi, k = val
+        folds.add(k)
+        body = f"{lo:,}" if lo == hi else f"{lo:,}–{hi:,}"
+        out.append(f"{body} ({caption})")
+    if len(folds) > 1:
+        raise ValueError(f"parts disagree on the number of folds: {sorted(folds)}")
+    # "per fold, k folds" is factored out when every part shares it, so a four-part label
+    # stays one readable line instead of repeating the suffix four times.
+    tail = f" per fold, {min(folds)} folds" if folds and not plain else ""
+    return "n = " + "; ".join(out) + tail
+
+
 def annotate_n(ax, text, loc="lower right", pad=0.015):
     """Put the n label in a figure corner, small and grey so it never competes with data."""
     xy = {"lower right": (1 - pad, pad, "right", "bottom"),

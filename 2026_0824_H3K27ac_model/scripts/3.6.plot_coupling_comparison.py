@@ -152,10 +152,22 @@ for ax, stratum, lab, ttl in [
 add_panel_label(axes[3], "d")
 add_panel_label(axes[4], "e")
 
-# One n per cell type: these are model-free element counts, not folds.
-_a = cp[cp["stratum"] == "all"]
-annotate_n_fig(fig, "n elements: " + "; ".join(
-    f"{r['label']} {int(r['n']):,}" for _, r in _a.iterrows()))
+# One n per cell type: these are model-free element counts, not folds. Panel d is drawn on
+# all of them, panel e on the top quintile, and an unqualified element count would be read
+# as covering both. Six cell types x two strata will not fit in a 5.5pt footer, so the
+# quintile is stated as a fraction -- but only after checking it against the table's own
+# top_quintile rows, since the point of this pass is to stop asserting counts nobody read.
+# The quintile counts are given as a RANGE rather than as "a fifth of each": splitting n
+# into five qcut bins leaves a remainder, so two of the six labels sit one element off n/5.
+# One element in 29,000 changes nothing, but stating a fraction that is not exactly true is
+# how the annotation drifts from the data in the first place. Six labels x two strata will
+# not fit in a 5.5pt footer; a range is both short and literally what the table says.
+_a = cp[cp["stratum"] == "all"].set_index("label")
+_q = cp[cp["stratum"] == "top_quintile"].set_index("label")
+_qn = [int(_q.loc[l, "n"]) for l in _a.index if l in _q.index]
+annotate_n_fig(fig, "n elements (panel d): " + "; ".join(
+    f"{l} {int(_a.loc[l, 'n']):,}" for l in _a.index)
+    + (f"; panel e, top quintile of each, {min(_qn):,}\u2013{max(_qn):,}" if _qn else ""))
 out = save_fig(fig, f"{P}/figures/fig8_coupling_across_celltypes.png")
 print("Wrote", out, "and .pdf")
 df = pd.DataFrame(rows)

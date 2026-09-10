@@ -17,7 +17,7 @@ from scipy.stats import t as tdist
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from nature_style import (apply_rcparams, save_fig, add_panel_label, figsize,
-                          n_label, annotate_n_fig, fold_n_range)
+                          n_label, n_parts, annotate_n_fig, fold_n_range)
 
 P = "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model"
 COLOR = {"atac": "#2166AC", "multimodal": "#762A83"}
@@ -67,12 +67,16 @@ fig.tight_layout()
 # n reported per panel set rather than from the loop variable, which by this point has
 # already been filtered to one stratum. Three targets with different element counts, so the
 # label spans all of them.
+# Panel a is the top quintile and panel b all elements, so each target contributes both
+# counts; quoting only "all" made panel a look fivefold better supported than it is.
 _parts = []
 for _cell, _pre in SETS:
     _t = pd.read_csv(f"{P}/results/{_pre}_stratified_per_fold.tsv", sep="\t")
-    _lo, _hi, _k = fold_n_range(_t[_t["stratum"] == "all"], n_col="n", fold_col="fold")
-    _parts.append(f"{_cell} {_lo:,}-{_hi:,}" if _lo != _hi else f"{_cell} {_lo:,}")
-annotate_n_fig(fig, "n elements per fold (5 folds): " + "; ".join(_parts))
+    for _stratum, _tag in (("top_quintile", "a, top q."), ("all", "b, all")):
+        _parts.append((f"{_cell} {_tag}",
+                       fold_n_range(_t[_t["stratum"] == _stratum], n_col="n",
+                                    fold_col="fold")))
+annotate_n_fig(fig, n_parts(*_parts))
 out = save_fig(fig, f"{P}/figures/fig9_atac_5prime_input.png")
 print("Wrote", out, "and .pdf")
 

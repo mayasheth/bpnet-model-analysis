@@ -1633,3 +1633,54 @@ pipeline, and treating it as the latter would have thrown away hours of correct 
 
 **structural_mitigation_candidate**: For any long snakemake driver, define the downstream
 gate as an explicit file manifest with integrity checks, written before the run starts.
+
+### [2026-09-10] Seven of eight figure n annotations were wrong, and the audit that added them only checked they were present
+
+**What happened.** The 2026-09-09 handover flagged one bad `n` annotation (`n_label(n=len(d))`
+reporting a summary table's row count as an element count) and warned that the same class of
+error should be assumed elsewhere, because that pass verified annotations were PRESENT, not
+CORRECT. Auditing all ten `n_label` call sites plus the four figures that build labels by
+hand: seven of the eight report figures carrying an n were misreporting it.
+
+**Three distinct failures, not one.**
+
+1. *Wrong stratum, ~5x.* fig4, fig6 and fig13 are drawn entirely on the top signal quintile
+   but were annotated from the `all` stratum. Every bar in fig6 is filtered with
+   `d[d["stratum"] == "top_quintile"]` twenty lines above an annotation reading
+   `n_label(_d[_d["stratum"] == "all"])`.
+2. *Mixed strata under one number.* fig1, fig8, fig9 and fig12 put an all-element panel next
+   to a top-quintile panel and stated a single unqualified count, which the reader applies to
+   both.
+3. *Leaked loop variable.* fig10's `annotate_n_fig(fig, n_label(df))` runs after both panel
+   loops have finished, so a four-panel figure spanning two cell types with different element
+   sets (K562 9,298-14,392, GM12878 10,463-14,362) was labelled with whichever table was read
+   last. It would also have raised NameError rather than degrading if the first tables were
+   missing.
+
+**`n_topq` IS NOT n/5, AND THE TWO TABLE FAMILIES DISAGREE BY DESIGN.** 2.15 masks with
+`obs >= np.quantile(obs, 0.8)`, a VALUE threshold, so elements tied at the cut all fall
+inside the quintile: fold 0 is 2,052, not 2,029. 2.2 ranks with `pd.qcut`, so its
+`top_quintile` stratum rows genuinely are a fifth. Deriving one from the other by dividing is
+wrong in one direction and right in the other, which is exactly how it would survive a spot
+check. 2.15 now emits `n_topq`; 2.30 backfills it for existing tables and refuses to write
+unless its independently recomputed `n` matches the stored `n`.
+
+**Why it was invisible.** Every one of these renders as a small grey plausible-looking number
+in the figure corner. Nothing about the output distinguishes a correct n from one five times
+too large. The only detector is reading the annotation against the filter that produced the
+data beside it, which is what "checked that annotations were present" did not do.
+
+**What to do.** `n_parts` in `nature_style.py` cannot emit a count without a caption naming
+what it counts, so the stratum has to be stated to get a label at all. Where a shorthand is
+tempting, check it: the fig8 fraction shorthand ("the top fifth of each") tripped its own
+assertion because two of six labels sit one element off n/5 from the qcut remainder, and the
+annotation now states the observed range instead of a fraction that is not exactly true.
+
+**Tags**: figures, annotation, sample-size, audit, silent-error, reporting
+
+**mitigation_type**: structural
+
+**structural_mitigation_candidate**: A figure-level check that reads each rendered annotation
+back and asserts it against the stratum filter used for the panels, rather than trusting the
+plotting call. Attempted here via `pdftotext` in 3.12 but the pixi env has no PDF text
+extractor; the verification was done by eye on the rendered PNGs instead.

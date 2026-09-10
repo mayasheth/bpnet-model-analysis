@@ -18,7 +18,8 @@ import matplotlib.pyplot as plt
 from scipy.stats import ttest_rel, t as tdist
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from nature_style import apply_rcparams, save_fig, add_panel_label, n_label, annotate_n_fig
+from nature_style import (apply_rcparams, save_fig, add_panel_label, n_parts,
+                          fold_n_range, annotate_n_fig)
 
 P = "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model"
 MM = "#762A83"
@@ -56,6 +57,10 @@ for ax, (metric, slab) in zip(axes, STRATA):
           f"delta {mu:+.4f} [{mu-half:+.4f}, {mu+half:+.4f}] p={pv:.4f}")
 add_panel_label(axes[0], "a"); add_panel_label(axes[1], "b")
 fig.tight_layout()
-annotate_n_fig(fig, n_label(df))
+# Panel a is every element, panel b the top quintile, so both counts are stated.
+# n_topq comes from the table (2.30) because the topq mask is a value threshold,
+# obs >= quantile(obs, 0.8), and ties make it larger than n/5.
+annotate_n_fig(fig, n_parts(("a, all elements", fold_n_range(df)),
+                            ("b, top quintile", fold_n_range(df, n_col="n_topq"))))
 save_fig(fig, f"{P}/figures/fig12_fragment_channels.png")
 print("wrote fig12")
