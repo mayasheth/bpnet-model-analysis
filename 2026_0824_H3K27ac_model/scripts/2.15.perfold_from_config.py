@@ -10,6 +10,10 @@ Emits, for every compare entry against the config's baseline:
                         "how well would this predict H3K27ac in a cell type where I have
                         none" -- it scores the quantity you actually want to produce.
   overall_pearson_topq  the same on the top signal quintile (project reporting standard).
+                        `n_topq` records how many elements that is. It is NOT n/5: the mask
+                        is `obs >= np.quantile(obs, 0.8)`, a value threshold, so elements
+                        tied at the cut all fall inside it. Figures annotating a top-
+                        quintile panel must use this column (2.30 backfills older tables).
   residual_pearson      r(observed - atac_pred, model_pred - atac_pred), the mechanistic
                         readout of what the model adds beyond the baseline.
   incremental_r2        R2(model) - R2(baseline) against the observed signal.
@@ -230,6 +234,7 @@ for fold in range(5):
         full = raw + base if cfg.get("residual") else raw
         mres = raw if cfg.get("residual") else raw - base
         row = {"fold": fold, "config": cfg["label"], "n": len(obs),
+               "n_topq": int(top.sum()),
                "overall_pearson": pearsonr(obs, full)[0],
                "overall_pearson_topq": pearsonr(obs[top], full[top])[0],
                "residual_pearson": pearsonr(true_resid, mres)[0],
@@ -238,6 +243,7 @@ for fold in range(5):
         row.update(profile_metrics(prof, sigs, full, top))
         rows.append(row); del prof
     row = {"fold": fold, "config": b["label"], "n": len(obs),
+           "n_topq": int(top.sum()),
            "overall_pearson": pearsonr(obs, base)[0],
            "overall_pearson_topq": pearsonr(obs[top], base[top])[0],
            "residual_pearson": np.nan, "incremental_r2": 0.0,
