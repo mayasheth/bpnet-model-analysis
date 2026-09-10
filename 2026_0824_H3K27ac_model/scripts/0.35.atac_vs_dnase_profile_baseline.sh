@@ -83,9 +83,11 @@ def shape_corr(x, y, b):
 folds = json.load(open(FOLDS))
 rows = []
 for cell, C in CELLS.items():
-    # Fold 0's validation chromosomes, matching what the converter was scored on, so the
-    # baseline and the model number describe the same regions.
-    els = load_peaks(C["elements"], folds["0"]["val"])
+  # Per fold, on each fold's validation chromosomes, so this baseline can be differenced
+  # against the converter WITHIN fold. An unpaired comparison would be swamped: fold sd on
+  # this project runs 0.041-0.046, several times most effects being measured.
+  for fold in range(5):
+    els = load_peaks(C["elements"], folds[str(fold)]["val"])
     ba = pyBigWig.open(C["atac"])
     bp = pyBigWig.open(C["dnase_p"]); bm = pyBigWig.open(C["dnase_m"])
     sizes = ba.chroms()
@@ -112,22 +114,22 @@ for cell, C in CELLS.items():
     tot = Dn.sum(1)
     q = np.quantile(tot, [0.2, 0.4, 0.6, 0.8])
     quint = np.digitize(tot, q)
-    print(f"{cell}: {len(A):,} fold-0 held-out windows", flush=True)
+    print(f"{cell} fold{fold}: {len(A):,} held-out windows", flush=True)
     for b in BINS:
         for strat, mask in (("all", np.ones(len(tot), bool)), ("topq", quint == 4)):
             r_, n_ = shape_corr(Dn[mask], A[mask], b)
-            rows.append({"cell": cell, "bin_bp": b, "stratum": strat,
+            rows.append({"cell": cell, "fold": fold, "bin_bp": b, "stratum": strat,
                          "n_elements": n_, "shape_r_observed_atac_vs_dnase": r_})
 
 df = pd.DataFrame(rows)
 out = f"{P}/results/atac_vs_dnase_profile_baseline.tsv"
 df.round(4).to_csv(out, sep="\t", index=False)
 print("\nWrote", out)
-print("\nObserved ATAC profile vs observed DNase profile, fold-0 held-out windows.")
+print("\nObserved ATAC profile vs observed DNase profile, held-out windows, 5 folds.")
 print("This is what the converter's painted track must beat to be worth deploying.")
-print(f"\n{'cell':>9}{'bin':>6}{'stratum':>9}{'r(ATAC, DNase)':>17}")
-for _, r in df.iterrows():
-    print(f"{r['cell']:>9}{int(r['bin_bp']):>6}{r['stratum']:>9}"
-          f"{r['shape_r_observed_atac_vs_dnase']:>17.4f}")
+g = df.groupby(["cell", "bin_bp", "stratum"])["shape_r_observed_atac_vs_dnase"].agg(["mean", "min", "max"])
+print(f"\n{'cell':>9}{'bin':>6}{'stratum':>9}{'mean r':>10}{'fold range':>20}")
+for (c, b, st), r in g.iterrows():
+    print(f"{c:>9}{int(b):>6}{st:>9}{r['mean']:>10.4f}   {r['min']:.4f}-{r['max']:.4f}")
 PY
 echo done

@@ -233,3 +233,27 @@ merely desirable.
 | Date | Run/Session | Dataset | Project | Result | Direction |
 |------|-------------|---------|---------|--------|-----------|
 | 2026-09-08 | tracks 42491539, training 42499405-19, scoring 42514074 | K562 DNase ENCSR000EOT+ENCSR000EKS, GM12878 DNase ENCSR000EMT, H3K27ac targets in both | 2026_0824_H3K27ac_model | in-cell +0.037 (K562) and +0.086 (GM12878); transferred +0.043 over ATAC and +0.056 over the target's own ATAC-only floor | supports |
+
+---
+
+## F-011: A sequence + ATAC model predicts the DNase base-resolution profile at 95% of the inter-replicate ceiling in K562, and the advantage over the raw ATAC track survives transfer
+**Status:** established (correlation metrics only; no downstream test)
+**Claim:** Trained in K562 on ATAC-derived candidate elements to predict pooled stranded DNase 5' insertions, the converter reaches a raw within-element shape correlation of **0.792** at 1 bp on the top signal quintile, against an inter-replicate ceiling of 0.834 — **95.1% of ceiling**, where the untouched observed ATAC track sits at 0.292 (35%). Paired within fold, converter minus observed ATAC is **+0.500 [+0.492, +0.508]** (*p*<1e-4). Applied unchanged to GM12878 the converter reaches **0.490** against that cell type's lower ceiling of 0.684 (71.6%), where observed ATAC is 0.206 (30%), a paired gain of **+0.284 [+0.279, +0.289]** (*p*<1e-4). An ATAC-only arm — same target, same elements, sequence branch removed — reaches 0.563 in K562 and 0.318 transferred, so sequence contributes **+0.229** in-cell and **+0.172** on transfer rather than the model merely rescaling its own input. On counts the sequence margin over the ATAC-only arm is +0.064 [+0.047, +0.082] top-quintile Pearson (*p*=0.0005).
+**Implications:** This supplies the second premise the converter needed. F-010 established that DNase is the better representation to be in and that the advantage survives transfer; this establishes that a model with no DNase at inference can produce a base-resolution DNase track that is far more DNase-like than the ATAC track it would replace, and that the gain travels. The sequence margin over the ATAC-only arm retains 91% of its in-cell size on transfer (27.6 vs 25.1 percentage points of ceiling), against a project background where in-cell gains have repeatedly been exactly null transferred (F-005, fragment channels). Count loss weight is not a live variable here: clw=1 and clw=10 differ by 0.001 in shape at every bin size, so the project-standard clw=10 is kept.
+**Caveats:** **Correlation only — no downstream test exists.** Whether feeding the painted track to the H3K27ac model improves it is untested, and so is the DNase input itself (F-010 carries the same gap). The absolute transfer number is much weaker than in-cell: 71.6% of ceiling against 95.1%, and 0.490 raw. The reported ceiling is computed from two replicates (142M reads) while the target is the 3-BAM pool (301M), so the true ceiling is higher and every "% of ceiling" here is optimistic. The paired CIs are very tight because fold-to-fold variation in a mean over ~10k elements is small; the real uncertainty is the third cell type, not fold sampling, and F-009's warning applies unchanged — two cell types cannot separate "K562-trained converters are portable" from "K562 transfers to GM12878". Elements are ATAC-derived by design so the converter never trains on regions chosen by the signal it predicts; this departs from every other K562 model in the project, justified by element derivation making no difference on the H3K27ac task (*p*=0.83).
+**Tags:** converter, atac-to-dnase, profile, base-resolution, transfer, deployment, k562, gm12878, positive-result
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-09-10 | targets 42654625 (`0.34`), training 42713703-13 + 42722426-56 (`1.24`), scoring 42728292 (`2.34`), baseline 42728298 (`0.35`) | K562 ATAC 5' input, pooled stranded DNase target (ENCSR000EOT+ENCSR000EKS), ATAC-derived K562 elements, 5 folds; applied to GM12878 ATAC + ENCSR000EMT DNase | 2026_0824_H3K27ac_model | 1 bp top-quintile shape vs observed DNase: K562 ATAC 0.292 → converter 0.792 (ceiling 0.834); GM12878 ATAC 0.206 → converter 0.490 (ceiling 0.684); paired +0.500 and +0.284, both *p*<1e-4 | supports |
+
+**Methodological note.** The metric here is 0.25's raw `shape_corr`, not 2.15's
+`profile_pearson`. The latter is Gaussian-smoothed (`kernel_sigma=7, kernel_width=81`) and is
+not on the same scale as the 1 bp inter-replicate ceiling: on the same fold-0 model it reads
+0.774 where the raw 1 bp value is 0.799 and the ceiling is 0.831. `2.31` therefore computes
+the model score and the ceiling on the same held-out windows with the same estimator, and
+`0.35` supplies the comparator the ceiling framing omits — fraction of the DNase ceiling says
+how close the converter gets to DNase, but the deployment question is whether it beats the
+ATAC track already in the input slot, which is a different and lower bar that had to be
+measured rather than assumed.
