@@ -1,0 +1,23 @@
+{
+ "_comment": "Five-fold converter comparison. clw1 is dropped: it was a pilot arm on fold 0 only and differed from clw10 by 0.001 in profile shape at every bin size, so it is settled rather than pending. Baseline is still the ATAC-only arm, the control that decides whether sequence is doing anything.",
+ "baseline": {
+  "label": "atac_only_clw10",
+  "mode": "atac",
+  "half_window": 500,
+  "model_dir": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/models/atac5p_conv_atac2dnase_atacel_hw500_clw10",
+  "accessibility_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0529_multimodal_p300_model/data/atac_5p.bw",
+  "signal_plus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/k562_dnase_5p_plus.bw",
+  "signal_minus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/k562_dnase_5p_minus.bw"
+ },
+ "compare": [
+  {
+   "label": "seq_atac_clw10",
+   "mode": "multimodal",
+   "half_window": 500,
+   "model_dir": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/models/multimodal5p_conv_atac2dnase_atacel_hw500_clw10",
+   "accessibility_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0529_multimodal_p300_model/data/atac_5p.bw",
+   "signal_plus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/k562_dnase_5p_plus.bw",
+   "signal_minus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/k562_dnase_5p_minus.bw"
+  }
+ ]
+}
