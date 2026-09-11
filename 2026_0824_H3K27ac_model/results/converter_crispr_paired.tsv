@@ -1,0 +1,6 @@
+arm_a	arm_b	auprc_a	auprc_b	delta	ci_lo	ci_hi	sign_kept_frac	sign_kept_pct	n_pairs	n_regulated	n_boot
+acc_real_dnase.ABC.Score	acc_real_atac.ABC.Score	0.528044	0.457171	0.070872	0.047592	0.093826	1.0	100.0	10342	466	2000
+acc_conv_k562.ABC.Score	acc_real_atac.ABC.Score	0.477968	0.457171	0.020796	-0.004885	0.044064	0.947	94.7	10342	466	2000
+acc_conv_gm12878.ABC.Score	acc_real_atac.ABC.Score	0.470728	0.457171	0.013557	-0.011837	0.036448	0.8565	85.65	10342	466	2000
+acc_real_dnase.ABC.Score	acc_conv_k562.ABC.Score	0.528044	0.477968	0.050076	0.02981	0.071395	1.0	100.0	10342	466	2000
+acc_conv_k562.ABC.Score	acc_conv_gm12878.ABC.Score	0.477968	0.470728	0.00724	-0.012346	0.027328	0.752	75.2	10342	466	2000
