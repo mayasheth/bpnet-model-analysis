@@ -241,3 +241,26 @@ timed out and returned nothing; a `grep -rl` across four repos missed a snakemak
 that one question located immediately, in a hidden directory the patterns never covered.
 An empty or timed-out search is not evidence of absence. Targeted `ls` of a named directory
 does not need asking.
+
+## The TODO list lives in `todo/TODOLIST.md`
+
+`todo/TODOLIST.md` is the live list of open work, and is the file to update when work starts,
+finishes or is deferred. It is the mycelium `todo/` directory.
+
+Two other files look like it and are not it. `TODO.md` at the repo root is older and broader,
+and is where publication-figure status lives. `todo/h3k27ac-model.md` is a per-topic item from
+2026-08-25 that TODOLIST has largely superseded. Do not add a fourth.
+
+The list holds OPEN work. Anything finished belongs in the git history, in `decisions.md` and
+in `findings/`. Two exceptions earn a `- [x]` entry that stays visible: a result worth stating
+so nobody reopens it blind, and a deferral, which must carry the reason and the condition that
+would reopen it. A deferral recorded as a closure is how a cheap idea gets re-litigated three
+sessions later.
+
+Entries quote the number and its interval rather than a verdict, and cross-reference finding
+IDs, decision dates and script numbers instead of restating content. The TODO is an index of
+what is open, not a second copy of the analysis.
+
+This convention is duplicated in `CLAUDE.md` deliberately: CLAUDE.md is loaded into every
+session's context automatically and this file is not, so the copy that gets read is the one
+that matters.
