@@ -2,11 +2,11 @@
 
 Every analysis in this repo predates its mycelium init (2026-08-24) and lives in a
 **dated or model-named directory at the repo root**, not under `analysis/`. Nothing was
-moved during init — the `path:` field below is authoritative. See
+moved during init, the `path:` field below is authoritative. See
 `.living/conventions.md` for the layout override this records.
 
-Cross-references: pipeline/script reference in `CLAUDE.md`, figure→script mapping in
-`README.md`, forward-looking priorities in `TODO.md`, status snapshot in `HANDOVER.md`.
+Cross-references: pipeline/script reference in `CLAUDE.md`, figure->script mapping in
+`README.md`, forward-looking priorities in `todo/TODOLIST.md`, status snapshot in `HANDOVER.md`.
 
 ---
 
@@ -38,7 +38,7 @@ negatives, and the source of manuscript Figs 1 and S1. Full command history is i
 **Open methodological question:** `EP300_peak_overlap` uses a 1000 bp window while
 `true_logcounts` uses BPNet's 500 bp window, so ~40% of elements called "p300+" by peak
 overlap have zero observed counts. The preferred fix (top-20% by observed counts, unioned
-with the overlap flag) is **not yet adopted globally**; `TODO.md` lists the figures that
+with the overlap flag) is **not yet adopted globally**; `todo/TODOLIST.md` lists the figures that
 would need regenerating.
 
 ---
@@ -86,7 +86,7 @@ tags: [p300, bpnet, k562, retrain, model-comparison]
 Retrain of the primary model with the complete downstream pipeline rerun
 (`predictions_cv/`, `predictions_mean/`, `shap/`, `shap_peaks/`, `modisco/`,
 `modisco_peaks/`, `finemo/`, `finemo_peaks/`, `motif_spacing/`). Canonical CV/mean Pearson
-r for v1/v2/v3 is tabulated in `TODO.md` rather than duplicated here.
+r for v1/v2/v3 is tabulated in `reference/PUBLICATION_FIGURES.md` rather than duplicated here.
 
 ---
 
@@ -108,8 +108,8 @@ tags: [p300, bpnet, k562, model-comparison]
 ```
 
 Third iteration. Has `models/`, `predictions_cv/`, `predictions_mean/`, and `shap/` but no
-`modisco/` or `finemo/` — the interpretability stage has not been run for v3. Performance
-numbers live in `TODO.md`.
+`modisco/` or `finemo/`, the interpretability stage has not been run for v3. Performance
+numbers live in `reference/PUBLICATION_FIGURES.md`.
 
 ---
 
@@ -141,7 +141,7 @@ training-bug history (7 distinct SLURM failures: generator deadlocks, device-pla
 bugs, OOM from loading all genome-wide negatives before subsampling).
 
 Note: that handover's own "next steps" still lists GM12878 multimodal predictions as
-"job 28387044 submitted" — that finished the same day; see `gm12878-transferability`.
+"job 28387044 submitted", that finished the same day; see `gm12878-transferability`.
 
 ---
 
@@ -219,7 +219,7 @@ tags: [fimo, pwm, motif-enrichment, baseline]
 FIMO (via `memelite`) scan results under `elements_v1/analysis_v1/`, driven by
 `scripts/run_fimo.py`, `7.0.create_region_mapping.py`, and `7.1.fimo_motif_analysis.py`.
 Outputs `motif_enrichment.tsv`, `motif_pair_enrichment.tsv`, and
-`spacing_distributions.tsv` — column definitions in `CLAUDE.md`.
+`spacing_distributions.tsv`, column definitions in `CLAUDE.md`.
 
 ---
 
@@ -291,9 +291,9 @@ single fold seen mid-grid. So +/-500 wins on accuracy, on sequence contribution,
 neighbour contamination (0% vs 20%) - there is no longer a trade-off between the
 prediction and syntax goals.
 
-**Open:** prioritized next steps with compute estimates are in `todo/TODOLIST.md`
-(waves) and `todo/h3k27ac-model.md` (detail) - mycelium's todo/ is canonical for
-this project. Motif-syntax analysis (SHAP/MoDISCo/FiNeMo) not started. Given F-001, expect
+**Open:** prioritized next steps are in `todo/TODOLIST.md`, which is the single canonical
+list for this project; the per-topic detail file it used to sit beside was folded into it on
+2026-09-12. Motif-syntax analysis (SHAP/MoDISCo/FiNeMo) not started. Given F-001, expect
 less sequence signal to attribute here than for p300. Also unresolved: the profile head
 fits fragment-extended coverage with MNLL, which expects multinomial read counts - a
 possible fundamental mismatch, not just a weighting problem. And whether counting only

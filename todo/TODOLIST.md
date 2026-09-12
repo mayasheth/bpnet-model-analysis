@@ -410,6 +410,12 @@ dropped, since git history and `.living/` hold them.
       insertion violin plot (`scripts/plot_individual_motif_insertions.py`) and the motif-pair
       heatmaps for max log2FC and synergy (`scripts/plot_motif_pair_heatmaps.py`). The logos
       and hit panels are not.
+- [ ] **Compare the GM12878 MoDISCo motifs to the K562 set.** Raised in the GM12878
+      handover and never done. 26 GM12878 motifs exist
+      (`modisco/max_seqlets_250k_30_10_0/logos/`). A shared motif vocabulary across the two
+      cell types is the sequence-side counterpart to the transfer results.
+- [ ] **Confirm the identity of `REPEAT_G`, `NF2L_NFE` and `ELF`** in the v2 FiNeMo motif set.
+      Raised in the FiNeMo TF-analysis handover and unresolved.
 - [ ] **hashFrag chromosome splits** to reduce train/test sequence-similarity leakage. Never
       assessed; every result in the project rests on plain chromosome holdout.
 - [ ] **Update `P300_INTERACTORS`** in `plot_finemo_composite_figure.py` after a

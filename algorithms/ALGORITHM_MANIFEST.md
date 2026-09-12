@@ -21,7 +21,7 @@ The core shared module for model prediction and sequence manipulation. Key entry
 | `get_model(model_path)` | Load a BPNet or ChromBPNet model |
 | `make_model_prediction(mod_encoded, ...)` | Universal prediction wrapper, returns log counts |
 | `insert_motifs_with_orientation_general()` | Insert motifs into sequences at set positions/orientations |
-| `one_hot_encode(sequences, seq_length)` | DNA → one-hot |
+| `one_hot_encode(sequences, seq_length)` | DNA -> one-hot |
 | `dinuc_shuffle(seq)` | Dinucleotide-preserving shuffle (the baseline for log2 fold-change) |
 | `generate_motif_pairs(motif_dict)` | Enumerate motif pair combinations |
 
@@ -111,7 +111,7 @@ comprehensively. Reports `log2_fc_vs_baseline` against a dinucleotide-shuffled b
 and `log2_synergy` for effects beyond the individual motifs.
 
 **Open publication decision:** v1 vs v2 (additive-expectation-referenced) plots, and which
-n=3/n=4 orientations to highlight — see `HANDOVER_motif_spacing.md`.
+n=3/n=4 orientations to highlight, see `HANDOVER_motif_spacing.md`.
 
 ---
 
@@ -143,9 +143,9 @@ tags: [evaluation, pearson, spearman]
 
 Computes Pearson and Spearman correlation of predicted vs observed log counts, reported
 both over all candidate elements and restricted to p300+ elements. Canonical numbers for
-every model live in `TODO.md`.
+every model live in `reference/PUBLICATION_FIGURES.md`.
 
 **Caveat:** the p300+ subset depends on `EP300_peak_overlap` (1000 bp window) while
-`true_logcounts` uses BPNet's 500 bp window — so ~40% of "p300+" elements have zero
+`true_logcounts` uses BPNet's 500 bp window, so ~40% of "p300+" elements have zero
 observed counts, deflating p300+ correlations. Unresolved; see
 `analysis/ANALYSIS_MANIFEST.md`.
