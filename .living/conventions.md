@@ -247,9 +247,12 @@ does not need asking.
 `todo/TODOLIST.md` is the live list of open work, and is the file to update when work starts,
 finishes or is deferred. It is the mycelium `todo/` directory.
 
-Two other files look like it and are not it. `TODO.md` at the repo root is older and broader,
-and is where publication-figure status lives. `todo/h3k27ac-model.md` is a per-topic item from
-2026-08-25 that TODOLIST has largely superseded. Do not add a fourth.
+It is the only one. Two files used to look like it: `TODO.md` at the repo root and
+`todo/h3k27ac-model.md`. Both were folded into TODOLIST and deleted on 2026-09-12, and their
+publication-figure status and p300-model CV values moved to `reference/PUBLICATION_FIGURES.md`.
+Do not add a second list. The failure mode those two demonstrated is worth naming: a stale
+list is worse than no list, because it describes finished work as unstarted and a reader
+plans from it.
 
 The list holds OPEN work. Anything finished belongs in the git history, in `decisions.md` and
 in `findings/`. Two exceptions earn a `- [x]` entry that stays visible: a result worth stating
