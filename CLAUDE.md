@@ -8,15 +8,14 @@ This project interprets what BPNet sequence models have learned about **TF motif
 
 ## The TODO list is `todo/TODOLIST.md` (read this before planning anything)
 
-**`todo/TODOLIST.md` is the live list of open work.** It is the mycelium `todo/` directory,
-not the root `TODO.md`. Update it in the same session as the work it describes, because it is
-what the next session plans from.
+**`todo/TODOLIST.md` is the live list of open work**, and the only one. It is the
+mycelium `todo/` directory. Update it in the same session as the work it describes,
+because it is what the next session plans from.
 
-| path | what it is |
-|---|---|
-| `todo/TODOLIST.md` | **THE list.** Open work only, organised by theme. Keep current. |
-| `todo/h3k27ac-model.md` | a 2026-08-25 per-topic item, superseded in most places by TODOLIST |
-| `TODO.md` (repo root) | older and broader; publication-figure status lives here. NOT the live list |
+There is exactly ONE list. `TODO.md` at the repo root and `todo/h3k27ac-model.md` were
+folded into it and deleted on 2026-09-12 (recoverable from git history); the
+publication-figure status tables and p300-model CV key values they held moved to
+`reference/PUBLICATION_FIGURES.md`, which is a record rather than open work.
 
 Conventions for editing it:
 
@@ -33,7 +32,8 @@ Conventions for editing it:
   script numbers (`1.26`, `4.20`) rather than restating the content. The TODO is an index of
   what is open, not a second copy of the analysis.
 
-Do not create a new TODO file. There are already three and two of them are stale.
+Do not create a second TODO file. There were three, two went stale, and the
+stale ones still described work as unstarted months after it had been built.
 
 ## Models
 
