@@ -1,0 +1,41 @@
+{
+ "_comment": "H3K27ac prediction under four accessibility inputs. BASELINE IS THE ATAC-INPUT MODEL, the arm every other one has to beat, so residual_pearson and incremental_r2 are defined against it. real_dnase is the F-010 result and the target to match. converted is the converter's first test on a branch that reads base resolution, which ABC could not provide. smooth250 is real DNase with structure erased and magnitude kept: it decides whether DNase's advantage was ever about shape, and therefore whether the converter can work as an input at all.",
+ "baseline": {
+  "label": "atac_input",
+  "mode": "multimodal",
+  "half_window": 500,
+  "model_dir": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/models/multimodal5p_accs5p_hw500_clw10",
+  "accessibility_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0529_multimodal_p300_model/data/atac_5p.bw",
+  "signal_plus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/h3k27ac_5p_plus.bw",
+  "signal_minus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/h3k27ac_5p_minus.bw"
+ },
+ "compare": [
+  {
+   "label": "real_dnase",
+   "mode": "multimodal",
+   "half_window": 500,
+   "model_dir": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/models/multimodal5p_dnase_hw500_clw10",
+   "accessibility_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/k562_dnase_5p.bw",
+   "signal_plus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/h3k27ac_5p_plus.bw",
+   "signal_minus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/h3k27ac_5p_minus.bw"
+  },
+  {
+   "label": "converted_dnase",
+   "mode": "multimodal",
+   "half_window": 500,
+   "model_dir": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/models/multimodal5p_acc-convdnase_hw500_clw10",
+   "accessibility_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/convdnase_prof_k562.bw",
+   "signal_plus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/h3k27ac_5p_plus.bw",
+   "signal_minus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/h3k27ac_5p_minus.bw"
+  },
+  {
+   "label": "dnase_smooth250",
+   "mode": "multimodal",
+   "half_window": 500,
+   "model_dir": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/models/multimodal5p_acc-dnasesmooth250_hw500_clw10",
+   "accessibility_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/k562_dnase_5p_smooth250.bw",
+   "signal_plus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/h3k27ac_5p_plus.bw",
+   "signal_minus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/h3k27ac_5p_minus.bw"
+  }
+ ]
+}

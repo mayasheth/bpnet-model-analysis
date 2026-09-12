@@ -193,19 +193,40 @@ auxiliary task, or an annotation. Ordered so the cheap prerequisite gates the ex
       other way round from what was planned: the converter trains on the ATAC-derived element
       set (D-19) so it never trains on regions chosen by the signal it predicts.
 
-- [ ] **H3K27ac with the converted track as input**, 5 folds (`1.26`, `ACC_TAG=convdnase`).
-      Queued. First test that exercises the profile: this model's accessibility branch reads
-      base resolution over 2,114 bp. Needed `4.20` to paint `softmax(profile) x counts`
-      genome-wide, since `4.1`'s flat-within-region painting is correct for ABC and useless
-      as a base-resolution input.
+- [x] **H3K27ac under four accessibility inputs. DONE 2026-09-12, F-013.** Top-quintile
+      Pearson: real DNase 0.728, DNase smoothed at 250 bp 0.704, ATAC 0.690, converted DNase
+      0.680. Paired against ATAC: real DNase +0.0379 [+0.0213, +0.0546], smoothed
+      +0.0141 [-0.0057, +0.0338] (not resolvable), **converted -0.0099 [-0.0175, -0.0023],
+      i.e. resolvably worse than the track it would replace**.
 
-- [ ] **Shape-destroyed DNase control**, 5 folds (`1.26`, `ACC_TAG=dnasesmooth250`). Queued.
-      Real DNase box-filtered at 250 bp: magnitude preserved, structure gone. F-010 never
-      established WHICH property of DNase wins and the answer decides whether the converter
-      can ever work as an input. Advantage survives smoothing means shape never mattered;
-      advantage collapses means shape is the thing. 250 bp is where observed ATAC and DNase
-      already agree about shape (r = 0.92, against 0.29 at 1 bp), so smoothing there removes
-      close to exactly what ATAC lacks. Diagram: `figures/fig18_control_schematic`.
+      **The control answered: shape, not magnitude.** Destroying structure finer than 250 bp
+      costs real DNase +0.0239 [+0.0027, +0.0451] of its +0.0379, and the remainder no longer
+      separates from ATAC. So base-resolution structure is where the advantage lives, which is
+      the branch that keeps a converter conceptually alive.
+
+      **But this converter is worse than raw ATAC.** Reproducing the DNase profile at 95% of
+      ceiling (F-011) while hurting downstream means the painted track carries a defect that
+      outweighs its shape fidelity. Named candidate: the 1.54x magnitude inflation of the
+      lowest observed-signal quintile (D-22), plus a 34% genome-wide total. Shape fidelity is
+      necessary and demonstrably not sufficient.
+
+      **Also measured:** `profile_pearson` is 0.063-0.064 across all four arms, so the
+      H3K27ac profile head learns nothing whatever accessibility it is given.
+
+- [ ] **Fix the painted track's magnitude before any further converter arm.** Now the top
+      priority in this line, and it has a specific target rather than a vague "improve counts":
+      quantile-map the painted track to a reference accessibility distribution so its value
+      distribution matches a real 5-prime track instead of a thresholded softmax. This is
+      deployment-legal, since the reference can come from another cell type. Without it the
+      F-013 negative confounds shape fidelity with magnitude distortion and cannot be read as
+      evidence about either.
+
+- [ ] **Sweep the control's filter width.** 250 bp is one point, chosen because observed ATAC
+      and DNase already agree about shape there. The smoothed arm's interval is wide
+      ([-0.0057, +0.0338] against DNase's +0.0379), so "most of the advantage is shape" is a
+      point estimate whose interval does not exclude magnitude carrying much of it. Widths of
+      50 and 100 bp would localise the scale that matters and tighten the claim. Cheap: the
+      track builder is `0.36` and training is `1.26`.
 
 - [ ] **Multi-task arm: DNase profile head, H3K27ac counts head.** WAIT FOR THE CONTROL
       ABOVE, then run. Same trunk, same counts objective, profile head's target swapped from
