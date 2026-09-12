@@ -154,7 +154,7 @@ the expected effect size before submitting.
 
 ## The residual metric, and the controls it needs
 
-**Definition.** `residual_pearson = r(observed (atac_pred, model_pred) atac_pred)`, where
+**Definition.** `residual_pearson = r(observed - atac_pred, model_pred - atac_pred)`, where
 `atac_pred` is an **ATAC-only model's held-out prediction**, not the raw ATAC track. So the
 residual is what accessibility genuinely cannot explain rather than what a linear function of
 one bigwig cannot explain. Reported alongside incremental *R^2* against the observed signal,

@@ -11,8 +11,8 @@ Append-only log of non-obvious decisions and their rationale.
 **Decision**: Train on `reference/K562_DNase_candidate_elements.narrowPeak`, centered on the element midpoint, with a counting window wider than the element.
 
 **Alternatives considered**:
-- Center on H3K27ac peak summits — rejected: the summit of a broad acetylation peak sits on a flanking nucleosome, so windows would be centered off the element and inconsistently so.
-- Keep the element-sized window used for p300 — rejected: a +/-250 bp window captures the shoulders but cuts deeply into real signal, which only reaches background around +/-2000 bp.
+- Center on H3K27ac peak summits, rejected: the summit of a broad acetylation peak sits on a flanking nucleosome, so windows would be centered off the element and inconsistently so.
+- Keep the element-sized window used for p300, rejected: a +/-250 bp window captures the shoulders but cuts deeply into real signal, which only reaches background around +/-2000 bp.
 
 **Rationale**: The scientific question is about elements, so the element must define the coordinate system. Conveniently the candidate-elements file has its summit column set to `width/2`, so the trainer's existing `is_peak=True` path already centers on the midpoint with no code change.
 
@@ -24,13 +24,13 @@ Append-only log of non-obvious decisions and their rationale.
 
 ### [2026-08-24] Counting window is a trade-off between signal and neighbour contamination
 
-**Context**: H3K27ac signal has no clean saturation point — it decays slowly and only reaches its distal plateau around +/-2000 bp. Meanwhile the 150,528 candidate elements cluster, so wide windows start containing other elements.
+**Context**: H3K27ac signal has no clean saturation point, it decays slowly and only reaches its distal plateau around +/-2000 bp. Meanwhile the 150,528 candidate elements cluster, so wide windows start containing other elements.
 
 **Decision**: Test +/-500 and +/-1000 head to head rather than picking one. Expect +/-1000 to be the headline model and +/-500 the one trusted for attribution work.
 
 **Alternatives considered**:
-- A single wide window (+/-2000) — rejected: the inter-replicate ceiling on active elements saturates by +/-1000 (0.785 vs 0.797 at +/-2000), so wider buys ~1 point of ceiling for 41% contamination.
-- A single narrow window (+/-500) — kept as an arm rather than the sole choice: zero contamination, but the ceiling is 2.4 points lower and it leaves real signal out.
+- A single wide window (+/-2000), rejected: the inter-replicate ceiling on active elements saturates by +/-1000 (0.785 vs 0.797 at +/-2000), so wider buys ~1 point of ceiling for 41% contamination.
+- A single narrow window (+/-500), kept as an arm rather than the sole choice: zero contamination, but the ceiling is 2.4 points lower and it leaves real signal out.
 
 **Rationale**: Neighbour contamination rises 0% -> 9.9% -> 19.9% -> 41.5% across +/-500/750/1000/2000, while the ceiling gains flatten after +/-1000. The two questions also want different things: prediction accuracy favours the wider window, while motif syntax is actively harmed by contamination, since a window containing a neighbour lets the model earn credit from the wrong element's motifs.
 
@@ -47,8 +47,8 @@ Append-only log of non-obvious decisions and their rationale.
 **Decision**: Keep the profile head and control it with `count_loss_weight` rather than editing the loss to remove it.
 
 **Alternatives considered**:
-- Remove the profile head outright — deprioritized on evidence, not principle. At `count_loss_weight=10000` the counts term already takes ~91% of the gradient, making that run a close proxy for counts-only, and it scored 0.398 versus 0.407 at parity (weight 1000). Removal would land near 0.398, i.e. no better.
-- Grid the profile-drop against mode and window — rejected: doubles the grid to 60 GPU jobs to test a lever the weight sweep already argues against.
+- Remove the profile head outright, deprioritized on evidence, not principle. At `count_loss_weight=10000` the counts term already takes ~91% of the gradient, making that run a close proxy for counts-only, and it scored 0.398 versus 0.407 at parity (weight 1000). Removal would land near 0.398, i.e. no better.
+- Grid the profile-drop against mode and window, rejected: doubles the grid to 60 GPU jobs to test a lever the weight sweep already argues against.
 
 **Rationale**: Reproducing the central dip is a useful diagnostic that the model learned H3K27ac structure rather than "accessible implies acetylated", and it costs nothing to keep once the weight is calibrated.
 
@@ -56,7 +56,7 @@ Append-only log of non-obvious decisions and their rationale.
 
 **Tags**: h3k27ac, profile-head, loss-weighting, architecture, bpnetlite
 
-**Update 2026-09-03 — decision stands, and the reasoning was better than the evidence then
+**Update 2026-09-03, decision stands, and the reasoning was better than the evidence then
 available.** Two measurements now exist. The inter-replicate ceiling on base-resolution
 profile SHAPE is 0.21 on the top quintile at 1 bp, rising to 0.72 at 50 bp binning, so the
 1 bp task is intrinsically near-unlearnable. Against that ceiling the head reaches
@@ -75,9 +75,9 @@ deprioritized on evidence. The open question is now binning rather than removal.
 **Decision**: Report `residual_pearson = r(observed - atac_pred, model_pred - atac_pred)` as the headline, with incremental R^2 and stratification by |true residual|. The baseline is the ATAC-only MODEL's held-out prediction, not the raw ATAC track, so the residual is what accessibility genuinely cannot explain. Implemented in `2026_0824_H3K27ac_model/scripts/2.4.evaluate_residual.py`.
 
 **Alternatives considered**:
-- Keep overall Pearson as the headline — rejected: it ranked the two targets backwards (see F-002).
-- Partial correlation controlling for `atac_pred` — equivalent in spirit but less directly interpretable; the residual form states plainly "does the model's departure track the true departure".
-- Use the raw ATAC track as the baseline — rejected: then the residual includes everything a linear read of the track misses, which flatters any model that merely learns a better ATAC transform.
+- Keep overall Pearson as the headline, rejected: it ranked the two targets backwards (see F-002).
+- Partial correlation controlling for `atac_pred`, equivalent in spirit but less directly interpretable; the residual form states plainly "does the model's departure track the true departure".
+- Use the raw ATAC track as the baseline, rejected: then the residual includes everything a linear read of the track misses, which flatters any model that merely learns a better ATAC transform.
 
 **Rationale**: Overall correlation on this element set is dominated by the dead-vs-active contrast, which accessibility resolves on its own. The residual isolates the increment that motivates having a sequence model at all.
 
@@ -101,7 +101,7 @@ entering the panel later. Both variants remain on disk (`*_r1_5p_*`, `*_both_5p_
 is reversible at no compute cost.
 
 **Alternatives considered**:
-- Count both mates — rejected on principle despite winning the top-quintile ceiling by
+- Count both mates, rejected on principle despite winning the top-quintile ceiling by
   0.003-0.005 in all four conditions. Two reasons. (i) It is a different quantity from the SE
   cell types, giving TeloHAEC a different count-to-molecule relationship. (ii) Each fragment
   contributes two *correlated* counts, violating the independent-read assumption behind
@@ -195,9 +195,9 @@ comparability, transfer, telohaec
 **Decision**: Adopt ~4.2 kb for the multimodal model. The multimodal arm gains +0.027 (K562, p=0.006) and +0.014 (GM12878, p=0.025) on the top quintile, all five folds rising in both cell types, with the accessibility residual up from 0.502 to 0.547 and 0.397 to 0.469.
 
 **Alternatives considered**:
-- Keep `n_layers` 8 — rejected: the gain is significant, replicated, and on the reporting standard.
-- Adopt it for sequence-only too — rejected: sequence gains only on all elements, which is the dead-vs-active contrast.
-- Wait for the ATAC-only arm before deciding — the arm is running and will refine the mechanism, but it cannot overturn a replicated multimodal gain.
+- Keep `n_layers` 8, rejected: the gain is significant, replicated, and on the reporting standard.
+- Adopt it for sequence-only too, rejected: sequence gains only on all elements, which is the dead-vs-active contrast.
+- Wait for the ATAC-only arm before deciding, the arm is running and will refine the mechanism, but it cannot overturn a replicated multimodal gain.
 
 **Rationale**: The useful long-range information is in the accessibility track. A wider window lets the model read accessibility over a larger neighbourhood; sequence-only cannot exploit 4 kb of sequence, so for it the extra window is noise.
 
@@ -211,14 +211,14 @@ comparability, transfer, telohaec
 
 **Context**: Fragment length distinguishes nucleosome-free from nucleosome-occupied DNA and flat coverage discards it. An earlier pair of channels existed but used `genomecov -bg` over the full fragment interval, the read-length-dependent smear already removed from the flat track, and covered only half the fragments.
 
-**Decision**: Five channels `[all, sub ≤139, mono 140–329, di 330–620, poly ≥621]`, every one a single-base Tn5 insertion count, with `all` being `atac_5p.bw` itself. Bin edges sit in the troughs of the measured fragment-length distribution.
+**Decision**: Five channels `[all, sub <=139, mono 140-329, di 330-620, poly >=621]`, every one a single-base Tn5 insertion count, with `all` being `atac_5p.bw` itself. Bin edges sit in the troughs of the measured fragment-length distribution.
 
 **Alternatives considered**:
-- Full-fragment coverage for the stratified channels — rejected: it would place two incompatible accessibility conventions in one input tensor, and a mono-nucleosomal interval marking occupancy directly is not worth that.
-- The original `sub`/`mono` edges — rejected: they sat inside the modes and covered half the fragments.
-- Stratified channels only, without the flat one — rejected: including `all` is what makes the input a provable superset, since the first convolution can zero the four bins and reproduce the baseline exactly.
+- Full-fragment coverage for the stratified channels, rejected: it would place two incompatible accessibility conventions in one input tensor, and a mono-nucleosomal interval marking occupancy directly is not worth that.
+- The original `sub`/`mono` edges, rejected: they sat inside the modes and covered half the fragments.
+- Stratified channels only, without the flat one, rejected: including `all` is what makes the input a provable superset, since the first convolution can zero the four bins and reproduce the baseline exactly.
 
-**Rationale**: The bins partition the flat track exactly — zero discrepancy across 545,661,218 insertions — so any difference is added information rather than a changed input. The Tn5 shift was measured against the existing track (r = 1.0000 at +4/−5) rather than assumed, which also proved the PE BAMs and tagAligns hold the same reads.
+**Rationale**: The bins partition the flat track exactly, zero discrepancy across 545,661,218 insertions, so any difference is added information rather than a changed input. The Tn5 shift was measured against the existing track (r = 1.0000 at +4/−5) rather than assumed, which also proved the PE BAMs and tagAligns hold the same reads.
 
 **Consequences**: Gains +0.0135 on the top quintile (p = 0.0034). `atac_sub.bw` and `atac_mono.bw` are superseded and must not be used with a 5' model. GM12878 replication needs its PE BAMs downloaded, since fragment length lives in TLEN.
 
@@ -228,15 +228,15 @@ comparability, transfer, telohaec
 
 ### [2026-09-03] Inject predicted H3K27ac into ABC as a painted bigWig, with qnorm left on
 
-**Context**: The ABC activity term is `geomean(accessibility, H3K27ac)` computed from read counts over candidate regions. Our model emits a per-element scalar from 5' end counts in a ±500 bp window, which is not obviously commensurate with read counting over an element.
+**Context**: The ABC activity term is `geomean(accessibility, H3K27ac)` computed from read counts over candidate regions. Our model emits a per-element scalar from 5' end counts in a +/-500 bp window, which is not obviously commensurate with read counting over an element.
 
 **Decision**: Write a bigWig with each candidate region painted at `predicted_counts / width` and pass it in the `H3K27ac` column. Keep `use_qnorm: True`. Assemble the genome-wide track from the five fold models, each applied only to the chromosomes it held out.
 
 **Alternatives considered**:
-- Patch ABC to accept a precomputed activity column — rejected as unnecessary: `neighborhoods.py:count_bigwig` already sums bigWig values per region, so a painted track is counted exactly as a real one.
-- Turn qnorm off — rejected: it is what makes the injection scale-free, and the ABC score thresholds are calibrated on qnorm'd values.
-- Paint the prediction itself, so the region sum scales with width as real read counts do — kept as `--paint density`; the default makes ABC's sum recover the model's prediction exactly, since the model predicts a fixed ±500 bp window regardless of element width.
-- A five-model ensemble for the cross-cell-type arms, where leakage is not a concern — rejected: it would give those arms an ensembling advantage the same-cell-type arms cannot have.
+- Patch ABC to accept a precomputed activity column, rejected as unnecessary: `neighborhoods.py:count_bigwig` already sums bigWig values per region, so a painted track is counted exactly as a real one.
+- Turn qnorm off, rejected: it is what makes the injection scale-free, and the ABC score thresholds are calibrated on qnorm'd values.
+- Paint the prediction itself, so the region sum scales with width as real read counts do, kept as `--paint density`; the default makes ABC's sum recover the model's prediction exactly, since the model predicts a fixed +/-500 bp window regardless of element width.
+- A five-model ensemble for the cross-cell-type arms, where leakage is not a concern, rejected: it would give those arms an ensembling advantage the same-cell-type arms cannot have.
 
 **Rationale**: `run_qnorm` is rank-based, mapping each region's within-sample quantile onto the K562 reference, so only the rank order of the injected values matters. That dissolves the units mismatch. Validated on chr22: predicted-vs-observed H3K27ac Spearman 0.716 all regions and 0.550 top quintile, against 0.633 and 0.469 for raw ATAC, so the prediction is a better proxy than the accessibility it would replace.
 
@@ -250,13 +250,13 @@ comparability, transfer, telohaec
 
 **Context**: `2.15` is shared with the transfer and residual-grid results, so generalising it needed a gate. The first gate required the per-fold table to be byte-identical to a stored one, and it failed on differences in the 4th decimal place while region counts matched exactly.
 
-**Decision**: Assert exact equality only on deterministic quantities — fold set, config labels, `n` per fold, and the presence of every reference column — and compare metrics within 1e-3.
+**Decision**: Assert exact equality only on deterministic quantities, fold set, config labels, `n` per fold, and the presence of every reference column, and compare metrics within 1e-3.
 
 **Alternatives considered**:
-- Keep byte-identity and pin the GPU model — rejected: it makes the gate depend on scheduling.
-- Drop the gate — rejected: it is the only thing standing between a refactor and silently changed published numbers.
+- Keep byte-identity and pin the GPU model, rejected: it makes the gate depend on scheduling.
+- Drop the gate, rejected: it is the only thing standing between a refactor and silently changed published numbers.
 
-**Rationale**: cuDNN convolution is not bit-reproducible across GPU models, so re-scoring the same weights on a different node moves the 4th decimal place with the code untouched. The tolerance is chosen from the science's noise floor — between-fold sd is 0.041-0.046 — rather than from float precision, so a real behavioural change moves numbers by far more than the gate absorbs.
+**Rationale**: cuDNN convolution is not bit-reproducible across GPU models, so re-scoring the same weights on a different node moves the 4th decimal place with the code untouched. The tolerance is chosen from the science's noise floor, between-fold sd is 0.041-0.046, rather than from float precision, so a real behavioural change moves numbers by far more than the gate absorbs.
 
 **Consequences**: `2.18.compare_perfold_tables.py` implements it and states the tolerance and its justification in its own docstring, so the next reader does not tighten it back to zero. Added columns are reported and skipped; missing columns fail.
 
@@ -271,8 +271,8 @@ comparability, transfer, telohaec
 **Decision**: Ship it behind `--rc-average`, off by default.
 
 **Alternatives considered**:
-- Make it the default immediately — rejected for now: it would shift every number in the report by a small amount, so past and future tables would not be comparable unless all are re-scored together.
-- Leave it unimplemented — rejected: it is the cheapest measured gain on the project.
+- Make it the default immediately, rejected for now: it would shift every number in the report by a small amount, so past and future tables would not be comparable unless all are re-scored together.
+- Leave it unimplemented, rejected: it is the cheapest measured gain on the project.
 
 **Rationale**: The gain is real but small relative to the comparisons being made, and comparability across the report matters more than a few thousandths until the tables are re-scored as a set.
 
@@ -288,18 +288,18 @@ comparability, transfer, telohaec
 
 **Decision**: Three documents, ordered by how often they change.
 
-1. **Data characterisation** — what the data is and what is predictable in principle. H3K27ac position and width, the counting-window trade-off, both ceilings (counts and profile shape), ATAC fragment-length structure, ATAC-H3K27ac coupling across cell types, element derivation and panel caveats, ATAC input conventions. Every ceiling lives here and the other two reports cite it.
-2. **Evaluation methodology** — short, concrete, framed as standing cautions with the incident that motivated each. Why the top quintile leads, what the residual metric means and its artifact controls, paired within-fold testing against a between-fold sd of 0.041-0.046, the transfer-versus-deployment evaluation DESIGN, and ABC/CRISPR as the downstream metric.
-3. **Design decisions** — the workbench. Spine is a decision table of change / effect on the top quintile / verdict, with evidence below: input modality, residual versus total objective, receptive field, fragment channels, RC averaging, target definition, window size, `count_loss_weight`, the profile head, element derivation, and the transfer RESULTS with the deployment verdict.
+1. **Data characterisation**, what the data is and what is predictable in principle. H3K27ac position and width, the counting-window trade-off, both ceilings (counts and profile shape), ATAC fragment-length structure, ATAC-H3K27ac coupling across cell types, element derivation and panel caveats, ATAC input conventions. Every ceiling lives here and the other two reports cite it.
+2. **Evaluation methodology**, short, concrete, framed as standing cautions with the incident that motivated each. Why the top quintile leads, what the residual metric means and its artifact controls, paired within-fold testing against a between-fold sd of 0.041-0.046, the transfer-versus-deployment evaluation DESIGN, and ABC/CRISPR as the downstream metric.
+3. **Design decisions**, the workbench. Spine is a decision table of change / effect on the top quintile / verdict, with evidence below: input modality, residual versus total objective, receptive field, fragment channels, RC averaging, target definition, window size, `count_loss_weight`, the profile head, element derivation, and the transfer RESULTS with the deployment verdict.
 
 **Alternatives considered**:
-- Keep one report — rejected: the churn in category 3 forces re-reading stable material to find what changed.
-- Split by audience, a short headline plus a technical appendix — rejected for a working project: it optimises for a reader who is not the one using this daily.
-- Put transfer entirely in report 2 or entirely in report 3 — rejected: transferability is both an evaluation axis and a deployment decision, so the design goes in 2 and the results in 3.
+- Keep one report, rejected: the churn in category 3 forces re-reading stable material to find what changed.
+- Split by audience, a short headline plus a technical appendix, rejected for a working project: it optimises for a reader who is not the one using this daily.
+- Put transfer entirely in report 2 or entirely in report 3, rejected: transferability is both an evaluation axis and a deployment decision, so the design goes in 2 and the results in 3.
 
 **Rationale**: Splitting on churn rate isolates the part that moves. Reports 1 and 2 become citable references; report 3 is expected to change every week.
 
-**Consequences**: Figure numbering restarts per report, so every legend and prose cross-reference is touched — mechanical, and the numbers manifest lint catches any reference that stops resolving. `render_report.py` resolves `outputs/numbers.json` relative to the report, so all three sharing one directory keeps one manifest. Deferred until the runs in flight land, so the split happens once.
+**Consequences**: Figure numbering restarts per report, so every legend and prose cross-reference is touched, mechanical, and the numbers manifest lint catches any reference that stops resolving. `render_report.py` resolves `outputs/numbers.json` relative to the report, so all three sharing one directory keeps one manifest. Deferred until the runs in flight land, so the split happens once.
 
 **Tags**: reporting, organisation, documentation, churn
 
@@ -506,3 +506,109 @@ trainer: the matched file drops in through the existing `--negatives`, and a sec
 implementation would risk diverging from `bpnet-gc-background`.
 
 **Tags**: negatives, gc-matching, training-composition, sequence-branch, negative-result
+
+
+### [2026-09-10] Train the ATAC-to-DNase converter on ATAC-derived candidate elements
+
+**Context**: Every other K562 model in this project trains on
+`K562_DNase_candidate_elements.narrowPeak`. The converter predicts DNase from sequence and
+ATAC, so that element set is chosen by the signal the model is trying to predict.
+
+**Decision**: Train the converter on `K562_ATAC_candidate_elements.narrowPeak` (`1.24`), and
+keep the DNase-derived set for the downstream H3K27ac arms (`1.26`) so those stay comparable
+to their own anchors, `1.11` and `1.22`.
+
+**Alternatives considered**:
+- DNase-derived elements, matching every other model: rejected. At deployment the element set
+  can only come from ATAC, so a DNase-derived set means the converter never trains on the
+  regions ATAC nominates and DNase does not, which is exactly where a conversion does work
+  rather than copying.
+- Both, as a fifth arm: rejected as unjustified cost, given D-18's neighbour result.
+
+**Rationale**: Element derivation, ATAC- against DNase-derived, made no difference on the
+H3K27ac task (*p*=0.83), so the swap is free in measured terms and removes the circularity.
+
+**Consequences**: The GM12878 converter (`1.25`) could NOT match this. `0.26` derives K562's
+ATAC element set from a specific rE2G ATAC run with no GM12878 counterpart, so that arm
+trains on the DNase-derived set and the two converters differ in element derivation. If the
+GM12878 arm underperforms, that asymmetry is a live alternative to a transfer explanation and
+has to be reported as one.
+
+**Tags**: converter, elements, circularity, deployment, atac, dnase
+
+### [2026-09-10] Score the converter's profile with the raw estimator, never `profile_pearson`
+
+**Context**: `2.15`'s `profile_pearson` comes from bpnetlite's
+`calculate_performance_measures` with `kernel_sigma=7, kernel_width=81`, so both profiles are
+Gaussian-smoothed before correlating. The DNase ceiling that unblocked the converter (0.848 at
+1 bp top quintile) is a RAW within-element correlation from `0.25`. The two are different
+estimators on different scales.
+
+**Decision**: `2.31` scores the converter with `0.25`'s `shape_corr` verbatim and computes the
+inter-replicate ceiling on the SAME held-out windows in the same run. Report the bin-size
+curve, not one number.
+
+**Alternatives considered**:
+- Quote `profile_pearson` against the `0.25` ceiling: rejected. On the same fold-0 model the
+  smoothed metric reads 0.774 where the raw 1 bp value is 0.799 and the ceiling is 0.831, so
+  the numbers are close enough to look comparable and are not.
+
+**Rationale**: The converter exists to feed a branch that reads base resolution, so the
+question is at what resolution the track is trustworthy. One number cannot answer that, and a
+smoothed number answers a different question.
+
+**Consequences**: F-011 rests on the raw estimator. `0.35` was added alongside, because
+fraction-of-ceiling says how close the converter gets to DNase and not whether it beats the
+ATAC track it would replace, which is the lower and more relevant bar.
+
+**Tags**: converter, profile, metric-definition, ceiling, estimator
+
+### [2026-09-11] Put every accessibility benchmark arm on one counting path
+
+**Context**: The July run scored real ATAC (0.457) and real DHS (0.576) as ABC activity terms
+from read files, which go through `count_bam`/`count_tagalign`. A painted prediction goes
+through `count_bigwig`.
+
+**Decision**: Run all four accessibility arms as 5-prime bigwigs, including the two real
+tracks, and treat the July numbers as external reference points rather than arms.
+
+**Rationale**: Comparing a converted track against a read-file arm would put a counting-path
+difference inside the contrast the run exists to measure.
+
+**Consequences**: Measured rather than assumed, and it mattered. Real ATAC as a bigwig scores
+0.4572 against the July tagAlign arm's 0.4573, identical. Real DNase as a bigwig scores 0.5280
+against the July DHS arm's 0.5763. The counting path leaves ATAC alone and moves DNase by
+0.048, so quoting the July 0.576 beside these numbers would have inflated the real-DNase arm
+and overstated the gap the converter had to close.
+
+**Tags**: abc, counting, benchmark, confound, dnase, atac
+
+### [2026-09-12] Zero painted accessibility below one read
+
+**Context**: `4.20` paints `softmax(profile) x counts` per base. A softmax never emits zero, so
+the painted track is dense where a real 5-prime track is 71.3% empty. That floor made the
+genome-wide track 22 GB against real DNase's 828 MB and inflated the lowest observed-signal
+quintile 2.7x.
+
+**Decision**: `4.22 --min-value 0.5`. A real 5-prime track holds integer read counts, so a
+painted base carrying less than one read is below what the real track can represent.
+
+**Alternatives considered**:
+- Leave it dense: rejected. The raised floor would have been a confound in the downstream arm,
+  indistinguishable from the profile being useless.
+- Threshold at 1.0: rejected on measurement. It overshoots real DNase's sparsity (86.7% zero)
+  and starts costing shape.
+- Quantile-map the painted track to a reference accessibility distribution: held in reserve.
+  It is deployment-legal and would fix the residual distortion, but is only worth doing if the
+  as-is arm comes out negative.
+
+**Rationale**: Measured on chr22 before switching on. At 0.5 the sparsity reaches 74.5%
+against real DNase's 71.3%, the 1 bp top-quintile shape correlation moves 0.7814 to 0.7793,
+and the lowest-quintile inflation falls from 2.73x to 1.54x.
+
+**Consequences**: Residual Q1 inflation of 1.54x remains and is the named alternative
+explanation if the converted arm underperforms. The thresholded track's genome-wide total is
+103.6M against real DNase's 301.1M; training computes its own accessibility normalisation, so
+a uniform factor is absorbed, but the distortion is not uniform.
+
+**Tags**: converter, painting, threshold, dynamic-range, confound

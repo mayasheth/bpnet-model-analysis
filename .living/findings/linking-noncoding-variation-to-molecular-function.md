@@ -8,7 +8,7 @@ status: active
 
 # Linking noncoding variation to molecular function
 
-_Seed topic (Engreitz Lab). No findings recorded yet — crystallize-findings will
+_Seed topic (Engreitz Lab). No findings recorded yet, crystallize-findings will
 append `F-NNN` entries here as analyses produce them._
 
 ### Open Questions
