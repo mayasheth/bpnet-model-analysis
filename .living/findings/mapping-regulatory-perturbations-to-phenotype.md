@@ -8,9 +8,9 @@ status: active
 
 # Mapping regulatory perturbations to phenotype
 
-_Seed topic (Engreitz Lab). No findings recorded yet — crystallize-findings will
+_Seed topic (Engreitz Lab). No findings recorded yet, crystallize-findings will
 append `F-NNN` entries here as analyses produce them. (Broad question behind
-CRISPRi/CRISPRa screens — the slug avoids naming the method.)_
+CRISPRi/CRISPRa screens, the slug avoids naming the method.)_
 
 ### Open Questions
 - Which perturbations produce a measurable molecular or cellular phenotype?

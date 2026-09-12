@@ -2,7 +2,7 @@
 
 Append-only log of gotchas, surprises, and insights.
 
-**Entry template:** copy from `skills/core/templates/learning-entry.md` (includes Category, What happened, Why it matters, Resolution, Tags fields). The `**Tags**:` line is consumed by `generate_index.py --summary-heuristic` to build the cluster summary in INDEX.md — use them.
+**Entry template:** copy from `skills/core/templates/learning-entry.md` (includes Category, What happened, Why it matters, Resolution, Tags fields). The `**Tags**:` line is consumed by `generate_index.py --summary-heuristic` to build the cluster summary in INDEX.md, use them.
 
 ### [2026-08-24] count_loss_weight must be calibrated to the actual loss magnitudes, not copied
 
@@ -26,7 +26,7 @@ Append-only log of gotchas, surprises, and insights.
 
 **Category**: insight
 
-**What happened**: Used `r(rep1, rep2)` on per-element counts as the upper bound on model performance. Models immediately exceeded it — multimodal H3K27ac scored 1.07x the supposed ceiling, which is impossible and revealed the bound was wrong.
+**What happened**: Used `r(rep1, rep2)` on per-element counts as the upper bound on model performance. Models immediately exceeded it, multimodal H3K27ac scored 1.07x the supposed ceiling, which is impossible and revealed the bound was wrong.
 
 **Why it matters**: An invalid ceiling silently invalidates every "fraction of achievable performance" claim, and in this case would have been reported as if models were near-perfect.
 
@@ -36,7 +36,7 @@ Append-only log of gotchas, surprises, and insights.
 
 **mitigation_type**: structural
 
-**structural_mitigation_candidate**: Shipped — the correction lives in `2.1.aggregate_results.py` and `2.2.evaluate_stratified.py`, and `frac_of_ceiling > 1` is now the tripwire that reveals a mis-specified bound.
+**structural_mitigation_candidate**: Shipped, the correction lives in `2.1.aggregate_results.py` and `2.2.evaluate_stratified.py`, and `frac_of_ceiling > 1` is now the tripwire that reveals a mis-specified bound.
 
 ---
 
@@ -44,7 +44,7 @@ Append-only log of gotchas, surprises, and insights.
 
 **Category**: gotcha
 
-**What happened**: While extending the stratified evaluator to the stranded p300 models, found that my observed-count computation used `signals[:, 0, :].sum()` — channel 0 only. bpnetlite's `_mixture_loss` does `y.reshape(n, -1).sum(-1)`, flattening channels and positions first, giving "a single count loss across all tracks".
+**What happened**: While extending the stratified evaluator to the stranded p300 models, found that my observed-count computation used `signals[:, 0, :].sum()`, channel 0 only. bpnetlite's `_mixture_loss` does `y.reshape(n, -1).sum(-1)`, flattening channels and positions first, giving "a single count loss across all tracks".
 
 **Why it matters**: Identical for an unstranded 1-channel target, so it passed unnoticed on H3K27ac. On a stranded 2-channel target it halves the observed counts, which would have made the p300 baseline look artificially bad in exactly the head-to-head comparison it was built for. A silent factor-of-two in a comparison is worse than a crash.
 
@@ -62,7 +62,7 @@ Append-only log of gotchas, surprises, and insights.
 
 **Category**: gotcha
 
-**What happened**: Three separate failures in one session, all mechanical rather than scientific. (1) `set -u` plus `"${ARR[@]}"` on an EMPTY array is an unbound-variable error in bash < 4.4 — killed a training job in 5 seconds on precisely the `sequence` path that skips accessibility. (2) Python block-buffers stdout when it is a file, so a running job showed an empty log for 35 minutes and looked hung. (3) A long-running python process started over `ssh` on the login node was killed when the calling command was backgrounded locally, exiting 0 with no output files written.
+**What happened**: Three separate failures in one session, all mechanical rather than scientific. (1) `set -u` plus `"${ARR[@]}"` on an EMPTY array is an unbound-variable error in bash < 4.4, killed a training job in 5 seconds on precisely the `sequence` path that skips accessibility. (2) Python block-buffers stdout when it is a file, so a running job showed an empty log for 35 minutes and looked hung. (3) A long-running python process started over `ssh` on the login node was killed when the calling command was backgrounded locally, exiting 0 with no output files written.
 
 **Why it matters**: Each looks like a real failure and burns a debugging cycle. The buffering one is the most expensive: it makes every other failure undiagnosable while the job is alive.
 
@@ -80,7 +80,7 @@ Append-only log of gotchas, surprises, and insights.
 
 **Category**: failure
 
-**What happened**: `train_multimodal_bpnet.py` hardcoded `max_negs = len(train_peaks) * 10`. Fine for ~12k p300 peaks, but H3K27ac trains on ~120k DNase candidate elements, giving 1.2M negative windows — roughly 55 GB of extracted arrays against a 120 GB request, before counting the peaks themselves.
+**What happened**: `train_multimodal_bpnet.py` hardcoded `max_negs = len(train_peaks) * 10`. Fine for ~12k p300 peaks, but H3K27ac trains on ~120k DNase candidate elements, giving 1.2M negative windows, roughly 55 GB of extracted arrays against a 120 GB request, before counting the peaks themselves.
 
 **Why it matters**: The 10x rule is invisible until the peak set gets large, and it fails during extraction after tens of minutes of work rather than immediately.
 
@@ -100,7 +100,7 @@ Append-only log of gotchas, surprises, and insights.
 
 **What happened**: Wrote three decision entries following `mycelium-upstream/skills/core/templates/decision-log-entry.md`, which specifies `## [YYYY-MM-DD] Title`. `generate_index.py` then reported "decisions.md | 0 entries". Its `extract_entries()` hardcodes `header_prefix = "### "` for both learnings AND decisions, while the decision template uses `## `. The learning template correctly uses `### `.
 
-**Why it matters**: Decision entries written exactly as the upstream template instructs are invisible to `.living/INDEX.md`, which is the file the SessionStart hook surfaces and which future sessions are told to trust. The entries are on disk and greppable, but they silently do not exist as far as the knowledge index is concerned — the worst kind of failure, because nothing errors.
+**Why it matters**: Decision entries written exactly as the upstream template instructs are invisible to `.living/INDEX.md`, which is the file the SessionStart hook surfaces and which future sessions are told to trust. The entries are on disk and greppable, but they silently do not exist as far as the knowledge index is concerned, the worst kind of failure, because nothing errors.
 
 **Resolution**: Use `### [YYYY-MM-DD] Title` for decisions in this repo, matching the indexer rather than the template. Verified: index then reports the correct count. Upstream is a pinned submodule we do not edit, so this is a local convention.
 
@@ -108,7 +108,7 @@ Append-only log of gotchas, surprises, and insights.
 
 **mitigation_type**: convention
 
-**structural_mitigation_candidate**: A check in the repo that `grep -c '^### \[' .living/decisions.md` matches the count in `.living/INDEX.md`. Better still, report it upstream — either the template or `extract_entries` should change, since one of them is wrong.
+**structural_mitigation_candidate**: A check in the repo that `grep -c '^### \[' .living/decisions.md` matches the count in `.living/INDEX.md`. Better still, report it upstream, either the template or `extract_entries` should change, since one of them is wrong.
 
 ---
 
@@ -118,7 +118,7 @@ Append-only log of gotchas, surprises, and insights.
 
 **What happened**: Tested whether counting only the flanking windows (excluding +/-125 to +/-375 bp around the element center) gives a better H3K27ac target than a full symmetric window, on the reasoning that H3K27ac sits on flanking nucleosomes and the center is depleted. Inter-replicate ceiling on the top signal quintile fell monotonically with exclusion width: at +/-500 bp outer, 0.761 (no exclusion) -> 0.747 -> 0.729 -> 0.717. Same direction at +/-1000. Meanwhile the flanking-only count correlates 0.97-0.99 with the full-window count, so the two targets are barely different.
 
-**Why it matters**: The premise looked sound from the meta-profile but was wrong quantitatively. The observed central dip is only ~9% below the shoulders, so the center still carries ~91% of peak signal — excluding it discards reads rather than noise, and fewer reads means more Poisson noise and a lower ceiling. Implementing it properly would have required decoupling the count target from the profile target in bpnetlite's loss, so testing the premise first avoided real work on a dead end.
+**Why it matters**: The premise looked sound from the meta-profile but was wrong quantitatively. The observed central dip is only ~9% below the shoulders, so the center still carries ~91% of peak signal, excluding it discards reads rather than noise, and fewer reads means more Poisson noise and a lower ceiling. Implementing it properly would have required decoupling the count target from the profile target in bpnetlite's loss, so testing the premise first avoided real work on a dead end.
 
 **Resolution**: Dropped. Full symmetric window retained. `2026_0824_H3K27ac_model/scripts/0.4.flanking_vs_full.py`, results in `results/flanking_vs_full_window.tsv`.
 
@@ -126,7 +126,7 @@ Append-only log of gotchas, surprises, and insights.
 
 **mitigation_type**: ambient-awareness
 
-**structural_mitigation_candidate**: Not a defect to prevent — the general lesson is to phrase target-definition questions as "does this raise the inter-replicate ceiling" and answer them with the replicate data before writing model code. That check is cheap and decisive.
+**structural_mitigation_candidate**: Not a defect to prevent, the general lesson is to phrase target-definition questions as "does this raise the inter-replicate ceiling" and answer them with the replicate data before writing model code. That check is cheap and decisive.
 
 ---
 
@@ -134,11 +134,11 @@ Append-only log of gotchas, surprises, and insights.
 
 **Category**: gotcha
 
-**What happened**: The H3K27ac target was `Data/share/IGV/ENCSR000AKP_coverage.bw`, built by `bam_to_bigWig.sh -r SINGLE`, which extends 36 bp reads to a fixed **250 bp fragment**. It was raw counts and unnormalized, so it looked valid as a training target — and it is, in the sense that nothing is scaled. But it was written for IGV display. Meanwhile the p300 pipeline (`scripts/0.3.make_training_bw.sh:83`) uses `bedtools genomecov -5 -dz`, i.e. single-base 5' ends.
+**What happened**: The H3K27ac target was `Data/share/IGV/ENCSR000AKP_coverage.bw`, built by `bam_to_bigWig.sh -r SINGLE`, which extends 36 bp reads to a fixed **250 bp fragment**. It was raw counts and unnormalized, so it looked valid as a training target, and it is, in the sense that nothing is scaled. But it was written for IGV display. Meanwhile the p300 pipeline (`scripts/0.3.make_training_bw.sh:83`) uses `bedtools genomecov -5 -dz`, i.e. single-base 5' ends.
 
-**Why it matters**: Two concrete costs, both of which were visible as symptoms before the cause was identified. (1) The 250 bp extension smears signal across the nucleosome-free center, flattening the bimodality to a ~9% dip and blurring the boundary between adjacent elements — this is also why the flanking-window idea above looked plausible but failed. (2) It makes the profile loss ill-posed: bpnetlite's MNLL expects multinomial read counts, and fragment-extended coverage inflates per-window totals ~250x with near-identical adjacent positions. That is why profile MNLL sat at ~2800 versus ~500 for p300, which in turn is what made `count_loss_weight` need to be ~1000 instead of 1.
+**Why it matters**: Two concrete costs, both of which were visible as symptoms before the cause was identified. (1) The 250 bp extension smears signal across the nucleosome-free center, flattening the bimodality to a ~9% dip and blurring the boundary between adjacent elements, this is also why the flanking-window idea above looked plausible but failed. (2) It makes the profile loss ill-posed: bpnetlite's MNLL expects multinomial read counts, and fragment-extended coverage inflates per-window totals ~250x with near-identical adjacent positions. That is why profile MNLL sat at ~2800 versus ~500 for p300, which in turn is what made `count_loss_weight` need to be ~1000 instead of 1.
 
-**Resolution**: Rebuilding the target from the source BAMs with `genomecov -5 -dz`, stranded, matching p300 — `scripts/0.5.make_5prime_bigwigs.sh`, merged plus per-replicate. Ceiling and models to be recomputed on the 5' target and compared against the fragment-extended results.
+**Resolution**: Rebuilding the target from the source BAMs with `genomecov -5 -dz`, stranded, matching p300, `scripts/0.5.make_5prime_bigwigs.sh`, merged plus per-replicate. Ceiling and models to be recomputed on the 5' target and compared against the fragment-extended results.
 
 **Tags**: h3k27ac, target-definition, bigwig, fragment-extension, 5-prime, bpnetlite, mnll
 
@@ -152,9 +152,9 @@ Append-only log of gotchas, surprises, and insights.
 
 **Category**: insight
 
-**What happened**: Expected the 5'-end target to have a *lower* inter-replicate ceiling than the 250 bp fragment-extended track, because 5' counting gives far fewer counts per window (mean 17 vs 4271 at +/-500 bp) and so more Poisson noise. It does not. Top-quintile ceiling is 0.760 (5') vs 0.761 (fragment) at +/-500, and 0.785 vs 0.785 at +/-1000 — identical to three decimals in places. The all-elements ceiling *rises* sharply (0.844 vs 0.604), but that is the dead-vs-active contrast getting easier rather than a real gain: fragment extension gives every element hundreds of bleed-in counts, compressing log-scale dynamic range, whereas 5' leaves dead elements genuinely near-zero.
+**What happened**: Expected the 5'-end target to have a *lower* inter-replicate ceiling than the 250 bp fragment-extended track, because 5' counting gives far fewer counts per window (mean 17 vs 4271 at +/-500 bp) and so more Poisson noise. It does not. Top-quintile ceiling is 0.760 (5') vs 0.761 (fragment) at +/-500, and 0.785 vs 0.785 at +/-1000, identical to three decimals in places. The all-elements ceiling *rises* sharply (0.844 vs 0.604), but that is the dead-vs-active contrast getting easier rather than a real gain: fragment extension gives every element hundreds of bleed-in counts, compressing log-scale dynamic range, whereas 5' leaves dead elements genuinely near-zero.
 
-**Why it matters**: The switch to 5' is justified on principle — MNLL sees real multinomial read counts, no bleed across the nucleosome-free centre or into neighbouring elements — but it should NOT be expected to improve accuracy by itself. Predicting otherwise would have set up a false attribution when downstream numbers move.
+**Why it matters**: The switch to 5' is justified on principle, MNLL sees real multinomial read counts, no bleed across the nucleosome-free centre or into neighbouring elements, but it should NOT be expected to improve accuracy by itself. Predicting otherwise would have set up a false attribution when downstream numbers move.
 
 **Resolution**: Adopt 5' as the target. Expect the benefit in the profile task and in `count_loss_weight` normalising, not in the counts ceiling.
 
@@ -172,7 +172,7 @@ Append-only log of gotchas, surprises, and insights.
 
 **What happened**: Predicted that switching from the 250 bp fragment-extended H3K27ac target to 5' ends would not improve accuracy, on the grounds that the inter-replicate ceiling was identical on the top quintile (0.760 vs 0.761 at +/-500). Wrong: sequence-only count Pearson went 0.4073 -> 0.4962 (+22% relative), same mode, same fold, same window.
 
-**Why it matters**: The ceiling measures how REPRODUCIBLY a target can be measured. It says nothing about how PREDICTABLY it can be modelled from sequence. Fragment extension smears each read across 250 bp, so signal bleeds in from neighbouring elements — and that bleed is highly reproducible (both replicates see the same smear) while being unpredictable from the element's own sequence. Removing it raises predictability and leaves reproducibility untouched. Treating the ceiling as a proxy for "how much better can a model get" is therefore wrong in a specific, directional way: it is blind to reproducible-but-unattributable signal.
+**Why it matters**: The ceiling measures how REPRODUCIBLY a target can be measured. It says nothing about how PREDICTABLY it can be modelled from sequence. Fragment extension smears each read across 250 bp, so signal bleeds in from neighbouring elements, and that bleed is highly reproducible (both replicates see the same smear) while being unpredictable from the element's own sequence. Removing it raises predictability and leaves reproducibility untouched. Treating the ceiling as a proxy for "how much better can a model get" is therefore wrong in a specific, directional way: it is blind to reproducible-but-unattributable signal.
 
 **Resolution**: Ceiling remains useful for ranking window widths and for sanity-checking that a model has not exceeded the possible. It must not be used to predict whether a target-definition change will help.
 
@@ -190,7 +190,7 @@ Append-only log of gotchas, surprises, and insights.
 
 **What happened**: On the fragment-extended target the optimal `count_loss_weight` was 1000 and profile MNLL sat at ~2800. On the 5' target, MNLL is ~119-195 and the optimum moved to 10 (weights 1 and 3 still testing). Best count Pearson by weight on 5': 10 -> 0.4962, 100 -> 0.4666, 1000 -> 0.4641.
 
-**Why it matters**: Confirms MNLL magnitude was a units artifact of fragment extension, not a property of the data — the loss is a count-weighted sum, so inflating every count ~250x inflates it proportionally. It also reverses the earlier conclusion about the profile head: at weight 10 the profile term still outweighs counts roughly 12:1, and that is the BEST setting. On smeared coverage profile dominance was harmful because MNLL was fitting the smear; on real read counts it is helpful, acting as a useful auxiliary task. So "down-weight the profile head" was the right fix for the wrong target, and is not needed once the target is correct.
+**Why it matters**: Confirms MNLL magnitude was a units artifact of fragment extension, not a property of the data, the loss is a count-weighted sum, so inflating every count ~250x inflates it proportionally. It also reverses the earlier conclusion about the profile head: at weight 10 the profile term still outweighs counts roughly 12:1, and that is the BEST setting. On smeared coverage profile dominance was harmful because MNLL was fitting the smear; on real read counts it is helpful, acting as a useful auxiliary task. So "down-weight the profile head" was the right fix for the wrong target, and is not needed once the target is correct.
 
 **Resolution**: Use `count_loss_weight` ~10 for the 5' target pending the 1/3 sweep. Do not carry the 1000 forward.
 
@@ -208,7 +208,7 @@ Append-only log of gotchas, surprises, and insights.
 
 **What headline**: Fragment-length distribution across all three K562 ATAC replicates is a clean nucleosomal ladder: sub-nucleosomal mode at ~42 bp, mono-nucleosomal peak at ~205 bp, di- at ~400 bp, tri- at ~600 bp, replicates superimposed. Median 201 bp.
 
-**What happened**: An earlier read off a truncated text histogram (first 16 bins only) suggested a short-fragment-dominated library with no mono-nucleosomal population, which would have undermined the fragment-channel idea. The full distribution shows the opposite. Separately, the chosen channels (sub 1-99, mono 180-247) capture only 30% and 20% of fragments — **50% fall in neither**, namely the 100-180 bp trough and everything above 247 bp including both higher-order nucleosomal peaks.
+**What happened**: An earlier read off a truncated text histogram (first 16 bins only) suggested a short-fragment-dominated library with no mono-nucleosomal population, which would have undermined the fragment-channel idea. The full distribution shows the opposite. Separately, the chosen channels (sub 1-99, mono 180-247) capture only 30% and 20% of fragments, **50% fall in neither**, namely the 100-180 bp trough and everything above 247 bp including both higher-order nucleosomal peaks.
 
 **Why it matters**: Two lessons. Never conclude a distribution's shape from a truncated view of it. And the current channel design silently discards half the data; a di-nucleosomal channel (~350-450 bp) or wider bounds would recover information about higher-order chromatin structure that is plainly present.
 
@@ -228,7 +228,7 @@ Append-only log of gotchas, surprises, and insights.
 
 **What happened**: Full sweep on the 5' target, sequence-only, fold 0, +/-500: weight 1 -> 0.4366, 3 -> 0.4838, **10 -> 0.4962**, 100 -> 0.4666, 1000 -> 0.4641. A clean interior optimum, not a plateau or a monotone trend.
 
-**Why it matters**: Confirms the profile head is genuinely useful on a well-posed target rather than merely harmless. Too little counts weight (1) is worse than balanced, and so is too much (100+). On the fragment-extended target the optimum was 1000 — two orders of magnitude higher — purely because MNLL was inflated ~15-24x by smearing. The weight is a property of the TARGET'S UNITS, not of the biology or the architecture, and must be re-swept whenever the target definition changes.
+**Why it matters**: Confirms the profile head is genuinely useful on a well-posed target rather than merely harmless. Too little counts weight (1) is worse than balanced, and so is too much (100+). On the fragment-extended target the optimum was 1000, two orders of magnitude higher, purely because MNLL was inflated ~15-24x by smearing. The weight is a property of the TARGET'S UNITS, not of the biology or the architecture, and must be re-swept whenever the target definition changes.
 
 **Resolution**: Use `--count-loss-weight 10` for the 5' target. Re-sweep if the profile target is binned (planned) or the window changes, since both alter MNLL's magnitude.
 
@@ -236,7 +236,7 @@ Append-only log of gotchas, surprises, and insights.
 
 **mitigation_type**: convention
 
-**structural_mitigation_candidate**: Already in `.living/conventions.md` — calibrate from first-epoch loss magnitudes. A 3-point sweep spanning two orders of magnitude costs ~90 min and finds it reliably.
+**structural_mitigation_candidate**: Already in `.living/conventions.md`, calibrate from first-epoch loss magnitudes. A 3-point sweep spanning two orders of magnitude costs ~90 min and finds it reliably.
 
 ---
 
@@ -244,7 +244,7 @@ Append-only log of gotchas, surprises, and insights.
 
 **Category**: insight
 
-**What happened**: Computed the GM12878 inter-replicate ceiling to normalize the cross-cell-type transfer numbers, expecting some of the drop to be explained by GM12878 being a harder target. The opposite: GM12878's top-quintile ceiling is **0.8321** at +/-500 versus K562's **0.7601** — GM12878 is more reproducible (mean counts 21.1 vs 17.0 per window, i.e. deeper effective coverage).
+**What happened**: Computed the GM12878 inter-replicate ceiling to normalize the cross-cell-type transfer numbers, expecting some of the drop to be explained by GM12878 being a harder target. The opposite: GM12878's top-quintile ceiling is **0.8321** at +/-500 versus K562's **0.7601**, GM12878 is more reproducible (mean counts 21.1 vs 17.0 per window, i.e. deeper effective coverage).
 
 **Why it matters**: The transfer drops cannot be excused as target difficulty. Normalized as a fraction of each cell type's own achievable ceiling, sequence-only goes from 47% of ceiling in K562 to just **18%** in GM12878; ATAC-only 71% -> 57%; multimodal 88% -> 63%. Normalizing makes the sequence-only collapse look *worse* than the raw correlations suggested, because it was measured against an easier target. This was the open question blocking F-003 from being read quantitatively, and it resolves against the sequence model.
 
@@ -256,7 +256,7 @@ Append-only log of gotchas, surprises, and insights.
 
 **mitigation_type**: ambient-awareness
 
-**structural_mitigation_candidate**: Compute the target ceiling in BOTH cell types before interpreting any transfer number. A raw cross-cell-type correlation is uninterpretable without it — the drop could be the model or the target, and here it was neither in the expected direction.
+**structural_mitigation_candidate**: Compute the target ceiling in BOTH cell types before interpreting any transfer number. A raw cross-cell-type correlation is uninterpretable without it, the drop could be the model or the target, and here it was neither in the expected direction.
 
 ---
 
@@ -264,11 +264,11 @@ Append-only log of gotchas, surprises, and insights.
 
 **Category**: failure
 
-**What happened**: Ran residual training (sequence model fitting `observed - atac_pred`) against the 5' target, but supplied `models/atac_hw500_clw1000` as the offset model — which was trained on the **fragment-extended** target. Fragment counts are ~250x larger, so the offsets arrived at mean 8.15 in log space while the 5' target sits near 2.9. Training converged (valCountPearson 0.813-0.854 across folds) but the numbers are not interpretable as a residual result.
+**What happened**: Ran residual training (sequence model fitting `observed - atac_pred`) against the 5' target, but supplied `models/atac_hw500_clw1000` as the offset model, which was trained on the **fragment-extended** target. Fragment counts are ~250x larger, so the offsets arrived at mean 8.15 in log space while the 5' target sits near 2.9. Training converged (valCountPearson 0.813-0.854 across folds) but the numbers are not interpretable as a residual result.
 
-**Why it matters**: Two separate problems, and the run looked healthy despite both. (1) The offset is not "what accessibility predicts for this target" but "what accessibility predicts for a different target, on a different scale". In log space a 250x factor is mostly a constant shift and correlation is shift-invariant, so nothing errored — but per-element neighbour bleed in the fragment track means the mismatch is more than a constant, so the learned component is residual PLUS a scale correction. (2) There was no ATAC-only baseline on the 5' target to compare against, and 5' all-elements correlations are inherently much higher than fragment ones (ceiling 0.844 vs 0.604), so 0.841 is not comparable to any previously reported figure.
+**Why it matters**: Two separate problems, and the run looked healthy despite both. (1) The offset is not "what accessibility predicts for this target" but "what accessibility predicts for a different target, on a different scale". In log space a 250x factor is mostly a constant shift and correlation is shift-invariant, so nothing errored, but per-element neighbour bleed in the fragment track means the mismatch is more than a constant, so the learned component is residual PLUS a scale correction. (2) There was no ATAC-only baseline on the 5' target to compare against, and 5' all-elements correlations are inherently much higher than fragment ones (ceiling 0.844 vs 0.604), so 0.841 is not comparable to any previously reported figure.
 
-**Resolution**: Retrain all three modes on the 5' target at weight 10 (15 jobs), which produces both the correct ATAC-only baseline and the correct offset model, then redo residual training against that. The first residual run was not wasted — it validated the offset plumbing end to end (offsets computed from the right stats, applied at the right place, negatives correctly lower than peaks at 5.21 vs 8.15) — but its numbers are discarded.
+**Resolution**: Retrain all three modes on the 5' target at weight 10 (15 jobs), which produces both the correct ATAC-only baseline and the correct offset model, then redo residual training against that. The first residual run was not wasted, it validated the offset plumbing end to end (offsets computed from the right stats, applied at the right place, negatives correctly lower than peaks at 5.21 vs 8.15), but its numbers are discarded.
 
 **Tags**: h3k27ac, residual, offset, target-mismatch, methodology, silent-failure
 
@@ -284,7 +284,7 @@ Append-only log of gotchas, surprises, and insights.
 
 **Supersedes** the 2026-08-26 entry "The 5' count_loss_weight optimum is 10, with a genuine interior peak". That entry overstated the evidence.
 
-**What happened**: The 5-prime grid retrained `sequence` fold 0 at weight 10 — the identical configuration the weight sweep had already run — and got **0.4785** where the sweep got **0.4962**. Same mode, fold, window, weight, target. That is ~0.018 of pure run-to-run variance (GPU nondeterminism plus early-stopping epoch choice; the sampler seed is fixed at 42).
+**What happened**: The 5-prime grid retrained `sequence` fold 0 at weight 10, the identical configuration the weight sweep had already run, and got **0.4785** where the sweep got **0.4962**. Same mode, fold, window, weight, target. That is ~0.018 of pure run-to-run variance (GPU nondeterminism plus early-stopping epoch choice; the sampler seed is fixed at 42).
 
 **Why it matters**: The sweep was single-fold, and I called a "clean interior peak" off differences of ~0.01-0.03. With variance at 0.018, only the extremes are separable: weight 10 clearly beats 1 (0.437) and 1000 (0.464), gaps of 0.03-0.06. But **3 (0.484), 10 (0.478-0.496) and 100 (0.467) are not distinguishable from one run each**. Weight 10 is a defensible choice sitting in a flat region, not a measured optimum.
 
@@ -308,7 +308,7 @@ Append-only log of gotchas, surprises, and insights.
 
 **What happened**: That comparison was single-fold and on ALL validation elements. Expressed as a fraction of each target's own corrected ceiling, the three modes barely move: sequence 47% -> 50%, ATAC-only 86% -> 85%, multimodal 93% -> 91%. The absolute all-elements numbers rise (sequence 0.410 -> 0.479, ATAC 0.746 -> 0.813, multimodal 0.809 -> 0.871) largely because the all-elements ceiling itself rises from 0.868 to 0.957 (corrected), 5-prime having far greater dynamic range once bleed-in stops filling dead elements.
 
-**Why it matters**: The earlier entry's mechanism — bleed-through is reproducible but not predictable from the element's own sequence — is still sound, and the switch is still correct on principle (MNLL well-posed, no neighbour bleed). But the magnitude of the benefit was over-read from an all-elements single-fold number, which is exactly the metric this project has now been burned by three times. The honest test is the stratified top-quintile comparison, pending the full grid.
+**Why it matters**: The earlier entry's mechanism, bleed-through is reproducible but not predictable from the element's own sequence, is still sound, and the switch is still correct on principle (MNLL well-posed, no neighbour bleed). But the magnitude of the benefit was over-read from an all-elements single-fold number, which is exactly the metric this project has now been burned by three times. The honest test is the stratified top-quintile comparison, pending the full grid.
 
 **Resolution**: Do not quote "+22% from 5-prime". Await the stratified comparison. Report fraction-of-ceiling alongside raw correlation whenever the target definition changes, since raw correlations are not comparable across targets.
 
@@ -320,7 +320,7 @@ Append-only log of gotchas, surprises, and insights.
 
 ---
 
-### [2026-08-26] The 5' switch is a real but modest gain — biggest for sequence-only
+### [2026-08-26] The 5' switch is a real but modest gain, biggest for sequence-only
 
 **Category**: insight
 
@@ -332,13 +332,13 @@ Append-only log of gotchas, surprises, and insights.
 | atac-only | 0.543 | 0.5508 | +0.008 |
 | multimodal | 0.668 | 0.6861 | +0.018 |
 
-**Why it matters**: Settles two open questions. First, the switch genuinely helps rather than merely moving the ceiling — the all-elements gain was mostly ceiling, but the top-quintile gain is real. Second, the gain is **largest for sequence-only**, which fits the mechanism: fragment bleed-through is signal from neighbouring elements, unattributable to this element's own sequence, so removing it helps the model that has nothing but sequence the most.
+**Why it matters**: Settles two open questions. First, the switch genuinely helps rather than merely moving the ceiling, the all-elements gain was mostly ceiling, but the top-quintile gain is real. Second, the gain is **largest for sequence-only**, which fits the mechanism: fragment bleed-through is signal from neighbouring elements, unattributable to this element's own sequence, so removing it helps the model that has nothing but sequence the most.
 
 Against the measured run-to-run variance of ~0.018 on a single fold, the standard error on a 5-fold pooled estimate is roughly 0.008. So sequence +0.032 is about 4 SE and solid; multimodal +0.018 about 2 SE and probably real; **atac-only +0.008 is about 1 SE and not distinguishable from noise**.
 
-The earlier "+22% from 5-prime" claim remains wrong — the honest figure is **+9% relative** for sequence-only on the stratum that matters.
+The earlier "+22% from 5-prime" claim remains wrong, the honest figure is **+9% relative** for sequence-only on the stratum that matters.
 
-Critically, this does not move the core conclusion. Sequence's marginal contribution over accessibility is +0.135 on 5-prime versus +0.125 on fragment — essentially unchanged, and still roughly 2.2x smaller than p300's +0.301.
+Critically, this does not move the core conclusion. Sequence's marginal contribution over accessibility is +0.135 on 5-prime versus +0.125 on fragment, essentially unchanged, and still roughly 2.2x smaller than p300's +0.301.
 
 **Resolution**: 5-prime adopted as the target, with an honest account of what it bought. All superseded numbers now re-derived except GM12878 transfer and the p300 comparison's H3K27ac side.
 
@@ -356,7 +356,7 @@ Critically, this does not move the core conclusion. Sequence's marginal contribu
 
 **What happened**: After a fragment-trained offset model was silently used against a 5-prime target (see the 2026-08-26 entry above), I added a guard to `train_multimodal_bpnet.py` that reads the offset model's `training_target.json` and refuses a mismatch. Then submitted 5 residual-training jobs against it. All 5 died within 17-288 seconds: `UnboundLocalError: local variable 'target_record' referenced before assignment`. The guard's comparison block sat early in `main()` among the argument validations, while `target_record` was built ~30 lines later next to `os.makedirs(args.output_dir)`.
 
-**Why it matters**: The guard was written specifically to stop a silent failure, and shipped without a single execution. Syntax checks passed, which is exactly why it felt safe. A guard on a rarely-taken branch has no natural test coverage — the code path only runs when someone passes `--count-offset-model`, which nothing else in the project does. Cost was five queued GPU jobs and a full queue-wait cycle on a saturated partition.
+**Why it matters**: The guard was written specifically to stop a silent failure, and shipped without a single execution. Syntax checks passed, which is exactly why it felt safe. A guard on a rarely-taken branch has no natural test coverage, the code path only runs when someone passes `--count-offset-model`, which nothing else in the project does. Cost was five queued GPU jobs and a full queue-wait cycle on a saturated partition.
 
 **Resolution**: Moved the `target_record` build above the guard, then tested **both directions** before resubmitting: a fragment offset model is refused with the missing-record message, and the 5-prime offset model prints `Offset model target verified` and proceeds. Both verified by actually running the trainer, not by inspection.
 
@@ -366,7 +366,7 @@ Silver lining worth keeping: failing loudly in 17 seconds is the correct failure
 
 **mitigation_type**: convention
 
-**structural_mitigation_candidate**: Any new validation or guard must be exercised in both the pass and fail direction before it gates real work — a syntax check proves nothing about a branch that never runs. Cheapest form: invoke the entry point twice with deliberately good and bad inputs and confirm the message, which took ~2 minutes here versus five wasted jobs.
+**structural_mitigation_candidate**: Any new validation or guard must be exercised in both the pass and fail direction before it gates real work, a syntax check proves nothing about a branch that never runs. Cheapest form: invoke the entry point twice with deliberately good and bad inputs and confirm the message, which took ~2 minutes here versus five wasted jobs.
 
 ---
 
@@ -376,15 +376,15 @@ Silver lining worth keeping: failing loudly in 17 seconds is the correct failure
 
 **What happened**: Patching the completion-marker guard into two evaluators, the script parameterized the model-path variable name with `CHECK.replace("mp", mvar)`. In `2.2.evaluate_stratified.py` the variable is `model_path`, so every occurrence of the substring "mp" became "model_path": `complete` -> `comodel_pathlete`, `preempted` -> `preemodel_pathted`, and critically the **filename literal** `training_complete.json` -> `training_comodel_pathlete.json`. The guard therefore looked for a file that can never exist and refused every fold unconditionally. `2.4.evaluate_residual.py` escaped only because its variable is literally named `mp`, making the replace a no-op there.
 
-**Why it matters**: Both failure directions are bad. The guard would have blocked all evaluation, and the error message it printed was mangled gibberish that obscured the cause. The corruption is invisible to a syntax check — the file parsed fine, because only string contents changed. This is the second guard in two days shipped broken, and the first one also passed a syntax check.
+**Why it matters**: Both failure directions are bad. The guard would have blocked all evaluation, and the error message it printed was mangled gibberish that obscured the cause. The corruption is invisible to a syntax check, the file parsed fine, because only string contents changed. This is the second guard in two days shipped broken, and the first one also passed a syntax check.
 
-**Resolution**: Repaired the block, then verified: the negative direction refuses with a clean message; the filename literal now appears 7 times consistently across the trainer and both evaluators; the `--allow-incomplete-folds` opt-out is defined in both. Testing is what caught it — the guard's own error message was the tell.
+**Resolution**: Repaired the block, then verified: the negative direction refuses with a clean message; the filename literal now appears 7 times consistently across the trainer and both evaluators; the `--allow-incomplete-folds` opt-out is defined in both. Testing is what caught it, the guard's own error message was the tell.
 
 **Tags**: patching, str-replace, guards, testing, silent-failure, tooling
 
 **mitigation_type**: convention
 
-**structural_mitigation_candidate**: Never `str.replace` a short token when parameterizing patch text — use an unambiguous placeholder like `__MODELVAR__`, or better, write the block out per-file rather than templating it. And after any patch that rewrites string literals, grep for the literal across all touched files and confirm the count matches expectation; a syntax check cannot see this class of error.
+**structural_mitigation_candidate**: Never `str.replace` a short token when parameterizing patch text, use an unambiguous placeholder like `__MODELVAR__`, or better, write the block out per-file rather than templating it. And after any patch that rewrites string literals, grep for the literal across all touched files and confirm the count matches expectation; a syntax check cannot see this class of error.
 
 ---
 
@@ -392,17 +392,17 @@ Silver lining worth keeping: failing loudly in 17 seconds is the correct failure
 
 **Category**: gotcha
 
-**What happened**: Residual fold 4 ran 15 epochs, was evicted from `owners`, and was requeued as PENDING with its SLURM start time reset. The trainer has no checkpoint resume, so it restarts from epoch 0 and the 15 epochs are lost. Meanwhile the fold directory still held a best-so-far checkpoint from the partial fit — indistinguishable from a finished model.
+**What happened**: Residual fold 4 ran 15 epochs, was evicted from `owners`, and was requeued as PENDING with its SLURM start time reset. The trainer has no checkpoint resume, so it restarts from epoch 0 and the 15 epochs are lost. Meanwhile the fold directory still held a best-so-far checkpoint from the partial fit, indistinguishable from a finished model.
 
 **Why it matters**: That partial checkpoint is a silent-failure trap: any evaluator pointed at the directory would have loaded an undertrained model and scored it without complaint. The lab's submit scripts all use `-p owners,gpu` because it schedules faster, so this is the default condition, not an edge case. It also means elapsed job times are not training times, and some earlier "slow" jobs in this project may have been preempted and restarted without my noticing.
 
-**Resolution**: The trainer now writes `training_complete.json` as its final action and both evaluators refuse folds without it. `1.7.backfill_training_complete.py` infers completion from the epoch log for folds trained before the marker existed — validated against ground truth, correctly flagging the preempted fold and passing the four that SLURM confirmed complete.
+**Resolution**: The trainer now writes `training_complete.json` as its final action and both evaluators refuse folds without it. `1.7.backfill_training_complete.py` infers completion from the epoch log for folds trained before the marker existed, validated against ground truth, correctly flagging the preempted fold and passing the four that SLURM confirmed complete.
 
 **Tags**: slurm, owners, preemption, silent-failure, checkpoints, sherlock
 
 **mitigation_type**: structural
 
-**structural_mitigation_candidate**: Shipped — the marker plus the evaluator check. A stronger version would add checkpoint-resume to the trainer so preemption costs minutes rather than a whole run, which matters more as windows and receptive fields grow.
+**structural_mitigation_candidate**: Shipped, the marker plus the evaluator check. A stronger version would add checkpoint-resume to the trainer so preemption costs minutes rather than a whole run, which matters more as windows and receptive fields grow.
 
 ---
 
@@ -420,7 +420,7 @@ Silver lining worth keeping: failing loudly in 17 seconds is the correct failure
 | ATAC-only model | 0.542 | 0.467 |
 | model / coupling | 1.06 | 1.14 |
 
-The ATAC-only model does not degrade across cell types at all — it actually extracts *more* relative to the raw coupling in GM12878 (1.14 vs 1.06). Its lower absolute score there is a property of the assay pair in that cell type, not a failure to generalize. Sequence-only, by contrast, falls 0.360 -> 0.146 with no comparable explanation available.
+The ATAC-only model does not degrade across cell types at all, it actually extracts *more* relative to the raw coupling in GM12878 (1.14 vs 1.06). Its lower absolute score there is a property of the assay pair in that cell type, not a failure to generalize. Sequence-only, by contrast, falls 0.360 -> 0.146 with no comparable explanation available.
 
 This sharpens F-003 rather than softening it. The earlier framing implied everything transfers somewhat worse; in fact **accessibility transfers essentially perfectly and only the sequence component collapses**, which is the more specific and more damning version of the claim.
 
@@ -446,9 +446,9 @@ This sharpens F-003 rather than softening it. The earlier framing implied everyt
 | ATAC-only vs sequence-only, H3K27ac | 0.548 [0.497, 0.599] vs 0.380 [0.323, 0.437] | separated |
 | p300 sequence margin vs H3K27ac sequence margin | +0.304 vs +0.127, difference 0.177 +/- 0.027 | ~6.6 SE, decisive |
 
-**Why it matters**: The headline claims survive with room to spare, so they were not artifacts of pooling. But the fold spread is large — `sd` is 0.041-0.046 for the sequence and ATAC-only models, giving CI half-widths near 0.05, which is **2-3x the run-to-run variance of 0.018 measured earlier**. Most of the uncertainty is between-fold (which chromosomes are held out), not between-run. That means: (a) differences under ~0.05 in this project are not resolvable by adding seeds, only by adding folds or elements; (b) the earlier `count_loss_weight` sweep, which compared single folds, could not possibly have resolved 3 vs 10 vs 100.
+**Why it matters**: The headline claims survive with room to spare, so they were not artifacts of pooling. But the fold spread is large, `sd` is 0.041-0.046 for the sequence and ATAC-only models, giving CI half-widths near 0.05, which is **2-3x the run-to-run variance of 0.018 measured earlier**. Most of the uncertainty is between-fold (which chromosomes are held out), not between-run. That means: (a) differences under ~0.05 in this project are not resolvable by adding seeds, only by adding folds or elements; (b) the earlier `count_loss_weight` sweep, which compared single folds, could not possibly have resolved 3 vs 10 vs 100.
 
-Note the multimodal model has a much tighter spread (sd 0.015) than the single-input models (0.041-0.046) — accessibility plus sequence is more stable across chromosome sets than either alone.
+Note the multimodal model has a much tighter spread (sd 0.015) than the single-input models (0.041-0.046), accessibility plus sequence is more stable across chromosome sets than either alone.
 
 **Resolution**: Mean +/- CI with individual fold points is now the reporting standard; `2.2.evaluate_stratified.py` emits `*_stratified_per_fold.tsv` and `*_stratified_fold_summary.tsv` alongside the pooled table.
 
@@ -475,13 +475,13 @@ Note the multimodal model has a much tighter spread (sd 0.015) than the single-i
 
 Sequence-only retention, transfer relative to that model's own in-cell-type score, both as a fraction of the respective ceiling: **K562->GM12878 38%, GM12878->K562 147%.**
 
-**Why it matters**: F-003 was built on the forward direction alone and read the 38% retention as "the sequence component does not transfer". The reciprocal shows that is not the right reading. GM-trained models do *better* on K562 than in their own cell type — for every modality, and after normalising by each cell type's ceiling. So a large part of what looked like a transfer failure is that **GM12878 is simply a harder cell type to predict and K562 an easier one**, in a way the inter-replicate ceiling does not capture. The ceiling measures how reproducibly the target can be measured; it says nothing about how determined that target is by the available inputs, and those differ between cell types.
+**Why it matters**: F-003 was built on the forward direction alone and read the 38% retention as "the sequence component does not transfer". The reciprocal shows that is not the right reading. GM-trained models do *better* on K562 than in their own cell type, for every modality, and after normalising by each cell type's ceiling. So a large part of what looked like a transfer failure is that **GM12878 is simply a harder cell type to predict and K562 an easier one**, in a way the inter-replicate ceiling does not capture. The ceiling measures how reproducibly the target can be measured; it says nothing about how determined that target is by the available inputs, and those differ between cell types.
 
 Two things do survive, and they are the parts worth keeping:
-- **Sequence is weak in absolute terms in every direction** — 15-41% of ceiling, against 50-59% for accessibility alone and 54-74% for both. The core conclusion that accessibility dominates is unchanged.
+- **Sequence is weak in absolute terms in every direction**, 15-41% of ceiling, against 50-59% for accessibility alone and 54-74% for both. The core conclusion that accessibility dominates is unchanged.
 - **The sequence margin shrinks on transfer in both directions**: +0.138 in-cell K562 -> +0.044 transferred (68% lost), +0.086 in-cell GM -> +0.061 transferred (29% lost). Some of the sequence contribution is genuinely cell-type-specific either way.
 
-Also worth noting against the original worry that K562 might be unrepresentative: K562 is the *stronger* cell type both to train on (in-cell multimodal 74% of ceiling vs 61% for GM12878) and to predict. That does not make it representative — it may be atypically predictable — but it does rule out "K562 is a poor training cell type" as the explanation for weak sequence signal.
+Also worth noting against the original worry that K562 might be unrepresentative: K562 is the *stronger* cell type both to train on (in-cell multimodal 74% of ceiling vs 61% for GM12878) and to predict. That does not make it representative, it may be atypically predictable, but it does rule out "K562 is a poor training cell type" as the explanation for weak sequence signal.
 
 **Resolution**: F-003 must be restated. A single transfer direction cannot distinguish a model that fails to generalise from a target cell type that is harder to predict; both directions plus both in-cell-type references are the minimum for the claim.
 
@@ -507,16 +507,16 @@ rather than querying biosample term names one at a time, since a term-name miss 
 
 | Cell type | ENCODE ATAC experiments | Usable now |
 |---|---|---|
-| K562 | 64 | yes — already trained |
-| GM12878 | 2 | yes — already trained |
+| K562 | 64 | yes, already trained |
+| GM12878 | 2 | yes, already trained |
 | HCT116 | 17 | input yes, target blocked |
-| TeloHAEC (+IL1b/TNFa/noVEGF) | n/a, GEO | yes — ATAC BAMs already on Oak |
+| TeloHAEC (+IL1b/TNFa/noVEGF) | n/a, GEO | yes, ATAC BAMs already on Oak |
 | H1, H9, Jurkat, THP-1 | **0** | no ENCODE ATAC under any biosample name |
 
 **Why it matters**: DNase and ATAC are not interchangeable inputs. DNase I cutting and Tn5
 insertion have different sequence biases and different footprint structure, and every
 existing model here is ATAC-trained. A DNase-input panel would have confounded assay with
-cell type in exactly the comparison the panel exists to make — cross-cell-type transfer —
+cell type in exactly the comparison the panel exists to make, cross-cell-type transfer -
 and the confound would have been invisible in the results, appearing as a cell-type effect.
 
 The cost is real and worth stating plainly: ATAC-only takes the expansion from five new
@@ -524,7 +524,7 @@ cell types (H1, H9, Jurkat, THP-1, HCT116) to **one** (TeloHAEC), plus three per
 conditions of that same line. HCT116 is recoverable on the input side but its H3K27ac
 experiment ENCSR661KMA is `run_type = "se, pe"`, so under the one-(experiment, processing)-
 pair-per-sample rule its replicates are not interchangeable and no inter-replicate ceiling
-is computable — and every cross-cell-type number in this analysis is ceiling-normalised.
+is computable, and every cross-cell-type number in this analysis is ceiling-normalised.
 
 TeloHAEC is not a consolation prize: it is endothelial rather than a blood cancer line, so
 it is a more distant lineage from K562/GM12878 than H1/H9 would have been, and its three
@@ -536,7 +536,7 @@ odd ones out.
 **Resolution**: Panel restricted to ATAC. TeloHAEC is the one new cell type available
 without new data processing, and its ctrl row pools GSE210489 + GSE210491, so it must be
 split by experiment before use. H1/H9/Jurkat/THP-1 would require GEO/SRA fastqs through
-`Data/scripts/sra_paired_fastq_to_bam.sh` — a separate decision, not a track rebuild.
+`Data/scripts/sra_paired_fastq_to_bam.sh`, a separate decision, not a track rebuild.
 
 **Tags**: atac, dnase, panel, generalization, encode, data-availability, confounding, scope
 
@@ -547,7 +547,7 @@ definition, not a swappable file path. Any cell type entering the panel must sup
 record the assay alongside the bigwig path in `config/panel_bam_paths.tsv` so a DNase track
 cannot be substituted silently.
 
-### [2026-08-29] TeloHAEC's recorded blocker was the wrong blocker — the real one is a second cell line in the directory
+### [2026-08-29] TeloHAEC's recorded blocker was the wrong blocker, the real one is a second cell line in the directory
 
 **Category**: correction
 
@@ -558,28 +558,28 @@ so the blocker was worth resolving rather than working around. Querying GEO for 
 of every GSM in `config/sample_metadata.tsv` shows the premise was wrong:
 
 - **GSE210489 is the ATAC series; GSE210491 is the H3K27ac series**, both under SuperSeries
-  GSE210523. One series per assay — not two experiments of the same assay pooled into one
+  GSE210523. One series per assay, not two experiments of the same assay pooled into one
   row. Every (condition, assay) group is a single experiment with a clean replicate set:
   ctrl H3K27ac n=4, ctrl ATAC n=6, and n=2 H3K27ac / n=3 ATAC for each of IL1b, TNFa and
   no-VEGF. **The inter-replicate ceiling is computable for all four conditions.**
 
 The genuine defect was not recorded anywhere:
 
-- **`TeloHAEC_ctrl/ATAC/` contains 9 BAMs, of which 3 are `cell_line = Eahy926`** —
-  EA.hy926, a different endothelial line — not TeloHAEC replicates:
+- **`TeloHAEC_ctrl/ATAC/` contains 9 BAMs, of which 3 are `cell_line = Eahy926`** -
+  EA.hy926, a different endothelial line, not TeloHAEC replicates:
   `SRR20809434, SRR20809435, SRR20809436` (GSM6431138, GSM6431133, GSM6431132).
   They sit in the same directory under the same `sample_name`, so any glob of
   `TeloHAEC_ctrl/ATAC/*.bam` silently merges two cell lines into one accessibility track.
   The other three conditions and every H3K27ac group are pure TeloHAEC.
 
 **Why it matters**: Two failure modes, opposite in direction. The recorded caveat would have
-cost a real cell type — the only one ATAC-only leaves — for a reason that does not exist.
+cost a real cell type, the only one ATAC-only leaves, for a reason that does not exist.
 The unrecorded one would have produced a TeloHAEC ATAC input that is one-third a different
 line, which no downstream check would catch: the track would be well-formed, the ceiling
 would compute, and the number would simply be wrong. Directory layout encoded the condition
 but not the cell line, and `sample_name` said `TeloHAEC_ctrl` for all nine.
 
-**Resolution**: `results/celltype_inventory.tsv` corrected — all four TeloHAEC rows now
+**Resolution**: `results/celltype_inventory.tsv` corrected, all four TeloHAEC rows now
 `ceiling_computable = yes`, with the Eahy926 accessions named in the caveat. Build TeloHAEC
 tracks from an explicit BAM list, never a directory glob.
 
@@ -590,7 +590,7 @@ prediction-was-wrong, ceiling
 
 **structural_mitigation_candidate**: A sample is (experiment, processing) *and cell line*.
 Where a metadata table carries a `cell_line` column, group by it before merging BAMs, and
-assert the group is single-valued — the directory name is not authoritative.
+assert the group is single-valued, the directory name is not authoritative.
 
 ### [2026-08-30] The residual objective helps only when the input is blind to accessibility
 
@@ -614,7 +614,7 @@ Folds are paired across models, so paired differences are much tighter than the 
 - `residual_multimodal - multimodal5p` = **-0.037** [-0.039, -0.034], p < 1e-4
 - `multimodal5p - residual_sequence` = +0.093 [0.072, 0.113], p = 2e-4
 
-**Why it matters**: The residual objective is not a general improvement — it is a fix for a
+**Why it matters**: The residual objective is not a general improvement, it is a fix for a
 specific handicap. Where the input cannot see accessibility, forcing the target to be the
 residual triples the score. Where the input already includes accessibility, it **costs**
 0.037, and does so in every single fold (-0.0357, -0.0351, -0.0356, -0.0388, -0.0393). That
@@ -742,7 +742,7 @@ same direction; it cannot resolve them.
 ceiling. They are stale for K562 and the wrong cell type for GM12878 and p300. They are NOT
 written to the saved TSVs, and no reported number depends on them, but do not quote them.
 
-**Resolution**: The 5' switch is worth keeping — it is the field convention, it is
+**Resolution**: The 5' switch is worth keeping, it is the field convention, it is
 read-length independent, and it measurably helps the accessibility-only model. Its practical
 effect on the multimodal model, which is the one used for prediction, is nil within a cell
 type. The case for it remains strongest ACROSS cell types (TeloHAEC 36 bp vs K562/GM12878
@@ -773,7 +773,7 @@ Residual *r*, mean over 5 folds:
 |---|---|---|---|---|
 | sequence | 0.133 [0.090, 0.176] | **0.372** [0.334, 0.410] | | 0.149 -> 0.459 |
 | sequence + ATAC | **0.449** [0.414, 0.485] | 0.414 [0.378, 0.451] | | 0.551 -> 0.514 |
-| ATAC (control) | — | **0.010** [-0.019, 0.040] | | -0.003 |
+| ATAC (control) |, | **0.010** [-0.019, 0.040] | | -0.003 |
 
 Paired over folds, both cell types, all significant:
 
@@ -784,7 +784,7 @@ Paired over folds, both cell types, all significant:
 | multimodal5p - residual_sequence | +0.093, p=2e-4 | +0.077, p<1e-4 |
 
 **Why it matters**: The multimodal COST replicates to within 0.002 across two cell types with
-different targets, different accessibility libraries and different element sets — -0.0369 vs
+different targets, different accessibility libraries and different element sets, -0.0369 vs
 -0.0350, and -0.029 to -0.043 in every one of the ten folds. A number that stable across
 that much variation is a property of the training objective, not of a dataset. Before this,
 the K562 result was one cell type and the tight ATAC-H3K27ac coupling there (0.510 vs
@@ -798,7 +798,7 @@ the residual metric.
 multimodal 0.449 vs 0.551). That is consistent with F-003: GM12878 is the harder cell type to
 predict. Ordering and sign of every effect are unchanged.
 
-**Resolution**: Settled. Use joint (multimodal) training for prediction in both cell types —
+**Resolution**: Settled. Use joint (multimodal) training for prediction in both cell types -
 residual training costs ~0.035 residual *r* when accessibility is already an input, reliably.
 Reserve residual training for attribution, where forcing the model onto
 accessibility-independent signal is the goal. The finding generalises across cell types and
@@ -812,7 +812,7 @@ paired-test, generalization
 **structural_mitigation_candidate**: A result measured in one cell type here has twice been
 partly a property of that cell type (F-003's transfer asymmetry; the ATAC-H3K27ac coupling
 difference). Replicating in a second cell type before generalising is cheap relative to how
-often it has changed the reading — 15 fold-jobs and one evaluation in this case.
+often it has changed the reading, 15 fold-jobs and one evaluation in this case.
 
 ### [2026-09-01] Residual and multimodal transfer equivalently; the significant difference is in the stratum we distrust
 
@@ -821,9 +821,9 @@ often it has changed the reading — 15 fold-jobs and one evaluation in this cas
 **What happened**: Tested cross-cell-type transfer of residual-objective vs total-target
 models, both directions, in two variants that differ in where the offset comes from:
 
-- **upper bound** — offset from the TARGET cell type's own ATAC model. Optimistic: that model
+- **upper bound**, offset from the TARGET cell type's own ATAC model. Optimistic: that model
   is trained on target H3K27ac, which the deployment scenario lacks.
-- **deployable** — offset from the SOURCE ATAC model, transferred. Only target ATAC is used,
+- **deployable**, offset from the SOURCE ATAC model, transferred. Only target ATAC is used,
   which is the real application (Maya: "we have ATAC-seq data for the target cell type but
   not H3K27ac").
 
@@ -836,7 +836,7 @@ Paired within fold, residual-multimodal minus multimodal:
 | transfer GM->K562 (local offset) | **+0.0111**, p=0.003 | +0.005, p=0.65 |
 | deploy GM->K562 | **-0.0052**, p=0.022 | -0.002, p=0.76 |
 
-**Why it matters**: The all-elements column tells a tidy story — the residual design wins
+**Why it matters**: The all-elements column tells a tidy story, the residual design wins
 when the accessibility baseline is fitted locally and loses when it must be transferred, sign
 flipping, all four significant. The top-quintile column says none of it is resolvable. The
 all-elements stratum is the one this project has three times recorded as misleading, because
@@ -859,7 +859,7 @@ What survives on the top quintile, deployable variant:
 - Sequence-only transfer remains useless; accessibility must be measured in the target.
 
 **Resolution**: For deployment into a cell type with ATAC but no H3K27ac, transfer the
-MULTIMODAL model — not because it is better, but because it is equal on the stratum that
+MULTIMODAL model, not because it is better, but because it is equal on the stratum that
 matters and simpler, with no offset model to ship and version alongside it. The residual
 design's apparent transfer advantage requires a locally fitted accessibility baseline, which
 requires the target H3K27ac that the scenario lacks.
@@ -872,7 +872,7 @@ paired-test, prediction-was-wrong
 **structural_mitigation_candidate**: When a difference is significant on all elements and not
 on the top quintile, the default reading is that it lives in the dead-vs-active contrast, not
 in the biology of interest. Report the top quintile first and the all-elements number second,
-even when — especially when — the all-elements number is the significant one.
+even when, especially when, the all-elements number is the significant one.
 
 ### [2026-09-01] A generated numbers manifest caught three wrong figures that proofreading missed
 
@@ -889,7 +889,7 @@ flagged three claims that no result file supported:
 | 49.8% of fragments in neither channel | **50.0%** | 30.3% + 19.7% sum to 50.0 |
 | contamination rises to 42% | **41.5%** | `window_tradeoff.tsv` |
 
-Two of the three contradicted a figure legend **in the same section** of the report —
+Two of the three contradicted a figure legend **in the same section** of the report -
 Fig 2's legend already said 0.944 while the prose said 91%, and Fig 3's said 41.5% while the
 prose said 42%.
 
@@ -912,7 +912,7 @@ invalidates the cache instead of silently serving stale vectors.
 **mitigation_type**: structural
 
 **structural_mitigation_candidate**: Shipped. Generalises to any analysis with a Quarto
-report — derive the manifest from result files rather than hand-registering values, or it
+report, derive the manifest from result files rather than hand-registering values, or it
 becomes another thing that drifts.
 
 ### [2026-09-01] Measure a coordinate shift by correlation instead of trusting the documented one
@@ -1000,7 +1000,7 @@ the next person does not tighten it back to zero.
 
 ### [2026-09-02] A 4.2 kb receptive field buys dead-vs-active separation and nothing within active elements
 
-> **SUPERSEDED 2026-09-03 — this entry generalised from the sequence-only arm and the
+> **SUPERSEDED 2026-09-03, this entry generalised from the sequence-only arm and the
 > multimodal arm reverses it.** See the correction entry at the end of this file. The
 > sequence-only numbers below are correct; the conclusion drawn from them is not.
 
@@ -1020,7 +1020,7 @@ confounded with which regions near chromosome ends were scorable.
 
 The all-elements gain replicates almost exactly across cell types (+0.043, +0.045) and is
 significant in both. The top-quintile effect is null in both and FLIPS SIGN between them,
-which is what a null looks like. The CIs exclude a top-quintile gain beyond about ±0.03, so
+which is what a null looks like. The CIs exclude a top-quintile gain beyond about +/-0.03, so
 this is not a power problem.
 
 **Interpretation**: 4.2 kb of context carries broad domain information. That is informative
@@ -1065,13 +1065,13 @@ shows the opposite.
 | sequence + ATAC | **+0.027 (p=0.006)** | **+0.014 (p=0.025)** |
 
 All five folds rise in both cell types for multimodal. The accessibility residual also rises,
-0.502 → 0.547 in K562 and 0.397 → 0.469 in GM12878.
+0.502 -> 0.547 in K562 and 0.397 -> 0.469 in GM12878.
 
 **Why it matters**: Two distinct errors, and the second is the more general one.
 
 1. I generalised from one arm of a two-arm experiment while the other was still running, and
    picked the arm whose mechanism I had already reasoned about. The stated reason for
-   expecting a small multimodal effect — accessibility already carries long-range context —
+   expecting a small multimodal effect, accessibility already carries long-range context -
    is precisely the reason the effect is LARGE there: the wider window lets the model read
    accessibility over a wider neighbourhood. The same sentence supports both predictions,
    which means it was not evidence.
@@ -1089,8 +1089,8 @@ neighbourhood.
 Poisson noise". First real numbers give top-quintile `profile_pearson` of 0.114 (ATAC), 0.144
 (sequence) and 0.171 (multimodal) against an achievable ~0.21, so the head captures most of a
 small reproducible signal. The case for binning is that it raises the ceiling, not that the
-head fails. Note the two numbers are not exactly comparable — the ceiling excludes elements
-flat in either replicate while `profile_pearson` scores them zero — so the ratio is
+head fails. Note the two numbers are not exactly comparable, the ceiling excludes elements
+flat in either replicate while `profile_pearson` scores them zero, so the ratio is
 approximate and the model side is deflated.
 
 **Tags**: reversal, receptive-field, architecture, multimodal, stratification, premature-conclusion, profile-head
@@ -1112,14 +1112,14 @@ quintile in K562, paired within fold.
 
 | change | top quintile | paired difference |
 |---|---|---|
-| receptive field 1.1 kb → 4.2 kb, sequence only | 0.381 → 0.375 | −0.006 (p=0.53) |
-| receptive field 1.1 kb → 4.2 kb, sequence + ATAC | 0.690 → 0.717 | **+0.027 (p=0.006)** |
-| flat ATAC → 5 fragment-size channels, sequence + ATAC | 0.690 → 0.703 | **+0.0135 (p=0.0034)** |
+| receptive field 1.1 kb -> 4.2 kb, sequence only | 0.381 -> 0.375 | −0.006 (p=0.53) |
+| receptive field 1.1 kb -> 4.2 kb, sequence + ATAC | 0.690 -> 0.717 | **+0.027 (p=0.006)** |
+| flat ATAC -> 5 fragment-size channels, sequence + ATAC | 0.690 -> 0.703 | **+0.0135 (p=0.0034)** |
 
 The receptive-field gain replicates in GM12878 (+0.014, p=0.025). The fragment-channel input
-is a strict superset of the flat one — the four length bins sum to the flat 5′ track with
+is a strict superset of the flat one, the four length bins sum to the flat 5' track with
 zero discrepancy across 545,661,218 insertions and zero largest single-base difference over
-2 Mb — so its gain is added information rather than a changed input definition.
+2 Mb, so its gain is added information rather than a changed input definition.
 
 **Why it matters**: Everything that has moved the top quintile acts on the accessibility
 side. Wider context helps only the model holding ATAC; enriching ATAC itself helps; widening
@@ -1130,9 +1130,9 @@ accessibility is represented, and the sequence component is close to its practic
 this scale.
 
 **Open and cheap**: whether the two gains are additive. Both plausibly read the same
-neighbourhood structure — a wider window sees accessibility further out, and fragment length
-sees nucleosome occupancy locally — so +0.027 and +0.0135 may not sum. One grid of
-`n_layers` 10 × fragment channels answers it.
+neighbourhood structure, a wider window sees accessibility further out, and fragment length
+sees nucleosome occupancy locally, so +0.027 and +0.0135 may not sum. One grid of
+`n_layers` 10 x fragment channels answers it.
 
 **Also**: the wide-vs-narrow comparison carries no region-coverage confound. K562 per-fold
 element counts are identical at in-window 2114 and 5186 (10,143 / 14,392 / 12,801 / 12,021 /
@@ -1144,7 +1144,7 @@ implying the wider window drops chromosome-end elements was wrong and has been c
 **mitigation_type**: none
 
 **structural_mitigation_candidate**: When several architecture changes target the same input
-stream, test the combination before adopting them additively — separately significant gains
+stream, test the combination before adopting them additively, separately significant gains
 on the same underlying signal do not compose.
 
 
@@ -1171,7 +1171,7 @@ Profile shape improves for every model too, +0.0012 to +0.0060, all significant.
 **Why it matters**: The ordering is a built-in control, and it is what makes the result
 believable rather than just significant. RC averaging cancels residual strand asymmetry in
 the sequence branch, so a model whose only input is unstranded accessibility coverage should
-gain nothing — and the two ATAC-only rows are the only non-significant ones. A uniform gain
+gain nothing, and the two ATAC-only rows are the only non-significant ones. A uniform gain
 across all six models would have suggested something generic (numerical smoothing, an
 evaluation artefact); the gradient points at the intended mechanism.
 
@@ -1230,7 +1230,7 @@ rather than announcing itself.
 
 **Why the gate was worth having**: without it the run would have completed, silently calling
 regions per arm. All nine arms would then have had different candidate regions, and every
-cross-arm comparison — the entire point of the experiment — would have been meaningless
+cross-arm comparison, the entire point of the experiment, would have been meaningless
 while looking perfectly healthy.
 
 **Tags**: snakemake, abc, reuse, mtime, dry-run, gating, diagnosis
@@ -1310,7 +1310,7 @@ the benchmark looks.
 **The mechanism is rank displacement, and I had the wrong mechanism first.** I predicted
 dynamic-range compression. That cannot be it: `normalized_atac` is identical across arms and
 `normalized_h3k27ac` is qnorm'd onto the same K562 reference, so scale is mathematically
-irrelevant — both arms draw values from the same distribution. The only way regulated
+irrelevant, both arms draw values from the same distribution. The only way regulated
 elements end up with lower activity is if the model RANKS THEM LOWER, which it does:
 
 | stratum | p99/p50 observed | p99/p50 predicted |
@@ -1684,3 +1684,44 @@ annotation now states the observed range instead of a fraction that is not exact
 back and asserts it against the stratum filter used for the panels, rather than trusting the
 plotting call. Attempted here via `pdftotext` in 3.12 but the pixi env has no PDF text
 extractor; the verification was done by eye on the rendered PNGs instead.
+
+
+### [2026-09-12] Validating the converter's profile alone would have shipped a broken counts track
+
+**What happened.** `4.20` paints the converter genome-wide as `softmax(profile) x counts`. The
+profile validated cleanly against `2.31` on chr22: 0.775 at 1 bp top quintile against 2.31's
+fold-2 value of 0.770. The profile is what the converter is FOR, so that is the check that
+would naturally have been run and stopped there. Checking the counts in the same pass showed
+per-element totals correlating with observed DNase at only log1p *r* = 0.68 and the painted
+track carrying 77% of the observed total.
+
+**The first explanation was wrong, and cheap to test.** Windows abutted at stride 1,000, so an
+element's own window straddles two tiles; the obvious reading was that seams were mixing two
+count predictions. Re-painting at stride 250 with four-fold overlap averaging moved log1p *r*
+from 0.682 to 0.687 and the ratio from 0.767 to 0.770. Essentially nothing, so seams were not
+the cause.
+
+**The actual cause** is that tiled windows sit at fixed genomic offsets and never coincide with
+an element's centre, while `2.15` predicts with the window centred on the element and reports
+`overall_pearson` 0.835. Summing a tiled track over an element blends several off-centre
+predictions. That is inherent to producing a genome-wide track rather than a per-element
+number.
+
+**The distortion is not a scale factor, which is the part that matters.** Binning chr22
+elements by observed DNase: the painted/observed ratio runs 2.73 (lowest quintile), 0.88, 0.73,
+0.71, 0.73 (highest). Training absorbs a uniform factor through its own accessibility
+normalisation; it does not absorb an inflated floor. Compressed dynamic range is the diagnosed
+failure mode of predicted H3K27ac (L-41), so an untested floor would have made a negative
+downstream result uninterpretable.
+
+**What to do.** When a model has two heads and only one is the deliverable, check both before
+shipping the artifact. The head nobody is watching is the one that silently degrades, and here
+it degraded in a direction that would have been read as evidence about the other head.
+
+**Tags**: converter, painting, validation, dynamic-range, counts, silent-error
+
+**mitigation_type**: process
+
+**structural_mitigation_candidate**: Make the painting script report per-quintile
+painted/observed ratios against the real target on one chromosome before writing the
+genome-wide track, so the distortion is surfaced at build time rather than discovered later.

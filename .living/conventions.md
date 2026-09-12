@@ -6,7 +6,7 @@ Overrides to mycelium defaults or convention pack conventions.
 
 Mycelium was initialized here on **2026-08-24**, years into the project. The canonical
 mycelium directories (`analysis/`, `data/`, `algorithms/`, `reference_material/`) were
-created but are **intentionally empty except for their manifests** — no files were moved,
+created but are **intentionally empty except for their manifests**, no files were moved,
 because doing so would break every absolute path in the workflow logs
 (`*/0.0.log.sh`), the SLURM submit scripts, and `CLAUDE.md`.
 
@@ -19,7 +19,7 @@ The real layout is:
 | `algorithms/` | `scripts/` at root (shared) and each analysis's `scripts/` |
 | `reference_material/` | `external/` for vendored third-party code; `reference/` for data |
 
-**The manifests are the index into that real layout** — every entry carries a `path:` field
+**The manifests are the index into that real layout**, every entry carries a `path:` field
 pointing at the actual location. Read the manifest, not the directory tree.
 
 Naming convention for analyses: `YYYY_MMDD_short_description/`, where the date is when the
@@ -27,10 +27,10 @@ analysis started. Model directories predating that convention use `<CELLTYPE>_<T
 
 ## Reports
 
-`/engreitzlab-report` (→ `/analysis-report`, Quarto → self-contained HTML) supersedes
+`/engreitzlab-report` (-> `/analysis-report`, Quarto -> self-contained HTML) supersedes
 mycelium's `report-generator` pack for anything written up here. The `report:` field in
 `analysis/ANALYSIS_MANIFEST.md` is `null` for every entry because no analysis has been
-routed through that path yet — manuscript figures are tracked in `README.md` instead.
+routed through that path yet, manuscript figures are tracked in `README.md` instead.
 
 ## Figures
 
@@ -42,7 +42,7 @@ sentence case axis titles, "p300" never "P300", no gridlines, black axes, diverg
 ## Environments
 
 This repo predates the lab pixi standard and uses a mix: `pixi.toml` at root (Python 3.9)
-plus three conda envs — `bpnet_37` (training/prediction/SHAP, needs
+plus three conda envs, `bpnet_37` (training/prediction/SHAP, needs
 `module load cuda/11.1.1 cudnn/8.1.1.33`), `tfmodisco` (FIMO, MoDISCo, inference), and
 `analysis` (FiNeMo formatting, downstream plots). The multimodal project has its own pixi
 env named `multimodal`. Do not assume a single environment works across stages.
@@ -67,7 +67,7 @@ Every new submit script in this repo must:
 ## Never run heavy work on a login node
 
 Anything beyond a few seconds goes through `sbatch`. A long python process started over
-`ssh` on a login node is killed when the calling shell detaches — it exits 0 and writes
+`ssh` on a login node is killed when the calling shell detaches, it exits 0 and writes
 no output, which reads as success. Login-node work is limited to inspecting files and
 small tabulations; the one window-profiling script that does run there is explicitly
 memory-bounded (264 MB) and documented as such.
@@ -76,13 +76,13 @@ memory-bounded (264 MB) and documented as such.
 
 `reference/K562_DNase_candidate_elements.narrowPeak` holds 150,528 elements and most
 carry little signal, so any correlation computed over all of them is dominated by the
-dead-vs-active contrast. Report the top signal quintile alongside the overall number —
+dead-vs-active contrast. Report the top signal quintile alongside the overall number -
 this repo's equivalent of the all-vs-p300+ split already used for p300. See
 `2026_0824_H3K27ac_model/scripts/2.2.evaluate_stratified.py`. Concretely: ATAC-only
 predicts H3K27ac at 0.746 over all elements but only 0.543 on the top quintile.
 
 Ceilings derived from replicate agreement need both the Spearman-Brown and sqrt
-corrections before they bound model performance — see `.living/learnings.md`.
+corrections before they bound model performance, see `.living/learnings.md`.
 
 ## Decision-log entries use `###`, not `##`
 
@@ -94,7 +94,7 @@ See `.living/learnings.md` (2026-08-25).
 ## Never take a model target from a display directory
 
 Tracks under `$OAK/Users/sheth/Data/share/IGV/` are built for visualization. They may be
-raw-count and unnormalized — and so look usable — while carrying processing choices that
+raw-count and unnormalized, and so look usable, while carrying processing choices that
 are wrong for modelling. `ENCSR000AKP_coverage.bw` extends 36 bp reads to a fixed 250 bp
 fragment, which flattens nucleosome structure and breaks the multinomial assumption
 behind bpnetlite's profile loss.
@@ -108,7 +108,7 @@ exact command that produced it and treat replacing it as an open item.
 ## H3K27ac target is 5-prime ends, full stop
 
 `2026_0824_H3K27ac_model/data/h3k27ac_5p_{plus,minus}.bw`. Nothing new is trained or
-evaluated on the 250 bp fragment-extended track — it breaks MNLL's read-count assumption
+evaluated on the 250 bp fragment-extended track, it breaks MNLL's read-count assumption
 and bleeds signal between neighbouring elements. See
 `2026_0824_H3K27ac_model/results/TARGET_PROVENANCE.md` for which existing results used
 which target, and which conclusions survive.
@@ -151,7 +151,7 @@ python3 $MYC/skills/core/scripts/generate_index.py \
     --summary-heuristic
 ```
 
-Use `--summary-heuristic` (tag-based clustering, no LLM) — that is what the existing index
+Use `--summary-heuristic` (tag-based clustering, no LLM), that is what the existing index
 was built with, so the format stays consistent. Requires Python 3.11+, hence the
 `module load`; over a non-login `ssh host cmd` this must be wrapped in `bash -lc`.
 
@@ -177,7 +177,7 @@ otherwise sit at the end of a sentence.
 
 `training_complete.json` is written when training finishes, but the process does not always
 exit. One wide-receptive-field job wrote its marker and final checkpoint at 06:01 and was
-still holding a GPU at 10:39 — 4.5 hours — with the log ending at "Model saved" and no
+still holding a GPU at 10:39, 4.5 hours, with the log ending at "Model saved" and no
 "Done:" line. On `scancel` it ignored SIGTERM and slurmd gave up after 927 s
 ("JOB NOT ENDING WITH SIGNALS"), so it was a real teardown hang, most likely dataloader
 workers not joining.

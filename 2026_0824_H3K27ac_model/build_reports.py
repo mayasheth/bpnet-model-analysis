@@ -78,6 +78,13 @@ def plain_punctuation(body):
         return f"\x00{len(holes) - 1}\x00"
 
     body = re.sub(r"```.*?```", stash, body, flags=re.S)
+    # INLINE code too, not just fenced. Without this the paired-dash rule below rewrites
+    # arithmetic inside backticks: report 2 shipped its definition of residual_pearson as
+    # `r(observed (atac_pred, model_pred) atac_pred)` instead of
+    # `r(observed - atac_pred, model_pred - atac_pred)`, i.e. the load-bearing formula in the
+    # methodology reference was wrong in the published HTML. Fenced blocks are stashed first,
+    # so their backticks are already hidden by the time this runs.
+    body = re.sub(r"`[^`\n]+`", stash, body)
 
     # Paired dashes become parentheses; a subordinator takes a comma; an independent clause
     # takes a semicolon; anything else takes a comma.
