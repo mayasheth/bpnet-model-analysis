@@ -113,7 +113,7 @@ sbatch scripts/submit_finemo_v2_summary_plots.sh  # edit FINEMO_V2 inside first
 | `counts_per_peak.top50pct.p300plus.pdf` | Same; EP300_peak_overlap==1 elements only (n=27,340; ~40% have true_logcounts=0 — window mismatch) | Done (2026-06-12) |
 | `counts_per_peak.top50pct.top20pct_obs.pdf` | Same; union of top-20% by true_logcounts OR EP300_peak_overlap==1 (n=41,858) — preferred p300+ definition | Done (2026-06-12) |
 
-**Note on p300+ definition:** `EP300_peak_overlap` is based on 1000bp windows; `true_logcounts` is measured over the 500bp BPNet window. ~40% of overlap-flagged elements have zero counts. The union (top-20%-obs OR overlap flag) is the preferred definition. See also `TODO.md` for list of figures to update if this definition is adopted globally.
+**Note on p300+ definition:** `EP300_peak_overlap` is based on 1000bp windows; `true_logcounts` is measured over the 500bp BPNet window. ~40% of overlap-flagged elements have zero counts. The union (top-20%-obs OR overlap flag) is the preferred definition. See also `todo/TODOLIST.md` for list of figures to update if this definition is adopted globally.
 
 Script: `scripts/plot_finemo_counts_per_peak_top50pct.py`
 
