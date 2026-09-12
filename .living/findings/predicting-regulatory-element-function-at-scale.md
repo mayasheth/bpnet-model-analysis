@@ -295,3 +295,45 @@ input.
 | Date | Run/Session | Dataset | Project | Result | Direction |
 |------|-------------|---------|---------|--------|-----------|
 | 2026-09-11 | ABC 42798274, CRISPR 42801835, paired `4.17` | K562 ATAC 5-prime, K562 DNase 5-prime (ENCSR000EOT+ENCSR000EKS), converted DNase from `1.24` and `1.25` | 2026_0824_H3K27ac_model | real DNase 0.5280, converters 0.4780 and 0.4707, real ATAC 0.4572; paired +0.0709, +0.0208, +0.0136 | supports for DNase, refutes for the converters |
+
+
+---
+
+## F-013: Most of DNase's input advantage is sub-250 bp structure, and the converted track is worse than the ATAC track it would replace
+**Status:** established
+**Claim:** Four accessibility inputs, H3K27ac target, identical element set, 5 folds, paired
+within fold against the ATAC-input model. Top-quintile Pearson: real DNase **0.728**
+(+0.0379 [+0.0213, +0.0546], *p*=0.0032, replicating F-010's +0.037), real DNase smoothed at
+250 bp **0.704** (+0.0141 [-0.0057, +0.0338], *p*=0.12, NOT resolvable), ATAC **0.690**, and
+the converted DNase track **0.680** (**-0.0099 [-0.0175, -0.0023]**, *p*=0.023, i.e.
+resolvably WORSE than ATAC). Destroying structure finer than 250 bp while preserving
+magnitude costs real DNase **+0.0239 [+0.0027, +0.0451]** (*p*=0.035) of its +0.0379
+advantage, and what remains no longer separates from ATAC. Real DNase beats the converted
+track by +0.0478 [+0.0384, +0.0573] (*p*=0.0001). On the accessibility residual the converted
+track scores 0.133 [0.113, 0.153] against real DNase's 0.456 and smoothed DNase's 0.413, and
+its incremental R2 over the ATAC baseline is negative, -0.020 [-0.026, -0.013].
+**Implications:** The shape-versus-magnitude question is answered in favour of shape: the
+majority of DNase's advantage as an input lives in base-resolution structure, and magnitude
+alone does not resolvably beat ATAC. That is the branch of the control (fig18) that keeps a
+converter conceptually alive. But this converter does not deliver it. Reproducing the DNase
+profile at 95% of its inter-replicate ceiling (F-011) while performing WORSE than raw ATAC
+downstream means the painted track carries a defect that outweighs its shape fidelity, and
+the named candidate is magnitude: the 1.54x inflation of the lowest observed-signal quintile
+that survived thresholding (D-22). Shape fidelity is necessary and demonstrably not
+sufficient. Separately, `profile_pearson` is 0.063-0.064 across ALL four arms, so the H3K27ac
+profile head learns nothing regardless of what accessibility it is given, which is the
+premise the DNase-auxiliary-target proposal rests on.
+**Caveats:** The smoothed arm's interval is wide, [-0.0057, +0.0338] against real DNase's
++0.0379, so "most of the advantage is shape" is the point estimate and the interval does not
+exclude magnitude carrying much of it. 250 bp is one filter width, chosen because observed
+ATAC and DNase already agree about shape there (r = 0.92 against 0.29 at 1 bp); a width sweep
+would localise the scale that matters and has not been run. The converted arm confounds shape
+fidelity with the painted track's magnitude distortion and its 34% genome-wide total, so its
+negative result does not isolate either. K562 only; no transfer arm for the converted or
+smoothed inputs.
+**Tags:** dnase, atac, converter, accessibility-input, shape, magnitude, h3k27ac, control, negative-result
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-09-12 | control track `0.36`, painting 42923575 + `4.22`, training 43080124-33 (`1.26`), scoring 43118504 (`2.36`) | K562 H3K27ac 5' target under four accessibility inputs: ATAC, real DNase, DNase smoothed 250 bp, converted DNase | 2026_0824_H3K27ac_model | top-quintile Pearson 0.690 / 0.728 / 0.704 / 0.680; smoothing costs +0.0239 of DNase's +0.0379; converted arm -0.0099 against ATAC | supports shape, refutes this converter |
