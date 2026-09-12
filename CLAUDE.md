@@ -1,10 +1,39 @@
 # EP300_BPNet project
 
-> **Knowledge index (read first):** [`.living/INDEX.md`](.living/INDEX.md) is an auto-generated map of tag clusters, most-recent entries, and a tag → entry-ID inverted index. The SessionStart hook keeps it fresh — trust it. For targeted lookup: `module load python/3.12.1 && python3 $OAK/Users/sheth/EngreitzLabAgents/mycelium-upstream/skills/core/scripts/recall_lessons.py --living-dir .living/ --tag <tag>` (also `--id L-42`, `--since YYYY-MM-DD`).
+> **Knowledge index (read first):** [`.living/INDEX.md`](.living/INDEX.md) is an auto-generated map of tag clusters, most-recent entries, and a tag -> entry-ID inverted index. The SessionStart hook keeps it fresh, trust it. For targeted lookup: `module load python/3.12.1 && python3 $OAK/Users/sheth/EngreitzLabAgents/mycelium-upstream/skills/core/scripts/recall_lessons.py --living-dir .living/ --tag <tag>` (also `--id L-42`, `--since YYYY-MM-DD`).
 
 ## Overview
 
 This project interprets what BPNet sequence models have learned about **TF motif SYNTAX** (not just identity) that drives p300 coactivator binding. The core approach uses deep learning models trained on ChIP-seq data, combined with interpretability methods (SHAP, MoDISCo) and in silico motif insertion experiments to understand how motif arrangements, spacing, and orientations affect p300 recruitment.
+
+## The TODO list is `todo/TODOLIST.md` (read this before planning anything)
+
+**`todo/TODOLIST.md` is the live list of open work.** It is the mycelium `todo/` directory,
+not the root `TODO.md`. Update it in the same session as the work it describes, because it is
+what the next session plans from.
+
+| path | what it is |
+|---|---|
+| `todo/TODOLIST.md` | **THE list.** Open work only, organised by theme. Keep current. |
+| `todo/h3k27ac-model.md` | a 2026-08-25 per-topic item, superseded in most places by TODOLIST |
+| `TODO.md` (repo root) | older and broader; publication-figure status lives here. NOT the live list |
+
+Conventions for editing it:
+
+- **Open work only.** Completed items belong in the git history, in `.living/decisions.md` and
+  `.living/findings/`. The exception is an item worth keeping visible as closed, which gets
+  `- [x]` plus the result and the date, so nobody reopens it without new evidence. The
+  "Settled (do not redo)" section exists for the same reason.
+- **A deferral is not a closure.** Write "considered and DEFERRED <date>" with the reason and
+  the condition that would reopen it. "Do not reopen without new evidence" is a real section
+  and it is load-bearing.
+- **Quote the number and the interval**, not a verdict. "beats ATAC" is not reusable;
+  "+0.0709 [+0.0476, +0.0938]" is.
+- **Cross-reference the durable record.** Point at finding IDs (F-010), decision dates, and
+  script numbers (`1.26`, `4.20`) rather than restating the content. The TODO is an index of
+  what is open, not a second copy of the analysis.
+
+Do not create a new TODO file. There are already three and two of them are stale.
 
 ## Models
 
@@ -227,7 +256,7 @@ generate_motif_pairs(motif_dict)         # Generate all motif pair combinations
 
 ---
 
-## SLURM partitions — pick deliberately
+## SLURM partitions, pick deliberately
 
 **`engreitz` is the lab's own partition. Use it for everything that does not need a GPU.**
 9 nodes, 24+ cores, 192 GB+, 7-day limit, no GPUs. It does not compete with the general GPU
@@ -240,10 +269,10 @@ queues, so it sidesteps a fairshare depleted by training runs.
 
 | job | partition | why |
 |---|---|---|
-| Training (per fold, ~1–3 h) | `gpu,owners` | needs a GPU; short enough that preemption is cheap |
+| Training (per fold, ~1-3 h) | `gpu,owners` | needs a GPU; short enough that preemption is cheap |
 | Inference / prediction | `engreitz,normal,owners` | no GPU needed. `torch.cuda.is_available()` makes the fallback automatic, so the same script runs either way |
 | Track building, evaluation, plotting | `engreitz,normal,owners` | CPU only |
-| One long uncheckpointed step | `engreitz,normal` — **never `owners`** | preemption loses the whole thing. The fragment-channel build (one pass over three 9 GB BAMs into a temp dir under a cleanup trap) was preempted at 40 minutes |
+| One long uncheckpointed step | `engreitz,normal`, **never `owners`** | preemption loses the whole thing. The fragment-channel build (one pass over three 9 GB BAMs into a temp dir under a cleanup trap) was preempted at 40 minutes |
 | Resumable Snakemake DAG | `engreitz,normal,owners` | rule outputs persist, so preemption costs one rule; `--rerun-incomplete` handles partials. Take the faster queue |
 
 Two further habits that cost time on 2026-09-03:
@@ -256,8 +285,8 @@ Two further habits that cost time on 2026-09-03:
 
 ## Ask before running a broad search
 
-**Before any "search for anything" tool call — a repo-wide `grep -r`, a `find` over Oak, or
-hunting for where something lives — ask Maya first.** She usually knows the path outright or
+**Before any "search for anything" tool call, a repo-wide `grep -r`, a `find` over Oak, or
+hunting for where something lives, ask Maya first.** She usually knows the path outright or
 can narrow it to one directory, and that is faster and more reliable than guessing.
 
 Two failures on 2026-09-03/04 make the case. A `find` over Oak for an element set timed out
@@ -299,7 +328,7 @@ which does not inherit the wrapper env just because snakemake was invoked by abs
 without it the run dies with `CreateCondaEnvironmentException` before submitting anything.
 `--conda-frontend conda` is the alternative if mamba is genuinely unavailable.
 
-`~/.config/snakemake/slurm` — 50 concurrent jobs, `slurm_partition=engreitz,owners,normal`,
+`~/.config/snakemake/slurm`, 50 concurrent jobs, `slurm_partition=engreitz,owners,normal`,
 `slurm_account=engreitz`, 6 h default runtime, 3 retries, `rerun-incomplete`.
 `~/.config/snakemake/slurm_long` is the same with 100 jobs and 48 h.
 
@@ -401,12 +430,12 @@ EP300_BPNet/
 
 ## Installed Convention Packs
 
-- **engreitz-lab** — See `.living/conventions/engreitz-lab/analysis-conventions.md`
+- **engreitz-lab**, See `.living/conventions/engreitz-lab/analysis-conventions.md`
 
-- **bioinformatics** — See `.living/conventions/bioinformatics/analysis-conventions.md`
+- **bioinformatics**, See `.living/conventions/bioinformatics/analysis-conventions.md`
 
-- **idea-generator** — See `.living/conventions/idea-generator/analysis-conventions.md`
+- **idea-generator**, See `.living/conventions/idea-generator/analysis-conventions.md`
 
-- **report-generator** — See `.living/conventions/report-generator/analysis-conventions.md`
+- **report-generator**, See `.living/conventions/report-generator/analysis-conventions.md`
 
-- **robust-analysis** — See `.living/conventions/robust-analysis/analysis-conventions.md`
+- **robust-analysis**, See `.living/conventions/robust-analysis/analysis-conventions.md`

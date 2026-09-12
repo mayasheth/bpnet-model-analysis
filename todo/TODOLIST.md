@@ -5,28 +5,28 @@ narrative is in `2026_0824_H3K27ac_model/h3k27ac_model_report.html`.
 
 ## Settled (do not redo)
 
-Target = 5′ ends, ±500 bp window, `count_loss_weight = 10`. Panel is **ATAC-only** (DNase
+Target = 5' ends, ±500 bp window, `count_loss_weight = 10`. Panel is **ATAC-only** (DNase
 and ATAC are not interchangeable inputs). PE H3K27ac targets use **read 1 only**.
-Accessibility inputs should be ChromBPNet-style 5′ insertion counts; tracks are built and
+Accessibility inputs should be ChromBPNet-style 5' insertion counts; tracks are built and
 validated but **no model uses them yet**. Residual-objective training helps only a
-sequence-blind input and costs a multimodal one — replicated in K562 and GM12878, so it is
+sequence-blind input and costs a multimodal one, replicated in K562 and GM12878, so it is
 a property of the objective and needs no further per-cell-type testing.
 
 ## Highest value
 
 - [ ] **W4. Motif syntax (SHAP / TF-MoDISco / FiNeMo).** Not started; the actual scientific
-      goal. Run on the **residual-trained** model — its attributions are forced onto
+      goal. Run on the **residual-trained** model, its attributions are forced onto
       accessibility-independent signal, which multimodal attributions cannot separate. Use
       the ±500 bp window (zero neighbour contamination). Expect less signal than p300.
 
 - [ ] **TeloHAEC training + transfer.** The only new cell type available under the ATAC-only
-      rule. Tracks, elements and model-free coupling (0.33–0.37 top quintile) are all ready.
+      rule. Tracks, elements and model-free coupling (0.33-0.37 top quintile) are all ready.
       3 modes × 5 folds, then the four-evaluation transfer set against K562 and GM12878.
 - [ ] **TeloHAEC ±IL1b / ±TNFa / −VEGF.** Same genome and cell line, different regulatory
-      state, no input-domain shift — a sharp and cheap test of whether the model tracks
+      state, no input-domain shift, a sharp and cheap test of whether the model tracks
       condition-specific change. Inference only if trained on ctrl.
 
-## Interrogating the ABC negative result — the main thread
+## Interrogating the ABC negative result, the main thread
 
 The CRISPR benchmark says predicted H3K27ac adds nothing detectable over ATAC alone (best
 predicted arm 0.482 vs floor 0.457, CI overlapping; deployment-scenario arms at or below the
@@ -36,9 +36,9 @@ and since ABC's qnorm removes scale by construction, rank is the only channel av
 arms catch the same positives, so the deficit is in suppressing negatives.
 
 `4.10`/`4.12` then localised the error to a specific population: every model that sees ATAC
-over-predicts H3K27ac at accessible-but-unacetylated elements by 7–8× its own median, while
+over-predicts H3K27ac at accessible-but-unacetylated elements by 7-8× its own median, while
 sequence-only elevates them 1.6× and observed H3K27ac not at all. Those elements are GC 0.59,
-CpG o/e 0.55, 2.4× promoter-enriched, ATAC/K27ac ratio 13.25 vs 2.20 typical — a CpG-island /
+CpG o/e 0.55, 2.4× promoter-enriched, ATAC/K27ac ratio 13.25 vs 2.20 typical, a CpG-island /
 CTCF phenotype. **The signal is in sequence; the additive trunk gives it no way to veto
 accessibility.**
 
@@ -47,31 +47,31 @@ accessibility.**
       starts as the ungated one), crossed with an asymmetric count loss weighting
       over-prediction 3×. `gate` alone is expected to do little because the gate has no
       gradient pressure while log1pMSE is ~400× more sensitive to missing signal than to
-      inventing it — which is why it gets its own arm instead of being assumed.
+      inventing it, which is why it gets its own arm instead of being assumed.
       Backward compatibility for the shared `multimodal_bpnet.py` is gated by
       `scripts/test_asymmetric_loss.py`: weight 1.0 reproduces bpnetlite exactly, an open gate
       changes predictions by 0.39%, and pre-gate checkpoints still load.
 - [ ] **Indicator-channel control.** GC and CpG-density tracks as extra accessibility
       channels, no gate, no loss change. If hand-supplied class information does as well as a
-      learned gate, prefer it — simpler and interpretable. Both are sequence-derived, so
+      learned gate, prefer it, simpler and interpretable. Both are sequence-derived, so
       unlike fragment channels they cost nothing in transferability. Needs `0.27` to build the
       tracks first.
-- [x] **CTCF/EP300 enrichment in the error strata — PEAK OVERLAPS DONE** (`4.11`).
+- [x] **CTCF/EP300 enrichment in the error strata, PEAK OVERLAPS DONE** (`4.11`).
       Over-predicted 5%: CTCF 36.9% vs 17.4% typical (2.1x, confirming the CTCF hypothesis),
-      but EP300 16.4% vs 8.8% — ENRICHED, contradicting my prediction of depletion, and
+      but EP300 16.4% vs 8.8%, ENRICHED, contradicting my prediction of depletion, and
       H3K27ac peaks 30.6% vs 15.8% despite low H3K27ac RPM. Under-predicted 1%: EP300 57.7%
-      (6.6x), H3K4me1 86.8% (3.1x), H3K27me3 0.0%, CTCF 9.3% (depleted) — canonical active
+      (6.6x), H3K4me1 86.8% (3.1x), H3K27me3 0.0%, CTCF 9.3% (depleted), canonical active
       enhancers the model misses. CTCF enrichment is NON-MONOTONIC (36.9% at 5%, 23.4% at 1%),
       unexplained; the most extreme over-predictions may be a different population.
 - [~] **Quantitative signal, not just peak overlaps** (`4.13`). Peak calls are thresholded and
-      the two measures demonstrably diverge here — the over-predicted stratum has H3K27ac
+      the two measures demonstrably diverge here, the over-predicted stratum has H3K27ac
       peaks called at 2x background while its H3K27ac RPM is at background. Counting reads
       from the local BAMs gives the graded version. Peaks and signal should both be reported;
       neither alone is trustworthy.
-- [ ] **Characterise the 12 threshold-level false negatives** individually once `4.11` lands —
+- [ ] **Characterise the 12 threshold-level false negatives** individually once `4.11` lands -
       observed H3K27ac 39× the genome median where the model predicts near-background.
 
-## Sequence-gated multimodal for p300 — diagnose before training
+## Sequence-gated multimodal for p300, diagnose before training
 
 Naming: the architecture is **sequence-gated multimodal**; `gate` is the flag and filename
 token. The asymmetric loss is named separately on purpose, because the factorial exists to
@@ -81,17 +81,17 @@ attribute any gain to the architecture or to the loss.
       premise is that p300 suffers the same accessibility domination, and it may not: p300's
       residual *r* is 0.654 against H3K27ac's ~0.55, so sequence adds MORE beyond accessibility
       there. That is consistent with the problem being milder, or with it being equally severe
-      but more fixable — different expected gains, same number.
+      but more fixable, different expected gains, same number.
       Cheap test, reusing existing machinery: predict p300 on the ABC candidate regions with
       the existing `2026_0529_multimodal_p300_model` models via `4.1`, then run the `4.12`
       fold-elevation comparison against observed p300 (ENCSR000EGE,
       `ENCFF466WKF`/`ENCFF163FSR`). Confirmed if p300's sequence-only arm gets high-ATAC /
       low-p300 elements right while its multimodal arm does not.
 - [ ] **Then train p300 with the gate**, 15 fold-jobs, only if the diagnostic confirms it.
-      `multimodal_bpnet.py` is already shared, so no further code change is needed — the p300
+      `multimodal_bpnet.py` is already shared, so no further code change is needed, the p300
       submit scripts just gain the two flags.
 
-## Which model transfers best — do not assume the in-cell-type winner
+## Which model transfers best, do not assume the in-cell-type winner
 
 - [~] **RUNNING: transfer matrix** (`2.24`). narrow/wide × flat/fragments, both directions,
       with each target's own models in the same table so the transfer drop is readable.
@@ -102,7 +102,7 @@ attribute any gain to the architecture or to the loss.
 - [ ] **TeloHAEC as a third cell type, with conditions.** The only new cell type under the
       ATAC-only rule. Tracks, elements and model-free coupling are ready. Caveats to carry:
       ATAC-derived elements (though derivation was shown not to matter, p = 0.83), 36 bp reads
-      vs 95 bp, and shallower libraries — so read length and depth remain confounded even
+      vs 95 bp, and shallower libraries, so read length and depth remain confounded even
       though element derivation does not. Fragment channels there would need PE BAMs.
 - [ ] **Train on multiple cell types to optimise transferability.** The most promising route
       to a deployable model, since it directly optimises what deployment needs rather than
@@ -110,27 +110,27 @@ attribute any gain to the architecture or to the loss.
 
 ## Using p300 without needing p300 at deployment
 
-The application target has ATAC and nothing else, so **p300 can never be a model input** — it
+The application target has ATAC and nothing else, so **p300 can never be a model input**, it
 is unavailable in the target cell type, whatever we hold for training. It can be a target, an
 auxiliary task, or an annotation. Ordered so the cheap prerequisite gates the expensive work:
 
 - [ ] **First: do p300-target models predict the elements the H3K27ac model misses?** The
       under-predicted stratum is 6.6x EP300-peak-enriched, 3.1x H3K4me1, CTCF-depleted, zero
-      H3K27me3 — canonical active enhancers the H3K27ac model treats as background. If the
+      H3K27me3, canonical active enhancers the H3K27ac model treats as background. If the
       existing p300 models in `2026_0529_multimodal_p300_model` also miss them, neither idea
       below helps and both are dropped. Reuses `4.1` (predict p300 on the ABC regions) and
       `4.12` (fold-elevation vs observed p300, ENCSR000EGE).
-- [ ] **Then: multi-head model** — shared trunk, two counts heads, predicting H3K27ac and
+- [ ] **Then: multi-head model**, shared trunk, two counts heads, predicting H3K27ac and
       p300 from ATAC + sequence with a weighted loss. Deployment-valid because p300 is needed
       only at TRAINING time; inference reads the H3K27ac head. Directly supervises the failing
       population rather than adding capacity. Needs `extract_windows` to carry a second signal
-      track and the loss to sum two count terms — more invasive than the gate, and
+      track and the loss to sum two count terms, more invasive than the gate, and
       `multimodal_bpnet.py` is shared with p300, so it needs the `test_asymmetric_loss.py`
       treatment.
       Trainable in K562 and GM12878, the same two cell types all the transfer work uses.
 - [ ] **Fallback only: stack predicted p300 as an input channel.** Information-theoretically
-      redundant — a predicted p300 track is a deterministic function of ATAC + sequence, which
-      the H3K27ac model already sees — so it can only act as an inductive bias, and it costs
+      redundant, a predicted p300 track is a deterministic function of ATAC + sequence, which
+      the H3K27ac model already sees, so it can only act as an inductive bias, and it costs
       two training runs and two models at inference to get what multi-head gets in one. Try
       only if multi-head underperforms.
 
@@ -138,19 +138,19 @@ auxiliary task, or an annotation. Ordered so the cheap prerequisite gates the ex
 
 - [ ] **ABC + CRISPR with p300 predictions, and with observed p300.** p300 is a coactivator,
       one step closer to the sequence-specified event, and is arguably what ABC's activity
-      term is really proxying. Observed p300 gives both a ceiling and — importantly — a qnorm
+      term is really proxying. Observed p300 gives both a ceiling and, importantly, a qnorm
       REFERENCE, so the no-reference problem dissolves: build a p300 qnorm reference from the
       observed arm rather than running without qnorm and having to scale-match the geomean by
       hand. Data: EP300 ENCSR000EGE, `ENCFF466WKF/ENCFF163FSR.filtered.sorted.bam`, peaks
       `ENCFF702XPO.bed.gz`. p300 models already exist in `2026_0529_multimodal_p300_model`
       (residual r 0.654, higher than H3K27ac's).
 - [ ] **Test removing qnorm** as its own arm (`use_qnorm: False`; `activity_base_no_qnorm` is
-      already in every EnhancerList). Expectation is that it hurts — the model emits log1p
+      already in every EnhancerList). Expectation is that it hurts, the model emits log1p
       counts over ±500 bp while observed H3K27ac is read counts over the element, so without
       qnorm the geomean multiplies incommensurate magnitudes, and ABC's thresholds are
       calibrated on qnorm'd values. Cheap enough to settle rather than argue.
 
-## Downstream utility — decides whether the correlation metrics are the right target
+## Downstream utility, decides whether the correlation metrics are the right target
 
 - [ ] **Plug predicted H3K27ac into ABC and benchmark it.** The end-to-end test of whether
       this model is useful, and the concrete form of the standing question below. ABC's
@@ -167,20 +167,88 @@ auxiliary task, or an annotation. Ordered so the cheap prerequisite gates the ex
       Repos: `~/Documents/ABC-Enhancer-Gene-Prediction`, CRISPR benchmark via
       `~/Documents/DC_TAP_Paper`.
 
-- [ ] **ATAC → DNase converter.** DNase tracks H3K27ac and enhancer activity better than
-      ATAC, so a converter would give DNase-like input in the cell types that only have ATAC.
-      **Cheap gate first, before building anything:** measure model-free coupling of DNase
-      vs ATAC against H3K27ac in K562 and GM12878 using the existing machinery
-      (`0.12.atac_vs_h3k27ac.py`, `3.6`). Minutes of CPU, and it bounds what a perfect
-      converter could buy. No DNase bigwigs exist in this project yet; the DNase used to
-      call the element sets came from the rE2G runs (`reference/ELEMENT_DERIVATION.md`).
-      **Confound in that gate:** the K562 and GM12878 element sets are DNase-derived, which
-      favours DNase on element definition alone. Repeat on the ATAC-derived K562 set in
-      `K562_ATAC_ChromBPNet/data/` before believing the gap.
-      **If the gap is real:** train ATAC → DNase where both assays exist (K562, GM12878),
-      then score H3K27ac prediction three ways — raw ATAC (floor), converted DNase, real
-      DNase (ceiling). Without the real-DNase arm, a gain cannot be separated from the extra
-      capacity the converter adds.
+- [x] **ATAC to DNase converter. BUILT AND BENCHMARKED 2026-09-12.** The cheap gate passed
+      and the whole line of work ran. What it settled, and what it did not:
+
+      **The assay is settled.** DNase beats ATAC as a model input, +0.037 in-cell K562 and
+      +0.086 in-cell GM12878 top-quintile Pearson, and it is the only input change in the
+      project that survives transfer, clearing GM12878's own ATAC-only floor by
+      +0.056 [+0.014, +0.099] (F-010). As the ABC activity term it beats ATAC by
+      **+0.0709 [+0.0476, +0.0938]** (F-012), a larger downstream effect than anything the
+      modelling has produced. DNase also has a base-resolution profile where H3K27ac has
+      none, 1 bp top-quintile ceiling 0.848 against 0.21.
+
+      **The converter reproduces the profile and nothing downstream yet.** 1 bp top-quintile
+      shape against observed DNase is 0.792 against a ceiling of 0.834 in K562 (95%), where
+      the raw ATAC track manages 0.292; sequence does the work, since the ATAC-only arm
+      reaches 0.563 (F-011). Transferred to GM12878 it reaches 0.490 against that cell type's
+      0.684 ceiling (72%) and keeps 91% of its sequence margin. But in the CRISPR benchmark
+      neither converter clears real ATAC resolvably (+0.021 [-0.005, +0.044] K562-trained,
+      +0.014 [-0.012, +0.036] GM12878-trained) and real DNase still beats the better one by
+      +0.050 [+0.030, +0.071]. Training cell type does not matter, unlike p300 (F-009).
+
+      **That benchmark could not test the converter's actual claim.** ABC sums the activity
+      track over each region and discards the profile, so F-012 scored the converter's counts,
+      which are its weak half. The confound the original gate worried about was handled the
+      other way round from what was planned: the converter trains on the ATAC-derived element
+      set (D-19) so it never trains on regions chosen by the signal it predicts.
+
+- [ ] **H3K27ac with the converted track as input**, 5 folds (`1.26`, `ACC_TAG=convdnase`).
+      Queued. First test that exercises the profile: this model's accessibility branch reads
+      base resolution over 2,114 bp. Needed `4.20` to paint `softmax(profile) x counts`
+      genome-wide, since `4.1`'s flat-within-region painting is correct for ABC and useless
+      as a base-resolution input.
+
+- [ ] **Shape-destroyed DNase control**, 5 folds (`1.26`, `ACC_TAG=dnasesmooth250`). Queued.
+      Real DNase box-filtered at 250 bp: magnitude preserved, structure gone. F-010 never
+      established WHICH property of DNase wins and the answer decides whether the converter
+      can ever work as an input. Advantage survives smoothing means shape never mattered;
+      advantage collapses means shape is the thing. 250 bp is where observed ATAC and DNase
+      already agree about shape (r = 0.92, against 0.29 at 1 bp), so smoothing there removes
+      close to exactly what ATAC lacks. Diagram: `figures/fig18_control_schematic`.
+
+- [ ] **Multi-task arm: DNase profile head, H3K27ac counts head.** WAIT FOR THE CONTROL
+      ABOVE, then run. Same trunk, same counts objective, profile head's target swapped from
+      H3K27ac to DNase.
+
+      **Why.** The H3K27ac profile head currently trains against a target whose 1 bp
+      inter-replicate ceiling is 0.21, i.e. mostly noise. D-3 kept it anyway, down-weighted,
+      and that entry's own consequences note flags that `fconv` still consumes capacity for a
+      near-zero gradient. DNase's 1 bp ceiling is 0.848, so this gives the head a learnable
+      task for the first time. Hypothesis: a learnable base-resolution task makes the shared
+      trunk better at H3K27ac COUNTS, which is the quantity of interest.
+
+      **Why not joint prediction of both signals.** A second counts objective competes for the
+      same gradient, and the p300 auxiliary head is the precedent: dropped 2026-09-05 after
+      the p300 models predicted 1.83x enrichment at H3K27ac's failure elements against a
+      2.10x INPUT control, i.e. below the control. What makes DNase different is specific.
+      p300 failed because it could not identify the right elements; DNase would supply
+      base-resolution structure that H3K27ac simply does not have.
+
+      **Why it waits.** If DNase's input advantage is magnitude rather than shape the case
+      weakens, though not fatally: DNase as an auxiliary TARGET teaches the trunk a
+      sequence-to-structure mapping, a different channel from DNase as an INPUT. The control
+      informs the prior rather than deciding it.
+
+      **Implementation.** Needs a trainer change, not just a config: the profile and counts
+      heads currently read one target. Cheapest correct route is a second pair of signal
+      bigwig arguments consumed only by the profile loss. No painting and no second model, so
+      materially cheaper than the converter path.
+
+- [ ] **Converter count accuracy.** Considered and DEFERRED 2026-09-12, not closed. The
+      converter already predicts DNase counts at top-quintile r 0.878 and still bought nothing
+      in ABC, and the part of DNase counts carrying the downstream benefit is by construction
+      the part that differs from ATAC counts. Revisit only if the H3K27ac arms say counts are
+      the binding constraint. If they do, quantile-map the painted track to a reference
+      accessibility distribution first, which is deployment-legal and fixes the residual
+      magnitude distortion.
+
+      **Caveat to carry into reading those arms.** The painted track compresses dynamic range:
+      painted/observed ratio by observed-DNase quintile runs 2.73, 0.88, 0.73, 0.71, 0.73.
+      Q2 to Q5 is near-uniform and training's own normalisation absorbs it, but the 1.54x
+      residual inflation of the lowest quintile after thresholding (D-22) is the named
+      alternative explanation if the converted arm underperforms.
+
       This does not contradict the ATAC-only panel rule. That rule exists because ATAC and
       DNase are not interchangeable as *inputs*; a converter is the principled way to get a
       DNase-like input everywhere without mixing assays across cell types.
@@ -218,20 +286,20 @@ auxiliary task, or an annotation. Ordered so the cheap prerequisite gates the ex
 
 ## Architecture, in expected order of value
 
-- [~] **Wider receptive field — ADOPT for multimodal; the earlier "do not pursue" was wrong.**
+- [~] **Wider receptive field, ADOPT for multimodal; the earlier "do not pursue" was wrong.**
       `n_layers` 10 (~4.2 kb vs ~1.1 kb), 5 folds, both cell types, paired within fold on the
       intersection of valid regions.
       Top quintile: sequence-only −0.006 (K562) and +0.010 (GM12878), both p=0.53;
       **multimodal +0.027 (p=0.006) and +0.014 (p=0.025)**, all five folds rising in both.
-      Accessibility residual 0.502 → 0.547 and 0.397 → 0.469.
+      Accessibility residual 0.502 -> 0.547 and 0.397 -> 0.469.
       Results in `wide_{k562,gm12878}_*.tsv`; report Fig. 10.
       - [ ] **ATAC-only wide arm is RUNNING** (10 fold-jobs, submitted 2026-09-03). If it
             reproduces the multimodal gain, the extra context is used purely as accessibility
-            neighbourhood and sequence contributes nothing to it — which would also mean the
+            neighbourhood and sequence contributes nothing to it, which would also mean the
             deployed model should simply be widened.
       - [ ] Decide whether to re-run the transfer and deployment comparisons at
             `n_layers` 10, since those used the narrow multimodal model.
-- [ ] **Decide what to do with the profile head — one decision, three options.** The 1 bp
+- [ ] **Decide what to do with the profile head, one decision, three options.** The 1 bp
       profile task is close to unlearnable: measured inter-replicate ceiling is 0.21 (K562)
       and 0.18 (GM12878) on the top quintile, rising to 0.72 and 0.70 at 50 bp binning
       (`profile_ceiling_binsize_*.tsv`, report Fig. 11). The options are (a) drop the profile
@@ -245,7 +313,7 @@ auxiliary task, or an annotation. Ordered so the cheap prerequisite gates the ex
       useful auxiliary task on the shared trunk, and those numbers are single-fold, so this
       is weak evidence pointing the opposite way from removal rather than a settled answer.
       The properly powered `count_loss_weight` sweep already listed under Statistical power
-      answers it at zero architecture risk — run it jointly with bin size, since the two
+      answers it at zero architecture risk, run it jointly with bin size, since the two
       interact: binning changes how learnable the profile term is and therefore its optimal
       weight.
 
@@ -256,27 +324,27 @@ auxiliary task, or an annotation. Ordered so the cheap prerequisite gates the ex
       **Cost of actual removal** (option a): it changes the model class, so every existing
       checkpoint becomes non-comparable and the whole grid needs retraining. It touches
       `multimodal_bpnet.py` and `train_multimodal_bpnet.py`, both shared with p300, so it
-      needs a backward-compatibility regression — use the `2.18` pattern, exact on region
+      needs a backward-compatibility regression, use the `2.18` pattern, exact on region
       counts and tolerant on metrics.
       **Payoff if it holds:** removes a term that is largely fitting Poisson noise, frees
       trunk capacity, and roughly halves the output tensor, buying a larger batch or a wider
       window at the same memory.
-- [x] **Fragment-size ATAC channels — DONE and positive.** Top quintile 0.690 → 0.703,
+- [x] **Fragment-size ATAC channels, DONE and positive.** Top quintile 0.690 -> 0.703,
       paired +0.0135 [+0.0075, +0.0195], p = 0.0034, every fold rising; report Fig. 12.
       Strict superset of the flat input (bins sum to it exactly), so the gain is added
       information. Results in `fragchan_k562_per_fold.tsv`.
       - [ ] **Do the two accessibility-side gains combine?** `n_layers` 10 × fragment
             channels. Both may be reading the same neighbourhood structure, so +0.027 and
             +0.0135 may not sum. 5 fold-jobs, and it decides what the deployed model is.
-      - [ ] **GM12878 replication** needs its paired-end BAMs downloaded — fragment length
+      - [ ] **GM12878 replication** needs its paired-end BAMs downloaded, fragment length
             lives in TLEN, which the per-read tagAligns discard.
-      - [ ] **ATAC-only fragment arm** (`1.15 atac`) — asks whether fragment structure alone
+      - [ ] **ATAC-only fragment arm** (`1.15 atac`), asks whether fragment structure alone
             beats flat ATAC, with no sequence involved.
-- [ ] **Switch the accessibility input to 5′ counts, as a set.** ~35 fold-jobs. Within a
+- [ ] **Switch the accessibility input to 5' counts, as a set.** ~35 fold-jobs. Within a
       cell type this moves only the ATAC-only model; across cell types it removes a
       read-length confound (TeloHAEC 36 bp vs K562 95 bp). Mixing the two inputs is invalid.
-- [ ] **Re-check ±500 vs ±1000** on the 5′ target once a retrain happens anyway.
-- [ ] **Train on the ATAC-derived K562 element set** — easy (one path change in `1.11`),
+- [ ] **Re-check ±500 vs ±1000** on the 5' target once a retrain happens anyway.
+- [ ] **Train on the ATAC-derived K562 element set**, easy (one path change in `1.11`),
       and now load-bearing for the ABC work rather than merely tidy.
       Verified path, 153,545 regions:
       `ENCODE_rE2G/results/2025_0226_ATAC_powerlaw_models/ATAC_H3K27ac_powerlaw/Peaks/macs2_peaks.narrowPeak.sorted.candidateRegions.bed`
@@ -299,7 +367,7 @@ auxiliary task, or an annotation. Ordered so the cheap prerequisite gates the ex
       inter-replicate ceiling is computable. Trainable, not normalisable.
 - [ ] **H1, H9, Jurkat, THP-1 have no ENCODE ATAC at all** (all 559 released experiments
       checked). Reaching them means GEO/SRA fastqs through
-      `Data/scripts/sra_paired_fastq_to_bam.sh` — a separate decision.
+      `Data/scripts/sra_paired_fastq_to_bam.sh`, a separate decision.
 - [ ] **TeloHAEC_ctrl/ATAC holds 3 EA.hy926 files** (`SRR20809434/435/436`) under the same
       sample name. Always use explicit accession lists, never a directory glob.
 
@@ -307,7 +375,7 @@ auxiliary task, or an annotation. Ordered so the cheap prerequisite gates the ex
 
 - [ ] **Re-run the `count_loss_weight` sweep with ≥3 folds and ≥2 seeds.** The current pick
       (10) came from single folds; 3/10/100 are within noise of each other.
-- [ ] **Quantify run-to-run variance properly** — one config × 5 seeds.
+- [ ] **Quantify run-to-run variance properly**, one config × 5 seeds.
 - [ ] **Make submit scripts refuse to overwrite a completed fold directory.** A grid once
       silently overwrote a sweep result that shared an `OUT_DIR`.
 
