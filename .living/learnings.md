@@ -1725,3 +1725,47 @@ it degraded in a direction that would have been read as evidence about the other
 **structural_mitigation_candidate**: Make the painting script report per-quintile
 painted/observed ratios against the real target on one chromosome before writing the
 genome-wide track, so the distortion is surfaced at build time rather than discovered later.
+
+---
+
+### [2026-09-14] Changing the loss changes the stopping rule, so a third of the multi-task arm's gain was epochs
+
+**What happened.** The multi-task arm (`1.28`, DNase profile head, H3K27ac counts head) beat
+its baseline by +0.0109 [+0.0006, +0.0211] top-quintile Pearson, *p*=0.043. The arms were
+identical except for the profile head's target, so the win looked attributable. It was not:
+early stopping watches the TOTAL validation loss, and for this arm that total includes the
+reweighted DNase profile term, so the two arms stopped on different objectives. The
+multi-task arm ran 53-99 epochs, the baseline 32-55, every fold longer.
+
+**What the control showed.** Giving the baseline the same 100-epoch budget with checkpoint
+selection unchanged (`1.29`) moved it by +0.0000 [-0.0008, +0.0009] (*p*=0.92) overall and
++0.0033 (*p*=0.40) top-quintile, and its best checkpoint still landed at epoch 33-47. So the
+baseline had genuinely converged where early stopping put it, and the epoch gap explains
+nothing about the baseline. But the multi-task arm's advantage measured against the CONTROL
+rather than the early-stopped baseline falls to +0.0076 [-0.0078, +0.0230], *p*=0.24, i.e.
+the top-quintile claim stops being resolvable. Overall Pearson survives at +0.0026
+(*p*=0.022). The published number changed because the comparator changed, not because
+anything was wrong with either run.
+
+**Why this generalises past this one arm.** Any change to the loss is also a change to the
+stopping rule, and every arm in this project stops on its own loss. Three earlier
+interventions changed the loss and none of them had an epoch-matched arm: the asymmetric
+count weighting (`1.19`), the residual objective, and every point in the `count_loss_weight`
+sweep. The gate factorial came out null so nothing turned on it there, and the `clw` sweep
+was selecting a hyperparameter rather than claiming an effect, but the residual comparisons
+were read as claims.
+
+**What to do.** When an intervention changes the loss FUNCTION rather than just the data or
+the architecture, train a control that matches the epoch budget before quoting a delta. It
+costs the same as one more arm. Note that this is not the same as disabling early stopping:
+the control keeps best-validation-loss checkpoint selection, so it is not handed an
+overfitted model, it is only prevented from ending early.
+
+**Tags**: early-stopping, loss-design, controls, attribution, multi-task, methodology
+
+**mitigation_type**: process
+
+**structural_mitigation_candidate**: Have the trainer record the epoch its best checkpoint
+came from in `training_complete.json`, and have `2.15` print that column alongside the
+metrics, so an epoch gap between arms is visible in the comparison table instead of needing
+someone to go and read five training logs.
