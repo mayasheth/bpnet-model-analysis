@@ -301,28 +301,33 @@ auxiliary task, or an annotation. Ordered so the cheap prerequisite gates the ex
       is an inference rather than a test. Same asymmetry and same direction as p300 (F-009), so
       this is now the second finding blocked on the same gap.
 
-- [~] **Multi-task arm: DNase profile head, H3K27ac counts head. RAN 2026-09-14, WINS
-      MARGINALLY, F-015 provisional.** Top-quintile Pearson 0.701 against the baseline's
-      0.690, paired **+0.0109 [+0.0006, +0.0211]** (*p*=0.043); overall +0.0026 [+0.0013,
-      +0.0039] (*p*=0.0046). The auxiliary task is decisively learnable: validation profile
-      *r* 0.530-0.561 across all five folds against the baseline's 0.060-0.068, and the head
-      drops H3K27ac shape to 0.004. All five folds move the same way.
+- [x] **Multi-task arm: DNase profile head, H3K27ac counts head. DONE 2026-09-14, F-015
+      established.** Kept, but it is a small architectural win and not progress on the real
+      gap. Against an **epoch-matched** baseline: overall Pearson **+0.0026 [+0.0006,
+      +0.0046]** (*p*=0.022), `incremental_r2` 0.005 [0.002, 0.007] and `incremental_r2_topq`
+      0.015 [0.001, 0.030] both clearing zero. **Top-quintile Pearson does NOT clear against
+      that control: +0.0076 [-0.0078, +0.0230], *p*=0.24** (0.701 against 0.693 and the
+      early-stopped baseline's 0.690). The +0.0109 (*p*=0.043) first reported was against the
+      early-stopped baseline and about a third of it was the epoch difference.
 
-      **BLOCKING ITS INTERPRETATION: the epoch-matched control** (`1.29`, jobs 43440391-96,
-      running). Early stopping watches the total validation loss, which for this arm includes
-      the reweighted DNase profile term, so the arms stopped on different objectives and the
-      multi-task arm trained longer in every fold (53-99 epochs against 32-55). "The
-      auxiliary task helps the trunk" and "this arm trained longer" currently fit the result
-      equally well. `1.29` is the baseline to the same 100-epoch budget with checkpoint
-      selection unchanged. Score it with `2.38` against `multitask_k562_per_fold.tsv`, or add
-      it to `config/multitask_k562_configs.json` as a third entry and re-run `2.39`.
+      **The auxiliary task itself is decisively learnable:** validation profile *r*
+      0.530-0.561 in all five folds against 0.060-0.068, and the head drops H3K27ac shape to
+      0.004. Needs no DNase at inference.
 
-      **If the control catches up**, the arm is an artefact of the stopping rule and the
-      honest next question is whether `--profile-loss-weight 0.0561` starved the auxiliary
-      task; sweep upward, five fold-jobs per weight. **If it does not**, F-015 promotes to
-      established and the effect is real but an order of magnitude below swapping the
-      accessibility INPUT to real DNase (+0.038, F-010), so it changes the architecture
-      rather than the strategy.
+      **The epoch confound was real and is excluded** (`1.29`, jobs 43440391-96). Given the
+      same 100-epoch budget the baseline moves +0.0000 [-0.0008, +0.0009] (*p*=0.92) and its
+      best checkpoint still lands at epoch 33-47. Longer training was a CONSEQUENCE of the
+      different loss, not the cause of the gain. **Carry this forward as a method rule: any
+      intervention that changes the loss also changes the stopping rule, so an epoch-matched
+      arm is the only way to attribute the result.** Three earlier arms in this project
+      changed the loss (`1.19` asym, the residual objective, every `clw` sweep point) and
+      none of them had one.
+
+      **Only open follow-up, and it is optional:** `--profile-loss-weight 0.0561` is the
+      measured depth ratio and the smallest defensible weight, so the ceiling on this effect
+      is unknown. A sweep upward is five fold-jobs per weight. Not worth it unless something
+      else revives interest, since even a doubling of the effect stays an order of magnitude
+      below swapping the accessibility INPUT to real DNase (+0.038, F-010).
 
       Original scoping, for the record: Same trunk, same counts objective, profile head's target swapped from
       H3K27ac to DNase. Trainer change is in (`44e0e3c`): `extract_windows` takes an optional
