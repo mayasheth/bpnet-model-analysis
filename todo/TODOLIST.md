@@ -42,15 +42,21 @@ CpG o/e 0.55, 2.4x promoter-enriched, ATAC/K27ac ratio 13.25 vs 2.20 typical, a 
 CTCF phenotype. **The signal is in sequence; the additive trunk gives it no way to veto
 accessibility.**
 
-- [~] **RUNNING: gate x loss factorial** (`1.19`, 15 fold-jobs). Sequence-conditioned gate on
-      the accessibility branch (`X_acc *= sigmoid(conv(X_seq))`, initialised open so the model
-      starts as the ungated one), crossed with an asymmetric count loss weighting
-      over-prediction 3x. `gate` alone is expected to do little because the gate has no
-      gradient pressure while log1pMSE is ~400x more sensitive to missing signal than to
-      inventing it, which is why it gets its own arm instead of being assumed.
-      Backward compatibility for the shared `multimodal_bpnet.py` is gated by
-      `scripts/test_asymmetric_loss.py`: weight 1.0 reproduces bpnetlite exactly, an open gate
-      changes predictions by 0.39%, and pre-gate checkpoints still load.
+- [x] **Gate x loss factorial. CLOSED 2026-09-05** (`1.19`, decision 2026-09-05). All 15
+      fold-jobs finished and were scored; this entry was left marked RUNNING by mistake and the
+      marker was cleared 2026-09-14 after re-deriving the paired deltas from
+      `gatefac_k562_per_fold.tsv` with `2.38`. In-cell K562, paired against the matched ungated
+      baseline on top-quintile Pearson: GATE -0.0001 (*p*=0.99), ASYM +0.0001 (*p*=0.99),
+      GATE_ASYM -0.0032 (*p*=0.51). Transferred to GM12878: GATE -0.0016 (*p*=0.82), ASYM
+      -0.0078 (*p*=0.11), **GATE_ASYM -0.0128 (*p*=0.039), i.e. resolvably worse**. Both
+      interventions shared one premise, that the sequence branch can identify the
+      accessible-but-unacetylated elements, and that premise is measured false (1.55x against
+      1.44x where truth separates the tails 1.00x against 31.3x). The flags and
+      `test_asymmetric_loss.py` stay in the code so the negative result stays reproducible.
+      **Not scored, and the one thing that would change the reading:** nobody ran the `4.12`
+      fold-elevation comparison on the gate arms, so the closure rests on aggregate *r* rather
+      than on the failure population the gate was built for. Reopen only if some other result
+      revives the premise; on its own it is not worth two `4.1` prediction passes.
 - [ ] **Indicator-channel control.** GC and CpG-density tracks as extra accessibility
       channels, no gate, no loss change. If hand-supplied class information does as well as a
       learned gate, prefer it, simpler and interpretable. Both are sequence-derived, so
@@ -63,11 +69,15 @@ accessibility.**
       (6.6x), H3K4me1 86.8% (3.1x), H3K27me3 0.0%, CTCF 9.3% (depleted), canonical active
       enhancers the model misses. CTCF enrichment is NON-MONOTONIC (36.9% at 5%, 23.4% at 1%),
       unexplained; the most extreme over-predictions may be a different population.
-- [~] **Quantitative signal, not just peak overlaps** (`4.13`). Peak calls are thresholded and
-      the two measures demonstrably diverge here, the over-predicted stratum has H3K27ac
-      peaks called at 2x background while its H3K27ac RPM is at background. Counting reads
-      from the local BAMs gives the graded version. Peaks and signal should both be reported;
-      neither alone is trustworthy.
+- [x] **Quantitative signal, not just peak overlaps. DONE 2026-09-05** (`4.13`, F-007);
+      marker cleared 2026-09-14. Per-element RPKM from the local BAMs is in
+      `error_strata_rpkm.tsv` and it changed the reading: the over-predicted 5% carries CTCF
+      4.69 against 1.79 typical but H3K27ac 1.17 at 0.94x typical with **IgG 0.39 below
+      background 0.48**, so the H3K27ac peaks called there at 2x background are threshold
+      artefacts and the stratum really is unacetylated. The same control demoted the
+      under-predicted stratum's p300 enrichment from 6.6x (peaks) to about 2.3x (signal minus
+      input), which is what closed p300 as an auxiliary target (F-006). Peaks alone would have
+      overstated both premises.
 - [ ] **Characterise the 12 threshold-level false negatives** individually once `4.11` lands -
       observed H3K27ac 39x the genome median where the model predicts near-background.
 
@@ -93,12 +103,19 @@ attribute any gain to the architecture or to the loss.
 
 ## Which model transfers best, do not assume the in-cell-type winner
 
-- [~] **RUNNING: transfer matrix** (`2.24`). narrow/wide x flat/fragments, both directions,
-      with each target's own models in the same table so the transfer drop is readable.
-      The in-cell-type ranking is NOT the deployment ranking: wide gained +0.028/+0.016
-      in-cell-type but only +0.012/+0.005 transferred, neither significant. Fragment channels
-      have never been tested on transfer and are the arm most at risk, since fragment-size
-      distributions are library properties.
+- [x] **Transfer matrix. CLOSED 2026-09-05** (`2.24`, F-005). Finished and written up; this
+      entry was left marked RUNNING by mistake and the marker was cleared 2026-09-14 after
+      re-deriving every delta from `txmatrix_*_per_fold.tsv` with `2.38`, which reproduced
+      F-005 exactly. Paired against narrow+flat transferred, top-quintile Pearson: wide
+      +0.0114 (*p*=0.14) K562->GM12878 and +0.0053 (*p*=0.53) GM12878->K562; **fragment
+      channels -0.0011 (*p*=0.86) and -0.0029 (*p*=0.75), exactly null in both directions**
+      despite gaining +0.0055 (*p*=0.032) and +0.0156 (*p*=0.002) in-cell. Fragment-length
+      structure is a property of a specific ATAC library, which no in-cell test can detect.
+      Wide moves `overall_pearson` (+0.0079, *p*=0.009) and `residual_pearson` (+0.0495,
+      *p*=0.0009) transferred while leaving top-quintile unresolved, so it survives transfer
+      on the mechanistic metric only. A transferred multimodal beats the target's own
+      ATAC-only floor by +0.0306 [+0.0130, +0.0482] (*p*=0.008) into K562 but only
+      +0.0132 [-0.0141, +0.0405] (*p*=0.25) into GM12878.
 - [ ] **TeloHAEC as a third cell type, with conditions.** The only new cell type under the
       ATAC-only rule. Tracks, elements and model-free coupling are ready. Caveats to carry:
       ATAC-derived elements (though derivation was shown not to matter, p = 0.83), 36 bp reads
@@ -335,10 +352,17 @@ auxiliary task, or an annotation. Ordered so the cheap prerequisite gates the ex
       ATAC, +0.0016 and non-significant for ATAC only, which is the control (report Fig. 13).
       Currently opt-in via `2.15 --rc-average` so existing numbers stay comparable. Adopting
       it means re-scoring the report's tables as a set.
-- [ ] **Do the wider receptive field and the fragment channels combine?** `n_layers` 10 x
-      5 fragment channels, 5 fold-jobs. Both act on the accessibility side and may read the
-      same neighbourhood structure, so +0.027 and +0.0135 may not sum. This decides what the
-      deployed model is, so it should run before the ABC arms are treated as final.
+- [x] **Do the wider receptive field and the fragment channels combine? ANSWERED, they are
+      SUB-ADDITIVE, and it does not matter for deployment.** Closed 2026-09-14; the model
+      (`multimodal5p_fragchan_wide_hw500_clw10`) was trained and scored earlier and the answer
+      was sitting unread in `txmatrix_gm12878_to_k562_per_fold.tsv` and
+      `rc_fragwide_k562_per_fold.tsv`. In-cell K562 top-quintile, paired: wide+frag over
+      wide-alone **+0.0065 (*p*=0.053)** against fragment channels' +0.0156 on their own, and
+      over frag-alone +0.0188 (*p*=0.015) against wide's +0.0280 on its own. So each addition
+      keeps roughly half its solo gain and they do not sum. **Deployment is decided by transfer,
+      not by this:** wide+frag over wide-alone transferred is +0.0045 (*p*=0.52), and F-005
+      already showed fragment channels are null transferred in both directions, so the
+      combination adds nothing a deployed model could use. Prefer wide+flat.
 
 ## Open questions
 
@@ -367,10 +391,19 @@ auxiliary task, or an annotation. Ordered so the cheap prerequisite gates the ex
       **multimodal +0.027 (p=0.006) and +0.014 (p=0.025)**, all five folds rising in both.
       Accessibility residual 0.502 -> 0.547 and 0.397 -> 0.469.
       Results in `wide_{k562,gm12878}_*.tsv`; report Fig. 10.
-      - [ ] **ATAC-only wide arm is RUNNING** (10 fold-jobs, submitted 2026-09-03). If it
-            reproduces the multimodal gain, the extra context is used purely as accessibility
-            neighbourhood and sequence contributes nothing to it, which would also mean the
-            deployed model should simply be widened.
+      - [x] **ATAC-only wide arm. DONE, and it reproduces the multimodal gain.** Closed
+            2026-09-14; the 10 fold-jobs finished and were scored into
+            `rc_wide_{k562,gm12878}_per_fold.tsv`, where the marker was left stale. Top-quintile,
+            paired within fold: ATAC-only widening gains **+0.0168 [+0.0048, +0.0288]**
+            (*p*=0.018) in K562 and **+0.0144 [+0.0071, +0.0217]** (*p*=0.005) in GM12878,
+            against the multimodal gains of +0.0280 and +0.0162 in the same tables. In GM12878
+            the ATAC-only arm captures essentially the whole effect, so the extra context is
+            being read as accessibility neighbourhood rather than as sequence context; K562
+            leaves room for a sequence contribution (+0.0280 against +0.0168) but the intervals
+            overlap. Conclusion as pre-registered: widen the deployed model.
+            **Caveat:** both arms come from the RC-averaged tables, which is internally
+            consistent since every arm in those tables is RC-averaged, but the numbers are not
+            directly comparable to the non-RC `wide_*` tables.
       - [ ] Decide whether to re-run the transfer and deployment comparisons at
             `n_layers` 10, since those used the narrow multimodal model.
 - [ ] **Decide what to do with the profile head, one decision, three options.** The 1 bp
