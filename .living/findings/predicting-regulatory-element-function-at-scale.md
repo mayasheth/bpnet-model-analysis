@@ -337,3 +337,52 @@ smoothed inputs.
 | Date | Run/Session | Dataset | Project | Result | Direction |
 |------|-------------|---------|---------|--------|-----------|
 | 2026-09-12 | control track `0.36`, painting 42923575 + `4.22`, training 43080124-33 (`1.26`), scoring 43118504 (`2.36`) | K562 H3K27ac 5' target under four accessibility inputs: ATAC, real DNase, DNase smoothed 250 bp, converted DNase | 2026_0824_H3K27ac_model | top-quintile Pearson 0.690 / 0.728 / 0.704 / 0.680; smoothing costs +0.0239 of DNase's +0.0379; converted arm -0.0099 against ATAC | supports shape, refutes this converter |
+
+
+---
+
+## F-014: The converter fails as an input in all four transfer directions, and whether DNase wins on shape or magnitude depends on the cell type
+**Status:** established
+**Claim:** Four accessibility inputs x two training cell types, each scored in both cell
+types, 5 folds, paired within fold against the ATAC-input arm of the same direction.
+Top-quintile Pearson:
+
+| input | K562->K562 | K562->GM12878 | GM->GM | GM->K562 |
+|---|---|---|---|---|
+| ATAC | 0.690 | 0.527 | 0.579 | **0.607** |
+| real DNase | **0.728** (+0.038) | **0.570** (+0.043) | **0.663** (+0.084) | 0.474 (-0.133) |
+| DNase smoothed 250 bp | 0.704 (+0.014, ns) | 0.503 (-0.024, ns) | 0.662 (+0.083) | 0.309 (-0.297) |
+| converted, power gamma=1.2 | 0.679 (-0.011) | 0.469 (-0.058) | 0.558 (-0.021) | 0.484 (-0.123) |
+
+**The converted input is resolvably worse than plain ATAC in every direction**: -0.0105
+[-0.0202, -0.0007] in-cell K562, -0.0579 [-0.1005, -0.0153] transferred to GM12878, -0.0206
+[-0.0313, -0.0100] in-cell GM12878. **Whether DNase's advantage is shape or magnitude is
+cell-type dependent**: smoothing at 250 bp costs real DNase +0.0239 [+0.0027, +0.0451]
+(*p*=0.035) in K562 and +0.0677 [+0.0533, +0.0822] (*p*=0.0002) transferred to GM12878, but
+**+0.0011 [-0.0069, +0.0091] (*p*=0.72) in-cell GM12878**, i.e. nothing at all. **Transfer is
+asymmetric in the same direction as p300** (F-009): K562-trained models keep the DNase
+advantage in GM12878, while every DNase-family input transferred GM12878->K562 lands far below
+ATAC, and the plain ATAC-input model is the best transferred model in that direction.
+**Implications:** The converter is finished as a model input. Two independent attempts at the
+magnitude defect diagnosed in F-013, quantile mapping (0.37) and a power transform fitted
+out-of-cell (0.39, 0.40), both left the downstream number unmoved (-0.0099 -> -0.0105), so the
+magnitude distortion was not what was costing it. Reproducing the DNase profile at 95% of its
+inter-replicate ceiling (F-011) is not sufficient to substitute for the assay, and no further
+post-hoc transform is worth trying. F-013's headline, that DNase wins on sub-250 bp structure,
+survives only where DNase is deep enough to HAVE reliable shape: GM12878's DNase is 53.8M reads
+against K562's 301.1M with a profile ceiling of 0.686 against 0.848, and there the entire
+advantage is magnitude. F-013 was K562-only and flagged that as a caveat; the caveat turned out
+to be load-bearing.
+**Caveats:** The GM12878->K562 collapse is large enough (-0.13 to -0.30) to be worth a
+sanity check that it is not an artefact of the GM12878 models' own weakness rather than of
+direction; the in-cell GM12878 arms are strong (0.663), which argues against that, but a third
+cell type is the only clean test. Two cell types still cannot separate "K562 is a good training
+cell type" from "K562->GM12878 is a good pair", and this is now the second finding pointing at
+that gap (F-009 was the first). The converted arm used gamma fitted in GM12878 and applied to
+both, which is deployment-legal but leaves K562's dynamic range at 24x against real DNase's 39x.
+**Tags:** dnase, atac, converter, accessibility-input, transfer, asymmetry, shape, magnitude, negative-result
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-09-13 | transform 43300449/51 (`0.39`, `0.40`), training 43302465-77 (`1.26`, `1.27`), scoring 43337247 (`2.37`) | K562 and GM12878 H3K27ac under ATAC / real DNase / DNase smoothed 250 bp / converted-power inputs, both training cell types, both targets | 2026_0824_H3K27ac_model | converted input below ATAC in all four directions; smoothing costs +0.024 in K562 and +0.001 in GM12878; GM12878->K562 collapses for every DNase input | refutes the converter, qualifies F-013 |

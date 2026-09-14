@@ -612,3 +612,41 @@ explanation if the converted arm underperforms. The thresholded track's genome-w
 a uniform factor is absorbed, but the distortion is not uniform.
 
 **Tags**: converter, painting, threshold, dynamic-range, confound
+
+
+### [2026-09-14] Stop work on the ATAC-to-DNase converter as a model input
+
+**Context**: F-011 established the converter reproduces the DNase profile at 95% of its
+inter-replicate ceiling. F-012 showed it buys nothing as an ABC activity term, which scores
+counts and discards the profile. F-013 showed it is resolvably WORSE than plain ATAC as a
+model input, where the profile can matter, and diagnosed magnitude distortion as the likely
+cause. F-014 tried two independent fixes for that and neither moved the number.
+
+**Decision**: Stop. No third transform, no retraining of the converter, no further downstream
+arm. The converted track is not usable as an accessibility input and the reason is not the
+magnitude defect that was blamed.
+
+**Alternatives considered**:
+- A third post-hoc transform: rejected. Quantile mapping (0.37) fixed the marginal exactly and
+  made dynamic range worse (18x -> 9x against real DNase's 39x); a power transform fitted
+  out-of-cell (0.39) raised range to 24x at a shape cost of 0.006 and moved the downstream
+  delta from -0.0099 to -0.0105. Two attacks on the same hypothesis, both null, is enough.
+- Retraining the converter with a count-focused objective: rejected for now, and recorded
+  rather than closed. Its counts are already top-quintile r 0.878, and the part of DNase
+  counts carrying the benefit is by construction the part that differs from ATAC counts.
+- Better shape: there is nowhere to go. 95% of the inter-replicate ceiling is the ceiling.
+
+**Rationale**: The converter's measured strength is shape, and F-014 shows shape is not even
+the operative property in every cell type: in-cell GM12878, smoothing DNase to destroy all
+sub-250 bp structure costs +0.0011 (*p*=0.72). So the thing the converter is good at is worth
+nothing where DNase is shallow, and where it is worth something the converter still loses.
+
+**Consequences**: The DNase line keeps its positive results, which do not depend on the
+converter: DNase as an input (F-010, F-014) and DNase as an ABC activity term (+0.0709, F-012).
+Both require real DNase, so the deployment story is now "use DNase where it exists" rather than
+"synthesise it where it does not". That makes the DNase-input panel across more cell types the
+successor to this line, and THP-1 is built and ready for it. The painted tracks, `4.20`, `4.22`,
+`0.36`, `0.37`, `0.39` and `0.40` are kept: the machinery is what a later converter attempt
+would reuse, and the shape-destroyed control is reusable for any input-property question.
+
+**Tags**: converter, dnase, atac, accessibility-input, stop-decision, negative-result

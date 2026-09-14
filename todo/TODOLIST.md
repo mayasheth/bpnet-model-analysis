@@ -213,24 +213,77 @@ auxiliary task, or an annotation. Ordered so the cheap prerequisite gates the ex
       **Also measured:** `profile_pearson` is 0.063-0.064 across all four arms, so the
       H3K27ac profile head learns nothing whatever accessibility it is given.
 
-- [ ] **Fix the painted track's magnitude before any further converter arm.** Now the top
-      priority in this line, and it has a specific target rather than a vague "improve counts":
-      quantile-map the painted track to a reference accessibility distribution so its value
-      distribution matches a real 5-prime track instead of a thresholded softmax. This is
-      deployment-legal, since the reference can come from another cell type. Without it the
-      F-013 negative confounds shape fidelity with magnitude distortion and cannot be read as
-      evidence about either.
+- [x] **Magnitude fixes for the painted track. BOTH FAILED 2026-09-14, F-014.** Quantile
+      mapping to another cell type's DNase distribution (`0.37`) matched the marginal exactly
+      and made dynamic range WORSE, 18x to 9x against real DNase's 39x, costing 0.12 of 1 bp
+      top-quintile shape. A power transform with gamma fitted out-of-cell (`0.39`, `0.40`)
+      raised range to 24x for a shape cost of 0.006, and moved the downstream delta from
+      -0.0099 to -0.0105, i.e. nothing. Magnitude was not what was costing the converter.
 
-- [ ] **Sweep the control's filter width.** 250 bp is one point, chosen because observed ATAC
-      and DNase already agree about shape there. The smoothed arm's interval is wide
-      ([-0.0057, +0.0338] against DNase's +0.0379), so "most of the advantage is shape" is a
-      point estimate whose interval does not exclude magnitude carrying much of it. Widths of
-      50 and 100 bp would localise the scale that matters and tighten the claim. Cheap: the
-      track builder is `0.36` and training is `1.26`.
+- [x] **The converter is finished as a model input. STOPPED 2026-09-14** (decision
+      2026-09-14, F-014). Resolvably worse than plain ATAC in all four directions of the 2x2:
+      -0.0105 in-cell K562, -0.0579 K562->GM12878, -0.0206 in-cell GM12878. Do not attempt a
+      third transform. The machinery is kept (`4.20`, `4.22`, `0.36`, `0.37`, `0.39`, `0.40`)
+      because a later attempt would reuse it and the shape-destroyed control generalises.
 
-- [ ] **Multi-task arm: DNase profile head, H3K27ac counts head.** WAIT FOR THE CONTROL
-      ABOVE, then run. Same trunk, same counts objective, profile head's target swapped from
-      H3K27ac to DNase.
+- [x] **Filter-width sweep for the shape control. SUPERSEDED 2026-09-14, F-014.** The 2x2
+      answered the question the sweep was meant to tighten, and answered it differently than
+      expected: whether DNase wins on shape or magnitude is CELL-TYPE DEPENDENT. Smoothing at
+      250 bp costs real DNase +0.0239 (*p*=0.035) in K562 and +0.0677 (*p*=0.0002) transferred
+      to GM12878, but **+0.0011 (*p*=0.72) in-cell GM12878**. Shape matters where DNase is deep
+      enough to have reliable shape: GM12878's DNase is 53.8M reads against K562's 301.1M, with
+      a profile ceiling of 0.686 against 0.848. A width sweep within K562 would have tightened
+      a claim that does not generalise; the informative axis is depth, not width.
+
+- [ ] **DNase-input panel, third cell type: THP-1. TRACKS READY 2026-09-14.** Now the
+      successor to the converter line, because both surviving DNase results need REAL DNase:
+      DNase as an input (F-010, F-014) and DNase as an ABC activity term (+0.0709, F-012). The
+      deployment story is "use DNase where it exists", not "synthesise it where it does not",
+      and DNase exists in far more cell types than ATAC.
+
+      `0.38` built THP-1's DNase 5-prime input, pooled and per-replicate stranded H3K27ac
+      targets (read 1 only; both replicates are paired-end), DNase-derived candidate elements,
+      and the H3K27ac inter-replicate ceiling: 0.974 raw, 0.993 Spearman-Brown corrected on all
+      elements. DNase alignments are at
+      `Users/sheth/Data/ENCODE/THP1/DNase/AG81591.filtered.bam`; the inventory previously said
+      THP-1 had none and was not modellable, which was wrong and had ruled it out.
+
+      **What THP-1 can and cannot do.** One DNase replicate, so no DNase shape ceiling and no
+      use as a converter target. No ATAC, so it cannot train a converter and cannot join an
+      ATAC-input comparison. It is a DNase-input panel member, which is what is now wanted.
+
+      Next: train ATAC-free DNase-input H3K27ac models in THP-1, 5 folds, then score the
+      three-way transfer matrix. Three cell types is the minimum that separates "K562 is a good
+      training cell type" from "K562->GM12878 is a good pair", which two findings now need.
+
+- [ ] **Sanity-check the GM12878->K562 collapse.** Every DNase-family input transferred in
+      that direction lands far below ATAC (-0.133 real DNase, -0.297 smoothed), and the plain
+      ATAC-input model is the best transferred model there. The in-cell GM12878 arms are strong
+      (0.663 top-quintile), which argues against the GM12878 models simply being weak, but that
+      is an inference rather than a test. Same asymmetry and same direction as p300 (F-009), so
+      this is now the second finding blocked on the same gap.
+
+- [ ] **Multi-task arm: DNase profile head, H3K27ac counts head. UNBLOCKED 2026-09-14.**
+      The control it was waiting on has run (F-013, F-014). Same trunk, same counts objective,
+      profile head's target swapped from H3K27ac to DNase.
+
+      **Its premise held up and is now measured twice.** `profile_pearson` sits at 0.063-0.064
+      across ALL FOUR accessibility inputs in K562 (F-013), so the H3K27ac profile head learns
+      nothing whatever it is fed. It is dead weight with a target whose 1 bp inter-replicate
+      ceiling is 0.21.
+
+      **Run it in K562, not GM12878, and F-014 is the reason.** A DNase profile head is only a
+      learnable auxiliary task where DNase has reliable base-resolution shape. K562's DNase
+      profile ceiling is 0.848; GM12878's is 0.686 on a 5.6x shallower library, and F-014
+      showed that in GM12878 destroying all sub-250 bp DNase structure costs the model nothing
+      (*p*=0.72). Training the auxiliary head against GM12878 DNase would be fitting the same
+      noise the H3K27ac head already fits.
+
+      **Note what it does NOT inherit from the converter's failure.** This uses DNase as a
+      TARGET at training time and needs no DNase at inference, so it is unaffected by the
+      painted track being unusable (F-014) and is deployment-legal by the same argument that
+      makes a multi-head model preferable to feeding p300 in (DATA_INVENTORY, deployment
+      constraint).
 
       **Why.** The H3K27ac profile head currently trains against a target whose 1 bp
       inter-replicate ceiling is 0.21, i.e. mostly noise. D-3 kept it anyway, down-weighted,
