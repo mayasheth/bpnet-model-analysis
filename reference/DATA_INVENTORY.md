@@ -9,22 +9,27 @@ to tagAlign per ENCODE standards.
 
 Root for ENCODE cell types: `/oak/stanford/groups/engreitz/Users/sheth/Data/ENCODE/<cell>`.
 
-## Assay availability — what constrains the panel
+## Assay availability, what constrains the panel
 
 | cell type | DNase | ATAC | H3K27ac | EP300 | CTCF | H3K4me1 | H3K27me3 |
 |---|---|---|---|---|---|---|---|
 | K562     | yes (x2) | **yes** | yes | **yes** | yes | yes | yes |
 | GM12878  | yes | **yes** | yes | **yes** | yes | yes | yes |
-| TeloHAEC | — | **yes** (4 conditions) | yes (4 conditions) | — | — | — | — |
-| WTC11    | yes | — | Mint-ChIP | — | yes | Mint-ChIP | Mint-ChIP |
-| HCT116   | yes | — | yes | — | yes | yes | yes |
-| Jurkat   | yes | — | yes (GEO) | — | yes (GEO) | yes (GEO) | yes (GEO) |
-| H1       | yes | — | yes | — | yes | yes | yes |
-| H9       | yes | — | yes | — | yes | yes | yes |
-| THP-1    | yes (bigwig only) | — | yes (GEO) | — | — | — | — |
+| TeloHAEC |, | **yes** (4 conditions) | yes (4 conditions) |, |, |, |, |
+| WTC11    | yes |, | Mint-ChIP |, | yes | Mint-ChIP | Mint-ChIP |
+| HCT116   | yes |, | yes |, | yes | yes | yes |
+| Jurkat   | yes |, | yes (GEO) |, | yes (GEO) | yes (GEO) | yes (GEO) |
+| H1       | yes |, | yes |, | yes | yes | yes |
+| H9       | yes |, | yes |, | yes | yes | yes |
+| THP-1    | yes (1 rep, BAM) |, | yes (GEO, 2 reps pe) |, |, |, |, |
 
 **Consequences.** ATAC exists in only three cell types (K562, GM12878, TeloHAEC), which is what
-forces the ATAC-only panel rule. **EP300 exists in exactly two (K562, GM12878)** — enough to
+forces the ATAC-only panel rule. **That rule is now the binding constraint rather than a
+neutral choice**: DNase beats ATAC as a model input (F-010) and the advantage is base-resolution
+structure (F-013), while DNase is available in far more cell types than ATAC. A DNase-input
+panel is internally consistent and roughly doubles the cell types in reach.
+**A converter training cell type needs BOTH assays, and only K562 and GM12878 have both**, which
+is what blocks any claim about converter portability. **EP300 exists in exactly two (K562, GM12878)**, enough to
 test p300 transferability the same way H3K27ac was tested. CTCF, H3K4me1 and H3K27me3 are
 available in six cell types, so annotation-based analyses generalise further than modelling
 does.
@@ -33,15 +38,15 @@ does.
 
 | assay | experiment | run | processed | fold-change bigwig | peaks | peak type |
 |---|---|---|---|---|---|---|
-| DNase | ENCSR000EOT | pe,se | `ENCFF205FNC`, `ENCFF860XAE`.filtered.sorted.bam | ENCFF414OGC | — | — |
-| DNase | ENCSR000EKS | se | `ENCFF987IUK.filtered.sorted.bam` | — | — | — |
-| H3K27ac | ENCSR000AKP | se | `ENCFF790GFL.se`, `ENCFF817HMW.se`.filtered.sorted.bam | — (signal on mitra) | `ENCFF544LXB` | pseudoreplicated |
-| ATAC | ENCSR868FGK | pe | `ENCFF077FBI`, `ENCFF128WZG`, `ENCFF534DCE`.tn5.sorted.tagAlign.gz | — | — | — |
+| DNase | ENCSR000EOT | pe,se | `ENCFF205FNC`, `ENCFF860XAE`.filtered.sorted.bam | ENCFF414OGC |, |, |
+| DNase | ENCSR000EKS | se | `ENCFF987IUK.filtered.sorted.bam` |, |, |, |
+| H3K27ac | ENCSR000AKP | se | `ENCFF790GFL.se`, `ENCFF817HMW.se`.filtered.sorted.bam |, (signal on mitra) | `ENCFF544LXB` | pseudoreplicated |
+| ATAC | ENCSR868FGK | pe | `ENCFF077FBI`, `ENCFF128WZG`, `ENCFF534DCE`.tn5.sorted.tagAlign.gz |, |, |, |
 | CTCF | ENCSR000AKO | se | `ENCFF216XRV`, `ENCFF678LBZ`.filtered.sorted.bam | ENCFF405AYC | `ENCFF519CXF` | optimal IDR |
 | EP300 | ENCSR000EGE | se | `ENCFF466WKF`, `ENCFF163FSR`.filtered.sorted.bam | ENCFF636VVR | `ENCFF702XPO` | IDR |
 | H3K4me1 | ENCSR000AKS | se | `ENCFF524BOJ`, `ENCFF204MWI`, `ENCFF665JSC`.filtered.sorted.bam | ENCFF607SUJ | `ENCFF135ZLM` | replicated |
 | H3K27me3 | ENCSR000AKQ | se | `ENCFF549RYG`, `ENCFF483EPA`, `ENCFF351YGP`.filtered.sorted.bam | ENCFF242ENK | `ENCFF323WOT` | pseudoreplicated |
-| IgG control | ENCSR000EHI | se | `ENCFF396DTD.sorted.bam` | — | — | — |
+| IgG control | ENCSR000EHI | se | `ENCFF396DTD.sorted.bam` |, |, |, |
 
 ATAC PE BAMs (`*.pe.bam`) are on `$SCRATCH/atac_pe`; fragment channels need them.
 
@@ -52,9 +57,9 @@ R1 is paired-end but was processed as single-end, and R1 depth >> R2.
 
 | assay | experiment | run | processed | bigwig | peaks | peak type |
 |---|---|---|---|---|---|---|
-| DNase | ENCSR000EMT | se | `ENCFF467CXY_sorted.bam`, `ENCFF940NSD_sorted.bam` | — | — | — |
-| H3K27ac | ENCSR000AKC | se | `ENCFF645BAL`, `ENCFF865OOP`.filtered.sorted.bam | — | `ENCFF023LTU` | pseudoreplicated |
-| ATAC | ENCSR637XSC | pe | `ATAC/ENCFF981FXV`, `ENCFF962FMH`, `ENCFF440GRZ`.tn5.sorted.tagAlign.gz | — | — | — |
+| DNase | ENCSR000EMT | se | `ENCFF467CXY_sorted.bam`, `ENCFF940NSD_sorted.bam` |, |, |, |
+| H3K27ac | ENCSR000AKC | se | `ENCFF645BAL`, `ENCFF865OOP`.filtered.sorted.bam |, | `ENCFF023LTU` | pseudoreplicated |
+| ATAC | ENCSR637XSC | pe | `ATAC/ENCFF981FXV`, `ENCFF962FMH`, `ENCFF440GRZ`.tn5.sorted.tagAlign.gz |, |, |, |
 | EP300 | ENCSR000DZG | se | `EP300/ENCFF515HYM`, `EP300/ENCFF215GSQ`.filtered.sorted.bam | ENCFF545BXW | `EP300/ENCFF926AKK.bed.gz` | IDR |
 | CTCF | ENCSR000AKB | se | `ENCFF067RMO`, `ENCFF551LHV`.filtered.sorted.bam | ENCFF734CUT | `ENCFF797SDL` | IDR |
 | H3K4me1 | ENCSR000AKF | se | `ENCFF757IRH`, `ENCFF579EEP`.filtered.sorted.bam | ENCFF564KBE | `ENCFF321BVG` | pseudoreplicated |
@@ -82,40 +87,50 @@ Caveats for modelling: 35-36 bp reads against K562/GM12878's 94-95 bp, shallower
 and ATAC-derived elements. Element derivation was shown not to matter (p = 0.83), but read
 length and depth remain confounded.
 
-## Other cell types — H3K27ac and annotations, no ATAC
+## Other cell types, H3K27ac and annotations, no ATAC
 
-**WTC11** `Data/ENCODE/WTC11` — DNase ENCSR785ZUI (`ENCFF492WXQ`, `ENCFF715YXX`.sorted.bam);
+**WTC11** `Data/ENCODE/WTC11`, DNase ENCSR785ZUI (`ENCFF492WXQ`, `ENCFF715YXX`.sorted.bam);
 H3K27ac **Mint-ChIP** ENCSR146DPQ (`ENCFF738QRT`, `ENCFF696GDY`.sorted.bam, peaks
 `ENCFF655PNM`); CTCF ENCSR992XTY (peaks `ENCFF112GJQ`, IDR); H3K4me1 ENCSR473GYW
 (`ENCFF199JTJ`); H3K27me3 ENCSR418YEV (`ENCFF801DJK`). H3K27ac is Mint-ChIP, excluded from
 the panel.
 
-**HCT116** `Data/ENCODE/HCT116` — DNase ENCSR000ENM; H3K27ac ENCSR661KMA (`ENCFF943GHK`,
+**HCT116** `Data/ENCODE/HCT116`, DNase ENCSR000ENM; H3K27ac ENCSR661KMA (`ENCFF943GHK`,
 `ENCFF977FPK`, peaks `ENCFF899XEF`); CTCF ENCSR240PRQ (`ENCFF803RIY`, IDR); H3K4me1
 ENCSR161MXP (`ENCFF240LRP`); H3K27me3 ENCSR810BDB (`ENCFF294LZM`). H3K27ac replicates differ
 in run type, so no inter-replicate ceiling is computable.
 
-**H1** `Data/ENCODE/H1` — DNase ENCSR000EMU; H3K27ac ENCSR000ANP (`ENCFF120QMN`,
+**H1** `Data/ENCODE/H1`, DNase ENCSR000EMU; H3K27ac ENCSR000ANP (`ENCFF120QMN`,
 `ENCFF104RJG`, **no peaks**); CTCF ENCSR000AMF (`ENCFF692RPA`, IDR); H3K4me1 ENCSR000ANA
 (`ENCFF984DGO`); H3K27me3 ENCSR000ALU (`ENCFF305KNA`).
 
-**H9** `Data/ENCODE/H9` — DNase ENCSR275ICP; H3K27ac ENCSR876RGF (`ENCFF825BCF`,
+**H9** `Data/ENCODE/H9`, DNase ENCSR275ICP; H3K27ac ENCSR876RGF (`ENCFF825BCF`,
 `ENCFF709WUL`, **no peaks**); CTCF ENCFF963CHU (3 reps, `ENCFF101UJJ`, conservative IDR);
 H3K4me1 ENCSR276HBK (`ENCFF188TGA`); H3K27me3 ENCSR792GCH (`ENCFF680AKW`). H3K27ac and the
 histone marks are Bing Ren / Roadmap. H9 elements are much wider (mean 798 bp vs ~570-600).
 
-**Jurkat** — DNase ENCSR000EOS in `Data/ENCODE/Jurkat`; everything else is GEO, processed by
+**Jurkat**, DNase ENCSR000EOS in `Data/ENCODE/Jurkat`; everything else is GEO, processed by
 jgalante under `Users/jgalante/making_jurkat/...`. H3K27ac GSE155555 (2 reps, peaks
 `Users/sheth/Data/SRA/Jurkat/H3K27ac/macs2_peaks.filtered.bed.gz`, top 54k); CTCF GSE130140
 (1 rep); H3K27me3 GSE85601 (1 rep); H3K4me1 GSE119439 (`Data/SRA/Jurkat/H3K4me1/
 SRR7782877.filtered.sorted.dedup.bam`, top 100k).
 
-**THP-1** — DNase ENCSR896ADX, **bigwig only** (filtered alignments came from
-regulome.altius.org as `AG81591.filtered.cram`). H3K27ac GSE201352 under
-`Projects/E2G/THP1/THP1_PRJNA830917/THP1_macrophages_0000min_R{1,2}/H3K27ac/`.
-No local DNase alignments, so THP-1 is not modellable without reprocessing.
+**THP-1** - DNase ENCSR896ADX, **alignments ARE on Oak** (corrected 2026-09-13; an earlier
+entry here said bigwig only and that THP-1 was not modellable, which was wrong and had ruled
+it out as a third cell type):
+`Users/sheth/Data/ENCODE/THP1/DNase/AG81591.filtered.bam` (5.8 GB, indexed; the
+`.filtered.cram` from regulome.altius.org sits beside it). **One replicate only**, so no
+DNase inter-replicate ceiling is computable. That does not block the H3K27ac panel, where the
+ceiling that matters is H3K27ac's, but it does block using THP-1 DNase as a CONVERTER TARGET,
+since 0.25's shape ceiling needs two replicates.
+H3K27ac GSE201352, two replicates, both paired-end, same run type, so the H3K27ac ceiling IS
+computable:
+`Projects/E2G/THP1/THP1_PRJNA830917/THP1_macrophages_0000min_R1/H3K27ac/SRR18899252.pe.filtered.sorted.dedup.bam`
+and `.../R2/H3K27ac/SRR18899253.pe.filtered.sorted.dedup.bam`, with MACS2 peaks alongside R2.
+**Paired-end, so read 1 only** when building 5-prime targets.
+No ATAC, so THP-1 can be a DNase-input panel member but not a converter training cell type.
 
-## Deployment constraint — what may be used as a MODEL INPUT
+## Deployment constraint, what may be used as a MODEL INPUT
 
 The application target is any cell type with ATAC-seq and nothing else. So:
 
