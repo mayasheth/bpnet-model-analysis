@@ -269,9 +269,30 @@ auxiliary task, or an annotation. Ordered so the cheap prerequisite gates the ex
       use as a converter target. No ATAC, so it cannot train a converter and cannot join an
       ATAC-input comparison. It is a DNase-input panel member, which is what is now wanted.
 
-      Next: train ATAC-free DNase-input H3K27ac models in THP-1, 5 folds, then score the
-      three-way transfer matrix. Three cell types is the minimum that separates "K562 is a good
-      training cell type" from "K562->GM12878 is a good pair", which two findings now need.
+      **SUBMITTED 2026-09-14** (`1.30`, jobs 43442172-84): `multimodal` and the
+      accessibility-only floor, 5 folds each. `1.30` is `1.22` with exactly three
+      substitutions, THP-1's DNase input, H3K27ac target and element set, so all three cell
+      types share every hyperparameter and can sit in one matrix. Pre-flight: 183,778
+      elements over 25 contigs, all present in both tracks, 2.3% all-zero H3K27ac windows,
+      125,187 elements in fold0's training chromosomes.
+
+      **Depth cuts both ways here, so neither cell type is the easier target.** THP-1's
+      H3K27ac is DEEPER than K562's (mean 208.2 per 1 kb window against 51.1) while its DNase
+      is SHALLOWER (281.4 against 910.2), being one replicate. First floor model in: THP-1
+      accessibility-only fold0 reaches validation count *r* 0.772 where K562's ATAC-only
+      equivalent reaches 0.836.
+
+      **The panel needed two floors that did not exist.** Every accessibility-only model in
+      the project used ATAC, and THP-1 has no ATAC, so the three cells would have had floors
+      built on different assays in a panel whose whole point is the DNase input. K562 and
+      GM12878 DNase-only arms submitted 2026-09-14 (`1.22 atac` / `1.23 atac`, jobs
+      43445448-533) into `atac5p_dnase_hw500_clw10` and
+      `gm12878_atac5p_dnase_hw500_clw10`. No new script was needed; both already took
+      `MODE atac` and nobody had run it.
+
+      Then score the three-way matrix: nine transfer cells plus each target's own DNase-only
+      floor. The config has to be built after the models exist, since `2.15` reads each
+      checkpoint's geometry from `model.trimming`.
 
 - [ ] **Sanity-check the GM12878->K562 collapse.** Every DNase-family input transferred in
       that direction lands far below ATAC (-0.133 real DNase, -0.297 smoothed), and the plain
