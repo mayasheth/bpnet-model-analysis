@@ -280,9 +280,34 @@ auxiliary task, or an annotation. Ordered so the cheap prerequisite gates the ex
       is an inference rather than a test. Same asymmetry and same direction as p300 (F-009), so
       this is now the second finding blocked on the same gap.
 
-- [ ] **Multi-task arm: DNase profile head, H3K27ac counts head. UNBLOCKED 2026-09-14.**
-      The control it was waiting on has run (F-013, F-014). Same trunk, same counts objective,
-      profile head's target swapped from H3K27ac to DNase.
+- [~] **Multi-task arm: DNase profile head, H3K27ac counts head. BUILT AND SUBMITTED
+      2026-09-14.** Same trunk, same counts objective, profile head's target swapped from
+      H3K27ac to DNase. Trainer change is in (`44e0e3c`): `extract_windows` takes an optional
+      second signal pair, the dataset carries it as a fourth/fifth slot, and the loss takes
+      `y_profile`. Gated by `scripts/test_profile_target.py`;
+      `scripts/test_asymmetric_loss.py` still passes unchanged, and all ten existing callers
+      of `extract_windows` keep the 4-tuple. Submit with `1.28`, score with `2.39`
+      (`config/multitask_k562_configs.json`), paired against
+      `multimodal5p_accs5p_hw500_clw10`.
+
+      **`--profile-loss-weight` was NOT in the original plan and the arm is uninterpretable
+      without it.** MNLL is `-sum(y * log_softmax)` plus a y-only term, so it scales with the
+      target's read depth, and `loss = profile + clw * count`. K562 DNase carries **17.8x**
+      the reads of K562 H3K27ac over these 1 kb windows (mean per-window total 910.2 against
+      51.1). Swapping the target in unweighted would have grown the profile term about 18x
+      and divided the effective count weight by the same factor, so a loss on counts would
+      have measured "we trained it to care less about counts" rather than anything about the
+      auxiliary task. The arm runs at the measured ratio, 0.0561, which starts the profile
+      term at the baseline's magnitude. Default stays 1.0, so no earlier run moves.
+
+      **Read only the counts columns.** `profile_*` in `2.39`'s table scores the profile head
+      against H3K27ac for both arms, so for this arm it measures how well a DNase-trained head
+      happens to predict H3K27ac shape. A drop there is expected and says nothing.
+
+      **If it comes out null, the weight is the first thing to question, not the last.** 0.0561
+      matches gradient magnitude to the baseline, which is the clean isolation of the change,
+      but it is also the smallest defensible weight. A sweep upward is the follow-up, and it
+      is cheap: no new tracks, no painting, five fold-jobs per weight.
 
       **Its premise held up and is now measured twice.** `profile_pearson` sits at 0.063-0.064
       across ALL FOUR accessibility inputs in K562 (F-013), so the H3K27ac profile head learns
