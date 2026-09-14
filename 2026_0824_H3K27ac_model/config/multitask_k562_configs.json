@@ -1,5 +1,6 @@
-[
- {
+{
+ "_comment": "Does giving the profile head a LEARNABLE target make the COUNTS head better? Both arms take the same ATAC input, the same DNase-derived elements, the same H3K27ac counts target and the same count_loss_weight; 1.28 is 1.11 plus two flags. Baseline is the status-quo arm whose profile head trains on H3K27ac, whose 1 bp inter-replicate ceiling is 0.21 and whose profile_pearson sits at 0.063-0.064 whatever it is fed (F-013). READ ONLY THE COUNTS COLUMNS: profile_pearson and profile_jsd here score both arms' profile heads against H3K27ac, so for the multi-task arm they measure how well a DNase-trained head happens to predict H3K27ac shape, which is not what it was trained for. CARRY THIS CAVEAT: early stopping watches the total validation loss, which for the multi-task arm includes the reweighted DNase profile term, so the arms trained for different lengths (53-99 epochs against 32-55). A positive result needs a 100-epoch baseline to separate the auxiliary task from the extra training.",
+ "baseline": {
   "label": "atac_input",
   "mode": "multimodal",
   "half_window": 500,
@@ -8,13 +9,15 @@
   "signal_plus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/h3k27ac_5p_plus.bw",
   "signal_minus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/h3k27ac_5p_minus.bw"
  },
- {
-  "label": "dnase_profile_head",
-  "mode": "multimodal",
-  "half_window": 500,
-  "model_dir": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/models/multimodal5p_accs5p_dnaseprof00561_hw500_clw10",
-  "accessibility_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0529_multimodal_p300_model/data/atac_5p.bw",
-  "signal_plus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/h3k27ac_5p_plus.bw",
-  "signal_minus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/h3k27ac_5p_minus.bw"
- }
-]
+ "compare": [
+  {
+   "label": "dnase_profile_head",
+   "mode": "multimodal",
+   "half_window": 500,
+   "model_dir": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/models/multimodal5p_accs5p_dnaseprof00561_hw500_clw10",
+   "accessibility_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0529_multimodal_p300_model/data/atac_5p.bw",
+   "signal_plus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/h3k27ac_5p_plus.bw",
+   "signal_minus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/h3k27ac_5p_minus.bw"
+  }
+ ]
+}
