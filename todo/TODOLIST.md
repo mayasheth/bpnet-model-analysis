@@ -280,8 +280,30 @@ auxiliary task, or an annotation. Ordered so the cheap prerequisite gates the ex
       is an inference rather than a test. Same asymmetry and same direction as p300 (F-009), so
       this is now the second finding blocked on the same gap.
 
-- [~] **Multi-task arm: DNase profile head, H3K27ac counts head. BUILT AND SUBMITTED
-      2026-09-14.** Same trunk, same counts objective, profile head's target swapped from
+- [~] **Multi-task arm: DNase profile head, H3K27ac counts head. RAN 2026-09-14, WINS
+      MARGINALLY, F-015 provisional.** Top-quintile Pearson 0.701 against the baseline's
+      0.690, paired **+0.0109 [+0.0006, +0.0211]** (*p*=0.043); overall +0.0026 [+0.0013,
+      +0.0039] (*p*=0.0046). The auxiliary task is decisively learnable: validation profile
+      *r* 0.530-0.561 across all five folds against the baseline's 0.060-0.068, and the head
+      drops H3K27ac shape to 0.004. All five folds move the same way.
+
+      **BLOCKING ITS INTERPRETATION: the epoch-matched control** (`1.29`, jobs 43440391-96,
+      running). Early stopping watches the total validation loss, which for this arm includes
+      the reweighted DNase profile term, so the arms stopped on different objectives and the
+      multi-task arm trained longer in every fold (53-99 epochs against 32-55). "The
+      auxiliary task helps the trunk" and "this arm trained longer" currently fit the result
+      equally well. `1.29` is the baseline to the same 100-epoch budget with checkpoint
+      selection unchanged. Score it with `2.38` against `multitask_k562_per_fold.tsv`, or add
+      it to `config/multitask_k562_configs.json` as a third entry and re-run `2.39`.
+
+      **If the control catches up**, the arm is an artefact of the stopping rule and the
+      honest next question is whether `--profile-loss-weight 0.0561` starved the auxiliary
+      task; sweep upward, five fold-jobs per weight. **If it does not**, F-015 promotes to
+      established and the effect is real but an order of magnitude below swapping the
+      accessibility INPUT to real DNase (+0.038, F-010), so it changes the architecture
+      rather than the strategy.
+
+      Original scoping, for the record: Same trunk, same counts objective, profile head's target swapped from
       H3K27ac to DNase. Trainer change is in (`44e0e3c`): `extract_windows` takes an optional
       second signal pair, the dataset carries it as a fourth/fifth slot, and the loss takes
       `y_profile`. Gated by `scripts/test_profile_target.py`;
