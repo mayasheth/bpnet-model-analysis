@@ -24,17 +24,36 @@ from bpnetlite.losses import MNLLLoss, log1pMSELoss, _mixture_loss
 
 
 def _asymmetric_mixture_loss(y, y_hat_logits, y_hat_logcounts, count_loss_weight,
-                             overprediction_weight, labels=None):
+                             overprediction_weight, labels=None, y_profile=None,
+                             profile_loss_weight=1.0):
     """_mixture_loss with the count term made asymmetric.
 
-    Identical to bpnetlite's `_mixture_loss` when overprediction_weight == 1.0 -- verified
-    numerically by scripts/test_asymmetric_loss.py, which is the regression gate for this
-    file being shared with the p300 models.
+    Identical to bpnetlite's `_mixture_loss` when overprediction_weight == 1.0 and
+    y_profile is None -- verified numerically by scripts/test_asymmetric_loss.py, which is
+    the regression gate for this file being shared with the p300 models.
 
     Above 1.0, squared log-count error is multiplied by that factor wherever the prediction
     EXCEEDS the truth. The endpoint (ABC ranking) is hurt far more by inventing signal at
     accessible-but-inactive elements than by missing a strong enhancer, and the symmetric
     loss encodes the opposite priority.
+
+    y_profile MAKES THE TWO HEADS READ DIFFERENT TARGETS. Normally both terms score `y`:
+    the profile head against its shape and the counts head against its sum. Given
+    y_profile, the profile head is scored against that instead while the counts head still
+    scores `y`. The point is an auxiliary task: H3K27ac's 1 bp inter-replicate ceiling is
+    0.21, so the profile head trains against mostly noise and `profile_pearson` sits at
+    0.063-0.064 whatever it is fed (F-013), whereas K562 DNase's is 0.848. Nothing about
+    this changes what the counts head predicts, which is the quantity of interest.
+
+    profile_loss_weight EXISTS BECAUSE MNLL SCALES WITH READ DEPTH. MNLL is
+    -sum(y * log_softmax(logits)) plus a y-only term, so a deeper profile target multiplies
+    the profile term and, since `loss = profile + count_loss_weight * count`, silently
+    DOWN-weights the counts term. K562 DNase carries 17.8x the reads of K562 H3K27ac over
+    the same 1 kb windows (910.2 against 51.1 mean), so swapping the target in unweighted
+    would divide the effective count weight by about 18 and a loss on counts would be
+    uninterpretable. Setting this to the depth ratio makes the profile term START at the
+    magnitude the baseline arm had, so count_loss_weight keeps its meaning and the only
+    thing that changed is what the profile head is pointed at.
     """
     y_hat_logits = y_hat_logits.reshape(y_hat_logits.shape[0], -1)
     y_hat_logits = torch.nn.functional.log_softmax(y_hat_logits, dim=-1)
@@ -42,10 +61,18 @@ def _asymmetric_mixture_loss(y, y_hat_logits, y_hat_logcounts, count_loss_weight
     y = y.reshape(y.shape[0], -1)
     y_ = y.sum(dim=-1).reshape(y.shape[0], 1)
 
+    # The profile term's target: y_profile when supplied, otherwise y itself.
+    yp = y if y_profile is None else y_profile.reshape(y_profile.shape[0], -1)
+    if y_profile is not None and yp.shape[-1] != y_hat_logits.shape[-1]:
+        raise ValueError(
+            f"profile target has {yp.shape[-1]} flattened positions but the profile head "
+            f"emits {y_hat_logits.shape[-1]}; n_outputs must match the PROFILE target's "
+            f"channel count, not the counts target's")
+
     if labels is not None:
-        profile_loss = MNLLLoss(y_hat_logits[labels == 1], y[labels == 1]).mean()
+        profile_loss = MNLLLoss(y_hat_logits[labels == 1], yp[labels == 1]).mean()
     else:
-        profile_loss = MNLLLoss(y_hat_logits, y).mean()
+        profile_loss = MNLLLoss(y_hat_logits, yp).mean()
 
     # log1pMSELoss is mean((log_pred - log1p(true))^2); reproduce it elementwise so the
     # over-prediction cases can be weighted.
@@ -55,7 +82,9 @@ def _asymmetric_mixture_loss(y, y_hat_logits, y_hat_logcounts, count_loss_weight
                     torch.ones_like(err))
     count_loss = (w * err.pow(2)).mean()
 
-    loss = profile_loss + count_loss_weight * count_loss
+    loss = profile_loss_weight * profile_loss + count_loss_weight * count_loss
+    # profile_loss is returned UNWEIGHTED so the logged and compared value stays on the
+    # same scale as every existing run's; only the gradient is reweighted.
     return profile_loss, count_loss, loss
 from bpnetlite.performance import calculate_performance_measures
 from bpnetlite.logging import Logger
@@ -95,7 +124,8 @@ class MultiModalBPNet(torch.nn.Module):
                  n_layers=8, n_outputs=2,
                  mode='multimodal', count_loss_weight=1, profile_output_bias=True,
                  count_output_bias=True, name=None, trimming=None, verbose=True,
-                 gate_accessibility=False, overprediction_weight=1.0):
+                 gate_accessibility=False, overprediction_weight=1.0,
+                 profile_loss_weight=1.0):
         super().__init__()
         assert mode in ('multimodal', 'sequence', 'atac'), \
             f"mode must be 'multimodal', 'sequence', or 'atac', got '{mode}'"
@@ -114,6 +144,9 @@ class MultiModalBPNet(torch.nn.Module):
         # A gate has no gradient pressure to close without this.
         self.overprediction_weight = overprediction_weight
         self.count_loss_weight = count_loss_weight
+        # Scales the profile term's gradient. Needed when the profile head reads a target
+        # of a different read depth from the counts head; see _asymmetric_mixture_loss.
+        self.profile_loss_weight = profile_loss_weight
         self.name = name or f"multimodal_bpnet.{mode}.{n_filters}.{n_layers}"
         self.trimming = trimming or 47 + sum(2**i for i in range(1, n_layers + 1))
 
@@ -217,13 +250,16 @@ class MultiModalBPNet(torch.nn.Module):
 
     def fit(self, training_data, optimizer, scheduler=None, offset_valid=None,
             X_valid=None, y_valid=None, max_epochs=100, batch_size=64,
-            dtype='float32', device='cuda', early_stopping=None):
+            dtype='float32', device='cuda', early_stopping=None,
+            profile_target=False, y_profile_valid=None):
         """Train the model.
 
         Parameters
         ----------
         training_data: DataLoader
             Yields (X, y, labels) tuples where X has shape (N, 5, in_length).
+            With profile_target, yields (X, y, labels, y_profile), and with residual
+            offsets as well, (X, offset, y, labels, y_profile).
         optimizer: torch.optim.Optimizer
         scheduler: lr_scheduler or None
         X_valid: torch.Tensor or None, shape (n, 5, in_length)
@@ -233,7 +269,22 @@ class MultiModalBPNet(torch.nn.Module):
         dtype: str or torch.dtype
         device: str
         early_stopping: int or None
+        profile_target: bool
+            The loader supplies a separate target for the profile head. Passed
+            EXPLICITLY rather than inferred from the batch, because the residual-offset
+            layout already uses arity to signal itself and (X, y, labels, y_profile) and
+            (X, offset, y, labels) are both length 4. Sniffing would silently read the
+            label column as a target.
+        y_profile_valid: torch.Tensor or None
+            Validation profile target. Required when profile_target is set, since the
+            validation loss must score the same objective as training.
         """
+        if profile_target and y_profile_valid is None:
+            raise ValueError("profile_target is set but y_profile_valid is None; the "
+                             "validation loss would score a different objective from "
+                             "training and early stopping would be meaningless")
+        if y_profile_valid is not None and not profile_target:
+            raise ValueError("y_profile_valid was given but profile_target is False")
         dtype = getattr(torch, dtype) if isinstance(dtype, str) else dtype
         device_type = device.split(':')[0]
         self.to(device)
@@ -247,12 +298,18 @@ class MultiModalBPNet(torch.nn.Module):
             tic = time.time()
 
             for data in training_data:
-                X, y, labels = data[0], data[-2], data[-1]
                 # Residual training: the dataset may insert a per-region count offset
                 # at data[1]. It is ADDED to the predicted logcounts before the loss, so
                 # the model learns (observed - offset) while the loss still scores the
-                # real target. data[-2]/data[-1] indexing above is unaffected.
-                offset = data[1].to(device).float() if len(data) > 3 else None
+                # real target.
+                if profile_target:
+                    X, y, labels, y_prof = data[0], data[-3], data[-2], data[-1]
+                    offset = data[1].to(device).float() if len(data) > 4 else None
+                    y_prof = y_prof.to(device)
+                else:
+                    X, y, labels = data[0], data[-2], data[-1]
+                    offset = data[1].to(device).float() if len(data) > 3 else None
+                    y_prof = None
                 X = X.to(device).float()
                 y = y.to(device)
                 labels = labels.to(device)
@@ -267,7 +324,9 @@ class MultiModalBPNet(torch.nn.Module):
                     train_profile_loss, train_count_loss, loss = _asymmetric_mixture_loss(
                         y, y_hat_logits, y_hat_logcounts,
                         self.count_loss_weight,
-                        getattr(self, "overprediction_weight", 1.0), labels
+                        getattr(self, "overprediction_weight", 1.0), labels,
+                        y_profile=y_prof,
+                        profile_loss_weight=getattr(self, "profile_loss_weight", 1.0)
                     )
 
                 loss.backward()
@@ -291,17 +350,31 @@ class MultiModalBPNet(torch.nn.Module):
 
                 valid_profile_loss, valid_count_loss, valid_loss = _asymmetric_mixture_loss(
                     y_valid, y_hat_logits, y_hat_logcounts, self.count_loss_weight,
-                    getattr(self, "overprediction_weight", 1.0)
+                    getattr(self, "overprediction_weight", 1.0),
+                    y_profile=y_profile_valid,
+                    profile_loss_weight=getattr(self, "profile_loss_weight", 1.0)
                 )
 
+                # Two calls when the heads read different targets: one y cannot serve both,
+                # and logging profile_pearson against the counts target would report the
+                # correlation of a head that was never trained on it.
                 measures = calculate_performance_measures(
-                    y_hat_logits, y_valid, y_hat_logcounts,
+                    y_hat_logits,
+                    y_valid if y_profile_valid is None else y_profile_valid,
+                    y_hat_logcounts,
                     kernel_sigma=7, kernel_width=81,
                     measures=['profile_pearson', 'count_pearson']
                 )
-
                 valid_profile_corr = numpy.nan_to_num(measures['profile_pearson'])
-                valid_count_corr = numpy.nan_to_num(measures['count_pearson'])
+                if y_profile_valid is None:
+                    valid_count_corr = numpy.nan_to_num(measures['count_pearson'])
+                else:
+                    count_measures = calculate_performance_measures(
+                        y_hat_logits, y_valid, y_hat_logcounts,
+                        kernel_sigma=7, kernel_width=81,
+                        measures=['count_pearson']
+                    )
+                    valid_count_corr = numpy.nan_to_num(count_measures['count_pearson'])
                 valid_time = time.time() - tic
 
                 self.logger.add([

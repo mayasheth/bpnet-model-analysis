@@ -64,6 +64,21 @@ def parse_args():
                    help="ChIP-seq signal BigWig, plus strand (target)")
     p.add_argument("--signal-minus-bw", default=None,
                    help="ChIP-seq signal BigWig, minus strand (target)")
+    p.add_argument("--profile-loss-weight", type=float, default=1.0,
+                   help="Multiplies the profile term in the loss. Default 1.0 reproduces "
+                        "every earlier run. Set it when --profile-target-plus-bw points "
+                        "the profile head at a track of different read depth: MNLL scales "
+                        "with depth, so an unweighted swap to a 17.8x deeper target "
+                        "divides the effective --count-loss-weight by about 18.")
+    p.add_argument("--profile-target-plus-bw", default=None,
+                   help="Separate target for the PROFILE head, plus strand. The counts "
+                        "head keeps --signal-plus-bw. Use to give the profile head a "
+                        "learnable auxiliary task: H3K27ac's 1 bp inter-replicate ceiling "
+                        "is 0.21 so that head trains on noise, while K562 DNase's is 0.848. "
+                        "Needs no second model and nothing extra at inference.")
+    p.add_argument("--profile-target-minus-bw", default=None,
+                   help="Minus strand of --profile-target-plus-bw. Omit for an unstranded "
+                        "profile target; n_outputs then follows the PROFILE target.")
     p.add_argument("--accessibility-bw", default=None,
                    # comma-separate for fragment-size-stratified channels, e.g.
                    #   --accessibility-bw all.bw,sub.bw,mono.bw,di.bw
@@ -148,13 +163,20 @@ def one_hot_encode(seq):
 
 def extract_windows(regions_df, genome_fa, signal_plus_bw, signal_minus_bw,
                     accessibility_bw, in_window, out_window, max_jitter,
-                    is_peak=True):
+                    is_peak=True, profile_plus_bw=None, profile_minus_bw=None):
     """Extract sequence, signal, and accessibility windows around each region center.
 
     genome_fa may be None for atac mode (seq extraction is skipped; seqs returned
     as empty array). signal_minus_bw may be None for unstranded targets, giving a
     1-channel signal array. accessibility_bw may be None in sequence mode, giving a
     zero accs array the model never reads.
+
+    profile_plus_bw OPTIONALLY EXTRACTS A SECOND TARGET, in this same loop and over the
+    same window bounds, and the return becomes a 5-tuple. Doing it here rather than in a
+    second call is the whole point: a region that any one track cannot serve is skipped,
+    and a second call would build its own `valid` mask, so a track with one short contig
+    would return a different number of rows and silently pair every row after that point
+    with the wrong region. Ten existing callers pass nothing and keep the 4-tuple.
 
     Returns
     -------
@@ -163,6 +185,8 @@ def extract_windows(regions_df, genome_fa, signal_plus_bw, signal_minus_bw,
     accs:    np.ndarray, (N, C, in_window + 2*max_jitter)  — C = number of comma-
              separated accessibility tracks; a single zero channel if none given
     valid:   bool array
+    profiles: np.ndarray, same shape convention as signals — ONLY when profile_plus_bw
+             is given, in which case this is a 5-tuple
     """
     jitter = max_jitter if is_peak else 0
     half_in = (in_window + 2 * jitter) // 2
@@ -173,6 +197,10 @@ def extract_windows(regions_df, genome_fa, signal_plus_bw, signal_minus_bw,
     plus_bw = pyBigWig.open(signal_plus_bw)
     stranded = signal_minus_bw is not None
     minus_bw = pyBigWig.open(signal_minus_bw) if stranded else None
+    use_prof = profile_plus_bw is not None
+    prof_plus_bw = pyBigWig.open(profile_plus_bw) if use_prof else None
+    prof_stranded = use_prof and profile_minus_bw is not None
+    prof_minus_bw = pyBigWig.open(profile_minus_bw) if prof_stranded else None
     # accessibility_bw may be a comma-separated list -> one input channel per track
     acc_paths = ([p for p in accessibility_bw.split(",") if p]
                  if accessibility_bw else [])
@@ -182,7 +210,7 @@ def extract_windows(regions_df, genome_fa, signal_plus_bw, signal_minus_bw,
     # chrom sizes come from the accessibility track only when there is no genome
     acc_chrom_sizes = dict(acc_bws[0].chroms()) if use_acc else dict(plus_bw.chroms())
 
-    seqs, signals, accs = [], [], []
+    seqs, signals, accs, profiles = [], [], [], []
     valid = np.zeros(len(regions_df), dtype=bool)
 
     for idx, row in regions_df.iterrows():
@@ -222,6 +250,17 @@ def extract_windows(regions_df, genome_fa, signal_plus_bw, signal_minus_bw,
                 continue
             sig_minus = np.nan_to_num(sig_minus, nan=0.0).astype(np.float32)
 
+        if use_prof:
+            pp = prof_plus_bw.values(chrom, s_out, e_out, numpy=True)
+            if pp is None or len(pp) != out_window + 2 * jitter:
+                continue
+            pp = np.nan_to_num(pp, nan=0.0).astype(np.float32)
+            if prof_stranded:
+                pm = prof_minus_bw.values(chrom, s_out, e_out, numpy=True)
+                if pm is None or len(pm) != out_window + 2 * jitter:
+                    continue
+                pm = np.nan_to_num(pm, nan=0.0).astype(np.float32)
+
         if use_acc:
             chans, bad_acc = [], False
             for bw in acc_bws:
@@ -241,6 +280,9 @@ def extract_windows(regions_df, genome_fa, signal_plus_bw, signal_minus_bw,
         signals.append(np.stack([sig_plus, sig_minus], axis=0) if stranded
                        else sig_plus[np.newaxis, :])
         accs.append(acc)
+        if use_prof:
+            profiles.append(np.stack([pp, pm], axis=0) if prof_stranded
+                            else pp[np.newaxis, :])
         valid[idx] = True
 
     if use_seq:
@@ -248,6 +290,10 @@ def extract_windows(regions_df, genome_fa, signal_plus_bw, signal_minus_bw,
     plus_bw.close()
     if stranded:
         minus_bw.close()
+    if use_prof:
+        prof_plus_bw.close()
+        if prof_stranded:
+            prof_minus_bw.close()
     for bw in acc_bws:
         bw.close()
 
@@ -255,14 +301,21 @@ def extract_windows(regions_df, genome_fa, signal_plus_bw, signal_minus_bw,
     L_in = in_window + 2 * jitter
     L_out = out_window + 2 * jitter
     if n == 0:
-        return (np.zeros((0, 4, L_in), dtype=np.float32),
-                np.zeros((0, 2 if signal_minus_bw is not None else 1, L_out),
-                         dtype=np.float32),
-                np.zeros((0, n_acc, L_in), dtype=np.float32),
-                valid)
+        empty = (np.zeros((0, 4, L_in), dtype=np.float32),
+                 np.zeros((0, 2 if signal_minus_bw is not None else 1, L_out),
+                          dtype=np.float32),
+                 np.zeros((0, n_acc, L_in), dtype=np.float32),
+                 valid)
+        if use_prof:
+            return empty + (np.zeros((0, 2 if prof_stranded else 1, L_out),
+                                     dtype=np.float32),)
+        return empty
 
     seqs_arr = np.stack(seqs) if use_seq else np.zeros((n, 4, L_in), dtype=np.float32)
-    return (seqs_arr, np.stack(signals), np.stack(accs), valid)
+    out = (seqs_arr, np.stack(signals), np.stack(accs), valid)
+    if use_prof:
+        return out + (np.stack(profiles),)
+    return out
 
 
 def normalize_accessibility(acc, mean=None, std=None):
@@ -294,13 +347,29 @@ class MultiModalPeakNegativeSampler(torch.utils.data.Dataset):
                  neg_seqs, neg_accs, neg_signals,
                  negative_ratio=0.1, in_window=2114, out_window=1000,
                  max_jitter=0, reverse_complement=False, random_state=None,
-                 mode='multimodal', peak_offsets=None, neg_offsets=None):
+                 mode='multimodal', peak_offsets=None, neg_offsets=None,
+                 peak_profiles=None, neg_profiles=None):
         self.peak_seqs = peak_seqs
         self.peak_accs = peak_accs
         self.peak_signals = peak_signals
         self.neg_seqs = neg_seqs
         self.neg_accs = neg_accs
         self.neg_signals = neg_signals
+
+        # Separate target for the profile head; None = both heads read peak_signals.
+        self.peak_profiles = peak_profiles
+        self.neg_profiles = neg_profiles
+        self.use_profile_target = peak_profiles is not None
+        if self.use_profile_target:
+            if neg_profiles is None:
+                raise ValueError("peak_profiles given without neg_profiles")
+            # The profile term is masked to labels == 1 so negatives never reach it, but
+            # they still have to collate to the right shape, and an all-zero stand-in
+            # would be a silent lie if that masking ever changed.
+            if len(peak_profiles) != len(peak_seqs) or len(neg_profiles) != len(neg_seqs):
+                raise ValueError(
+                    f"profile target rows do not match: peaks {len(peak_profiles)} vs "
+                    f"{len(peak_seqs)}, negatives {len(neg_profiles)} vs {len(neg_seqs)}")
 
         self.n_peaks = len(peak_seqs)
         self.n_negatives = len(neg_seqs)
@@ -336,6 +405,7 @@ class MultiModalPeakNegativeSampler(torch.utils.data.Dataset):
             label = 1
             seqs, accs, signals = self.peak_seqs, self.peak_accs, self.peak_signals
             offsets = self.peak_offsets
+            prof = self.peak_profiles
             self.n_peaks_seen += 1
         else:
             i = self.rng.randint(self.n_negatives)
@@ -343,15 +413,25 @@ class MultiModalPeakNegativeSampler(torch.utils.data.Dataset):
             label = 0
             seqs, accs, signals = self.neg_seqs, self.neg_accs, self.neg_signals
             offsets = self.neg_offsets
+            prof = self.neg_profiles
 
         Xi_seq = torch.from_numpy(seqs[i][:, jitter:jitter + self.in_window])
         Xi_acc = torch.from_numpy(accs[i][:, jitter:jitter + self.in_window])
         yi = torch.from_numpy(signals[i][:, jitter:jitter + self.out_window])
+        # Same `jitter` scalar as the sequence and accessibility crops above, which is
+        # what keeps the second target aligned with the first.
+        yp = (torch.from_numpy(prof[i][:, jitter:jitter + self.out_window])
+              if self.use_profile_target else None)
 
         if self.reverse_complement and self.rng.randint(2) == 1:
             Xi_seq = torch.flip(Xi_seq, [0, 1])
             Xi_acc = torch.flip(Xi_acc, [1])
             yi = torch.flip(yi, [0, 1])
+            # Flipped as its own block. Concatenating the two targets into one tensor and
+            # flipping dim 0 once would reverse the block order too, handing the profile
+            # head the counts target.
+            if yp is not None:
+                yp = torch.flip(yp, [0, 1])
 
         if self.mode == 'multimodal':
             Xi = torch.cat([Xi_seq, Xi_acc], dim=0)  # (5, in_window)
@@ -360,9 +440,20 @@ class MultiModalPeakNegativeSampler(torch.utils.data.Dataset):
         elif self.mode == 'atac':
             Xi = Xi_acc                               # (1, in_window)
 
+        # Layouts, all read by fit() from an EXPLICIT profile_target flag rather than
+        # from arity, since (X, offset, y, label) and (X, y, label, y_profile) are both
+        # length 4 and sniffing would read the label column as a target:
+        #   (X, y, label)                      plain
+        #   (X, offset, y, label)              residual training
+        #   (X, y, label, y_profile)           separate profile target
+        #   (X, offset, y, label, y_profile)   both
         if self.use_offsets:
-            # inserted at position 1; fit() reads data[0], data[1], data[-2], data[-1]
-            return Xi, torch.tensor(offsets[i], dtype=torch.float32), yi, label
+            off = torch.tensor(offsets[i], dtype=torch.float32)
+            if yp is not None:
+                return Xi, off, yi, label, yp
+            return Xi, off, yi, label
+        if yp is not None:
+            return Xi, yi, label, yp
         return Xi, yi, label
 
 
@@ -418,6 +509,9 @@ def main():
         raise ValueError("--accessibility-bw is required for --mode multimodal and "
                          "--mode atac")
 
+    if args.profile_target_minus_bw is not None and args.profile_target_plus_bw is None:
+        raise ValueError("--profile-target-minus-bw needs --profile-target-plus-bw")
+
     if args.count_offset_model is not None and args.accessibility_bw is None:
         raise ValueError("--count-offset-model requires --accessibility-bw, since the "
                          "offset model reads accessibility even when this model does not")
@@ -428,6 +522,8 @@ def main():
     target_record = {
         "signal_plus_bw": args.signal_plus_bw,
         "signal_minus_bw": args.signal_minus_bw,
+        "profile_target_plus_bw": args.profile_target_plus_bw,
+        "profile_target_minus_bw": args.profile_target_minus_bw,
         "accessibility_bw": args.accessibility_bw,
         "accessibility_channels": (
             [p for p in args.accessibility_bw.split(",") if p]
@@ -438,6 +534,7 @@ def main():
         "out_window": args.out_window,
         "n_layers": args.n_layers,
         "count_loss_weight": args.count_loss_weight,
+        "profile_loss_weight": args.profile_loss_weight,
         "count_offset_model": args.count_offset_model,
     }
 
@@ -473,9 +570,21 @@ def main():
         print(f"Offset model target verified against {rec_path}")
 
     # Stranded targets give 2 output tracks (the p300 setup); unstranded give 1.
-    n_outputs = 2 if args.signal_minus_bw is not None else 1
-    print(f"Target is {'stranded' if n_outputs == 2 else 'unstranded'} "
-          f"-> n_outputs={n_outputs}")
+    # n_outputs sizes the PROFILE head, so with a separate profile target it follows that
+    # target's strandedness, not the counts target's. The counts head is a single scalar
+    # either way.
+    use_prof_target = args.profile_target_plus_bw is not None
+    if use_prof_target:
+        n_outputs = 2 if args.profile_target_minus_bw is not None else 1
+        print(f"Profile head target: {args.profile_target_plus_bw}"
+              + (f" + {args.profile_target_minus_bw}"
+                 if args.profile_target_minus_bw else "")
+              + f" -> n_outputs={n_outputs}")
+        print(f"Counts head target:  {args.signal_plus_bw} (unchanged)")
+    else:
+        n_outputs = 2 if args.signal_minus_bw is not None else 1
+        print(f"Target is {'stranded' if n_outputs == 2 else 'unstranded'} "
+              f"-> n_outputs={n_outputs}")
 
     with open(args.fold) as f:
         fold_data = json.load(f)[str(args.fold_key)]
@@ -513,27 +622,44 @@ def main():
 
     genome = args.genome  # None for atac mode — extract_windows handles this
 
-    print("Extracting training peak windows...")
-    tr_seqs, tr_sigs, tr_accs, _ = extract_windows(
-        train_peaks, genome, args.signal_plus_bw, args.signal_minus_bw,
-        args.accessibility_bw, args.in_window, args.out_window, args.max_jitter,
-        is_peak=True
-    )
-    print(f"  Extracted {len(tr_accs)} training peaks")
+    prof_kw = dict(profile_plus_bw=args.profile_target_plus_bw,
+                   profile_minus_bw=args.profile_target_minus_bw)
 
-    print("Extracting training negative windows...")
-    neg_seqs, neg_sigs, neg_accs, _ = extract_windows(
-        train_negs, genome, args.signal_plus_bw, args.signal_minus_bw,
-        args.accessibility_bw, args.in_window, args.out_window, 0, is_peak=False
-    )
-    print(f"  Extracted {len(neg_accs)} training negatives")
+    def _extract(regions, jitter, is_peak, label):
+        print(f"Extracting {label} windows...")
+        out = extract_windows(
+            regions, genome, args.signal_plus_bw, args.signal_minus_bw,
+            args.accessibility_bw, args.in_window, args.out_window, jitter,
+            is_peak=is_peak, **prof_kw
+        )
+        seqs, sigs, accs, _ = out[:4]
+        prof = out[4] if use_prof_target else None
+        print(f"  Extracted {len(accs)} {label}")
+        if prof is not None:
+            # Both come out of one loop over one `valid` mask, so a mismatch here means
+            # the extractor itself is broken rather than a track being short.
+            assert len(prof) == len(sigs), (
+                f"{label}: {len(prof)} profile-target rows against {len(sigs)} counts "
+                f"rows")
+        return seqs, sigs, accs, prof
 
-    print("Extracting validation peak windows...")
-    val_seqs, val_sigs, val_accs, _ = extract_windows(
-        val_peaks, genome, args.signal_plus_bw, args.signal_minus_bw,
-        args.accessibility_bw, args.in_window, args.out_window, 0, is_peak=True
-    )
-    print(f"  Extracted {len(val_accs)} validation peaks")
+    tr_seqs, tr_sigs, tr_accs, tr_prof = _extract(
+        train_peaks, args.max_jitter, True, "training peaks")
+    neg_seqs, neg_sigs, neg_accs, neg_prof = _extract(
+        train_negs, 0, False, "training negatives")
+    val_seqs, val_sigs, val_accs, val_prof = _extract(
+        val_peaks, 0, True, "validation peaks")
+
+    if use_prof_target:
+        # A profile target that is empty where the counts target is not would train the
+        # auxiliary head on nothing while reporting a normal-looking loss.
+        for nm, a, b in (("training peaks", tr_prof, tr_sigs),
+                         ("validation peaks", val_prof, val_sigs)):
+            if float(a.sum()) <= 0:
+                raise SystemExit(f"error: profile target is all zero over {nm}; check "
+                                 f"--profile-target-plus-bw covers these regions")
+            print(f"  {nm}: profile-target total {a.sum():,.0f} against counts-target "
+                  f"total {b.sum():,.0f}")
 
     # Residual training: offsets must be computed from RAW accessibility, before the
     # normalization below overwrites tr_accs/neg_accs/val_accs in place.
@@ -577,7 +703,9 @@ def main():
         random_state=42,
         mode=args.mode,
         peak_offsets=tr_off,
-        neg_offsets=neg_off
+        neg_offsets=neg_off,
+        peak_profiles=tr_prof,
+        neg_profiles=neg_prof
     )
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=args.batch_size,
@@ -609,6 +737,7 @@ def main():
         n_outputs=n_outputs,
         mode=args.mode,
         count_loss_weight=args.count_loss_weight,
+        profile_loss_weight=args.profile_loss_weight,
         gate_accessibility=args.gate_accessibility,
         overprediction_weight=args.overprediction_weight,
         name=model_prefix,
@@ -619,6 +748,13 @@ def main():
         print("accessibility gating: ON (initialised open)")
     if args.overprediction_weight != 1.0:
         print(f"over-prediction weight: {args.overprediction_weight}")
+    if args.profile_loss_weight != 1.0:
+        print(f"profile loss weight: {args.profile_loss_weight} "
+              f"(profile term is logged UNWEIGHTED, only its gradient is scaled)")
+    if use_prof_target and args.profile_loss_weight == 1.0:
+        print("WARNING: a separate profile target at --profile-loss-weight 1.0. If the two "
+              "targets differ in read depth this silently reweights the counts term; see "
+              "_asymmetric_mixture_loss.")
     print(f"Model trimming: {model.trimming} (output window: "
           f"{args.in_window - 2*model.trimming})")
     assert args.in_window - 2 * model.trimming == args.out_window, (
@@ -641,7 +777,9 @@ def main():
         max_epochs=args.max_epochs,
         batch_size=args.batch_size,
         device=args.device,
-        early_stopping=args.early_stopping
+        early_stopping=args.early_stopping,
+        profile_target=use_prof_target,
+        y_profile_valid=(torch.from_numpy(val_prof) if use_prof_target else None)
     )
 
     # Completion marker, written LAST. A preempted job (the `owners` partition is
