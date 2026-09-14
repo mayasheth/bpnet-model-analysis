@@ -1,5 +1,5 @@
 {
- "_comment": "Does giving the profile head a LEARNABLE target make the COUNTS head better? Both arms take the same ATAC input, the same DNase-derived elements, the same H3K27ac counts target and the same count_loss_weight; 1.28 is 1.11 plus two flags. Baseline is the status-quo arm whose profile head trains on H3K27ac, whose 1 bp inter-replicate ceiling is 0.21 and whose profile_pearson sits at 0.063-0.064 whatever it is fed (F-013). READ ONLY THE COUNTS COLUMNS: profile_pearson and profile_jsd here score both arms' profile heads against H3K27ac, so for the multi-task arm they measure how well a DNase-trained head happens to predict H3K27ac shape, which is not what it was trained for. CARRY THIS CAVEAT: early stopping watches the total validation loss, which for the multi-task arm includes the reweighted DNase profile term, so the arms trained for different lengths (53-99 epochs against 32-55). A positive result needs a 100-epoch baseline to separate the auxiliary task from the extra training.",
+ "_comment": "Does giving the profile head a LEARNABLE target make the COUNTS head better? All three arms take the same ATAC input, the same DNase-derived elements, the same H3K27ac counts target and the same count_loss_weight; 1.28 and 1.29 are each 1.11 plus flags. BASELINE is the status-quo arm whose profile head trains on H3K27ac, whose 1 bp inter-replicate ceiling is 0.21 and whose profile_pearson sits at 0.063-0.064 whatever it is fed (F-013). dnase_profile_head is the multi-task arm. epoch_matched_baseline is the CONTROL, and it exists because early stopping watches the total validation loss, which for the multi-task arm includes the reweighted DNase profile term, so the arms stopped on different objectives and the multi-task arm trained longer in every fold (53-99 epochs against 32-55). The control gives the baseline the same 100-epoch budget with checkpoint selection unchanged. READ THE TWO PAIRS TOGETHER: if the control matches the multi-task arm, the win was the stopping rule; if it matches the original baseline, the auxiliary task is doing the work. Early indication from fold0 is the latter, since the control's best checkpoint still landed at epoch 35. READ ONLY THE COUNTS COLUMNS: profile_pearson and profile_jsd score every arm's profile head against H3K27ac, so for the multi-task arm they measure how well a DNase-trained head happens to predict H3K27ac shape, which is not what it was trained for.",
  "baseline": {
   "label": "atac_input",
   "mode": "multimodal",
@@ -15,6 +15,15 @@
    "mode": "multimodal",
    "half_window": 500,
    "model_dir": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/models/multimodal5p_accs5p_dnaseprof00561_hw500_clw10",
+   "accessibility_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0529_multimodal_p300_model/data/atac_5p.bw",
+   "signal_plus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/h3k27ac_5p_plus.bw",
+   "signal_minus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/h3k27ac_5p_minus.bw"
+  },
+  {
+   "label": "epoch_matched_baseline",
+   "mode": "multimodal",
+   "half_window": 500,
+   "model_dir": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/models/multimodal5p_accs5p_ep100_hw500_clw10",
    "accessibility_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0529_multimodal_p300_model/data/atac_5p.bw",
    "signal_plus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/h3k27ac_5p_plus.bw",
    "signal_minus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/h3k27ac_5p_minus.bw"
