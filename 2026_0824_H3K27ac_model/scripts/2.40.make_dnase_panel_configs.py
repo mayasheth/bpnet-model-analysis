@@ -26,9 +26,11 @@ models lose it in K562, and with two cell types "K562 is a good TRAINING cell ty
 "K562->GM12878 is a good PAIR" predict identical numbers. A third target separates them.
 
 Usage: 2.40.make_dnase_panel_configs.py [--out-dir config] [--check]
-  --check verifies every model_dir/fold0 checkpoint exists before writing, which is the
-  thing that fails when a fold was preempted. Run it ON SHERLOCK; /oak is not mounted
-  locally and a local existence check reports everything missing.
+  --check verifies that every fold of every arm left a completion marker before writing,
+  which is the thing that fails when a fold was preempted. It cannot distinguish "still
+  running" from "preempted", since both leave a best-so-far checkpoint and no marker, so it
+  reports the observable state and leaves the cause to squeue. Run it ON SHERLOCK; /oak is
+  not mounted locally and a local existence check reports everything missing.
 """
 import argparse
 import json
@@ -116,28 +118,30 @@ for target in CELLS:
                 ck = f'{e["model_dir"]}/fold{fold}/multimodal_bpnet.torch'
                 mk = f'{e["model_dir"]}/fold{fold}/training_complete.json'
                 if not os.path.exists(ck):
-                    missing.append(f'{target}: {e["label"]} fold{fold} has no checkpoint')
+                    missing.append((e["model_dir"], fold, "no checkpoint"))
                 elif not os.path.exists(mk):
-                    missing.append(f'{target}: {e["label"]} fold{fold} has a checkpoint '
-                                   f'but NO training_complete.json, so it was preempted')
+                    # Deliberately does NOT claim preemption: a job still RUNNING also
+                    # has a best-so-far checkpoint and no marker, and the two are
+                    # indistinguishable from the filesystem. Check squeue for which.
+                    missing.append((e["model_dir"], fold,
+                                    "checkpoint present but no completion marker: still "
+                                    "running, or preempted"))
         for k in ("acc", "sig_plus", "sig_minus", "elements"):
             if not os.path.exists(t[k]):
-                missing.append(f'{target}: missing {k} at {t[k]}')
+                missing.append((t[k], -1, f"missing {k} for {target}"))
     out = os.path.join(a.out_dir, f"dnase_panel_on_{target}_configs.json")
     written.append((out, spec))
 
 if missing:
     # One unfinished model shows up in all three targets, as LOCAL in its own and as a
-    # transferred arm in the other two, so report the distinct problems not the mentions.
-    seen, uniq = set(), []
-    for m in missing:
-        key = m.split(": ", 1)[1]
-        if key not in seen:
-            seen.add(key)
-            uniq.append(key)
+    # transferred arm in the other two, so report distinct problems rather than mentions.
+    # Keyed on the MODEL PATH, not the label: `dnase_only_LOCAL` names a different model in
+    # every target, so deduplicating by label silently merges three separate floors.
+    uniq = sorted(set(missing))
     print(f"NOT WRITING. {len(uniq)} distinct problem(s):")
-    for m in uniq:
-        print(f"  {m}")
+    for path, fold, why in uniq:
+        where = os.path.basename(path) if fold < 0 else f"{os.path.basename(path)} fold{fold}"
+        print(f"  {where}: {why}")
     raise SystemExit(1)
 
 for out, spec in written:
