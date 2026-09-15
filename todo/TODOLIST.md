@@ -288,20 +288,36 @@ auxiliary task, or an annotation. Ordered so the cheap prerequisite gates the ex
       The same question for p300 (F-009) is NOT closed by this: it was never re-scored against
       an assay-matched floor and p300 has no THP-1 arm.
 
-- [ ] **Depth-match the DNase inputs and re-score the panel.** The one named mechanism for
-      F-016 that has not been tested, and the only thing standing between F-016 and
-      "cross-cell-type H3K27ac prediction does not work", which is a much larger claim than
-      the data supports. Per-window DNase depth is K562 894.6, THP-1 281.4, GM12878 126.3, and
-      a model trained at one depth meets a different input distribution at another, which is
-      the fragment-channel lesson of F-005. **But the ratios do not order with transfer
-      quality** (K562->GM12878 is a 7.1x mismatch at -0.045 while K562->THP-1 is 3.2x at
-      -0.388), so this is a candidate rather than a likely cause. Subsample K562 and THP-1
-      DNase to GM12878's depth, retrain, re-run `2.41`. If transfer recovers, the barrier is a
-      library property and preprocessing fixes it.
+- [x] **Depth-match the DNase inputs and re-score the panel. DONE 2026-09-15, F-017.**
+      Thinned K562 and THP-1 to GM12878's 50.3M reads by binomial subsampling (`0.41`,
+      within 0.01%), retrained both cells' arms (`1.26`/`1.30` with `ACC_BW`), re-scored
+      (`2.41 DEPTH_MATCHED=1`). Per-window spread 7.1x -> 1.4x. Element sets unchanged, so
+      the two panels score identical regions.
 
-      Also worth carrying: `k562_to_thp1` has a very wide interval ([0.120, 0.425]), so it is
-      unstable across folds rather than uniformly bad, and -0.388 should not be quoted as a
-      point estimate.
+      **Depth WAS the asymmetry F-009 and F-014 both ended on.** GM12878->K562, the severe
+      collapse at -0.133, reaches parity with K562's own floor once matched (+0.003,
+      *p*=0.68). A model trained shallow and handed a 7x deeper library is out of
+      distribution on its own input. The mild direction K562->GM12878 was NOT depth and is
+      unchanged (-0.045 -> -0.039).
+
+      **Transfer still fails, so F-016 stands.** Five of six directions remain resolvably
+      below the target's floor, the sixth only reaches parity, and a local model wins
+      everywhere (+0.136, +0.048, +0.064).
+
+      **Two things to carry forward.** (1) Depth-match before ANY cross-cell-type comparison
+      in this project, or a collapse gets misattributed to the cell types; this generalises
+      F-005 from fragment-length structure to read depth. (2) Thinning costs the deep cell
+      type real performance (K562 floor 0.607 -> 0.570, local 0.728 -> 0.707), so it is the
+      right control for a transfer question and the wrong choice for a production model.
+
+      **My own reasoning to not repeat:** F-016 argued depth was unlikely because the
+      mismatch ratios do not order with transfer quality. They still do not, and the effect
+      was real anyway. Ratio-ordering was the wrong test of the hypothesis.
+
+- [ ] **Re-run the thinning at a second seed.** One random draw at seed 0 stands behind
+      F-017. Cheap (`0.41 --seed 1`, then retrain and re-score) and it bounds the sampling
+      noise on a finding that now carries the transfer conclusion. Only worth doing if F-017
+      is going into a figure or the manuscript.
 
 - [x] **Multi-task arm: DNase profile head, H3K27ac counts head. DONE 2026-09-14, F-015
       established.** Kept, but it is a small architectural win and not progress on the real

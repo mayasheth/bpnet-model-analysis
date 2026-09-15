@@ -1,0 +1,42 @@
+{
+ "_comment": "DNase-input H3K27ac panel, scored IN GM12878. Baseline is gm12878's own DNase-only model, so residual_pearson and incremental_r2 measure what sequence adds beyond the accessibility that is locally available. gm12878_LOCAL is the model trained here; the other two are transferred and are each handed gm12878's own DNase track and scored against gm12878's own H3K27ac, which is the deployment scenario. Elements are gm12878's own DNase-derived set. THP-1 has ONE DNase replicate, so it has no DNase shape ceiling and cannot be a converter target; it is a DNase-input panel member only. DEPTH-MATCHED VARIANT: all three DNase inputs are thinned by binomial subsampling to GM12878's 50.3M main-chromosome reads (0.41), so per-window means go from 894.6/281.4/126.3 to 153.1/172.1/126.3. This is the one untested mechanism for F-016. GM12878 is the target depth and its arms are reused unchanged, so exactly one variable differs from the first panel. Element sets are NOT recalled on the thinned tracks, so the regions scored are identical to the first panel and the two are directly comparable.",
+ "baseline": {
+  "label": "dnase_only_LOCAL",
+  "mode": "atac",
+  "half_window": 500,
+  "model_dir": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/models/gm12878_atac5p_dnase_hw500_clw10",
+  "accessibility_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/gm12878_dnase_5p.bw",
+  "signal_plus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/gm12878_h3k27ac_5p_plus.bw",
+  "signal_minus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/gm12878_h3k27ac_5p_minus.bw"
+ },
+ "compare": [
+  {
+   "label": "gm12878_LOCAL",
+   "mode": "multimodal",
+   "half_window": 500,
+   "model_dir": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/models/gm12878_multimodal5p_dnase_hw500_clw10",
+   "accessibility_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/gm12878_dnase_5p.bw",
+   "signal_plus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/gm12878_h3k27ac_5p_plus.bw",
+   "signal_minus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/gm12878_h3k27ac_5p_minus.bw"
+  },
+  {
+   "label": "k562_to_gm12878",
+   "mode": "multimodal",
+   "half_window": 500,
+   "model_dir": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/models/multimodal5p_acc-dnasedm_hw500_clw10",
+   "accessibility_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/gm12878_dnase_5p.bw",
+   "signal_plus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/gm12878_h3k27ac_5p_plus.bw",
+   "signal_minus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/gm12878_h3k27ac_5p_minus.bw"
+  },
+  {
+   "label": "thp1_to_gm12878",
+   "mode": "multimodal",
+   "half_window": 500,
+   "model_dir": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/models/thp1_multimodal5p_dnasedm_hw500_clw10",
+   "accessibility_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/gm12878_dnase_5p.bw",
+   "signal_plus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/gm12878_h3k27ac_5p_plus.bw",
+   "signal_minus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/gm12878_h3k27ac_5p_minus.bw"
+  }
+ ],
+ "_elements": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0606_GM12878_transferability/reference/GM12878_candidate_elements.narrowPeak"
+}
