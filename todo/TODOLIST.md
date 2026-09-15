@@ -252,54 +252,56 @@ auxiliary task, or an annotation. Ordered so the cheap prerequisite gates the ex
       a profile ceiling of 0.686 against 0.848. A width sweep within K562 would have tightened
       a claim that does not generalise; the informative axis is depth, not width.
 
-- [ ] **DNase-input panel, third cell type: THP-1. TRACKS READY 2026-09-14.** Now the
-      successor to the converter line, because both surviving DNase results need REAL DNase:
-      DNase as an input (F-010, F-014) and DNase as an ABC activity term (+0.0709, F-012). The
-      deployment story is "use DNase where it exists", not "synthesise it where it does not",
-      and DNase exists in far more cell types than ATAC.
+- [x] **DNase-input panel, three cell types. DONE 2026-09-14, F-016.** THP-1 trained
+      (`1.30`), the two missing DNase-only floors trained (`1.22`/`1.23` at `MODE atac`),
+      panel scored (`2.40` + `2.41`). **The answer is negative and it retires the deployment
+      thesis for H3K27ac: all six transferred arms land at or below the target's own
+      DNase-only floor**, five resolvably. Top-quintile, transferred minus the target's
+      assay-matched floor: K562<-GM12878 -0.133, K562<-THP-1 -0.178, GM12878<-K562 -0.045,
+      GM12878<-THP-1 -0.016 (*p*=0.11), THP-1<-GM12878 -0.070, THP-1<-K562 -0.388. A LOCAL
+      sequence+DNase model beats that floor in all three cell types (+0.121, +0.048, +0.057,
+      all *p*<0.006), so sequence does add real information wherever it can be trained
+      locally.
 
-      `0.38` built THP-1's DNase 5-prime input, pooled and per-replicate stranded H3K27ac
-      targets (read 1 only; both replicates are paired-end), DNase-derived candidate elements,
-      and the H3K27ac inter-replicate ceiling: 0.974 raw, 0.993 Spearman-Brown corrected on all
-      elements. DNase alignments are at
-      `Users/sheth/Data/ENCODE/THP1/DNase/AG81591.filtered.bam`; the inventory previously said
-      THP-1 had none and was not modellable, which was wrong and had ruled it out.
+      **F-010's transfer claim is withdrawn.** It compared a DNase-input model against an
+      ATAC-only floor, and that floor is much the weaker comparator (GM12878 0.518 against
+      DNase-only 0.615). **General rule now recorded: a floor must use the same assay as the
+      model it bounds**, or the comparison credits an assay swap to the architecture.
+      F-010's in-cell gains (+0.037 K562, +0.086 GM12878) are unaffected.
 
-      **What THP-1 can and cannot do.** One DNase replicate, so no DNase shape ceiling and no
-      use as a converter target. No ATAC, so it cannot train a converter and cannot join an
-      ATAC-input comparison. It is a DNase-input panel member, which is what is now wanted.
+      **Neither floor is a true deployment baseline**, since both need target-cell H3K27ac to
+      train. The honest deployment comparator is the raw accessibility track used directly as
+      the activity proxy, which is what ABC does and what F-012 measured: real DNase over real
+      ATAC, +0.0709 [+0.0476, +0.0938]. That is still the only DNase result here with a
+      downstream effect, and it needs no model at all.
 
-      **SUBMITTED 2026-09-14** (`1.30`, jobs 43442172-84): `multimodal` and the
-      accessibility-only floor, 5 folds each. `1.30` is `1.22` with exactly three
-      substitutions, THP-1's DNase input, H3K27ac target and element set, so all three cell
-      types share every hyperparameter and can sit in one matrix. Pre-flight: 183,778
-      elements over 25 contigs, all present in both tracks, 2.3% all-zero H3K27ac windows,
-      125,187 elements in fold0's training chromosomes.
+      THP-1's own caveats stand: one DNase replicate, so no DNase shape ceiling and no use as
+      a converter target; no ATAC, so it cannot join an ATAC-input comparison. Tracks and the
+      H3K27ac ceiling (0.974 raw, 0.993 corrected) came from `0.38`; DNase alignments at
+      `Users/sheth/Data/ENCODE/THP1/DNase/AG81591.filtered.bam`.
 
-      **Depth cuts both ways here, so neither cell type is the easier target.** THP-1's
-      H3K27ac is DEEPER than K562's (mean 208.2 per 1 kb window against 51.1) while its DNase
-      is SHALLOWER (281.4 against 910.2), being one replicate. First floor model in: THP-1
-      accessibility-only fold0 reaches validation count *r* 0.772 where K562's ATAC-only
-      equivalent reaches 0.836.
+- [x] **Sanity-check the GM12878->K562 collapse. ANSWERED 2026-09-14 by F-016, and it was
+      not GM12878.** K562 is the hardest TARGET, taking -0.133 from GM12878 and -0.178 from
+      THP-1, while GM12878 as a source transfers into THP-1 at only -0.070. So the asymmetry
+      is a property of K562 as a destination rather than of the GM12878 models being weak,
+      which is what the in-cell GM12878 arms (0.663) had suggested but could not establish.
+      The same question for p300 (F-009) is NOT closed by this: it was never re-scored against
+      an assay-matched floor and p300 has no THP-1 arm.
 
-      **The panel needed two floors that did not exist.** Every accessibility-only model in
-      the project used ATAC, and THP-1 has no ATAC, so the three cells would have had floors
-      built on different assays in a panel whose whole point is the DNase input. K562 and
-      GM12878 DNase-only arms submitted 2026-09-14 (`1.22 atac` / `1.23 atac`, jobs
-      43445448-533) into `atac5p_dnase_hw500_clw10` and
-      `gm12878_atac5p_dnase_hw500_clw10`. No new script was needed; both already took
-      `MODE atac` and nobody had run it.
+- [ ] **Depth-match the DNase inputs and re-score the panel.** The one named mechanism for
+      F-016 that has not been tested, and the only thing standing between F-016 and
+      "cross-cell-type H3K27ac prediction does not work", which is a much larger claim than
+      the data supports. Per-window DNase depth is K562 894.6, THP-1 281.4, GM12878 126.3, and
+      a model trained at one depth meets a different input distribution at another, which is
+      the fragment-channel lesson of F-005. **But the ratios do not order with transfer
+      quality** (K562->GM12878 is a 7.1x mismatch at -0.045 while K562->THP-1 is 3.2x at
+      -0.388), so this is a candidate rather than a likely cause. Subsample K562 and THP-1
+      DNase to GM12878's depth, retrain, re-run `2.41`. If transfer recovers, the barrier is a
+      library property and preprocessing fixes it.
 
-      Then score the three-way matrix: nine transfer cells plus each target's own DNase-only
-      floor. The config has to be built after the models exist, since `2.15` reads each
-      checkpoint's geometry from `model.trimming`.
-
-- [ ] **Sanity-check the GM12878->K562 collapse.** Every DNase-family input transferred in
-      that direction lands far below ATAC (-0.133 real DNase, -0.297 smoothed), and the plain
-      ATAC-input model is the best transferred model there. The in-cell GM12878 arms are strong
-      (0.663 top-quintile), which argues against the GM12878 models simply being weak, but that
-      is an inference rather than a test. Same asymmetry and same direction as p300 (F-009), so
-      this is now the second finding blocked on the same gap.
+      Also worth carrying: `k562_to_thp1` has a very wide interval ([0.120, 0.425]), so it is
+      unstable across folds rather than uniformly bad, and -0.388 should not be quoted as a
+      point estimate.
 
 - [x] **Multi-task arm: DNase profile head, H3K27ac counts head. DONE 2026-09-14, F-015
       established.** Kept, but it is a small architectural win and not progress on the real
