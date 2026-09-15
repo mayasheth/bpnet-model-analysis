@@ -35,6 +35,9 @@
 # not automatically evidence about the source model.
 #
 # --no-rc-average keeps these comparable to every other table in the project.
+# Env: DEPTH_MATCHED=1 scores the depth-matched variant instead, where all three DNase
+#      libraries are thinned to GM12878's 50.3M reads (0.41/0.42). Element sets are
+#      unchanged, so the two panels are directly comparable region for region.
 set -euo pipefail
 export PYTHONUNBUFFERED=1
 D=/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet
@@ -44,10 +47,15 @@ cd "$P"
 
 # Regenerate with --check so a preempted fold stops this before it burns GPU time. 2.40
 # refuses to write unless all five folds of all twelve arms left a completion marker.
-$PY scripts/2.40.make_dnase_panel_configs.py --check
+DM_ARG=(); SUFFIX=""; PREFIX="dnasepanel_"
+if [[ -n "${DEPTH_MATCHED:-}" ]]; then
+    DM_ARG=(--depth-matched); SUFFIX="_depthmatched"; PREFIX="dnasepaneldm_"
+    echo "DEPTH-MATCHED VARIANT: all three DNase inputs thinned to 50.3M reads"
+fi
+$PY scripts/2.40.make_dnase_panel_configs.py "${DM_ARG[@]}" --check
 
 for target in k562 gm12878 thp1; do
-    CFG=config/dnase_panel_on_${target}_configs.json
+    CFG=config/dnase_panel${SUFFIX}_on_${target}_configs.json
     EL=$($PY -c "import json;print(json.load(open('$CFG'))['_elements'])")
     PAIRS=()
     for lbl in $($PY -c "import json;print(' '.join(c['label'] for c in json.load(open('$CFG'))['compare']))"); do
@@ -60,7 +68,7 @@ for target in k562 gm12878 thp1; do
     done
     echo "########## DNase panel scored on ${target} ##########"
     echo "elements: $EL"
-    $PY scripts/2.15.perfold_from_config.py "$CFG" "dnasepanel_${target}_" "$EL" \
+    $PY scripts/2.15.perfold_from_config.py "$CFG" "${PREFIX}${target}_" "$EL" \
         --no-rc-average "${PAIRS[@]}"
 done
 echo DNASE_PANEL_DONE

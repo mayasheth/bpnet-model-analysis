@@ -44,6 +44,9 @@
 # Usage: sbatch 1.30.submit_training_dnase_thp1.sh MODE FOLD
 #   MODE  sequence | multimodal | atac
 #   FOLD  0-4
+# Env:  ACC_BW + ACC_TAG  optional, to train on a different accessibility track. Both must
+#       be set together, and ACC_TAG names the output directory so two input variants can
+#       never collide in one directory. Used for the depth-matched arms of F-016.
 set -euo pipefail
 export PYTHONUNBUFFERED=1
 
@@ -65,6 +68,13 @@ MAX_NEGATIVES=${MAX_NEGATIVES:-50000}
 
 GENOME="/oak/stanford/groups/engreitz/Users/sheth/hg38_resources/hg38.fa"
 DNASE_BW="$PROJ/data/thp1_dnase_5p.bw"
+TAG="dnase"
+if [[ -n "${ACC_BW:-}${ACC_TAG:-}" ]]; then
+    : "${ACC_BW:?set ACC_BW and ACC_TAG together}"
+    : "${ACC_TAG:?set ACC_BW and ACC_TAG together}"
+    DNASE_BW="$ACC_BW"
+    TAG="$ACC_TAG"
+fi
 ELEMENTS="$PROJECT_DIR/reference/THP1_DNase_candidate_elements.narrowPeak"
 NEGATIVES="$PROJECT_DIR/reference/genomewide_gc_stride_1000_flank_size_1057.gc.bed"
 FOLDS="$PROJECT_DIR/reference/hg38_five_folds.json"
@@ -75,7 +85,7 @@ for f in "$DNASE_BW" "$ELEMENTS" "$SIG_PLUS" "$SIG_MINUS"; do
     [[ -s "$f" ]] || { echo "ERROR: '$f' missing or empty; run 0.38 first" >&2; exit 1; }
 done
 
-OUT_DIR="$PROJ/models/thp1_${MODE}5p_dnase_hw${HALF_WINDOW}_clw${COUNT_LOSS_WEIGHT}/fold${FOLD}"
+OUT_DIR="$PROJ/models/thp1_${MODE}5p_${TAG}_hw${HALF_WINDOW}_clw${COUNT_LOSS_WEIGHT}/fold${FOLD}"
 mkdir -p "$OUT_DIR" "$PROJ/log"
 
 echo "mode=$MODE fold=$FOLD hw=$HALF_WINDOW in=$IN_WINDOW out=$OUT_WINDOW clw=$COUNT_LOSS_WEIGHT"

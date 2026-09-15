@@ -70,6 +70,12 @@ CELLS = {
 }
 
 ap = argparse.ArgumentParser()
+ap.add_argument("--depth-matched", action="store_true",
+                help="use the depth-matched DNase inputs and the models trained on them. "
+                     "All three libraries are then at GM12878's 50.3M main-chromosome "
+                     "reads, so a transfer drop can no longer be attributed to the model "
+                     "meeting an unfamiliar input depth. GM12878 is already the shallowest, "
+                     "so it is the target and its existing arms are reused unchanged.")
 ap.add_argument("--out-dir", default=f"{P}/config")
 ap.add_argument("--check", action="store_true",
                 help="require every fold0 checkpoint to exist; run on Sherlock")
@@ -83,6 +89,22 @@ def entry(label, model_dir, target):
             "accessibility_bw": t["acc"],
             "signal_plus_bw": t["sig_plus"], "signal_minus_bw": t["sig_minus"]}
 
+
+if a.depth_matched:
+    # Only K562 and THP-1 change: GM12878 IS the target depth. Its entries are reused
+    # verbatim, which is what makes this a clean one-variable change from the first panel.
+    CELLS["k562"].update({
+        "acc": f"{P}/data/k562_dnase_5p_depthmatched.bw",
+        "multimodal": f"{P}/models/multimodal5p_acc-dnasedm_hw500_clw10",
+        "floor": f"{P}/models/atac5p_acc-dnasedm_hw500_clw10",
+    })
+    CELLS["thp1"].update({
+        "acc": f"{P}/data/thp1_dnase_5p_depthmatched.bw",
+        "multimodal": f"{P}/models/thp1_multimodal5p_dnasedm_hw500_clw10",
+        "floor": f"{P}/models/thp1_atac5p_dnasedm_hw500_clw10",
+    })
+
+SUFFIX = "_depthmatched" if a.depth_matched else ""
 
 missing, written = [], []
 for target in CELLS:
@@ -105,7 +127,15 @@ for target in CELLS:
             f"against {target}'s own H3K27ac, which is the deployment scenario. Elements "
             f"are {target}'s own DNase-derived set. THP-1 has ONE DNase replicate, so it "
             f"has no DNase shape ceiling and cannot be a converter target; it is a "
-            f"DNase-input panel member only."),
+            f"DNase-input panel member only."
+            + ("" if not a.depth_matched else
+               " DEPTH-MATCHED VARIANT: all three DNase inputs are thinned by binomial "
+               "subsampling to GM12878's 50.3M main-chromosome reads (0.41), so per-window "
+               "means go from 894.6/281.4/126.3 to 153.1/172.1/126.3. This is the one "
+               "untested mechanism for F-016. GM12878 is the target depth and its arms are "
+               "reused unchanged, so exactly one variable differs from the first panel. "
+               "Element sets are NOT recalled on the thinned tracks, so the regions scored "
+               "are identical to the first panel and the two are directly comparable.")),
         "baseline": floor,
         "compare": compare,
         "_elements": t["elements"],
@@ -129,7 +159,8 @@ for target in CELLS:
         for k in ("acc", "sig_plus", "sig_minus", "elements"):
             if not os.path.exists(t[k]):
                 missing.append((t[k], -1, f"missing {k} for {target}"))
-    out = os.path.join(a.out_dir, f"dnase_panel_on_{target}_configs.json")
+    out = os.path.join(a.out_dir,
+                       f"dnase_panel{SUFFIX}_on_{target}_configs.json")
     written.append((out, spec))
 
 if missing:
