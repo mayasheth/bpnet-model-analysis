@@ -1769,3 +1769,40 @@ overfitted model, it is only prevented from ending early.
 came from in `training_complete.json`, and have `2.15` print that column alongside the
 metrics, so an epoch gap between arms is visible in the comparison table instead of needing
 someone to go and read five training logs.
+
+---
+
+### [2026-09-15] ABC's filter_predictions fails on a SLURM env conflict, and it does not block the benchmark
+
+**What happened.** The ABC driver for the DNase-input arms exited COMPLETED while
+`filter_predictions` had failed for two of three arms. The driver's exit code says nothing
+about whether the rule you care about ran, which is the same class of problem as the driver
+stalling after its last real rule (learning, 2026-09-06).
+
+**The actual error, which is infrastructure and not data:**
+```
+srun: fatal: cpus-per-task set by two different environment variables
+      SLURM_CPUS_PER_TASK=2 != SLURM_TRES_PER_TASK=cpu=1
+```
+Snakemake's SLURM executor passes `--cpus-per-task` while the profile also sets
+`--tres-per-task`, and recent SLURM refuses the combination rather than picking one. It fires
+per job-step, so which arms hit it is a scheduling accident, not a property of the arm.
+
+**Why it did not matter here.** `filter_predictions` produces only the threshold-filtered
+outputs (`EnhancerPredictions*_threshold*.tsv`, `GenePredictionStats*`). The CRISPR comparison
+consumes `Predictions/EnhancerPredictionsAllPutative.tsv.gz`, which is written by an earlier
+rule and was complete and `gzip -t`-clean for all three arms, with all three sharing candidate
+region set `7d5995ce`. So the benchmark ran on exactly the intended inputs.
+
+**What to do.** Check which rule failed before reacting: if the failure is downstream of
+`EnhancerPredictionsAllPutative.tsv.gz`, the benchmark is unaffected and re-running the driver
+buys nothing. If the ABC threshold-filtered outputs are ever actually needed, the fix is to
+stop the profile and the executor both setting cpu counts, not to retry the job.
+
+**Tags**: abc, snakemake, slurm, infrastructure, false-failure, benchmark
+
+**mitigation_type**: process
+
+**structural_mitigation_candidate**: Have `4.19.wait_abc_arms.sh` report WHICH rules failed
+alongside its file-based gate, so a failure downstream of the consumed artefact is visibly
+distinguished from one upstream of it.
