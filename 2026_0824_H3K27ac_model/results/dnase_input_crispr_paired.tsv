@@ -1,0 +1,7 @@
+arm_a	arm_b	auprc_a	auprc_b	delta	ci_lo	ci_hi	sign_kept_frac	sign_kept_pct	n_pairs	n_regulated	n_boot
+pred_dnase_atacacc.ABC.Score	pred_k562_multimodal.ABC.Score	0.508293	0.480142	0.028151	0.016381	0.039976	1.0	100.0	10342	466	2000
+k27only_dnase.ABC.Score	k27only_k562_multimodal.ABC.Score	0.521525	0.492788	0.028737	0.010672	0.046695	0.9995	99.95	10342	466	2000
+pred_dnase_dhsacc.ABC.Score	acc_real_dnase.ABC.Score	0.551878	0.528044	0.023835	0.005104	0.042894	0.992	99.2	10342	466	2000
+pred_dnase_dhsacc.ABC.Score	K562_ATAC_only.ABC.Score	0.551878	0.468009	0.083869	0.061322	0.104777	1.0	100.0	10342	466	2000
+pred_dnase_atacacc.ABC.Score	K562_ATAC_only.ABC.Score	0.508293	0.468009	0.040284	0.023006	0.056279	1.0	100.0	10342	466	2000
+pred_dnase_dhsacc.ABC.Score	K562_ATAC_H3K27ac_element.ABC.Score	0.551878	0.529646	0.022233	0.004074	0.040079	0.9905	99.05	10342	466	2000
