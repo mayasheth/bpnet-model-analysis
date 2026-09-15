@@ -122,3 +122,9 @@ FIMO/elements_v1/analysis_v1/plot6.1*.png
 
 # derived per-element caches for figure replots (regenerate with the plotting script)
 2026_0824_H3K27ac_model/results/.cache_*/
+
+# Per-element result tables over the 5 MB pre-commit limit. Regenerable from the scripts
+# that wrote them (4.11 / 4.15), and the summary tables that the findings actually quote
+# (error_strata_rpkm.tsv, error_strata_peak_overlap.tsv) are small and stay tracked.
+2026_0824_H3K27ac_model/results/error_strata_elements.tsv
+2026_0824_H3K27ac_model/results/error_strata_ctcf_elements.tsv
