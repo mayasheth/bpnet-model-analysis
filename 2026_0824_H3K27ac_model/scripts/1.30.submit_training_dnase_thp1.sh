@@ -23,10 +23,17 @@
 # only thing that does.
 #
 # WHY THP-1 AND NOT TeloHAEC. The surviving DNase results need REAL DNase: DNase as an input
-# (F-010, F-014) and DNase as the ABC activity term (+0.0709, F-012). The deployment story is
-# "use DNase where it exists", not "synthesise it where it does not" (the converter is closed,
-# F-014), and DNase exists in far more cell types than ATAC. TeloHAEC has ATAC and no DNase,
-# so it serves the ATAC-only panel rather than this one.
+# (F-010, F-014) and DNase as the ABC activity term (+0.0709, F-012). TeloHAEC has ATAC and no
+# DNase, so it serves the ATAC-only panel rather than this one, and THP-1 is the only other
+# cell type here with DNase.
+#
+# THIS PANEL IS NOT A DEPLOYMENT ARGUMENT, and an earlier version of this comment wrongly
+# implied it was by claiming DNase exists in more cell types than ATAC. The opposite is true:
+# **DNase is the SCARCER assay**, which is the whole reason the application target is
+# ATAC-only and the reason a converter was attempted at all (closed, F-014). What this panel
+# establishes is scientific -- whether a DNase-input model's advantage is a property of the
+# training cell type, the pair, or the target (F-016, F-017) -- not that DNase-input models
+# are the deployable choice. They are the less deployable one.
 #
 # WHAT THP-1 CANNOT DO, so nobody reads more into this panel than it holds:
 #   * One DNase replicate, so there is NO DNase inter-replicate ceiling here and THP-1 cannot

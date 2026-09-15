@@ -23,11 +23,23 @@ Root for ENCODE cell types: `/oak/stanford/groups/engreitz/Users/sheth/Data/ENCO
 | H9       | yes |, | yes |, | yes | yes | yes |
 | THP-1    | yes (1 rep, BAM) |, | yes (GEO, 2 reps pe) |, |, |, |, |
 
-**Consequences.** ATAC exists in only three cell types (K562, GM12878, TeloHAEC), which is what
-forces the ATAC-only panel rule. **That rule is now the binding constraint rather than a
-neutral choice**: DNase beats ATAC as a model input (F-010) and the advantage is base-resolution
-structure (F-013), while DNase is available in far more cell types than ATAC. A DNase-input
-panel is internally consistent and roughly doubles the cell types in reach.
+**Consequences.** ATAC exists in only three cell types here (K562, GM12878, TeloHAEC), which is
+what forces the ATAC-only panel rule. **That rule is in tension with the results rather than a
+neutral choice**: DNase beats ATAC as a model input (F-010), the advantage is base-resolution
+structure in K562 (F-013), and a DNase-input model is the only one whose predictions clear the
+ABC benchmark floor (F-018). A DNase-input panel is internally consistent and reaches three
+cell types here (K562, GM12878, THP-1).
+
+**CORRECTED 2026-09-15: DNase is available for FEWER cell types than ATAC, not more.** An
+earlier version of this paragraph claimed the opposite and used it to argue a DNase-input panel
+was the more deployable choice. That is backwards and it contradicts the project's own premise:
+the application target has ATAC and nothing else, which is the entire reason an ATAC-to-DNase
+converter was attempted (and closed, F-014). ATAC is the more widely available assay, DNase the
+scarcer one. **Consequence for how F-010 and F-018 are read: a DNase-input model is LESS
+deployable than an ATAC-input one, so those findings say what information helps H3K27ac
+prediction, not that a deployment route has been found.** Locally the two assays reach three
+cell types each, so neither is broader in this inventory; the asymmetry is about what can be
+obtained for a new target cell type.
 **A converter training cell type needs BOTH assays, and only K562 and GM12878 have both**, which
 is what blocks any claim about converter portability. **EP300 exists in exactly two (K562, GM12878)**, enough to
 test p300 transferability the same way H3K27ac was tested. CTCF, H3K4me1 and H3K27me3 are
