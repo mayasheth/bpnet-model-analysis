@@ -90,7 +90,8 @@ PEAKS_ORDER = [
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--results-dir", default="results/2026_0903_predicted_activity")
-ap.add_argument("--arms", choices=("h3k27ac", "p300", "p300transfer", "accessibility"),
+ap.add_argument("--arms", choices=("h3k27ac", "p300", "p300transfer", "accessibility",
+                                  "dnaseinput"),
                 default="h3k27ac",
                 help="Which target's predicted tracks to build arms for. p300 arms go in "
                      "their own results dir and config: re-stamping Peaks inside the "
@@ -134,9 +135,33 @@ P300_MODELS = [("multimodal", "K562 p300 multimodal model"),
 # what adding arms to a finished run does.
 P300_TX = [("gm12878_multimodal", "GM12878 p300 multimodal model, applied to K562")]
 
+# DNASE-INPUT ARMS. The H3K27ac model retrained with DNase in place of ATAC as its
+# accessibility input (F-010: +0.037 in-cell K562) has never been through ABC. F-012 already
+# showed real DNase beats real ATAC as the activity term by +0.0709, the largest downstream
+# effect in the project, so the open question is whether a MODEL that reads DNase adds
+# anything on top of that.
+#
+# THREE ARMS, BECAUSE TWO THINGS COULD CHANGE AND THEY MUST BE SEPARABLE:
+#   pred_dnase_atacacc  geomean(predicted H3K27ac, real ATAC). Changes ONLY the predictor's
+#                       input relative to the existing `pred_k562_multimodal` arm, so the
+#                       difference is attributable to the model rather than to the
+#                       accessibility term ABC multiplies it against.
+#   k27only_dnase       the prediction alone as activity, comparable to `k27only_k562_multimodal`.
+#   pred_dnase_dhsacc   geomean(predicted H3K27ac, real DNase). The actual deployment
+#                       scenario: you have DNase, so you use it BOTH as the model input and
+#                       as ABC's accessibility term. Its comparator is F-012's
+#                       `acc_real_dnase` arm, which is real DNase alone; that pair answers
+#                       "does predicted H3K27ac add anything on top of the assay swap".
+#
+# OWN RESULTS DIR, for the reason the p300transfer family has one: --copy-peaks re-stamps
+# Peaks/, and doing that inside the completed 2026_0903 run would make its nine finished arms
+# look stale to Snakemake and re-run them with re-derived regions.
+P = f"{D}/EP300_BPNet/2026_0824_H3K27ac_model"
+DNASE_PRED = f"{PRED}/predk27ac_k562_dnase.bw"
+DNASE_ACC = f"{P}/data/k562_dnase_5p.bw"
+
 # Accessibility-as-activity arms. The two real tracks are the 5-prime insertion bigwigs
 # built by 0.20 and 0.32; the two converted tracks are painted by 4.1 from the converters.
-P = f"{D}/EP300_BPNet/2026_0824_H3K27ac_model"
 ACCESSIBILITY = [
     ("acc_real_atac",     f"{D}/EP300_BPNet/2026_0529_multimodal_p300_model/data/atac_5p.bw",
      "real ATAC, 5-prime insertions"),
@@ -148,7 +173,14 @@ ACCESSIBILITY = [
      "DNase predicted from ATAC, GM12878-trained converter, applied to K562"),
 ]
 
-if a.arms == "accessibility":
+if a.arms == "dnaseinput":
+    for path in (DNASE_PRED, DNASE_ACC):
+        if not os.path.exists(path):
+            missing.append(path)
+    add("pred_dnase_atacacc", ATAC, DNASE_PRED, "ATAC")
+    add("k27only_dnase", DNASE_PRED, "", "ATAC")
+    add("pred_dnase_dhsacc", DNASE_ACC, DNASE_PRED, "ATAC")
+elif a.arms == "accessibility":
     for name, path, _desc in ACCESSIBILITY:
         if not os.path.exists(path):
             missing.append(path)
@@ -183,7 +215,8 @@ else:
 
 TAG = a.config_tag or {"h3k27ac": "predicted_activity", "p300": "p300_activity",
                        "p300transfer": "p300_transfer",
-                       "accessibility": "accessibility_activity"}[a.arms]
+                       "accessibility": "accessibility_activity",
+                       "dnaseinput": "dnase_input_activity"}[a.arms]
 out = f"{ABC}/config/mine/config_biosamples_{TAG}.tsv"
 with open(out, "w") as f:
     f.write("\t".join(COLS) + "\n")
