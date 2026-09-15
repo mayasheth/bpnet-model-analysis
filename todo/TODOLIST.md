@@ -436,6 +436,45 @@ auxiliary task, or an annotation. Ordered so the cheap prerequisite gates the ex
       DNase-like input everywhere without mixing assays across cell types.
       Also unblocks the composite-metric item below, whose best form needs DHS.
 
+## The DNase-input model is downstream-useful, and that reopens the line
+
+- [x] **Real-DNase-input model through ABC and CRISPR. DONE 2026-09-15, F-018. IT WORKS.**
+      Predicted H3K27ac from the DNase-input model clears the benchmark floor by
+      **+0.0839 [+0.0613, +0.1048]** (DNase in the activity slot) and **+0.0403 [+0.0230,
+      +0.0563]** (ATAC in it), and beats real DNase alone by **+0.0238 [+0.0051, +0.0429]**.
+      First predicted-activity arm in the project to clear the floor, and the first direct
+      evidence that the model contributes information accessibility does not carry.
+
+      **The input assay is what did it, not the architecture and not the statistics.** The
+      identical architecture reading ATAC cannot separate from the floor even under the
+      paired test (+0.0121 [-0.0053, +0.0285]), so F-004 survives, rescoped to ATAC-input
+      models.
+
+      **Do not quote "beats the ceiling".** The observed-H3K27ac arm counts reads through
+      `count_bam`/`count_tagalign` while every bigwig arm uses `count_bigwig`, so the
+      +0.0222 over it sits inside a counting-path confound. `4.6` records which pairs are
+      legitimate; all the numbers above are matched on counting path.
+
+- [ ] **Re-measure the dynamic range of the DNase-input prediction.** F-004 named compressed
+      spread on regulated-pair regions as the mechanism (predicted p99/p50 4.03 against 6.00
+      observed, agreement falling to Spearman 0.663 there). F-018 does not test whether the
+      DNase-input prediction fixed that, so the mechanism of the only positive downstream
+      result in the project is currently unknown. Reuses `4.9`/`4.10` against
+      `predk27ac_k562_dnase.bw`. Cheap, and it is the difference between "we found something
+      that works" and "we know why it works".
+
+- [ ] **Does the DNase-input ABC arm transfer?** Expected to fail: F-016 and F-017 showed no
+      H3K27ac model beats an assay-matched floor in any of six directions. Worth one arm
+      anyway, because the downstream benchmark and the top-quintile metric have disagreed
+      before (F-004 against every architecture gain), so a transfer failure on Pearson does
+      not strictly imply one on AUPRC. Needs the GM12878 DNase-input model predicted onto
+      K562 regions, which is one `4.4` call.
+
+- [ ] **THP-1 and GM12878 ABC arms.** The benchmark is K562-only for want of CRISPR data
+      elsewhere, so this is blocked on benchmark availability rather than on compute. Check
+      whether the DC-TAP or ENCODE-rE2G benchmark sets cover either cell type before
+      planning it.
+
 ## Adopt-or-not decisions, all measured
 
 - [ ] **Turn on test-time RC averaging as the default?** Free (one extra forward pass, no

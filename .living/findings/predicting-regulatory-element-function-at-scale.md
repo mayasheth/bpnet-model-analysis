@@ -86,8 +86,8 @@ IGVF-style consortium work, the slug avoids naming the consortium.)_
 
 ---
 
-## F-004: Predicted H3K27ac does not improve ABC's CRISPR-benchmark performance, and the failure is compressed dynamic range rather than inaccurate prediction
-**Status:** established
+## F-004: Predicted H3K27ac from an ATAC-input model does not improve ABC's CRISPR-benchmark performance, and the failure is compressed dynamic range rather than inaccurate prediction
+**Status:** established for ATAC-input models; NOT general, see F-018 (2026-09-15)
 **Claim:** In K562, substituting model-predicted H3K27ac for observed H3K27ac in ABC's `activity_base` gives a CRISPR-benchmark AUPRC of 0.482 [0.437, 0.530] at best, against a floor of 0.457 (ATAC-only activity) and a ceiling of 0.519 (ATAC x observed H3K27ac), no resolvable improvement over the floor. The two deployment-realistic arms, GM12878-trained models applied to K562, score 0.455 and 0.452, at or below the floor. Predicted and observed H3K27ac nonetheless agree at Spearman 0.794 over all 153,545 candidate regions, so the predictions are not inaccurate; their dynamic range is compressed exactly where the benchmark is decided. On the regions carrying a CRISPR-regulated pair the predicted activity term's p99/p50 ratio is 4.03 against 6.00 observed, its top-decile mean/median ratio 4.23 against 6.46, and agreement with observed falls to Spearman 0.663.
 **Implications:** Correlation with observed H3K27ac is a poor proxy for downstream utility, and the two can be improved independently: every architecture change that raised top-quintile Pearson left this benchmark unmoved. The actionable target is the *spread* of the predicted activity term on strongly acetylated elements, which no architecture change tried so far addresses. Note also that the ceiling is only 0.062 above the floor, observed H3K27ac itself buys ABC very little in K562, so this experiment had limited room from the start, and a negative result here bounds the value of the whole predicted-activity idea rather than only of this model.
 **Update 2026-09-06:** this finding is specific to the H3K27ac target. F-008 shows a
@@ -95,6 +95,16 @@ predicted *p300* track clears the same floor by +0.055 [+0.034, +0.074] on a pai
 bootstrap. Note also that F-004's conclusion rests on unpaired per-predictor CIs, which
 the p300 run demonstrates cannot resolve differences of this size; the H3K27ac deltas
 should be re-tested with the paired bootstrap in `scripts/4.17`.
+
+**Update 2026-09-15: the paired re-test was run and this finding SURVIVES for ATAC-input
+models, but it does NOT generalise to the model's accessibility input, see F-018.** Paired
+on 10,342 shared element-gene pairs, the ATAC-input multimodal arm beats the floor by only
++0.0121 [-0.0053, +0.0285] (sign kept 91%) in the geomean form and +0.0248 [-0.0034,
++0.0518] (95.3%) as activity alone, both spanning zero. So the negative result was not an
+artefact of unpaired intervals. What does clear the floor is the same architecture retrained
+with DNase as its accessibility input: +0.0403 [+0.0230, +0.0563] with ATAC in the activity
+slot and +0.0839 [+0.0613, +0.1048] with DNase in it (F-018). F-004's scope is therefore
+"predicted H3K27ac from an ATAC-input model", not "predicted H3K27ac".
 
 **Tags:** h3k27ac, abc, crispr-benchmark, dynamic-range, downstream-evaluation, k562, negative-result
 
@@ -451,3 +461,27 @@ both, which is deployment-legal but leaves K562's dynamic range at 24x against r
 | Date | Run/Session | Dataset | Project | Result | Direction |
 |------|-------------|---------|---------|--------|-----------|
 | 2026-09-15 | thinning 43483926 (`0.41`/`0.42`), training 43485132-186 (`1.26`/`1.30` with ACC_BW), scoring 43537443 (`2.41` DEPTH_MATCHED=1) | K562 and THP-1 DNase thinned to GM12878's 50.3M reads, same H3K27ac targets and element sets as F-016 | 2026_0824_H3K27ac_model | GM12878->K562 recovers from -0.133 to +0.003; five of six directions still below the target floor | qualifies F-016 |
+
+---
+
+## F-018: Predicted H3K27ac from a DNase-input model clears the ABC benchmark floor and adds on top of real DNase, the first predicted-activity arm in this project to do either
+**Status:** established
+**Claim:** In K562, the multimodal H3K27ac model retrained with DNase in place of ATAC as its accessibility input (F-010) was predicted genome-wide with per-fold leakage assembly and RC averaging over the 153,545 ABC candidate regions (0 dropped), then substituted into ABC's activity term. Paired bootstrap over 10,342 element-gene pairs scored by every arm, 2,000 resamples, 466 regulated (4.51%):
+
+| contrast | delta AUPRC | 95% CI | sign kept |
+|---|---|---|---|
+| DNase-input predictor - ATAC-input predictor, geomean with ATAC | **+0.0282** | [+0.0164, +0.0400] | 100% |
+| DNase-input predictor - ATAC-input predictor, prediction alone | **+0.0287** | [+0.0107, +0.0467] | 100% |
+| DNase x predicted H3K27ac - real DNase alone | **+0.0238** | [+0.0051, +0.0429] | 99.2% |
+| DNase x predicted H3K27ac - ATAC-only floor | **+0.0839** | [+0.0613, +0.1048] | 100% |
+| ATAC x predicted H3K27ac - ATAC-only floor | **+0.0403** | [+0.0230, +0.0563] | 100% |
+
+Absolute AUPRC on the shared pair set: DNase x predicted 0.5519, observed H3K27ac 0.5296, real DNase alone 0.5280, predicted alone 0.5215, ATAC x predicted 0.5083, ATAC-input arms 0.4928 and 0.4801, floor 0.4680.
+**Implications:** Two things follow that the project did not have before. **First, predicted H3K27ac is downstream-useful after all**, but only from a model that reads DNase: the identical architecture reading ATAC cannot separate from the floor even under the paired test (+0.0121, CI spanning zero, F-004's update). The input assay, not the architecture and not the statistics, is what moved the benchmark. **Second, the prediction adds to the assay rather than merely recovering it.** F-012 established real DNase alone as the best activity term in the project (+0.0709 over real ATAC); putting predicted H3K27ac on top of real DNase beats real DNase alone by +0.0238 [+0.0051, +0.0429]. So the model contributes information the accessibility track does not carry, which is the first direct evidence for that claim anywhere in this work, every earlier version having been a correlation argument.
+**Caveats:** **The comparison against the observed-H3K27ac arm is NOT attributable and must not be quoted as beating the ceiling.** The DNase x predicted arm exceeds it by +0.0222 [+0.0041, +0.0401], but that arm counts reads through count_bam/count_tagalign while every bigwig arm goes through count_bigwig, so a difference of this size sits inside the counting-path confound. The contrasts in the table above are each matched on counting path by construction (`4.6` records which pairs are legitimate). **This is the "you have DNase" scenario, not the ATAC-only deployment target**: the model needs DNase at inference, so it does not address the application constraint that motivated the converter. **It is also in-cell K562 only.** F-016 and F-017 showed no H3K27ac model transfers across cell types once the floor is assay-matched, so a transferred version of this arm should be expected to fail and has not been run. F-004's named mechanism, compressed dynamic range of the predicted activity term on regulated-pair regions (p99/p50 4.03 against 6.00 observed), has NOT been re-measured for the DNase-input prediction, so whether the gain comes from better spread or from something else is untested.
+**Tags:** h3k27ac, dnase, abc, crispr-benchmark, downstream-evaluation, activity-term, k562, positive-result
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-09-15 | prediction 43542121 (`4.4`), ABC 43544032 (`4.5`), benchmark 43549686 (`4.7`), paired bootstrap (`4.17`) | EPCrisprBenchmark_ensemble_data_GRCh38; 153,545 ABC candidate regions, region set 7d5995ce shared by all arms | 2026_0824_H3K27ac_model | DNase x predicted H3K27ac 0.5519 against a 0.4680 floor, +0.0839 paired; beats real DNase alone by +0.0238 | refutes F-004's generality |
