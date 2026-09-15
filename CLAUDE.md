@@ -35,6 +35,26 @@ Conventions for editing it:
 Do not create a second TODO file. There were three, two went stale, and the
 stale ones still described work as unstarted months after it had been built.
 
+## Nothing over 5 MB goes into git
+
+A `pre-commit` hook blocks staged files over 5 MB. Source of truth is
+`~/Documents/my-scripts-for-me/git-hooks/pre-commit-filesize`; `.git/hooks/` is not version
+controlled, so **after a fresh clone re-run**:
+
+```bash
+git-hooks/install.sh pre-commit-filesize <repo> 5 '(^|/)(report[0-9]*_[a-z0-9_]+\.html|h3k27ac_model_report\.html|.*_report\.html)$'
+```
+
+The rendered HTML reports are allowlisted and stay tracked: they are the deliverable and they
+grow a megabyte at a time as figures are added. Everything else is capped. Per-element result
+tables are the thing this exists to stop: `error_strata_elements.tsv` (10 MB) and
+`error_strata_ctcf_elements.tsv` (17 MB) reached the remote on 2026-09-15 and are now
+gitignored and untracked, though still on disk and still in history. The small summary tables
+the findings actually quote stay tracked.
+
+If a large file genuinely belongs in the history, extend `hooks.filesizeallow` rather than
+using `--no-verify`, so the exemption is recorded rather than invisible.
+
 ## Models
 
 ### p300 v1 (primary)
