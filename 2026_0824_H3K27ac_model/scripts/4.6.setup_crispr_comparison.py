@@ -23,7 +23,8 @@ import argparse
 import os
 
 _ap = argparse.ArgumentParser()
-_ap.add_argument("--arms", choices=("h3k27ac", "p300", "p300all", "accessibility"),
+_ap.add_argument("--arms",
+                 choices=("h3k27ac", "p300", "p300all", "accessibility", "dnaseinput"),
                  default="h3k27ac",
                  help="Which activity target's arms to benchmark. The p300 set reuses the "
                       "same July floor and observed-H3K27ac ceiling, so the two "
@@ -95,17 +96,60 @@ ACC_ARMS = [
      "#9970ab"),
 ]
 
-if _a.arms == "accessibility":
+# The DNase-INPUT model as the activity term. F-010 gave the model +0.037 in-cell K562 by
+# swapping DNase for ATAC as its accessibility input, and it has never been benchmarked.
+# F-012 separately showed real DNase beats real ATAC in the activity slot by +0.0709, the
+# largest downstream effect in the project, so the question is whether a MODEL that reads
+# DNase adds anything on top of that assay swap.
+#
+# WHICH CONTRASTS IN THIS TABLE ARE LEGITIMATE, because the arms do not all share a counting
+# path and a careless pairing would measure count_bigwig vs count_tagalign instead of the
+# thing of interest:
+#   pred_dnase_atacacc  vs  pred_k562_multimodal   VALID. Both geomean(ATAC tagAligns,
+#                           predicted bigwig); only the predictor's input differs. THE
+#                           headline contrast.
+#   k27only_dnase       vs  k27only_k562_multimodal  VALID. Both a single predicted bigwig.
+#   pred_dnase_dhsacc   vs  acc_real_dnase         VALID. Both count_bigwig throughout.
+#                           Answers "does predicted H3K27ac add anything on top of real
+#                           DNase in the activity slot".
+#   anything            vs  the two July anchors   READ AS REFERENCE ONLY. Those count reads
+#                           through count_bam/count_tagalign. They are included because the
+#                           floor and ceiling are what make any middle number readable, and
+#                           because the existing h3k27ac family already reports against
+#                           them, but a small difference against them is not attributable.
+DNASE_IN = f"{ABC}/2026_0915_dnase_input_activity"
+DNASE_ARMS = [
+    ("K562_ATAC_only",            JULY, "ATAC only (floor, reference)",          "#bdbdbd"),
+    ("K562_ATAC_H3K27ac_element", JULY, "ATAC x observed H3K27ac (ceiling, reference)",
+     "#404040"),
+    ("acc_real_dnase",            ACC,  "Real DNase alone (F-012 winner)",       "#0F6E56"),
+    ("pred_k562_multimodal",      NEW,  "ATAC x predicted H3K27ac (ATAC-input model)",
+     "#2171b5"),
+    ("pred_dnase_atacacc",        DNASE_IN,
+     "ATAC x predicted H3K27ac (DNase-input model)",                             "#08306b"),
+    ("k27only_k562_multimodal",   NEW,  "Predicted H3K27ac alone (ATAC-input model)",
+     "#74c476"),
+    ("k27only_dnase",             DNASE_IN,
+     "Predicted H3K27ac alone (DNase-input model)",                              "#238b45"),
+    ("pred_dnase_dhsacc",         DNASE_IN,
+     "Real DNase x predicted H3K27ac (DNase-input model)",                       "#762A83"),
+]
+
+if _a.arms == "dnaseinput":
+    ARMS = DNASE_ARMS
+elif _a.arms == "accessibility":
     ARMS = ACC_ARMS
 elif _a.arms == "p300":
     ARMS = P300_ARMS
 elif _a.arms == "p300all":
     ARMS = P300_ALL_ARMS
 TAG = {"h3k27ac": "predicted_activity", "p300": "p300_activity",
-       "p300all": "p300_all", "accessibility": "accessibility_activity"}[_a.arms]
+       "p300all": "p300_all", "accessibility": "accessibility_activity",
+       "dnaseinput": "dnase_input_activity"}[_a.arms]
 RUN = {"h3k27ac": "2026_0904_predicted_activity", "p300": "2026_0905_p300_activity",
        "p300all": "2026_0906_p300_all",
-       "accessibility": "2026_0910_accessibility_activity"}[_a.arms]
+       "accessibility": "2026_0910_accessibility_activity",
+       "dnaseinput": "2026_0915_dnase_input_activity"}[_a.arms]
 
 BASELINES = [
     ("distToTSS",      "FALSE", "mean", "Inf", "TRUE",  "Distance to TSS",      "#c5cad7"),
