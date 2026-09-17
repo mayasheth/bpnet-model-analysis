@@ -1806,3 +1806,18 @@ stop the profile and the executor both setting cpu counts, not to retry the job.
 **structural_mitigation_candidate**: Have `4.19.wait_abc_arms.sh` report WHICH rules failed
 alongside its file-based gate, so a failure downstream of the consumed artefact is visibly
 distinguished from one upstream of it.
+
+## A reset can orphan commits and leave a clean tree (2026-09-17)
+
+Testing the 5 MB pre-commit hook on 2026-09-16 left an 8 MB commit as the tip. The reset
+that removed it also dropped three real commits (`893e00d`, `b437c8a`, `86415dc`), which
+then sat on no branch. The working tree looked clean and `git status` stayed empty, so the
+loss was invisible: the `multitask` ABC arm family had been reverted out of
+`4.3.setup_abc_arms.py` and `4.6.setup_crispr_comparison.py`, two paired CRISPR tables were
+gone from `results/`, and `todo/TODOLIST.md` had lost 22 lines. Found only because the
+handover listed unpushed SHAs that `git log origin/main..HEAD` did not report.
+
+**After any reset, run `git branch --contains <sha>` on every commit you meant to keep.**
+Recovery is cheap while the commits are still unreaped: `git checkout <sha> -- <paths>`.
+Prefer selective checkout to cherry-pick when a later commit already corrected part of the
+orphaned content, as it had here for F-019.
