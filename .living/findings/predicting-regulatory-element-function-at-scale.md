@@ -87,7 +87,7 @@ IGVF-style consortium work, the slug avoids naming the consortium.)_
 ---
 
 ## F-004: Predicted H3K27ac from an ATAC-input model does not improve ABC's CRISPR-benchmark performance, and the failure is compressed dynamic range rather than inaccurate prediction
-**Status:** established for ATAC-input models; NOT general, see F-018 (2026-09-15)
+**Status:** established for ATAC-input models; NOT general, see F-018 (2026-09-15); transfer arms confirmed at the floor by paired test (2026-09-17)
 **Claim:** In K562, substituting model-predicted H3K27ac for observed H3K27ac in ABC's `activity_base` gives a CRISPR-benchmark AUPRC of 0.482 [0.437, 0.530] at best, against a floor of 0.457 (ATAC-only activity) and a ceiling of 0.519 (ATAC x observed H3K27ac), no resolvable improvement over the floor. The two deployment-realistic arms, GM12878-trained models applied to K562, score 0.455 and 0.452, at or below the floor. Predicted and observed H3K27ac nonetheless agree at Spearman 0.794 over all 153,545 candidate regions, so the predictions are not inaccurate; their dynamic range is compressed exactly where the benchmark is decided. On the regions carrying a CRISPR-regulated pair the predicted activity term's p99/p50 ratio is 4.03 against 6.00 observed, its top-decile mean/median ratio 4.23 against 6.46, and agreement with observed falls to Spearman 0.663.
 **Implications:** Correlation with observed H3K27ac is a poor proxy for downstream utility, and the two can be improved independently: every architecture change that raised top-quintile Pearson left this benchmark unmoved. The actionable target is the *spread* of the predicted activity term on strongly acetylated elements, which no architecture change tried so far addresses. Note also that the ceiling is only 0.062 above the floor, observed H3K27ac itself buys ABC very little in K562, so this experiment had limited room from the start, and a negative result here bounds the value of the whole predicted-activity idea rather than only of this model.
 **Update 2026-09-06:** this finding is specific to the H3K27ac target. F-008 shows a
@@ -105,6 +105,24 @@ artefact of unpaired intervals. What does clear the floor is the same architectu
 with DNase as its accessibility input: +0.0403 [+0.0230, +0.0563] with ATAC in the activity
 slot and +0.0839 [+0.0613, +0.1048] with DNase in it (F-018). F-004's scope is therefore
 "predicted H3K27ac from an ATAC-input model", not "predicted H3K27ac".
+
+
+**Update 2026-09-17: the two transfer arms were re-tested with the paired bootstrap, and they
+are genuinely AT the floor, not merely unresolvable.** The original 0.455 and 0.452 were judged
+on unpaired per-predictor CIs, which F-008 showed cannot resolve effects of this size. Paired on
+the same 10,342 element-gene pairs, GM12878-trained applied to K562 gives **-0.0028 [-0.0132,
++0.0078] (sign kept 73.2%)** for the ATAC-input model and **-0.0048 [-0.0216, +0.0110] (72.7%)**
+for the multimodal one, against the ATAC-only floor. Pairing shrank the intervals from about
++/-0.05 to +/-0.01 and they still straddle zero, so the arms sit on the floor rather than above
+or resolvably below it.
+**What pairing DOES resolve is the transfer penalty itself**, which the unpaired intervals could
+not: in-cell minus transferred is **+0.0169 [+0.0041, +0.0297] (99.6%)** for the multimodal model
+and +0.0053 [-0.0013, +0.0119] (94.5%) for the ATAC-input one. So transfer costs the multimodal
+model a resolvable amount downstream, and that is the first paired downstream confirmation of
+the transfer failure F-005, F-016 and F-017 found upstream. `results/f004_transfer_paired.tsv`.
+Note the AUPRC values on the shared pair set differ from `performance_summary.txt` by up to
+0.011 (floor 0.4680 here against 0.4573 there); `4.17` recomputes average precision on the
+common set by design, so use it for deltas and the pipeline's own table for absolute values.
 
 **Tags:** h3k27ac, abc, crispr-benchmark, dynamic-range, downstream-evaluation, k562, negative-result
 
@@ -489,8 +507,8 @@ Absolute AUPRC on the shared pair set: DNase x predicted 0.5519, observed H3K27a
 
 ---
 
-## F-019: A sequence+ATAC model's predicted H3K27ac clears the ABC benchmark floor, but the gain is mostly longer training rather than DNase supervision, and longer training is worth nothing upstream
-**Status:** established
+## F-019: A sequence+ATAC model's predicted H3K27ac clears the ABC benchmark floor, DNase supervision is not what does it, and the longer-training explanation does not survive a run-variance check
+**Status:** floor-clearing established; **the epoch attribution is WITHDRAWN, 2026-09-17, see F-020**
 **Claim:** In K562, two models that need ONLY ATAC at inference were put through ABC and the CRISPR benchmark. Both are mode `multimodal`, i.e. sequence AND ATAC in, H3K27ac out; "ATAC-only" here means no DNase is required at prediction time, NOT the accessibility-only architecture that `atac` mode denotes in the trainer. They are: the multi-task model whose profile head trains on DNase (F-015, `1.28`) and the epoch-matched plain baseline that trains to the same 100-epoch budget with no DNase anywhere (`1.29`). Paired bootstrap, 2,000 resamples of the shared pair set:
 
 | contrast | delta AUPRC | 95% CI | sign kept |
@@ -503,10 +521,74 @@ Absolute AUPRC on the shared pair set: DNase x predicted 0.5519, observed H3K27a
 
 **Implications:** **An ATAC-only-at-inference model can clear the benchmark floor.** That is new, and it is the only result in this project that does so under the actual deployment constraint, F-018's winner requiring DNase at prediction time. But the attribution is not what the multi-task hypothesis predicted: against the early-stopped baseline the multi-task arm gains +0.0133, and +0.0086 of that is simply the longer training the changed loss caused. DNase supervision itself is resolvable only in the prediction-alone form (+0.0129) and not in the geomean form (+0.0047). One speculative reading of that split, untested: the geomean multiplies the prediction by real ATAC, which compresses differences between predictions, so the prediction-alone arm is the purer test.
 **The incidental result is arguably the more useful one: training longer is free, and nobody was doing it.** Every predicted-activity arm behind F-004 was early-stopped at patience 10, typically stopping near epoch 35. Running the identical model to 100 epochs moves the benchmark by +0.0086 [+0.0005, +0.0175] and takes it over the floor. **The same change is worth exactly nothing upstream**: F-015 measured the epoch-matched baseline at +0.0000 [-0.0008, +0.0009] (*p*=0.92) overall Pearson, with its best checkpoint still landing at epoch 33-47. So a model that is converged by its own validation loss, and indistinguishable on the project's headline metric, is still measurably better downstream. This is a third instance of the benchmark and top-quintile Pearson disagreeing (F-004 and F-018 being the others) and the first where the benchmark rewards something the upstream metric scores at zero.
-**Caveats:** **The epoch comparison conflates the budget with run-to-run variance, and this is its main weakness.** `1.29` is a SEPARATE training run, not a continuation of the baseline, and cuDNN convolution is not bit-reproducible across nodes, which is why this project's regression gates use a tolerance rather than byte-identity (decision 2026-09-03). With one run per condition, +0.0086 [+0.0005, +0.0175] cannot be cleanly attributed to the extra epochs. The one piece of evidence that does isolate the budget: within the 100-epoch run the best validation checkpoint landed at epoch 40, 38 and 47 in folds 1, 2 and 4, later than where the early-stopped run ended in those folds, so the budget demonstrably changes which checkpoint is selected. Suggestive, not sufficient. **The clean tests, in order of cost:** score the SAME 100-epoch run's epoch-35 and epoch-100 checkpoints against each other, which removes run variance entirely; or repeat both conditions at two or three seeds. The interval's lower bound is +0.0005, so nothing should rest on this until one of those is done. Also note the epoch effect is modest in absolute terms. Checkpoint selection is unchanged in the control, so this is not overfitting-by-another-name: `1.29` keeps best-validation-loss selection and only prevents the run ending early. All arms here are geomean(real ATAC tagAligns, predicted bigwig) or a single predicted bigwig, so they are matched on counting path; the observed-H3K27ac arm is not and is reference only. K562 in-cell only. Whether the multi-task arm's prediction-alone advantage survives in another cell type is untested and, given F-016 and F-017, should not be assumed.
+**Caveats:** **The epoch comparison conflates the budget with run-to-run variance, and this is its main weakness.** `1.29` is a SEPARATE training run, not a continuation of the baseline, and cuDNN convolution is not bit-reproducible across nodes, which is why this project's regression gates use a tolerance rather than byte-identity (decision 2026-09-03). With one run per condition, +0.0086 [+0.0005, +0.0175] cannot be cleanly attributed to the extra epochs. The one piece of evidence that does isolate the budget: within the 100-epoch run the best validation checkpoint landed at epoch 40, 38 and 47 in folds 1, 2 and 4, later than where the early-stopped run ended in those folds, so the budget demonstrably changes which checkpoint is selected. Suggestive, not sufficient. **This was tested on 2026-09-17 and the attribution did not survive; see the update below and F-020.** Also note the epoch effect is modest in absolute terms. Checkpoint selection is unchanged in the control, so this is not overfitting-by-another-name: `1.29` keeps best-validation-loss selection and only prevents the run ending early. All arms here are geomean(real ATAC tagAligns, predicted bigwig) or a single predicted bigwig, so they are matched on counting path; the observed-H3K27ac arm is not and is reference only. K562 in-cell only. Whether the multi-task arm's prediction-alone advantage survives in another cell type is untested and, given F-016 and F-017, should not be assumed.
+
+**Update 2026-09-17: the epoch attribution is WITHDRAWN. `1.31.epoch_budget_vs_run_variance.py`.**
+The proposed within-run checkpoint test is impossible, because training saves only two
+checkpoints per fold, best-validation and final. What the logs do support is comparing the two
+runs at the SAME epoch, where the budget cannot yet have acted, so every difference there is
+run variance. Run variance at epochs 20/25/30 across all five folds is **sd 0.1753 validation
+MNLL and sd 0.00180 validation count Pearson**, against a scored best-checkpoint difference
+between the two runs of **-0.0636 MNLL and +0.00003 count Pearson**. The claimed effect is 2.8x
+smaller than the noise on MNLL and 60x smaller on count Pearson; the worst single matched-epoch
+draw, fold 1 at epoch 25, is -0.4905 MNLL, roughly 8x the whole effect. The budget was also not
+binding in every fold: baseline fold 1 ran to epoch 55 with its save at 45, LATER than the
+100-epoch run's save at 40, so the picture of a baseline uniformly cut short is wrong.
+Separately, and with zero run variance because both checkpoints come from one run, the
+100-epoch run's final epoch is WORSE than its own best-validation checkpoint on all five folds
+(MNLL +0.018 to +0.096, count Pearson -0.00046 to -0.00154), so "more gradient steps are
+better" is not the mechanism either. **The +0.0086 downstream number itself is not refuted**,
+and the benchmark has disagreed with upstream metrics three times, but it can no longer be
+called the epoch budget. Resolving it needs 2-3 seeds per condition scored downstream, which
+makes it no longer cheap. **Do not adopt 100 epochs as a default.**
+
 **Tags:** h3k27ac, abc, crispr-benchmark, multi-task, early-stopping, deployment, atac-only, k562, methodology
 
 ### Evidence Ledger
 | Date | Run/Session | Dataset | Project | Result | Direction |
 |------|-------------|---------|---------|--------|-----------|
 | 2026-09-16 | predictions 43803158 and 43832450 (`4.4`), ABC 43808834 and 43837720 (`4.5`), benchmark 43854329 (`4.7`), paired bootstrap (`4.17`) | EPCrisprBenchmark_ensemble_data_GRCh38; 153,545 ABC candidate regions, region set 7d5995ce | 2026_0824_H3K27ac_model | multi-task 0.4935 and epoch-matched baseline 0.4888 against a 0.4680 floor; DNase supervision itself +0.0047 (ns) in geomean, +0.0129 alone | qualifies F-015, extends F-004 |
+
+---
+
+## F-020: Run-to-run variance between two trainings of the same configuration is large enough to swallow several effects this project has treated as real, and it is measurable from the training logs alone
+**Status:** established
+**Claim:** Two runs of `multimodal5p_accs5p_hw500_clw10`, the `1.11` baseline and the 100-epoch
+`1.29`, differ only in the epoch budget. At epochs 20, 25 and 30 neither run has stopped, so the
+budget cannot have affected either one and any difference at a matched epoch is pure run variance
+from initialisation, batch shuffling and non-deterministic cuDNN convolution. Across all five
+folds:
+
+| quantity, at matched epochs | mean | sd | max abs |
+|---|---|---|---|
+| validation MNLL | -0.0389 | **0.1753** | 0.4905 |
+| validation count Pearson | -0.00034 | **0.00180** | 0.00413 |
+
+For scale, the effects this project has recently reported and acted on include +0.0026 overall
+Pearson for the multi-task profile head (F-015) and +0.0000 for the epoch budget (F-019). A
+second, independent observation from the same logs: within the 100-epoch run the final epoch is
+worse than that run's own best-validation checkpoint on all five folds, MNLL +0.018 to +0.096
+and count Pearson -0.00046 to -0.00154, which is a zero-variance measurement because both
+checkpoints come from one weights lineage.
+**Implications:** **One run per condition cannot resolve a count-Pearson effect of order 0.002,
+and this project has been running one per condition.** The immediate casualty is F-019's epoch
+attribution, withdrawn. The general rule is that any single-run architecture or hyperparameter
+comparison whose effect is smaller than the matched-epoch sd needs seeds before it is adopted,
+and `1.31` costs nothing to run because it reads logs that every training already writes. It
+should be run against any new adopt-or-not arm before the arm is adopted. Note also what this
+does NOT say: it does not refute a downstream effect, because the benchmark and the upstream
+metrics have disagreed in both directions three times (F-004, F-018, F-019). It says the
+upstream metrics cannot be used to attribute one.
+**Caveats:** These are the metrics logged on the validation split during training, not the
+held-out test-fold overall and top-quintile Pearson that the evaluation scripts report, so the
+sd is the same order as the project's reported effects rather than directly comparable to them.
+Two runs give a 15-point sd estimate across folds and epochs, which is enough to establish the
+order of magnitude and not much more. Checkpoint selection is best-validation-loss in both runs,
+where the loss is MNLL plus the weighted count MSE, so the saved checkpoint is not always the
+MNLL minimum; `1.31` reads the LAST saved epoch, which is what the checkpoint file holds.
+**Tags:** methodology, reproducibility, run-variance, early-stopping, statistical-power, negative-result
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-09-17 | `1.31.epoch_budget_vs_run_variance.py` over the `1.11` and `1.29` training logs, 5 folds each | K562 H3K27ac 5' targets, validation split of each chromosome-holdout fold | 2026_0824_H3K27ac_model | matched-epoch run variance sd 0.1753 MNLL / 0.00180 count Pearson, against a best-checkpoint budget difference of -0.0636 / +0.00003; final epoch worse than best-val on 5 of 5 folds | withdraws F-019's epoch attribution |

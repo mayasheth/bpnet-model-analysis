@@ -116,6 +116,22 @@ attribute any gain to the architecture or to the loss.
       on the mechanistic metric only. A transferred multimodal beats the target's own
       ATAC-only floor by +0.0306 [+0.0130, +0.0482] (*p*=0.008) into K562 but only
       +0.0132 [-0.0141, +0.0405] (*p*=0.25) into GM12878.
+- [x] **Re-test F-004's two transfer arms with the paired bootstrap. DONE 2026-09-17,
+      `results/f004_transfer_paired.tsv`.** They are genuinely AT the ABC floor, not merely
+      unresolvable on the unpaired CIs they were originally judged with. GM12878-trained
+      applied to K562: ATAC-input **-0.0028 [-0.0132, +0.0078]** (sign kept 73.2%),
+      multimodal **-0.0048 [-0.0216, +0.0110]** (72.7%). Pairing cut the intervals from
+      about +/-0.05 to +/-0.01 and they still straddle zero.
+      **Pairing DOES resolve the transfer penalty, which the unpaired intervals could not:**
+      in-cell minus transferred is **+0.0169 [+0.0041, +0.0297]** (99.6%) for the multimodal
+      model, +0.0053 [-0.0013, +0.0119] (94.5%) for the ATAC-input one. First paired
+      DOWNSTREAM confirmation of the transfer failure F-005/F-016/F-017 found upstream.
+      **Tension worth carrying:** the F-005 entry above has a transferred multimodal beating
+      the target's own ATAC-only *model* floor by +0.0306 upstream into K562, while the same
+      direction is at the ABC activity floor downstream. The two floors are not the same
+      object (a model against a raw track in the activity slot), so this is not a
+      contradiction, but do not quote the upstream number as evidence of downstream transfer.
+
 - [ ] **TeloHAEC as a third cell type, with conditions.** The only new cell type under the
       ATAC-only rule. Tracks, elements and model-free coupling are ready. Caveats to carry:
       ATAC-derived elements (though derivation was shown not to matter, p = 0.83), 36 bp reads
@@ -436,18 +452,43 @@ auxiliary task, or an annotation. Ordered so the cheap prerequisite gates the ex
       DNase-like input everywhere without mixing assays across cell types.
       Also unblocks the composite-metric item below, whose best form needs DHS.
 
-## Training longer is free and nobody was doing it, F-019
+## Training longer is NOT resolved and should not be adopted, F-019
 
-- [ ] **Re-run the adopt-or-not arms at 100 epochs, and decide whether to make it the
-      default.** Training the plain ATAC-input model to 100 epochs instead of early-stopping
-      near 35 moves the CRISPR benchmark by **+0.0086 [+0.0005, +0.0175]** and takes it over
-      the floor (+0.0208), while being worth **+0.0000 (*p*=0.92)** on top-quintile Pearson
-      (F-015, F-019). Checkpoint selection is unchanged, so this is not overfitting: `1.29`
-      keeps best-validation-loss and only stops the run ending early.
-      **The lower bound is +0.0005, so replicate before adopting.** Cheapest replication is
-      an existing arm family re-scored at 100 epochs, not a new model.
-      **If it holds it is the cheapest improvement available**, applies to every arm in the
-      project, and every predicted-activity arm behind F-004 was early-stopped.
+- [x] **Is the +0.0086 the epoch budget or run variance? MEASURED 2026-09-17, and the
+      run pair CANNOT attribute it. `1.31.epoch_budget_vs_run_variance.py`.** The proposed
+      test (score the same run's epoch-35 and epoch-100 checkpoints) is impossible: training
+      saves only two checkpoints per fold, best-validation (`multimodal_bpnet.torch`) and
+      final (`multimodal_bpnet.final.torch`). What the logs do allow is comparing the two
+      runs AT THE SAME EPOCH, where the budget cannot yet have had any effect, so every
+      difference there is run variance.
+      **Run variance at matched epochs 20/25/30 is sd 0.1753 MNLL and sd 0.00180 count
+      Pearson. The scored best-checkpoint difference between the two runs is -0.0636 MNLL
+      and +0.00003 count Pearson.** The claimed effect is 2.8x smaller than the noise on
+      MNLL and 60x smaller on count Pearson. Worst single matched-epoch draw, fold 1 at
+      epoch 25, is -0.4905 MNLL, about 8x the whole effect.
+      **The budget was not even binding in every fold.** Baseline fold 1 ran to epoch 55
+      with its save at 45, LATER than the 100-epoch run's save at 40. Patience was 10 in
+      every baseline fold, so 4 of 5 folds saved later under the longer budget, but not
+      fold 1.
+      **DO NOT adopt 100 epochs as the default**, and do not re-run the adopt-or-not arms
+      at 100 epochs as a replication; that repeats the one-run-per-condition design that
+      caused this.
+
+- [x] **Does training past the validation minimum help? NO, 5 of 5 folds, zero run
+      variance. 2026-09-17.** Within the 100-epoch run, the final epoch is worse than its
+      own best-validation checkpoint on every fold: MNLL +0.018 to +0.096, count Pearson
+      -0.00046 to -0.00154. This is the one epoch-budget question a single run CAN answer,
+      because both checkpoints come from the same weights lineage. Checkpoint selection is
+      doing its job; the gain is not "more gradient steps are better".
+
+- [ ] **If the +0.0086 still matters, it needs seeds, not another single run.** Upstream
+      metrics cannot see the effect at all, so the only way to resolve it is downstream at
+      2-3 seeds per condition, paired via `4.17`. Cost is 2-3 extra trainings plus scoring
+      per condition, which is why it is no longer cheap and no longer "free".
+      **The benchmark has disagreed with Pearson three times (F-004, F-018, F-019), so a
+      +0.0000 upstream effect with a real downstream one is not impossible** and this is
+      not a refutation of the downstream number. It is a refutation of attributing that
+      number to the epoch budget on this evidence.
 
 - [x] **Multi-task model through ABC. DONE 2026-09-16, F-019.** It clears the floor
       (+0.0255 [+0.0068, +0.0439]) and is the only arm to do so while reading ATAC ALONE at

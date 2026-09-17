@@ -1821,3 +1821,30 @@ handover listed unpushed SHAs that `git log origin/main..HEAD` did not report.
 Recovery is cheap while the commits are still unreaped: `git checkout <sha> -- <paths>`.
 Prefer selective checkout to cherry-pick when a later commit already corrected part of the
 orphaned content, as it had here for F-019.
+
+## Run variance is free to measure and bigger than you think (2026-09-17)
+
+Every training writes a per-epoch validation log. Two runs of the same configuration compared
+AT THE SAME EPOCH give run variance directly, because anything that differs only later (an
+epoch budget, an early-stopping patience) cannot have acted yet. For
+`multimodal5p_accs5p_hw500_clw10` that is sd 0.1753 validation MNLL and sd 0.00180 validation
+count Pearson across 5 folds, which is larger than several effects this project has adopted.
+`scripts/1.31.epoch_budget_vs_run_variance.py` does it in seconds from logs already on disk.
+**Run it against any adopt-or-not arm before adopting the arm.** It killed F-019's epoch
+attribution.
+
+Two traps inside it. The checkpoint on disk is the LAST saved epoch, not the minimum-MNLL
+saved epoch: bpnetlite saves on total validation loss, MNLL plus the weighted count MSE, so a
+later save can show a higher MNLL (baseline fold 1 saves at 44 then 45, MNLL 188.3003 then
+188.3092). And "the baseline was cut short" is not uniformly true; baseline fold 1 ran to
+epoch 55 with its save at 45, later than the 100-epoch run's save at 40.
+
+## The CRISPR merged tables live under workflow/results, not results (2026-09-17)
+
+`find` for `expt_pred_merged_annot.txt.gz` under
+`CRISPR_comparison_v3/CRISPR_comparison/results/<run>` returns nothing but a log directory,
+which looks exactly like a run that produced no output. The real path is
+`CRISPR_comparison_v3/CRISPR_comparison/workflow/results/<run>/expt_pred_merged_annot.txt.gz`,
+for the same reason the performance summaries moved: `4.7` cds into `workflow/` before
+invoking Snakemake. This is the second time that cd has produced a false "no output" read.
+
