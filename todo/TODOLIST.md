@@ -436,6 +436,28 @@ auxiliary task, or an annotation. Ordered so the cheap prerequisite gates the ex
       DNase-like input everywhere without mixing assays across cell types.
       Also unblocks the composite-metric item below, whose best form needs DHS.
 
+## Training longer is free and nobody was doing it, F-019
+
+- [ ] **Re-run the adopt-or-not arms at 100 epochs, and decide whether to make it the
+      default.** Training the plain ATAC-input model to 100 epochs instead of early-stopping
+      near 35 moves the CRISPR benchmark by **+0.0086 [+0.0005, +0.0175]** and takes it over
+      the floor (+0.0208), while being worth **+0.0000 (*p*=0.92)** on top-quintile Pearson
+      (F-015, F-019). Checkpoint selection is unchanged, so this is not overfitting: `1.29`
+      keeps best-validation-loss and only stops the run ending early.
+      **The lower bound is +0.0005, so replicate before adopting.** Cheapest replication is
+      an existing arm family re-scored at 100 epochs, not a new model.
+      **If it holds it is the cheapest improvement available**, applies to every arm in the
+      project, and every predicted-activity arm behind F-004 was early-stopped.
+
+- [x] **Multi-task model through ABC. DONE 2026-09-16, F-019.** It clears the floor
+      (+0.0255 [+0.0068, +0.0439]) and is the only arm to do so while reading ATAC ALONE at
+      inference, which is the real deployment constraint. **But most of that is the longer
+      training, not the DNase supervision.** Against the epoch-matched baseline the
+      auxiliary task is +0.0047 [-0.0035, +0.0122] (ns) in the geomean form and only
+      +0.0129 [+0.0022, +0.0240] in the prediction-alone form.
+      Do not quote the +0.0133 against the early-stopped baseline; that comparison carries
+      the epoch confound and I made it before running the control.
+
 ## The DNase-input model is downstream-useful, and that reopens the line
 
 - [x] **Real-DNase-input model through ABC and CRISPR. DONE 2026-09-15, F-018. IT WORKS.**

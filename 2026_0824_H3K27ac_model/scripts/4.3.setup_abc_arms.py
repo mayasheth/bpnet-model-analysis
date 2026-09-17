@@ -91,7 +91,7 @@ PEAKS_ORDER = [
 ap = argparse.ArgumentParser()
 ap.add_argument("--results-dir", default="results/2026_0903_predicted_activity")
 ap.add_argument("--arms", choices=("h3k27ac", "p300", "p300transfer", "accessibility",
-                                  "dnaseinput"),
+                                  "dnaseinput", "multitask"),
                 default="h3k27ac",
                 help="Which target's predicted tracks to build arms for. p300 arms go in "
                      "their own results dir and config: re-stamping Peaks inside the "
@@ -160,6 +160,34 @@ P = f"{D}/EP300_BPNet/2026_0824_H3K27ac_model"
 DNASE_PRED = f"{PRED}/predk27ac_k562_dnase.bw"
 DNASE_ACC = f"{P}/data/k562_dnase_5p.bw"
 
+# MULTI-TASK ARMS. The model whose profile head trains on DNase while its counts head trains
+# on H3K27ac (F-015, `1.28`). It reads ATAC ALONE at inference, DNase entering only as a
+# training target, which makes it the one remaining candidate that satisfies the project's
+# actual deployment constraint: the application target has ATAC and nothing else.
+#
+# WHY IT IS WORTH A RUN DESPITE A TINY UPSTREAM GAIN. F-015 measured +0.0026 overall Pearson
+# against an epoch-matched baseline and could not resolve the top-quintile difference. But
+# F-004 established that this benchmark and top-quintile Pearson disagree -- every
+# architecture change that raised Pearson left the benchmark unmoved -- and F-018 showed the
+# benchmark responding to an input change. Neither direction of that disagreement has been
+# tested for a change that alters what the TRUNK learned, which is what this is.
+#
+# TWO ARMS, BOTH ATAC-LEGAL. Real ATAC is the accessibility term and the prediction is the
+# other half; there is deliberately no real-DNase variant here, because putting DNase in the
+# activity slot would need DNase at deployment and defeat the only reason to run this.
+#   pred_multitask_atacacc  geomean(real ATAC, predicted H3K27ac). Compares directly to
+#                           `pred_k562_multimodal`, which is the SAME architecture and input
+#                           trained without the DNase profile target, so the difference is
+#                           attributable to the auxiliary task alone.
+#   k27only_multitask       the prediction alone as activity.
+MULTITASK_PRED = f"{PRED}/predk27ac_k562_multitask.bw"
+# The epoch-matched baseline (1.29): same architecture and ATAC input as
+# pred_k562_multimodal but given the multi-task arm's 100-epoch budget. Without it the
+# downstream comparison carries the confound F-015 had to exclude upstream -- the multi-task
+# arm trained 53-99 epochs against the early-stopped baseline's 32-55, so "the auxiliary task
+# helped" and "it trained longer" both fit.
+EP100_PRED = f"{PRED}/predk27ac_k562_ep100.bw"
+
 # Accessibility-as-activity arms. The two real tracks are the 5-prime insertion bigwigs
 # built by 0.20 and 0.32; the two converted tracks are painted by 4.1 from the converters.
 ACCESSIBILITY = [
@@ -173,7 +201,16 @@ ACCESSIBILITY = [
      "DNase predicted from ATAC, GM12878-trained converter, applied to K562"),
 ]
 
-if a.arms == "dnaseinput":
+if a.arms == "multitask":
+    if not os.path.exists(MULTITASK_PRED):
+        missing.append(MULTITASK_PRED)
+    if not os.path.exists(EP100_PRED):
+        missing.append(EP100_PRED)
+    add("pred_multitask_atacacc", ATAC, MULTITASK_PRED, "ATAC")
+    add("k27only_multitask", MULTITASK_PRED, "", "ATAC")
+    add("pred_ep100_atacacc", ATAC, EP100_PRED, "ATAC")
+    add("k27only_ep100", EP100_PRED, "", "ATAC")
+elif a.arms == "dnaseinput":
     for path in (DNASE_PRED, DNASE_ACC):
         if not os.path.exists(path):
             missing.append(path)
@@ -216,7 +253,8 @@ else:
 TAG = a.config_tag or {"h3k27ac": "predicted_activity", "p300": "p300_activity",
                        "p300transfer": "p300_transfer",
                        "accessibility": "accessibility_activity",
-                       "dnaseinput": "dnase_input_activity"}[a.arms]
+                       "dnaseinput": "dnase_input_activity",
+                       "multitask": "multitask_activity"}[a.arms]
 out = f"{ABC}/config/mine/config_biosamples_{TAG}.tsv"
 with open(out, "w") as f:
     f.write("\t".join(COLS) + "\n")

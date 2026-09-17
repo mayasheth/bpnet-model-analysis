@@ -1,0 +1,6 @@
+arm_a	arm_b	auprc_a	auprc_b	delta	ci_lo	ci_hi	sign_kept_frac	sign_kept_pct	n_pairs	n_regulated	n_boot
+pred_multitask_atacacc.ABC.Score	pred_ep100_atacacc.ABC.Score	0.493473	0.488763	0.00471	-0.003522	0.012192	0.875	87.5	10342	466	2000
+k27only_multitask.ABC.Score	k27only_ep100.ABC.Score	0.506444	0.493531	0.012913	0.002244	0.023995	0.993	99.3	10342	466	2000
+pred_ep100_atacacc.ABC.Score	pred_k562_multimodal.ABC.Score	0.488763	0.480142	0.008621	0.00046	0.017547	0.9825	98.25	10342	466	2000
+pred_ep100_atacacc.ABC.Score	K562_ATAC_only.ABC.Score	0.488763	0.468009	0.020754	0.003926	0.037322	0.992	99.2	10342	466	2000
+pred_multitask_atacacc.ABC.Score	K562_ATAC_only.ABC.Score	0.493473	0.468009	0.025464	0.00676	0.043937	0.9965	99.65	10342	466	2000

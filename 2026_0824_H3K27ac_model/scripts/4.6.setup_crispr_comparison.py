@@ -24,7 +24,8 @@ import os
 
 _ap = argparse.ArgumentParser()
 _ap.add_argument("--arms",
-                 choices=("h3k27ac", "p300", "p300all", "accessibility", "dnaseinput"),
+                 choices=("h3k27ac", "p300", "p300all", "accessibility", "dnaseinput",
+                          "multitask"),
                  default="h3k27ac",
                  help="Which activity target's arms to benchmark. The p300 set reuses the "
                       "same July floor and observed-H3K27ac ceiling, so the two "
@@ -135,7 +136,52 @@ DNASE_ARMS = [
      "Real DNase x predicted H3K27ac (DNase-input model)",                       "#762A83"),
 ]
 
-if _a.arms == "dnaseinput":
+# The multi-task model (F-015): DNase profile head, H3K27ac counts head, ATAC ALONE at
+# inference. The only remaining candidate that meets the real deployment constraint, since
+# F-018's winner needs DNase at prediction time and the ATAC-to-DNase converter is closed
+# (F-014).
+#
+# THE DECISIVE CONTRAST IS pred_multitask_atacacc vs pred_ep100_atacacc, NOT vs
+# pred_k562_multimodal. Changing the loss changes the stopping rule too: the multi-task arm
+# trained 53-99 epochs against the early-stopped baseline's 32-55, so a comparison against
+# the latter cannot separate "the auxiliary task helped" from "it trained longer". F-015 had
+# to exclude exactly this confound upstream, where the epoch-matched baseline moved +0.0000
+# (p=0.92); the same control belongs here. pred_k562_multimodal is kept as the published
+# reference point.
+#
+# Secondary: pred_multitask_atacacc vs pred_k562_multimodal. Same architecture,
+# same ATAC input, same counts target; the only difference is that one trained its profile
+# head against DNase instead of against H3K27ac. Both are geomean(ATAC tagAligns, predicted
+# bigwig), so they are matched on counting path.
+#
+# pred_dnase_atacacc is carried as the REFERENCE CEILING FOR THIS QUESTION: it is what the
+# same architecture achieves when it gets to READ DNase rather than merely be supervised by
+# it (+0.0403 over the floor, F-018). If the multi-task arm approaches it, DNase supervision
+# recovers some of what DNase input provides without needing the assay. If it sits at the
+# ATAC-input arm, the auxiliary task buys nothing downstream either.
+MULTITASK = f"{ABC}/2026_0916_multitask_activity"
+MULTITASK_ARMS = [
+    ("K562_ATAC_only",            JULY, "ATAC only (floor)",                      "#bdbdbd"),
+    ("K562_ATAC_H3K27ac_element", JULY, "ATAC x observed H3K27ac (reference)",     "#404040"),
+    ("pred_k562_multimodal",      NEW,  "ATAC x predicted H3K27ac (plain ATAC-input model)",
+     "#c6dbef"),
+    ("pred_multitask_atacacc",    MULTITASK,
+     "ATAC x predicted H3K27ac (multi-task, DNase-supervised profile head)",       "#2171b5"),
+    ("k27only_k562_multimodal",   NEW,  "Predicted H3K27ac alone (plain ATAC-input model)",
+     "#c7e9c0"),
+    ("k27only_multitask",         MULTITASK,
+     "Predicted H3K27ac alone (multi-task)",                                       "#238b45"),
+    ("pred_ep100_atacacc",        MULTITASK,
+     "ATAC x predicted H3K27ac (epoch-matched baseline, no DNase supervision)",    "#9ecae1"),
+    ("k27only_ep100",             MULTITASK,
+     "Predicted H3K27ac alone (epoch-matched baseline)",                           "#a1d99b"),
+    ("pred_dnase_atacacc",        DNASE_IN,
+     "ATAC x predicted H3K27ac (DNase-INPUT model, needs DNase at inference)",     "#762A83"),
+]
+
+if _a.arms == "multitask":
+    ARMS = MULTITASK_ARMS
+elif _a.arms == "dnaseinput":
     ARMS = DNASE_ARMS
 elif _a.arms == "accessibility":
     ARMS = ACC_ARMS
@@ -145,11 +191,13 @@ elif _a.arms == "p300all":
     ARMS = P300_ALL_ARMS
 TAG = {"h3k27ac": "predicted_activity", "p300": "p300_activity",
        "p300all": "p300_all", "accessibility": "accessibility_activity",
-       "dnaseinput": "dnase_input_activity"}[_a.arms]
+       "dnaseinput": "dnase_input_activity",
+       "multitask": "multitask_activity"}[_a.arms]
 RUN = {"h3k27ac": "2026_0904_predicted_activity", "p300": "2026_0905_p300_activity",
        "p300all": "2026_0906_p300_all",
        "accessibility": "2026_0910_accessibility_activity",
-       "dnaseinput": "2026_0915_dnase_input_activity"}[_a.arms]
+       "dnaseinput": "2026_0915_dnase_input_activity",
+       "multitask": "2026_0916_multitask_activity"}[_a.arms]
 
 BASELINES = [
     ("distToTSS",      "FALSE", "mean", "Inf", "TRUE",  "Distance to TSS",      "#c5cad7"),
