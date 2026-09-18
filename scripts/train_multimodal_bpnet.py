@@ -87,6 +87,19 @@ def parse_args():
                    # applied to the wrong inputs. The order used is recorded in
                    # training_target.json.
                    help="Accessibility BigWig (ATAC or DNase)")
+    p.add_argument("--cell-types-json", default=None,
+                   help="Train on SEVERAL cell types. JSON mapping a cell-type name to an "
+                        "object with peaks, signal_plus_bw, and optionally signal_minus_bw, "
+                        "accessibility_bw and negatives; anything omitted falls back to the "
+                        "matching single-cell-type flag. When this is given, --peaks and "
+                        "--signal-plus-bw are ignored. Windows from every cell type are "
+                        "pooled into one training set and the chromosome-fold split is "
+                        "applied within each, so a held-out chromosome is held out "
+                        "EVERYWHERE and no cell type can leak it.")
+    p.add_argument("--holdout-cell", default=None,
+                   help="Name of a cell type in --cell-types-json to EXCLUDE from training, "
+                        "for leave-one-out transfer experiments. Named rather than indexed "
+                        "so the run is self-describing in training_target.json.")
     p.add_argument("--fold", required=True, help="Fold JSON file")
     p.add_argument("--fold-key", default="0", help="Key within fold JSON (default: 0)")
     p.add_argument("--output-dir", required=True, help="Output directory for model")
@@ -594,42 +607,62 @@ def main():
     os.makedirs(args.output_dir, exist_ok=True)
     model_prefix = os.path.join(args.output_dir, "multimodal_bpnet")
 
+    # ---- multi-cell-type panel -----------------------------------------------------
+    # PANEL is an ordered mapping name -> spec. The single-cell-type path is expressed as
+    # a one-entry panel so there is exactly one extraction code path, and the arrays it
+    # produces for a one-cell panel are identical to what the old code produced.
+    if args.cell_types_json:
+        with open(args.cell_types_json) as _f:
+            _panel = json.load(_f)
+        if args.holdout_cell:
+            if args.holdout_cell not in _panel:
+                raise SystemExit(f"error: --holdout-cell {args.holdout_cell!r} is not in "
+                                 f"{args.cell_types_json}; have {sorted(_panel)}")
+            _panel = {k: v for k, v in _panel.items() if k != args.holdout_cell}
+            if not _panel:
+                raise SystemExit("error: holding that cell out leaves nothing to train on")
+        PANEL = _panel
+    else:
+        PANEL = {"_single": {}}
+
+    def _spec(spec, key, fallback):
+        return spec.get(key, fallback)
+
+    print(f"Panel: {len(PANEL)} cell type(s): {', '.join(PANEL)}"
+          + (f"  (holding out {args.holdout_cell})" if args.holdout_cell else ""))
+
+    # Provenance is written AFTER the panel is resolved, so the file names every cell type
+    # the model actually trained on and every track it read. The single-cell-type shape is
+    # unchanged, so existing readers (1.5's backfill, 4.1's mode sniffing) still work.
+    if args.cell_types_json:
+        target_record["cell_types_json"] = args.cell_types_json
+        target_record["holdout_cell"] = args.holdout_cell
+        target_record["trained_on"] = sorted(PANEL)
+        target_record["panel"] = {
+            cell: {k: _spec(spec, k, getattr(args, k, None))
+                   for k in ("peaks", "signal_plus_bw", "signal_minus_bw",
+                             "accessibility_bw", "negatives")}
+            for cell, spec in PANEL.items()}
+
     with open(os.path.join(args.output_dir, "training_target.json"), "w") as f:
         json.dump(target_record, f, indent=2)
 
-    print("Loading peaks...")
-    train_peaks = load_peaks(args.peaks, train_chroms)
-    val_peaks = load_peaks(args.peaks, val_chroms)
-    print(f"  Train peaks: {len(train_peaks)}, Val peaks: {len(val_peaks)}")
+    if args.cell_types_json and args.count_offset_model:
+        raise SystemExit("error: --count-offset-model with --cell-types-json is not "
+                         "implemented. The offset model is trained on one cell type's "
+                         "accessibility, so pooling would mix offset scales silently.")
 
-    print("Loading negatives...")
-    train_negs = load_negatives(args.negatives, train_chroms)
-    # Cap the negative pool to bound memory when loading genome windows
-    max_negs = args.max_negatives if args.max_negatives is not None else len(train_peaks) * 10
-    if len(train_negs) > max_negs:
-        train_negs = train_negs.sample(max_negs, random_state=42).reset_index(drop=True)
-    print(f"  Train negatives: {len(train_negs)} (capped at {max_negs})")
-    # The default cap is 10x the peak count, which is fine for a ~12k-peak TF set but
-    # implies ~1.05M windows on the ~105k-element candidate set — tens of GB, and it
-    # fails only after a long extraction. Warn rather than change the default, which is
-    # shared with the p300 models.
-    if args.max_negatives is None and len(train_negs) > 200_000:
-        est_gb = (len(train_negs) * args.in_window * 6 * 4) / 1e9
-        print(f"  WARNING: --max-negatives was not set, so the pool defaulted to "
-              f"10x peaks = {len(train_negs):,} windows (~{est_gb:.0f} GB of extracted "
-              f"arrays). Set --max-negatives explicitly; the sampler only draws "
-              f"{args.negative_ratio:.0%} of each batch from negatives.")
-
-    genome = args.genome  # None for atac mode — extract_windows handles this
-
+    genome = args.genome  # None for atac mode -- extract_windows handles this
     prof_kw = dict(profile_plus_bw=args.profile_target_plus_bw,
                    profile_minus_bw=args.profile_target_minus_bw)
 
-    def _extract(regions, jitter, is_peak, label):
-        print(f"Extracting {label} windows...")
+    def _extract(spec, regions, jitter, is_peak, label):
         out = extract_windows(
-            regions, genome, args.signal_plus_bw, args.signal_minus_bw,
-            args.accessibility_bw, args.in_window, args.out_window, jitter,
+            regions, genome,
+            _spec(spec, "signal_plus_bw", args.signal_plus_bw),
+            _spec(spec, "signal_minus_bw", args.signal_minus_bw),
+            _spec(spec, "accessibility_bw", args.accessibility_bw),
+            args.in_window, args.out_window, jitter,
             is_peak=is_peak, **prof_kw
         )
         seqs, sigs, accs, _ = out[:4]
@@ -639,55 +672,142 @@ def main():
             # Both come out of one loop over one `valid` mask, so a mismatch here means
             # the extractor itself is broken rather than a track being short.
             assert len(prof) == len(sigs), (
-                f"{label}: {len(prof)} profile-target rows against {len(sigs)} counts "
-                f"rows")
+                f"{label}: {len(prof)} profile-target rows against {len(sigs)} counts rows")
         return seqs, sigs, accs, prof
 
-    tr_seqs, tr_sigs, tr_accs, tr_prof = _extract(
-        train_peaks, args.max_jitter, True, "training peaks")
-    neg_seqs, neg_sigs, neg_accs, neg_prof = _extract(
-        train_negs, 0, False, "training negatives")
-    val_seqs, val_sigs, val_accs, val_prof = _extract(
-        val_peaks, 0, True, "validation peaks")
+    bins = {k: [] for k in ("tr_seqs", "tr_sigs", "tr_accs", "tr_prof",
+                            "neg_seqs", "neg_sigs", "neg_accs", "neg_prof",
+                            "val_seqs", "val_sigs", "val_accs", "val_prof")}
+    acc_stats, per_cell_counts = {}, {}
 
-    if use_prof_target:
-        # A profile target that is empty where the counts target is not would train the
-        # auxiliary head on nothing while reporting a normal-looking loss.
-        for nm, a, b in (("training peaks", tr_prof, tr_sigs),
-                         ("validation peaks", val_prof, val_sigs)):
-            if float(a.sum()) <= 0:
-                raise SystemExit(f"error: profile target is all zero over {nm}; check "
-                                 f"--profile-target-plus-bw covers these regions")
-            print(f"  {nm}: profile-target total {a.sum():,.0f} against counts-target "
-                  f"total {b.sum():,.0f}")
+    for cell, spec in PANEL.items():
+        tag = "" if cell == "_single" else f"[{cell}] "
+        pk_path = _spec(spec, "peaks", args.peaks)
+        ng_path = _spec(spec, "negatives", args.negatives)
+        acc_bw = _spec(spec, "accessibility_bw", args.accessibility_bw)
 
-    # Residual training: offsets must be computed from RAW accessibility, before the
-    # normalization below overwrites tr_accs/neg_accs/val_accs in place.
+        print(f"{tag}Loading peaks...")
+        c_train_peaks = load_peaks(pk_path, train_chroms)
+        c_val_peaks = load_peaks(pk_path, val_chroms)
+        print(f"  Train peaks: {len(c_train_peaks)}, Val peaks: {len(c_val_peaks)}")
+
+        print(f"{tag}Loading negatives...")
+        c_negs = load_negatives(ng_path, train_chroms)
+        # Cap the negative pool to bound memory when loading genome windows. The cap is
+        # PER CELL TYPE, so a panel of N cell types draws N times this many; that is
+        # intended, since each cell type needs its own negatives against its own tracks.
+        max_negs = (args.max_negatives if args.max_negatives is not None
+                    else len(c_train_peaks) * 10)
+        if len(c_negs) > max_negs:
+            c_negs = c_negs.sample(max_negs, random_state=42).reset_index(drop=True)
+        print(f"  Train negatives: {len(c_negs)} (capped at {max_negs})")
+        if args.max_negatives is None and len(c_negs) > 200_000:
+            est_gb = (len(c_negs) * args.in_window * 6 * 4) / 1e9
+            print(f"  WARNING: --max-negatives was not set, so the pool defaulted to "
+                  f"10x peaks = {len(c_negs):,} windows (~{est_gb:.0f} GB of extracted "
+                  f"arrays). Set --max-negatives explicitly; the sampler only draws "
+                  f"{args.negative_ratio:.0%} of each batch from negatives.")
+
+        print(f"{tag}Extracting windows...")
+        a_seqs, a_sigs, a_accs, a_prof = _extract(spec, c_train_peaks, args.max_jitter,
+                                                  True, "training peaks")
+        n_seqs, n_sigs, n_accs, n_prof = _extract(spec, c_negs, 0, False,
+                                                  "training negatives")
+        v_seqs, v_sigs, v_accs, v_prof = _extract(spec, c_val_peaks, 0, True,
+                                                  "validation peaks")
+
+        if use_prof_target:
+            for nm, a, b in ((f"{tag}training peaks", a_prof, a_sigs),
+                             (f"{tag}validation peaks", v_prof, v_sigs)):
+                if float(a.sum()) <= 0:
+                    raise SystemExit(f"error: profile target is all zero over {nm}; check "
+                                     f"--profile-target-plus-bw covers these regions")
+                print(f"  {nm}: profile-target total {a.sum():,.0f} against counts-target "
+                      f"total {b.sum():,.0f}")
+
+        # ACCESSIBILITY IS NORMALIZED PER CELL TYPE, BEFORE POOLING, AND THAT IS THE WHOLE
+        # POINT. Each cell type's ATAC has its own library depth and its own signal
+        # distribution. Standardizing the pooled array with one mean and std would leave
+        # those differences in the input, and the model would read library rather than
+        # biology -- which is exactly the mechanism F-017 caught driving a transfer
+        # collapse. Per-cell-type standardization puts every cell type on mean 0, sd 1.
+        # CONSEQUENCE AT INFERENCE: there is no single training statistic to reuse, so a
+        # multi-cell-type model MUST be predicted with statistics derived from the target
+        # cell type's own track. That is `4.1 --acc-mean/--acc-std`, fed by `4.26`.
+        if args.count_offset_model is not None:
+            # Residual training needs RAW accessibility, and normalization below replaces
+            # these arrays. Copy before that happens rather than extracting a second time.
+            raw_accs_for_offset = (a_accs.copy(), n_accs.copy(), v_accs.copy())
+        if acc_bw is not None:
+            a_accs, m, sd = normalize_accessibility(a_accs, mean=args.acc_mean,
+                                                    std=args.acc_std)
+            n_accs = normalize_accessibility(n_accs, mean=m, std=sd)[0]
+            v_accs = normalize_accessibility(v_accs, mean=m, std=sd)[0]
+            acc_stats[cell] = {"acc_mean": float(m), "acc_std": float(sd)}
+            print(f"  {tag}accessibility normalization: mean={m:.4f}, std={sd:.4f}")
+
+        for k, v in (("tr_seqs", a_seqs), ("tr_sigs", a_sigs), ("tr_accs", a_accs),
+                     ("tr_prof", a_prof), ("neg_seqs", n_seqs), ("neg_sigs", n_sigs),
+                     ("neg_accs", n_accs), ("neg_prof", n_prof), ("val_seqs", v_seqs),
+                     ("val_sigs", v_sigs), ("val_accs", v_accs), ("val_prof", v_prof)):
+            bins[k].append(v)
+        per_cell_counts[cell] = {"train_peaks": int(len(a_sigs)),
+                                 "train_negatives": int(len(n_sigs)),
+                                 "val_peaks": int(len(v_sigs))}
+
+    def _cat(key):
+        vals = [v for v in bins[key] if v is not None]
+        if not vals:
+            return None
+        return vals[0] if len(vals) == 1 else np.concatenate(vals, axis=0)
+
+    tr_seqs, tr_sigs, tr_accs, tr_prof = (_cat("tr_seqs"), _cat("tr_sigs"),
+                                          _cat("tr_accs"), _cat("tr_prof"))
+    neg_seqs, neg_sigs, neg_accs, neg_prof = (_cat("neg_seqs"), _cat("neg_sigs"),
+                                              _cat("neg_accs"), _cat("neg_prof"))
+    val_seqs, val_sigs, val_accs, val_prof = (_cat("val_seqs"), _cat("val_sigs"),
+                                              _cat("val_accs"), _cat("val_prof"))
+
+    if len(PANEL) > 1:
+        print("\nPooled across the panel:")
+        for cell, c in per_cell_counts.items():
+            print(f"  {cell:<12} train={c['train_peaks']:>7,} "
+                  f"neg={c['train_negatives']:>7,} val={c['val_peaks']:>7,}")
+        print(f"  {'TOTAL':<12} train={len(tr_sigs):>7,} neg={len(neg_sigs):>7,} "
+              f"val={len(val_sigs):>7,}")
+
+    # Residual training. Rejected above for a multi-cell panel, so this is the
+    # single-cell path only, using the raw arrays copied inside the loop.
     tr_off = neg_off = val_off = None
     if args.count_offset_model is not None:
         print(f"Computing count offsets from {args.count_offset_model} "
               f"(fold {args.fold_key})...")
         tr_off, neg_off, val_off = compute_count_offsets(
             args.count_offset_model, args.fold_key,
-            [tr_accs, neg_accs, val_accs], args.batch_size, args.device)
+            list(raw_accs_for_offset), args.batch_size, args.device)
         print(f"  offsets: train {tr_off.shape} mean {tr_off.mean():.3f}, "
               f"neg {neg_off.shape} mean {neg_off.mean():.3f}, "
               f"val {val_off.shape} mean {val_off.mean():.3f}")
         print("  this run learns the RESIDUAL; final prediction is "
               "model_output + offset")
 
-    # Normalize accessibility (skipped when there is no accessibility track)
-    if args.accessibility_bw is not None:
-        tr_accs, acc_mean, acc_std = normalize_accessibility(
-            tr_accs, mean=args.acc_mean, std=args.acc_std
-        )
-        neg_accs = normalize_accessibility(neg_accs, mean=acc_mean, std=acc_std)[0]
-        val_accs = normalize_accessibility(val_accs, mean=acc_mean, std=acc_std)[0]
-
-        print(f"Accessibility normalization: mean={acc_mean:.4f}, std={acc_std:.4f}")
+    if acc_stats:
         stats_path = os.path.join(args.output_dir, "acc_normalization_stats.json")
         with open(stats_path, "w") as f:
-            json.dump({"acc_mean": float(acc_mean), "acc_std": float(acc_std)}, f)
+            if len(acc_stats) == 1:
+                # ONE cell type means one training statistic genuinely applies, so write the
+                # flat {"acc_mean":..,"acc_std":..} shape that 4.1 and compute_count_offsets
+                # already read. Keyed on the number of cell types, not on the placeholder
+                # name: a panel naming a single cell type is still a single-statistic model,
+                # and writing the nested shape there would make its own models unreadable by
+                # 4.1's default path for no benefit.
+                json.dump(next(iter(acc_stats.values())), f)
+            else:
+                json.dump({"per_cell_type": acc_stats,
+                           "note": "Multi-cell-type model: no single training statistic "
+                                   "applies. Predict with statistics derived from the "
+                                   "TARGET cell type's own accessibility track, via "
+                                   "4.1 --acc-mean/--acc-std fed by 4.26."}, f, indent=2)
     else:
         print("No --accessibility-bw given; skipping accessibility normalization")
 

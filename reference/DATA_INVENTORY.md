@@ -148,6 +148,36 @@ Where a replicate had several BAMs from different ENCODE reprocessings (HepG2 an
 each had a 2016/2019 and a 2020-12-26 version), the most recent was taken; no
 `preferred_default` flag was set on any of them.
 
+**Library depth across the panel, measured 2026-09-18** (`0.44.panel_depth_audit.sh`,
+`results/panel_depth_audit.tsv`). Depth was audited before training because this project has
+measured its effect twice and got OPPOSITE answers for the two roles: TARGET depth does not
+matter (the 2026-09-08 subsampling test gave a depth-matched K562 p300 model +0.202 on
+transfer against full-depth's +0.207, paired -0.005, *p*=0.40), while INPUT depth does and
+must be matched before any cross-cell-type comparison (F-017 turned a -0.133 collapse into
++0.003 by matching it).
+
+| cell | ATAC reads | EP300 reads |
+|---|---|---|
+| A549 | 779,688,978 | 54,632,177 |
+| HepG2 | 592,417,064 | 52,756,547 |
+| GM12878 | 572,663,196 | 30,001,681 |
+| K562 | 546,770,218 | 51,127,010 |
+| MCF-7 | **117,672,232** | 56,696,538 |
+
+**EP300 spread is 1.89x and irrelevant**, both because it is small and because target depth
+was already shown not to matter. **ATAC spread is 6.63x, but it is one outlier and not a
+gradient**: four cell types fall within 1.43x of each other and MCF-7 sits 4.6x below K562.
+
+**Decision: MCF-7 is kept and nothing is thinned.** In absolute terms 117.7M is a good ATAC
+library; most published ATAC is 20-50M, and the spread exists only because the other four are
+unusually deep. Thinning to match would discard 75-85% of four libraries to remove a confound
+affecting one, and F-017's own caveat is that depth-matching "is the right control for a
+transfer question and the wrong choice for a production model, which should use all the reads
+it has". The trainer z-scores accessibility per cell type, which handles scale but not count
+noise, so **the leave-one-out design is the test**: if MCF-7's held-out result is anomalous
+relative to the other four, depth is the first thing to suspect and a thinned panel is the
+follow-up.
+
 **Not yet processed.** These are raw downloads. Still to do: filter/sort/index the ChIP BAMs,
 convert ATAC to tagAlign, build 5-prime bigwigs and per-cell-type element sets, and compare
 depth and signal-to-noise against K562 and GM12878 BEFORE training on them.
