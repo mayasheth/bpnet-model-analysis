@@ -1,0 +1,31 @@
+# ENCODE files for the multi-cell-type p300 panel, selected 2026-09-18.
+# ATAC: paired-ended 100 bp Snyder-lab experiments in every cell type, matching
+#   K562 ENCSR868FGK, so run type and read length are constant across the panel.
+# EP300: single-ended everywhere but 36-51 bp across three labs. Read length barely
+#   affects a 5-prime-end target (the 5-prime position is the alignment start), but
+#   antibody and protocol differ by lab and that is a real batch effect.
+# BAM choice: unfiltered alignments for ChIP (filtered locally), filtered alignments
+#   for ATAC, per reference/DATA_INVENTORY.md. Where a replicate had several BAMs
+#   from different reprocessings, the most recent was taken.
+cell	assay	experiment	kind	accession	bio_replicate	size_gb
+A549	EP300	ENCSR686BQM	bam	ENCFF639MJZ	[1]	0.90
+A549	EP300	ENCSR686BQM	bam	ENCFF981BEX	[2]	0.84
+A549	EP300	ENCSR686BQM	bam	ENCFF371YBD	[3]	0.58
+A549	EP300	ENCSR686BQM	peak	ENCFF143OQP	[1, 2, 3]	0.000
+HepG2	EP300	ENCSR000EDV	bam	ENCFF922TSG	[1]	0.88
+HepG2	EP300	ENCSR000EDV	bam	ENCFF713NWW	[2]	1.14
+HepG2	EP300	ENCSR000EDV	peak	ENCFF488UHZ	[1, 2]	0.000
+MCF-7	EP300	ENCSR000BTR	bam	ENCFF490PAU	[1]	1.82
+MCF-7	EP300	ENCSR000BTR	bam	ENCFF075FEU	[2]	1.21
+MCF-7	EP300	ENCSR000BTR	peak	ENCFF290DJX	[1, 2]	0.000
+A549	ATAC	ENCSR032RGS	bam	ENCFF607DTB	[1]	8.89
+A549	ATAC	ENCSR032RGS	bam	ENCFF701BDT	[2]	10.71
+A549	ATAC	ENCSR032RGS	bam	ENCFF616DYV	[3]	13.39
+A549	ATAC	ENCSR032RGS	peak	ENCFF429FOV	[1, 2, 3]	0.005
+HepG2	ATAC	ENCSR291GJU	bam	ENCFF990VCP	[1]	9.00
+HepG2	ATAC	ENCSR291GJU	bam	ENCFF624SON	[2]	8.02
+HepG2	ATAC	ENCSR291GJU	bam	ENCFF926KFU	[3]	8.06
+HepG2	ATAC	ENCSR291GJU	peak	ENCFF915FZC	[1, 2, 3]	0.005
+MCF-7	ATAC	ENCSR422SUG	bam	ENCFF607OSL	[1]	3.40
+MCF-7	ATAC	ENCSR422SUG	bam	ENCFF772EFK	[2]	3.17
+MCF-7	ATAC	ENCSR422SUG	peak	ENCFF882OVP	[1, 2]	0.004

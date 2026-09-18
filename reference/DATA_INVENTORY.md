@@ -15,6 +15,9 @@ Root for ENCODE cell types: `/oak/stanford/groups/engreitz/Users/sheth/Data/ENCO
 |---|---|---|---|---|---|---|---|
 | K562     | yes (x2) | **yes** | yes | **yes** | yes | yes | yes |
 | GM12878  | yes | **yes** | yes | **yes** | yes | yes | yes |
+| A549     |, | **yes** |, | **yes** |, |, |, |
+| HepG2    |, | **yes** |, | **yes** |, |, |, |
+| MCF-7    |, | **yes** |, | **yes** |, |, |, |
 | TeloHAEC |, | **yes** (4 conditions) | yes (4 conditions) |, |, |, |, |
 | WTC11    | yes |, | Mint-ChIP |, | yes | Mint-ChIP | Mint-ChIP |
 | HCT116   | yes |, | yes |, | yes | yes | yes |
@@ -41,8 +44,19 @@ prediction, not that a deployment route has been found.** Locally the two assays
 cell types each, so neither is broader in this inventory; the asymmetry is about what can be
 obtained for a new target cell type.
 **A converter training cell type needs BOTH assays, and only K562 and GM12878 have both**, which
-is what blocks any claim about converter portability. **EP300 exists in exactly two (K562, GM12878)**, enough to
-test p300 transferability the same way H3K27ac was tested. CTCF, H3K4me1 and H3K27me3 are
+is what blocks any claim about converter portability. **CORRECTED 2026-09-18: EP300 is available in far more than two cell types.** This
+file previously said "EP300 exists in exactly two (K562, GM12878)", which was true
+of what had been DOWNLOADED and false of what exists. A portal survey on 2026-09-18
+found 55 released human EP300 ChIP-seq experiments, and **six cell lines have both
+EP300 and ATAC**: K562, GM12878, A549, HepG2, MCF-7 and SK-N-SH, plus eight tissues
+(sigmoid colon, transverse colon, ovary, stomach, upper lobe of left lung, esophagus
+muscularis mucosa, gastroesophageal sphincter, tibial nerve). A549, HepG2 and MCF-7
+were downloaded on 2026-09-18 for the multi-cell-type p300 panel. SK-N-SH was left
+out because its only ATAC experiment is retinoic-acid treated while its untreated
+EP300 experiments have no matching ATAC, so cell type and treatment would confound.
+**The lesson is that "we have data for two cell types" was being read as "data
+exists for two cell types" for weeks.** Check the portal before concluding an assay
+is unavailable. CTCF, H3K4me1 and H3K27me3 are
 available in six cell types, so annotation-based analyses generalise further than modelling
 does.
 
@@ -98,6 +112,45 @@ sample name. Always use explicit accession lists, never a directory glob.
 Caveats for modelling: 35-36 bp reads against K562/GM12878's 94-95 bp, shallower libraries,
 and ATAC-derived elements. Element derivation was shown not to matter (p = 0.83), but read
 length and depth remain confounded.
+
+## Multi-cell-type p300 panel, added 2026-09-18
+
+Downloaded for the leave-one-out p300 transfer experiment (F-024 made p300 the default
+activity target). Manifest with sizes and md5-verified accessions:
+`2026_0824_H3K27ac_model/reference/p300_panel_manifest.tsv`. Fetched by
+`scripts/0.43.fetch_p300_panel.sh`, which verifies md5 rather than existence, so a preempted
+transfer cannot leave a truncated BAM that fails later somewhere confusing.
+
+**ATAC is matched across the whole panel and that was deliberate**: paired-ended, 100 bp,
+Snyder lab in all five cell types, the same experiment family as K562's ENCSR868FGK. A549 also
+has a single-ended 51 bp ATAC experiment (ENCSR220ASC, Reddy) and it was NOT used, because
+run type and read length are already a known confound here from TeloHAEC.
+
+**EP300 is NOT matched and this is the panel's main caveat.** Single-ended everywhere, but
+36 bp (K562, GM12878, HepG2), 50 bp (MCF-7) and 51 bp (A549), across three labs. Read length
+should matter little for a 5-prime-end target, since the 5-prime position is the alignment
+start regardless of read length, but antibody and protocol differ by lab and that is a real
+batch effect in a model trained across cell types. Any cross-cell-type p300 result should be
+checked against the possibility that the model is reading lab rather than biology.
+
+| cell | assay | experiment | run | read | lab | files (`Data/ENCODE/<cell>/<assay>/`) | peaks |
+|---|---|---|---|---|---|---|---|
+| A549  | EP300 | ENCSR686BQM | se | 51 | Reddy, Duke | `ENCFF639MJZ`, `ENCFF981BEX`, `ENCFF371YBD`.bam (unfiltered) | `ENCFF143OQP` IDR |
+| A549  | ATAC  | ENCSR032RGS | pe | 100 | Snyder | `ENCFF607DTB`, `ENCFF701BDT`, `ENCFF616DYV`.bam (filtered) | `ENCFF429FOV` IDR |
+| HepG2 | EP300 | ENCSR000EDV | se | 36 | Snyder | `ENCFF922TSG`, `ENCFF713NWW`.bam (unfiltered) | `ENCFF488UHZ` IDR |
+| HepG2 | ATAC  | ENCSR291GJU | pe | 100 | Snyder | `ENCFF990VCP`, `ENCFF624SON`, `ENCFF926KFU`.bam (filtered) | `ENCFF915FZC` IDR |
+| MCF-7 | EP300 | ENCSR000BTR | se | 50 | Myers, HAIB | `ENCFF490PAU`, `ENCFF075FEU`.bam (unfiltered) | `ENCFF290DJX` IDR |
+| MCF-7 | ATAC  | ENCSR422SUG | pe | 100 | Snyder | `ENCFF607OSL`, `ENCFF772EFK`.bam (filtered) | `ENCFF882OVP` IDR |
+
+**BAM choice.** ChIP gets `unfiltered alignments` and is filtered locally, ATAC gets the
+pipeline's filtered `alignments`, per the processing convention at the top of this file.
+Where a replicate had several BAMs from different ENCODE reprocessings (HepG2 and MCF-7 EP300
+each had a 2016/2019 and a 2020-12-26 version), the most recent was taken; no
+`preferred_default` flag was set on any of them.
+
+**Not yet processed.** These are raw downloads. Still to do: filter/sort/index the ChIP BAMs,
+convert ATAC to tagAlign, build 5-prime bigwigs and per-cell-type element sets, and compare
+depth and signal-to-noise against K562 and GM12878 BEFORE training on them.
 
 ## Other cell types, H3K27ac and annotations, no ATAC
 
