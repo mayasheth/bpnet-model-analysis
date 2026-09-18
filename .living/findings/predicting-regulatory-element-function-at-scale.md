@@ -592,3 +592,56 @@ MNLL minimum; `1.31` reads the LAST saved epoch, which is what the checkpoint fi
 | Date | Run/Session | Dataset | Project | Result | Direction |
 |------|-------------|---------|---------|--------|-----------|
 | 2026-09-17 | `1.31.epoch_budget_vs_run_variance.py` over the `1.11` and `1.29` training logs, 5 folds each | K562 H3K27ac 5' targets, validation split of each chromosome-holdout fold | 2026_0824_H3K27ac_model | matched-epoch run variance sd 0.1753 MNLL / 0.00180 count Pearson, against a best-checkpoint budget difference of -0.0636 / +0.00003; final epoch worse than best-val on 5 of 5 folds | withdraws F-019's epoch attribution |
+
+---
+
+## F-024: Observed p300 is a resolvably better ABC activity term than observed H3K27ac, which raises the project's ceiling by 60% and leaves two equal, resolvable gaps
+**Status:** established
+**Claim:** Paired on the same 10,342 element-gene pairs, with ATAC in the other half of the
+geomean throughout:
+
+| arm | AUPRC | vs ATAC-only floor |
+|---|---|---|
+| ATAC only (floor) | 0.4680 | - |
+| predicted p300, GM12878 -> K562 | 0.4771 | +0.0091 [-0.0042, +0.0222] |
+| predicted H3K27ac, K562 in-cell | 0.4801 | +0.0121 [-0.0053, +0.0285] |
+| predicted p300, K562 in-cell | 0.5229 | +0.0549 |
+| observed H3K27ac | 0.5296 | +0.0616 |
+| **observed p300** | **0.5673** | **+0.0993 [+0.0786, +0.1198]** |
+
+**Observed p300 beats observed H3K27ac by +0.0377 [+0.0187, +0.0583], sign kept 99.9%.** The
+activity term's ceiling is therefore +0.0993 over the floor, not the +0.0616 that the
+H3K27ac anchor implies, and the project has been measuring itself against a ceiling 60% too low.
+**Implications:** **Two gaps remain, they are almost exactly equal, and both are resolvable**,
+which is new; nearly every contrast in this project until now has been unresolvable against this
+benchmark.
+
+| gap | size | resolvable? |
+|---|---|---|
+| in-cell predicted p300 against observed p300 | **0.0444** [-0.0633, -0.0264] | yes, 100% |
+| transfer, in-cell against GM12878 -> K562 | **0.0458** [+0.0296, +0.0610] | yes, 100% (F-021) |
+
+In-cell prediction captures 55% of the available headroom, and the transferred arm 9%. So the
+in-cell problem is NOT nearly solved, which is what the H3K27ac ceiling made it look like.
+**The strategic consequence is that p300 should be the default target.** Predicted p300 in-cell
+clears the floor by +0.0549 while predicted H3K27ac does not clear it resolvably at all
+(+0.0121, CI spans zero, F-004). The project is organised around H3K27ac by inheritance rather
+than by evidence, and the better activity target has been sitting in the p300 arms since F-008.
+**It also sets a minimum effect size worth chasing.** With 466 regulated pairs the paired CIs
+run about +/-0.010 to +/-0.020, so an intervention expected to move less than roughly 0.015
+cannot be evaluated here whatever its merit. Both gaps above are comfortably above that; the
+epoch budget (+0.0086) and the multi-task auxiliary loss (+0.0047) never were.
+**Caveats:** K562 only, as always. The observed-p300 arm is geomean(real ATAC tagAligns,
+observed p300 BAMs) and so shares the counting path of the predicted arms, unlike the July
+anchors; this contrast is therefore legitimate, and it is the reason the number is quotable
+where a comparison against the July floor would not be. A higher ceiling does not mean a
+predicted track can reach it: observed p300 has information no ATAC-input model can recover.
+Whether p300's advantage holds in another cell type is untested, and no GM12878 CRISPR benchmark
+exists to test it.
+**Tags:** p300, h3k27ac, abc, crispr-benchmark, activity-term, ceiling, strategy, k562
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-09-17 | `4.17` over the 2026_0906_p300_all comparison | EPCrisprBenchmark_ensemble_data_GRCh38; 10,342 shared element-gene pairs, 466 regulated | 2026_0824_H3K27ac_model | observed p300 0.5673 against observed H3K27ac 0.5296 (+0.0377) and floor 0.4680 (+0.0993); in-cell predicted p300 short of its ceiling by 0.0444 | reframes F-004, F-008, F-021 |
+
