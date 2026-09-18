@@ -99,6 +99,11 @@ else
     echo "ATAC: ${#AT_BAMS[@]} replicate file(s)"
     TA="$WORK/${SAFE}.tn5.tagAlign"
     : > "$TA"
+    # Keep only chromosomes present in the sizes file WHILE WRITING. bedtools genomecov on
+    # a BED input aborts on the first contig it cannot find, and an ENCODE BAM carries
+    # scaffolds and randoms that GRCh38.main.chrom.sizes does not. The EP300 path above
+    # escapes this only because -ibam reads the BAM header and its awk filter runs after.
+    KEEPCHR="$WORK/keep.chr"; cut -f1 "$CHR" | sort -u > "$KEEPCHR"
     for b in "${AT_BAMS[@]}"; do
         # -f 2 keeps properly paired reads; ENCODE's ATAC `alignments` output is already
         # filtered, so -F 1804 -q 30 is belt-and-braces rather than a second opinion.
@@ -109,21 +114,27 @@ else
           | awk 'BEGIN{OFS="\t"}
                  {if($6=="+"){$2=$2+4}else{$3=$3-5}
                   if($2<0)$2=0; if($3<=$2)$3=$2+1;
-                  print $1,$2,$3,"N",1000,$6}' >> "$TA"
+                  print $1,$2,$3,"N",1000,$6}' \
+          | awk 'NR==FNR{k[$1]=1; next} ($1 in k)' "$KEEPCHR" - >> "$TA"
         echo "  converted $(basename "$b")"
     done
     echo "  tagAlign reads: $(wc -l < "$TA")"
 
+    # Sort ONCE and reuse. The first version sorted inside each genomecov's process
+    # substitution, which sorted A549's ~40 GB tagAlign twice to no purpose.
+    TAS="$WORK/${SAFE}.tn5.sorted.tagAlign"
+    if [[ ! -s "$TAS" ]]; then
+        sort -k1,1 -k2,2n -S 8G -T "$WORK" "$TA" > "$TAS"
+        rm -f "$TA"
+    fi
     out_cov="$OUT/${SAFE}_atac.bw"
     if [[ -s "$out_cov" ]]; then echo "  exists: $(basename "$out_cov")"; else
-        bedtools genomecov -i <(sort -k1,1 -k2,2n -S 4G -T "$WORK" "$TA") -g "$CHR" -bg \
-          > "$WORK/cov.bg"
+        bedtools genomecov -i "$TAS" -g "$CHR" -bg > "$WORK/cov.bg"
         bg_to_bw "$WORK/cov.bg" "$out_cov"
     fi
     out_5p="$OUT/${SAFE}_atac_5p.bw"
     if [[ -s "$out_5p" ]]; then echo "  exists: $(basename "$out_5p")"; else
-        bedtools genomecov -i <(sort -k1,1 -k2,2n -S 4G -T "$WORK" "$TA") -g "$CHR" -bg -5 \
-          > "$WORK/5p.bg"
+        bedtools genomecov -i "$TAS" -g "$CHR" -bg -5 > "$WORK/5p.bg"
         bg_to_bw "$WORK/5p.bg" "$out_5p"
     fi
 fi
