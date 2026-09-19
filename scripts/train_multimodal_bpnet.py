@@ -518,9 +518,14 @@ def main():
     if args.mode != 'atac' and args.genome is None:
         raise ValueError("--genome is required for --mode sequence and --mode multimodal")
 
-    if args.mode in ('multimodal', 'atac') and args.accessibility_bw is None:
+    if (args.mode in ('multimodal', 'atac') and args.accessibility_bw is None
+            and args.cell_types_json is None):
         raise ValueError("--accessibility-bw is required for --mode multimodal and "
                          "--mode atac")
+    # With a panel, accessibility comes from each cell type's own entry, so the flag is
+    # not required up here. It is checked PER CELL TYPE once the panel is resolved, which
+    # is the only place the question is well posed: a panel may supply it for some cell
+    # types and rely on the fallback flag for others.
 
     if args.profile_target_minus_bw is not None and args.profile_target_plus_bw is None:
         raise ValueError("--profile-target-minus-bw needs --profile-target-plus-bw")
@@ -627,6 +632,15 @@ def main():
 
     def _spec(spec, key, fallback):
         return spec.get(key, fallback)
+
+    if args.mode in ("multimodal", "atac"):
+        no_acc = [c for c, spec in PANEL.items()
+                  if _spec(spec, "accessibility_bw", args.accessibility_bw) is None]
+        if no_acc:
+            raise SystemExit(
+                f"error: --mode {args.mode} needs an accessibility track, and these cell "
+                f"types have neither an accessibility_bw entry nor the --accessibility-bw "
+                f"fallback: {no_acc}")
 
     print(f"Panel: {len(PANEL)} cell type(s): {', '.join(PANEL)}"
           + (f"  (holding out {args.holdout_cell})" if args.holdout_cell else ""))
