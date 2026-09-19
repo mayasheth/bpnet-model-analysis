@@ -6,11 +6,16 @@ different project directories with four different naming conventions, and a typo
 would train silently against the wrong cell type's signal. Every path is checked to exist
 before the file is written.
 
-K562 and GM12878 point at their EXISTING tracks, not at rebuilds. That is deliberate: those
-two are what every prior p300 result in this project was measured on, and swapping them for
-rebuilds would make the new panel incomparable to F-021 and F-024. 0.45 rebuilds GM12878
-separately, as a construction control for the three new cell types, and that rebuild is not
-used for training.
+K562 points at its EXISTING tracks, which every prior p300 result was measured on.
+
+GM12878 does NOT, and that is the F-025 correction: the tracks the 2026_0606 model trained on
+were a BPNet model's PREDICTED plus strand paired with an observed minus strand. Using them
+again would propagate a known-bad target into the whole panel. Its 0.45 rebuild, originally
+built only as a construction control, is used instead; it reproduces the correct observed
+track at r = 1.0000, so this is a fix and not a change of method.
+
+The consequence is that the panel's GM12878 arm is NOT comparable to F-021's transferred arm.
+That is intended. F-021's arm is the one with the bad target.
 """
 import argparse
 import json
@@ -30,10 +35,16 @@ PANEL = {
         "accessibility_bw": f"{D}/2026_0529_multimodal_p300_model/data/atac.bw",
         "negatives": NEG,
     },
+    # GM12878 POINTS AT THE 0.45 REBUILD, NOT AT THE TRACKS THE 2026_0606 MODEL USED.
+    # F-025: that model's signal_plus_bw was ENCFF960OFK, whose ENCODE output_type is
+    # "predicted signal profile (plus strand)" from BPNet-model annotation ENCSR038OGP,
+    # paired with an OBSERVED minus strand. Half its target was a model's output. The
+    # rebuild here comes from the real experiment's BAMs (ENCSR000DZG) and matches the
+    # correct observed plus strand, ENCFF557UDP, at r = 1.0000.
     "GM12878": {
         "peaks": f"{DATA}/GM12878/EP300/ENCFF926AKK.bed.gz",
-        "signal_plus_bw": f"{D}/2026_0606_GM12878_transferability/data/ENCFF960OFK_plus.bw",
-        "signal_minus_bw": f"{D}/2026_0606_GM12878_transferability/data/ENCFF941MGK_minus.bw",
+        "signal_plus_bw": f"{PANEL_DIR}/GM12878_ep300_5p_plus.bw",
+        "signal_minus_bw": f"{PANEL_DIR}/GM12878_ep300_5p_minus.bw",
         "accessibility_bw": f"{D}/2026_0606_GM12878_transferability/data/atac.bw",
         "negatives": NEG,
     },
