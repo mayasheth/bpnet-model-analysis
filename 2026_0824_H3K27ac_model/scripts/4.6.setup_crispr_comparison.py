@@ -21,11 +21,12 @@ Colours: greys for baselines, one hue per model family, darkening with input ric
 """
 import argparse
 import os
+import subprocess
 
 _ap = argparse.ArgumentParser()
 _ap.add_argument("--arms",
                  choices=("h3k27ac", "p300", "p300all", "accessibility", "dnaseinput",
-                          "multitask"),
+                          "multitask", "slopefix"),
                  default="h3k27ac",
                  help="Which activity target's arms to benchmark. The p300 set reuses the "
                       "same July floor and observed-H3K27ac ceiling, so the two "
@@ -183,6 +184,60 @@ if _a.arms == "multitask":
     ARMS = MULTITASK_ARMS
 elif _a.arms == "dnaseinput":
     ARMS = DNASE_ARMS
+# SLOPEFIX: everything needed to test F-021's two cheap strategies, in ONE comparison so the
+# paired bootstrap can compare them against the arms they are meant to improve.
+#
+# WHY ONE RUN. F-021's numbers came from two separate comparisons (p300 in 2026_0906_p300_all,
+# H3K27ac in 2026_0904_predicted_activity), which means they were only comparable through the
+# shared July anchors and could not be paired against each other. The two strategies are each
+# worth about 0.01-0.05, the same size as the between-comparison slop, so they have to be
+# scored on one pair set or the result is unreadable. Listing an already-finished arm's
+# directory here re-scores it; it does not re-run its ABC.
+#
+# TWO STRATEGIES, FOUR NEW ARMS:
+#   *_accnorm      the same p300 models re-predicted with the accessibility input standardized
+#                  on the PREDICTION regions instead of each model's training windows. Removes
+#                  a 0.73 sd (transferred) against 0.38 sd (in-cell) centring asymmetry that
+#                  had nothing to do with transfer. BOTH arms move, so the pair stays honest.
+#   *_residual     the residual objective, where the model predicts H3K27ac counts minus an
+#                  accessibility-only model's counts, so the accessibility slope is not a
+#                  channel it can get wrong. F-005 judged this objective in-cell only.
+#
+# COUNTING PATHS. Every non-anchor arm here is geomean(real ATAC tagAligns, predicted bigwig)
+# or a single predicted bigwig, so they are matched. The two July anchors count reads through
+# count_bam/count_tagalign and are reference only, as everywhere else in this script.
+ACCNORM_D = f"{ABC}/2026_0917_accnorm_activity"
+RESID_D = f"{ABC}/2026_0917_residual_transfer"
+SLOPEFIX_ARMS = [
+    ("K562_ATAC_only",            JULY, "ATAC only (floor, reference)",        "#bdbdbd"),
+    ("K562_ATAC_H3K27ac_element", JULY, "ATAC x observed H3K27ac (ceiling, reference)",
+     "#404040"),
+    # p300, geomean form: the F-021 headline pair and its renormalised twin
+    ("p300pred_k562_multimodal",    P300,   "ATAC x predicted p300 (K562)",            "#807dba"),
+    ("p300pred_gm12878_multimodal", P300TX, "ATAC x predicted p300 (GM12878 -> K562)", "#08519c"),
+    ("p300pred_k562_multimodal_accnorm", ACCNORM_D,
+     "ATAC x predicted p300 (K562, region-normalised)", "#bcbddc"),
+    ("p300pred_gm12878_multimodal_accnorm", ACCNORM_D,
+     "ATAC x predicted p300 (GM12878 -> K562, region-normalised)", "#6baed6"),
+    # p300, prediction-alone form. F-019 found this form more sensitive than the geomean,
+    # which multiplies the prediction by real ATAC and compresses differences between models.
+    ("p300only_k562_multimodal",    P300,   "Predicted p300 alone (K562)",            "#d94801"),
+    ("p300only_gm12878_multimodal", P300TX, "Predicted p300 alone (GM12878 -> K562)", "#fdae6b"),
+    ("p300only_k562_multimodal_accnorm", ACCNORM_D,
+     "Predicted p300 alone (K562, region-normalised)", "#fdd0a2"),
+    ("p300only_gm12878_multimodal_accnorm", ACCNORM_D,
+     "Predicted p300 alone (GM12878 -> K562, region-normalised)", "#feedde"),
+    # H3K27ac, plain against residual objective, in-cell and transferred
+    ("pred_k562_multimodal",    NEW, "ATAC x predicted H3K27ac (K562)",            "#2171b5"),
+    ("pred_gm12878_multimodal", NEW, "ATAC x predicted H3K27ac (GM12878 -> K562)", "#cb181d"),
+    ("pred_k562_residual",    RESID_D,
+     "ATAC x predicted H3K27ac (K562, residual objective)", "#238b45"),
+    ("pred_gm12878_residual", RESID_D,
+     "ATAC x predicted H3K27ac (GM12878 -> K562, residual objective)", "#74c476"),
+]
+
+if _a.arms == "slopefix":
+    ARMS = SLOPEFIX_ARMS
 elif _a.arms == "accessibility":
     ARMS = ACC_ARMS
 elif _a.arms == "p300":
@@ -192,12 +247,14 @@ elif _a.arms == "p300all":
 TAG = {"h3k27ac": "predicted_activity", "p300": "p300_activity",
        "p300all": "p300_all", "accessibility": "accessibility_activity",
        "dnaseinput": "dnase_input_activity",
-       "multitask": "multitask_activity"}[_a.arms]
+       "multitask": "multitask_activity",
+       "slopefix": "slopefix"}[_a.arms]
 RUN = {"h3k27ac": "2026_0904_predicted_activity", "p300": "2026_0905_p300_activity",
        "p300all": "2026_0906_p300_all",
        "accessibility": "2026_0910_accessibility_activity",
        "dnaseinput": "2026_0915_dnase_input_activity",
-       "multitask": "2026_0916_multitask_activity"}[_a.arms]
+       "multitask": "2026_0916_multitask_activity",
+       "slopefix": "2026_0917_slopefix"}[_a.arms]
 
 BASELINES = [
     ("distToTSS",      "FALSE", "mean", "Inf", "TRUE",  "Distance to TSS",      "#c5cad7"),
@@ -206,13 +263,23 @@ BASELINES = [
     ("within100kbTSS", "TRUE",  "max",  "0",   "FALSE", "Within 100kb of TSS",  "#1c2a43"),
 ]
 
-missing = []
+missing, truncated = [], []
 for arm, root, _n, _c in ARMS:
     p = f"{root}/{arm}/{PRED_FILE}"
     if not os.path.exists(p):
         missing.append(p)
+        continue
+    # EXISTENCE IS NOT COMPLETENESS. On 2026-09-17 this check passed two arms whose
+    # create_predictions job was still streaming into the file: 71 MB present, gzip
+    # truncated. The comparison would then have scored partial data silently.
+    if subprocess.call(["gzip", "-t", p], stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL) != 0:
+        truncated.append(p)
 if missing:
     raise SystemExit("missing prediction files:\n  " + "\n  ".join(missing))
+if truncated:
+    raise SystemExit("prediction files present but TRUNCATED (still being written?):\n  "
+                     + "\n  ".join(truncated))
 
 # --- pred_config -------------------------------------------------------------
 os.makedirs(f"{CC}/resources/pred_config", exist_ok=True)

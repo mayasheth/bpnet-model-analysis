@@ -1848,3 +1848,44 @@ which looks exactly like a run that produced no output. The real path is
 for the same reason the performance summaries moved: `4.7` cds into `workflow/` before
 invoking Snakemake. This is the second time that cd has produced a false "no output" read.
 
+## An artefact existing is not an artefact being finished (2026-09-17)
+
+The rule already recorded here is "gate waits on consumed artefacts, never on a driver's exit
+code". That is necessary and not sufficient. A wait keyed on `ls` of
+`EnhancerPredictionsAllPutative.tsv.gz` fired while `create_predictions` was still streaming
+into it: the file existed, had 71-75 MB in it, and failed `gzip -t`. `4.6` validates arms with
+`os.path.exists` too, so it happily wrote a comparison config pointing at two half-written
+inputs, and the benchmark would have run on truncated data with no error anywhere.
+
+**Gate on integrity, not presence.** For a gzip, `gzip -t`. For a TSV, a row count against a
+sibling arm. Cheap either way, and the failure it prevents is silent.
+
+The `k27only_*` arms in the same run completed well before the `pred_*` arms, because a
+prediction-alone arm skips the ATAC tagAlign counting that the geomean arms need. So "some arms
+of this run are done" carries no information about the rest.
+
+## Unpushed commits were lost to a reset for the SECOND time in two days (2026-09-18)
+
+`git reflog` shows `HEAD@{...}: reset: moving to origin/main` at 2026-09-18 12:15:48,
+discarding six commits made on 2026-09-17 between 20:00 and 21:11: F-021, F-022, F-023, the
+`4.1` offset and accessibility-normalisation work with its `4.27` gate, `4.6`'s integrity
+check, and scripts 4.25 through 4.30. It also reverted the working tree, so the loss was not
+visible as a dirty file; `git status` was clean and the scripts simply were not there.
+
+**It was found only because a finding count came out wrong.** F-025 was being appended and the
+file reported 22 findings where 25 were expected. Nothing else would have caught it: the next
+session would have rebuilt `4.26` from scratch and re-derived F-022 the hard way.
+
+Recovery was clean because the commits were still unreaped: `git checkout 9158866 -- <paths>`
+for every file the newer commits had not touched, then a manual merge of the one file both
+sides had edited. Same procedure as 2026-09-17.
+
+**The structural cause is that commits sit unpushed for a long time here.** The project rule is
+to push only when Maya asks, so a day's work can accumulate as local-only commits, and a reset
+to `origin/main` then discards exactly that window. The rule is deliberate and worth keeping,
+but it means **an unpushed commit is not a backup**. Two mitigations that do not require
+pushing to `main`: check `git reflog` at the start of a session and compare against what the
+previous handover says was unpushed, and note the unpushed SHAs in the handover so a loss is
+detectable rather than silent. The 2026-09-16 handover DID list its unpushed SHAs, which is how
+yesterday's loss was caught too.
+

@@ -595,6 +595,253 @@ MNLL minimum; `1.31` reads the LAST saved epoch, which is what the checkpoint fi
 
 ---
 
+## F-021: The best ATAC-input model on the transferred CRISPR benchmark predicts p300, and its transfer failure shows up as an accessibility-dependent error that ABC's qnorm and the CRISPR element subset largely manufacture
+**Status:** the benchmark numbers are established; **the accessibility-slope MECHANISM is withdrawn, 2026-09-17, see the update below**
+**Claim:** Of every arm this project has benchmarked whose model reads ATAC (or ATAC+sequence)
+and is applied to a cell type it was not trained on, **the best is a GM12878-trained multimodal
+p300 model applied to K562**: AUPRC 0.4771 against a 0.4680 ATAC-only floor, +0.0091 [-0.0042,
++0.0222], sign kept 91.4%. It is the only transferred ATAC-input arm above the floor at all; the
+two H3K27ac-target transfer arms are at it (-0.0028 and -0.0048, F-004 update 2026-09-17). The
+comparison is architecturally clean: same PyTorch `multimodal_bpnet` code, same negatives and
+genome, both arms predicted from the SAME K562 ATAC track, geomean with the same ATAC tagAligns.
+
+**Transfer is what costs it, and that cost is fully resolvable**: in-cell minus transferred is
++0.0458 [+0.0296, +0.0610], sign kept 100%, which is 83% of the in-cell arm's entire +0.0549
+margin over the floor. In-cell, predicted p300 reaches 0.5229 against an observed-H3K27ac anchor
+of 0.5296.
+
+**The error has a specific shape.** Both arms share the identical ATAC track, so stratifying by
+ATAC decile is legitimate and the ratio of the two predicted activity tracks isolates what
+transfer changed:
+
+| ATAC decile | n positives / 861 | transferred / in-cell | transferred / observed p300 | in-cell / observed p300 | mean percentile shift, negatives |
+|---|---|---|---|---|---|
+| 1 | 5 | 0.64 | 0.45 | 0.70 | -0.028 |
+| 5 | 23 | 0.88 | 0.59 | 0.67 | -0.009 |
+| 9 | 100 | 1.10 | 0.83 | 0.76 | +0.018 |
+| 10 | 75 | **2.16** | **1.12** | **0.52** | **+0.041** |
+
+Transfer multiplies predicted activity by 0.64 at the least accessible decile and by 2.16 at the
+most accessible one, a 3.4x swing that is monotone in accessibility. **The in-cell model
+suppresses the top accessibility decile and the transferred model does not**: at decile 10 the
+in-cell model predicts 0.52x observed p300 while the transferred model predicts 1.12x, so in
+level terms the transferred model is the more accurate of the two exactly where it loses.
+**The damage is promotion of negatives, not demotion of positives.** Entering the top 10% of
+pairs, transfer admits 121 negatives against in-cell's 102, while 25 positives leave and only 5
+arrive. Mean percentile shift on positives is -0.0020 against +0.0001 on negatives overall, but
++0.041 on negatives in the top ATAC decile.
+**Why suppressing the top decile is right for the benchmark: the positive rate is not monotone
+in accessibility.** Regulated pairs peak at decile 9 (100 of 861) and fall at decile 10 (75 of
+861). A model whose predictions keep climbing with accessibility therefore ranks decile-10
+negatives above decile-9 positives. Since ABC's qnorm is rank-based, level accuracy buys nothing
+and this ordering error is the whole cost.
+
+**The counts metrics see this, but only if measured in the right place.**
+
+| p300, evaluated in K562 | in-cell | transferred | loss |
+|---|---|---|---|
+| overall Pearson, genome-wide held-out folds | 0.794 | 0.679 | 0.115 |
+| top-quintile Pearson, genome-wide | 0.619 | 0.312 | 0.307 |
+| Pearson on CRISPR-tested elements | 0.725 | 0.489 | **0.236** |
+| Pearson on regulated-pair elements only | 0.747 | 0.487 | **0.260** |
+
+The genome-wide overall Pearson understates the transfer damage on the elements the benchmark is
+decided on by roughly a factor of two, and the transferred model's incremental R2 over
+accessibility is NEGATIVE (-0.170 overall, -0.284 top-quintile) while its top-quintile Pearson,
+0.312, is indistinguishable from the accessibility-only model's 0.306.
+**Implications:** Three targeted strategies follow from the shape of the error rather than from
+guesswork, in increasing cost. First, the error is monotone in accessibility, so a monotone
+recalibration of the predicted track against target-cell-type ATAC deciles could remove most of
+it, and the correction can be fitted in the SOURCE cell type where both assays exist, which keeps
+it deployment-legal. Second, the transferred model normalises K562 ATAC with GM12878's stored
+statistics (acc_mean 4.552, acc_std 1.360 against K562's 4.155 and 1.313), a known and free
+confound to remove before concluding anything about the slope; F-017 established that input-side
+matching, in that case depth, removed a -0.133 transfer collapse. Third, the residual objective was the obvious
+candidate for this channel, but **checking before testing it downstream showed transfer had
+already been measured upstream and is null**: `deploy_gm_to_k562` gives residual multimodal
+0.823 overall / 0.600 top-quintile against plain multimodal's 0.828 / 0.602, floor 0.802 /
+0.541. It also does not remove the accessibility channel so much as relocate it, since
+prediction is residual plus an accessibility-only offset model that carries its own slope
+error on transfer. Worth a downstream test only because the benchmark has dissociated from
+Pearson three times, and worth stating as expected-null.
+**Caveats:** The +0.0091 over the floor is not resolvable, so the headline is "best of the
+transferred arms", not "works". The p300 and H3K27ac families were scored in separate comparison
+runs, so cross-target AUPRCs are comparable only through the shared July anchors and are not
+paired against each other; within-run pairings above are. The H3K27ac transfer arms show the same
+pattern far more weakly (0.75 to 1.08 across deciles, against p300's 0.64 to 2.16) and, notably,
+their counts accuracy on CRISPR elements does NOT degrade on transfer (0.672 to 0.691 overall,
+0.515 to 0.621 on regulated-pair elements) even though both arms sit at the floor, so counts
+accuracy and benchmark utility are dissociated there in the opposite direction. K562 is the only
+cell type with CRISPR data, so "transfer" here always means into K562 and one source cell type.
+Accessibility deciles are computed on the CRISPR-tested elements, not genome-wide. The GM12878
+p300 model is from `2026_0606_GM12878_transferability/GM12878_multimodal_BPNet/models/atac`,
+outside this analysis directory, and its `training_target.json` was never written; the target was
+confirmed from that project's `config/input_data_gm12878_multimodal.json` (GM12878 EP300 peaks
+ENCFF926AKK, signal ENCFF960OFK/ENCFF941MGK) and from the predicted track correlating 0.913 with
+the K562 p300 prediction against 0.678 with the GM12878 H3K27ac prediction.
+
+**Update 2026-09-17, same day: the accessibility-slope mechanism is WITHDRAWN. The models
+barely have the defect; ABC's qnorm and the CRISPR subset manufacture it.** The decile table
+above was computed on `normalized_h3k27ac_enh` in the ABC putative predictions, restricted to
+CRISPR-tested element-gene pairs. Measuring the SAME transferred-over-in-cell ratio at two
+earlier points in the pipeline (`4.28`, `4.29`) decomposes it:
+
+| where the ratio is measured | decile 1 -> 10 | spread |
+|---|---|---|
+| raw predicted bigwigs, all 153,459 candidate regions | 0.475 -> 0.516 | **x1.20** |
+| post-qnorm activity, all 153,349 elements | 0.806 -> 1.235 | **x1.85** |
+| post-qnorm activity, CRISPR-tested pairs (the table above) | 0.64 -> 2.16 | **x3.40** |
+
+On a log scale the model contributes about 15% of the swing, ABC's rank normalization about
+another 35%, and restriction to the CRISPR-tested subset the remaining 50%. **The two models'
+raw predictions differ by a nearly constant factor of about 0.48 with only 1.20x accessibility
+dependence**, so "the transferred model reads accessibility too steeply" and "the in-cell model
+suppresses the top decile" are not supported. Post-qnorm values are also coarsely quantized at
+low accessibility (medians land on multiples of about 0.1024) and deciles 2, 4, 5 and 6 give a
+ratio of exactly 1.0000 because both arms map to the same reference value, so the two arms are
+indistinguishable there by construction.
+**What survives.** The AUPRC numbers, the +0.0458 [+0.0296, +0.0610] transfer penalty, the
+promotion of accessible negatives in the top decile, and the counts-accuracy table are all
+untouched, because none of them depend on the mechanism claim. What changes is the explanation:
+the transferred arm loses because its activity distribution has a different SHAPE from the
+in-cell arm's, and rank normalization against a shared reference converts a difference in shape
+into an accessibility-dependent reordering, which the benchmark then evaluates on the
+accessible, gene-proximal elements where the remapping bites hardest.
+**Consequence for the proposed fixes.** The monotone recalibration in the implications below
+**cannot work as described**: a correction fitted on raw predictions in the source cell type
+cannot repair a defect the raw predictions barely have. Any recalibration has to target the
+post-qnorm activity, which means it is a statement about ABC's normalization rather than about
+the model, and ABC re-derives that normalization per arm. The accessibility-input
+renormalisation was still worth doing for its own reason, the measured 0.73 sd against 0.38 sd
+centring asymmetry, and it moves the raw ratio from 0.475-0.516 to 0.669-0.648 without
+flattening the spread (x1.32 against x1.20).
+**Method lesson, recorded because it generalises.** A ratio measured on a benchmark's own input,
+over the benchmark's own element subset, is not a property of the model that produced it. Two
+normalizations and one subset selection sat between the model and the number, and each was
+worth a factor. Measure at the model output first, then add one pipeline stage at a time.
+
+**Tags:** p300, h3k27ac, abc, crispr-benchmark, transfer, accessibility, calibration, deployment, k562, methodology
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-09-17 | `4.25.transfer_error_anatomy.py`, `4.17` paired bootstrap over the 2026_0906_p300_all and 2026_0904_predicted_activity comparisons | EPCrisprBenchmark_ensemble_data_GRCh38, 10,342 element-gene pairs, 466 regulated; ABC putative predictions for 5 arms | 2026_0824_H3K27ac_model | transferred p300 multimodal 0.4771 vs 0.4680 floor (+0.0091 ns); transfer penalty +0.0458 [+0.0296, +0.0610]; transferred/in-cell activity ratio 0.64 to 2.16 across ATAC deciles; CRISPR-element Pearson 0.725 to 0.489 | extends F-005, F-008, F-016 |
+
+---
+
+## F-022: ABC's rank qnorm makes the predicted activity track's SCALE unusable as a lever, so any fix that only rescales a prediction is null by construction
+**Status:** established, structurally and empirically
+**Claim:** `run_qnorm(qnorm_method="rank")` in ABC's `neighborhoods.py` maps each element's
+WITHIN-ARM rank through a linear interpolation onto a reference distribution, separately for
+promoters and nonpromoters. The post-qnorm activity is therefore a function of the predicted
+track's per-element ORDERING and of nothing else. Any transformation of the track that preserves
+per-element order is discarded exactly.
+Tested on the 2026-09-17 accessibility renormalisation, which changed the p300 tracks' scale by
+x1.5 (in-cell) and x1.8 (transferred) while moving the per-element ranking by only 1.6% and 3.7%
+(Spearman 0.9969 and 0.9853 against the originals):
+
+| p300 arm | post-qnorm activity median, before -> after | activity Spearman | ABC.Score Spearman |
+|---|---|---|---|
+| in-cell | 0.5372 -> 0.5374 | 0.9947 | 0.9918 |
+| transferred | 0.5369 -> 0.5369 | 0.9806 | 0.9831 |
+
+**The scale change vanished to four decimal places.** What survives into ABC is only the small
+rank perturbation, and the transferred arm's ranking moved about twice as far as the in-cell
+arm's, consistent with its larger input-centring error (0.73 sd against 0.38 sd).
+**Implications:** **This retires a whole class of proposed interventions.** Anything that
+rescales, recentres, gamma-corrects or otherwise monotonically remaps a predicted activity track
+is null in ABC by construction, and does not need an experiment to rule out. That covers the
+accessibility renormalisation tested here, the monotone recalibration proposed and dropped in
+F-021, and retrospectively explains F-013, where quantile mapping fixed a converter track's
+marginal distribution and moved nothing downstream: quantile mapping is monotone, so ABC could
+not see it. It also explains why F-004's dynamic-range diagnosis, correct as a description, was
+never actionable in the form it was stated; the TODOLIST already recorded the principle as "ABC
+qnorm removes scale by construction, so rank is the only channel available", but it was not being
+applied to new proposals.
+**What this leaves as real levers**, for a predicted activity track: the per-element RANKING, and
+the SHAPE of the marginal distribution only insofar as two arms' differing shapes are remapped
+differently against a shared reference. The geomean arms have one additional channel, because
+`geomean(real ATAC, predicted)` combines values before qnorm sees the product, so there the
+predicted track's magnitude does enter; the prediction-alone arms have no such channel.
+**Caveats:** Monotone in the per-element COUNTED value, which is what qnorm consumes. A monotone
+transformation of the per-base bigwig does not give a monotone transformation of the per-element
+sum, so a per-base change can still reorder elements; the renormalisation here was a per-base
+change and did move 1.9% of the transferred arm's ranking. `separate_promoters=True` is the
+default, so the mapping is monotone within the promoter and nonpromoter classes but differs
+between them, and a change that moves elements across that boundary is not covered. Measured on
+the p300 arms only, though the argument is about ABC's code rather than about any model.
+**Tags:** abc, qnorm, methodology, crispr-benchmark, dynamic-range, negative-result, calibration
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-09-17 | `4.26`/`4.4` renormalised predictions, ABC 44056013, `4.30.qnorm_invariance.py` (44066859) | 153,447 and 153,349 ABC candidate elements; 10.1M element-gene pairs per arm | 2026_0824_H3K27ac_model | x1.5 and x1.8 track rescaling produced post-qnorm activity medians identical to 4 dp (0.5372->0.5374, 0.5369->0.5369); only a 1.9% rank shift survived | explains F-013, retires F-021's recalibration proposal |
+
+---
+
+## F-023: Both cheap fixes proposed for the transferred ATAC-input arm are null downstream, and renormalising the accessibility input is mildly harmful in the geomean form
+**Status:** established
+**Claim:** F-021 proposed two low-cost interventions for the transferred p300 arm. Both were run
+through ABC and the CRISPR benchmark and scored against the arms they were meant to improve in a
+single 14-arm comparison, so every delta below is paired on the same 10,342 element-gene pairs
+(466 regulated).
+
+**Renormalising the accessibility input on the prediction regions** (`4.26` gives 3.7232 /
+1.1428 for K562 ATAC over the ABC candidate regions, against the models' stored 4.155 / 1.313
+in-cell and 4.552 / 1.360 transferred; both arms re-predicted):
+
+| contrast | delta AUPRC | 95% CI | sign kept |
+|---|---|---|---|
+| transferred, geomean form | -0.0004 | [-0.0064, +0.0048] | 52.2% |
+| **in-cell, geomean form** | **-0.0058** | **[-0.0085, -0.0029]** | **100.0%** |
+| transferred, prediction alone | -0.0015 | [-0.0121, +0.0089] | 60.7% |
+| in-cell, prediction alone | -0.0027 | [-0.0122, +0.0067] | 72.2% |
+
+**The residual objective** (`residual5p_multimodal_hw500_clw10` and its GM12878 twin, each with
+its own accessibility-only offset model, prediction = residual + offset):
+
+| contrast | delta AUPRC | 95% CI | sign kept |
+|---|---|---|---|
+| transferred residual - transferred plain | -0.0011 | [-0.0114, +0.0096] | 59.3% |
+| in-cell residual - in-cell plain | -0.0006 | [-0.0093, +0.0086] | 54.9% |
+| transferred residual - ATAC-only floor | -0.0059 | [-0.0215, +0.0095] | 78.1% |
+
+**Implications:** Neither intervention helps, and the accessibility renormalisation should NOT be
+adopted: the only resolvable effect it has is to make the in-cell p300 geomean arm 0.0058 worse,
+with 100% sign retention. **The one asymmetry consistent with F-022's stated exception is that
+the resolvable harm lands in a geomean arm and not in a prediction-alone arm.** `geomean(real
+ATAC, predicted)` combines values before qnorm sees the product, so the predicted track's
+magnitude does enter there, and rescaling it by 1.5x shifts the balance between the two factors.
+The transferred geomean arm is nonetheless null despite a larger 1.8x rescaling, so magnitude
+alone does not predict the sign or size, and this should be treated as an observation rather
+than a mechanism.
+**F-021's headline is unchanged by either.** The transferred p300 arm sits at +0.0087 [-0.0048,
++0.0219] over the floor after renormalisation against +0.0091 [-0.0042, +0.0222] before, still
+the best transferred ATAC-input arm in the project and still not resolvably above the floor.
+**Both results were predicted before they were run, from different evidence**: the
+renormalisation from F-022, because ABC's rank qnorm discards scale and only 1.6-3.7% of
+per-element ranks moved; the residual objective from `deploy_gm_to_k562`, which had already
+measured it upstream on transfer at 0.600 against 0.602 top-quintile Pearson. Two correct
+predictions of a null is weak evidence that the reasoning is sound, and cheap: the expensive
+half of this was the code to make a residual model predictable at all.
+**Caveats:** K562 in-cell and one transfer direction, as always with this benchmark. Every arm
+here is geomean(real ATAC tagAligns, predicted bigwig) or a single predicted bigwig, so they are
+matched on counting path; the two July anchors are not and are reference only. The residual arms
+use the SOURCE cell type's offset model, which is the only deployment-legal choice, so "residual
+objective on transfer" here means the whole residual+offset object transferred, not a
+target-fitted offset. The prediction-alone residual arms were built and scored but the decile
+anatomy (`4.25`) was not re-run on any of the new arms, because F-022 implies the post-qnorm
+activity is nearly unchanged (Spearman 0.98-0.99) and the AUPRC deltas confirm it; if that
+anatomy is ever wanted it is one scoring pass.
+**Tags:** p300, h3k27ac, abc, crispr-benchmark, transfer, calibration, residual-objective, negative-result, k562
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-09-17 | predictions 44049689/44049692/44050508/44050541 (`4.4`), ABC 44056013 and 44056017 (`4.5`), benchmark 44078638 (`4.7`), paired bootstrap `4.17` | EPCrisprBenchmark_ensemble_data_GRCh38; 14 arms on 10,342 shared element-gene pairs, 466 regulated | 2026_0824_H3K27ac_model | accnorm -0.0004 transferred / -0.0058 in-cell geomean; residual -0.0011 transferred / -0.0006 in-cell; transferred p300 still +0.0087 over floor | closes F-021's two proposed fixes |
+
+---
+
 ## F-024: Observed p300 is a resolvably better ABC activity term than observed H3K27ac, which raises the project's ceiling by 60% and leaves two equal, resolvable gaps
 **Status:** established
 **Claim:** Paired on the same 10,342 element-gene pairs, with ATAC in the other half of the
@@ -644,4 +891,67 @@ exists to test it.
 | Date | Run/Session | Dataset | Project | Result | Direction |
 |------|-------------|---------|---------|--------|-----------|
 | 2026-09-17 | `4.17` over the 2026_0906_p300_all comparison | EPCrisprBenchmark_ensemble_data_GRCh38; 10,342 shared element-gene pairs, 466 regulated | 2026_0824_H3K27ac_model | observed p300 0.5673 against observed H3K27ac 0.5296 (+0.0377) and floor 0.4680 (+0.0993); in-cell predicted p300 short of its ceiling by 0.0444 | reframes F-004, F-008, F-021 |
+
+---
+
+## F-025: The GM12878 p300 model was trained on a BPNet model's PREDICTED plus strand paired with the OBSERVED minus strand, so every result that uses it is compromised
+**Status:** established, and it invalidates the identity of F-021's headline arm
+**Claim:** `2026_0606_GM12878_transferability/GM12878_multimodal_BPNet/models/atac`, the only
+GM12878 p300 model in the project, was trained with
+`signal_plus_bw = ENCFF960OFK_plus.bw` and `signal_minus_bw = ENCFF941MGK_minus.bw`. Those two
+files are not the two strands of one experiment. Both belong to **annotation ENCSR038OGP, a
+BPNet-model annotation** from the Kundaje lab, not to the EP300 experiment ENCSR000DZG, and
+their ENCODE `output_type` fields are:
+
+| accession | output_type | used as |
+|---|---|---|
+| ENCFF960OFK | **predicted** signal profile (plus strand) | plus strand of the target |
+| ENCFF941MGK | observed signal profile (minus strand) | minus strand of the target |
+
+The annotation contains the matching observed plus strand, **ENCFF557UDP**, one row away in
+the same file list. So the model's target was a BPNet model's OUTPUT on one strand and real
+data on the other.
+
+**Confirmed numerically.** Rebuilding the GM12878 EP300 5' plus track from the actual
+experiment's BAMs (ENCSR000DZG: ENCFF515HYM, ENCFF215GSQ) with `0.45` reproduces the correct
+observed track exactly, and neither matches what was used:
+
+| comparison, chr8 EP300 peaks, 1 bp | Pearson |
+|---|---|
+| `0.45` rebuild vs ENCFF557UDP (observed plus) | **1.0000** |
+| `0.45` rebuild vs ENCFF960OFK (predicted plus) | 0.2734 |
+| ENCFF557UDP vs ENCFF960OFK | 0.2734 |
+
+Means agree at 0.0607 and maxima at 7.0 for the two observed tracks, while the predicted track
+peaks at 2.7, which is the smoothing a profile model produces.
+**Implications:** **F-021's headline arm is this model.** "The best ATAC-input model on the
+transferred CRISPR benchmark predicts p300", AUPRC 0.4771 against a 0.4680 floor, was produced
+by a model whose training target was half model-output. The AUPRC is still a real measurement
+of that predictor, but it cannot be described as a GM12878 p300 model, and **the +0.0458
+transfer penalty conflates transfer with target corruption** and should not be quoted as a
+transfer effect. F-023's transferred p300 arms, including both accnorm arms, inherit the same
+model and the same caveat; its conclusion that the two fixes are null is unaffected, since
+those were within-model comparisons.
+**What is NOT affected.** Everything K562-trained, which is F-004, F-008, F-018, F-019, F-020
+and F-022, because the K562 p300 target comes from the experiment's own BAMs. The 2026-09-08
+depth-subsampling test trained on K562 and tested into GM12878, so its MODEL is clean; whether
+its GM12878 evaluation target was this same file has not been checked and should be.
+**How it happened, and the general lesson.** ENCODE annotations of type `BPNet-model` publish
+observed and predicted profiles side by side with near-identical names, differing only by the
+words "observed" and "predicted" in `output_type`, which does not appear in the filename. The
+project's own convention of naming local copies `<accession>_plus.bw` discards exactly the
+field that distinguishes them. **Record `output_type` and `dataset` alongside any accession,
+and never take a signal track from an `/annotations/` dataset when an `/experiments/` one
+exists.**
+**Caveats:** The model is a real predictor and its downstream numbers are real; what is wrong
+is the label and the interpretation, not the arithmetic. Only the plus strand is predicted, so
+roughly half the target is genuine, which may be why the model works at all. Retraining
+GM12878 p300 on the corrected target is now cheap, since `0.45` has already built the correct
+tracks for the multi-cell-type panel.
+**Tags:** p300, gm12878, data-provenance, transfer, methodology, negative-result, encode
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-09-18 | `0.45` rebuild (44164220), `0.46` construction control (44181538), ENCODE metadata for ENCSR038OGP | GM12878 EP300 ENCSR000DZG BAMs; annotation ENCSR038OGP bigwigs; 1,052 chr8 peaks | 2026_0824_H3K27ac_model | rebuild matches observed plus at r=1.0000 and the used track at r=0.2734; used track is output_type "predicted signal profile (plus strand)" | invalidates the identity of F-021's transferred arm |
 

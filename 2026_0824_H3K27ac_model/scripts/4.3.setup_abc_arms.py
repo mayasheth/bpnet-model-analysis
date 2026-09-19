@@ -91,7 +91,7 @@ PEAKS_ORDER = [
 ap = argparse.ArgumentParser()
 ap.add_argument("--results-dir", default="results/2026_0903_predicted_activity")
 ap.add_argument("--arms", choices=("h3k27ac", "p300", "p300transfer", "accessibility",
-                                  "dnaseinput", "multitask"),
+                                  "dnaseinput", "multitask", "accnorm", "residualtx"),
                 default="h3k27ac",
                 help="Which target's predicted tracks to build arms for. p300 arms go in "
                      "their own results dir and config: re-stamping Peaks inside the "
@@ -125,8 +125,14 @@ def add(name, atac, h3k27ac, feature):
 # above its floor, so the anchor is what makes a predicted number readable.
 P300_OBS = ",".join(f"{DATA}/{b}.filtered.sorted.bam"
                     for b in ("ENCFF466WKF", "ENCFF163FSR"))
-# p300 models are K562-trained only; no GM12878 p300 model exists (the data does,
-# ENCSR000DZG, so a GM12878 arm is five folds of training away).
+# THIS COMMENT WAS WRONG UNTIL 2026-09-17. A GM12878 p300 model DOES exist and P300_TX below
+# has been using it all along:
+#   2026_0606_GM12878_transferability/GM12878_multimodal_BPNet/models/atac
+# trained 2026-06-08, same multimodal_bpnet architecture, target GM12878 EP300 (peaks
+# ENCFF926AKK, signal ENCFF960OFK / ENCFF941MGK). That directory has no training_target.json,
+# so the only record of what it predicts is the June project's
+# config/input_data_gm12878_multimodal.json. F-021 benchmarks it and it is the best transferred
+# ATAC-input arm in the project.
 P300_MODELS = [("multimodal", "K562 p300 multimodal model"),
                ("atac", "K562 p300 ATAC-only model")]
 
@@ -201,7 +207,57 @@ ACCESSIBILITY = [
      "DNase predicted from ATAC, GM12878-trained converter, applied to K562"),
 ]
 
-if a.arms == "multitask":
+# ACCESSIBILITY-RENORMALISED p300 ARMS, F-021 follow-up.
+#
+# WHAT IS BEING CONTROLLED. `4.1` standardizes the accessibility input with the statistics
+# saved when the model was TRAINED. For the transferred arm those came from GM12878's
+# library and GM12878's training windows, so K562 accessibility was centred 0.73 sd off,
+# against 0.38 sd for the in-cell arm (both measured against K562 ATAC on the ABC candidate
+# regions: log1p mean 3.7232, std 1.1428, from `4.26`). That is a difference BETWEEN THE TWO
+# ARMS which has nothing to do with transfer, and F-021's accessibility-slope result is
+# currently measured through it.
+#
+# BOTH ARMS ARE RE-PREDICTED, not just the transferred one. Renormalising only the
+# transferred arm would leave the in-cell arm on its own 0.38 sd offset and swap one
+# asymmetry for another. With both on the region-derived statistics the only remaining
+# difference between them is the model weights, which is the comparison F-021 wanted.
+ACCNORM = [("gm12878_multimodal", "GM12878 p300 model -> K562, region-normalised input"),
+           ("k562_multimodal",    "K562 p300 model in-cell, region-normalised input")]
+
+# RESIDUAL-OBJECTIVE ARMS, the F-021 strategy test.
+#
+# A residual model predicts H3K27ac counts MINUS an accessibility-only model's counts, so it
+# cannot see the accessibility level directly and the accessibility slope is not a channel it
+# can get wrong. F-005 measured the residual objective as helping only a sequence-blind input
+# and costing a multimodal one, but every one of those measurements was IN-CELL, where there
+# is no slope to break. This is the transfer test.
+#
+# THE TRANSFERRED ARM USES THE TRANSFERRED OFFSET MODEL, deliberately. The offset model maps
+# accessibility to H3K27ac, so training one in the target cell type needs the target's
+# H3K27ac, which is exactly what deployment does not have. The shippable object is
+# residual+offset from the source, and that is what is scored.
+RESIDUAL_TX = [
+    ("k562_residual",    "residual5p_multimodal_hw500_clw10",
+     "atac5p_hw500_clw10", "K562 residual multimodal, in-cell"),
+    ("gm12878_residual", "gm12878_residual5p_multimodal_hw500_clw10",
+     "gm12878_atac5p_hw500_clw10", "GM12878 residual multimodal -> K562"),
+]
+
+if a.arms == "accnorm":
+    for tag, _desc in ACCNORM:
+        bw = f"{PRED}/predp300an_{tag}.bw"
+        if not os.path.exists(bw):
+            missing.append(bw)
+        add(f"p300pred_{tag}_accnorm", ATAC, bw, "ATAC")
+        add(f"p300only_{tag}_accnorm", bw, "", "ATAC")
+elif a.arms == "residualtx":
+    for tag, _model, _offset, _desc in RESIDUAL_TX:
+        bw = f"{PRED}/predk27ac_{tag}.bw"
+        if not os.path.exists(bw):
+            missing.append(bw)
+        add(f"pred_{tag}", ATAC, bw, "ATAC")
+        add(f"k27only_{tag}", bw, "", "ATAC")
+elif a.arms == "multitask":
     if not os.path.exists(MULTITASK_PRED):
         missing.append(MULTITASK_PRED)
     if not os.path.exists(EP100_PRED):
@@ -254,7 +310,9 @@ TAG = a.config_tag or {"h3k27ac": "predicted_activity", "p300": "p300_activity",
                        "p300transfer": "p300_transfer",
                        "accessibility": "accessibility_activity",
                        "dnaseinput": "dnase_input_activity",
-                       "multitask": "multitask_activity"}[a.arms]
+                       "multitask": "multitask_activity",
+                       "accnorm": "accnorm_activity",
+                       "residualtx": "residual_transfer"}[a.arms]
 out = f"{ABC}/config/mine/config_biosamples_{TAG}.tsv"
 with open(out, "w") as f:
     f.write("\t".join(COLS) + "\n")

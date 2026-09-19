@@ -62,15 +62,37 @@ case "$MODEL_DIR" in /*) MODEL_PATH="$MODEL_DIR" ;; *) MODEL_PATH="$MODEL_ROOT/$
 
 ACC=()
 [[ "$MODE" != "sequence" ]] && ACC=(--accessibility-bw "$ACC_BW")
+# ACC_MEAN / ACC_STD: standardize the accessibility input on the PREDICTION regions instead
+# of the model's training windows. Needed for a transferred model, whose stored statistics
+# came from another cell type's library; get the pair from 4.26. Unset means the old
+# behaviour, so no existing arm moves.
+NRM=()
+if [[ -n "${ACC_MEAN:-}" || -n "${ACC_STD:-}" ]]; then
+    [[ -n "${ACC_MEAN:-}" && -n "${ACC_STD:-}" ]] || {
+        echo "ERROR: set ACC_MEAN and ACC_STD together" >&2; exit 1; }
+    NRM=(--acc-mean "$ACC_MEAN" --acc-std "$ACC_STD")
+fi
+# OFFSET_MODEL: required for a RESIDUAL model, which predicts observed minus an
+# accessibility-only model's counts. Without it the painted track is a residual, not an
+# activity estimate. Read it off the model's training_target.json count_offset_model field.
+OFF=()
+if [[ -n "${OFFSET_MODEL:-}" ]]; then
+    case "$OFFSET_MODEL" in /*) OFF_PATH="$OFFSET_MODEL" ;;
+                            *)  OFF_PATH="$MODEL_ROOT/models/$OFFSET_MODEL" ;; esac
+    [[ -d "$OFF_PATH" ]] || { echo "ERROR: no offset model dir $OFF_PATH" >&2; exit 1; }
+    OFF=(--count-offset-model "$OFF_PATH")
+fi
 SIG=()
 [[ -n "${SIGNAL_BW:-}" ]] && SIG=(--signal-bw "$SIGNAL_BW")
 CH=()
 [[ -n "$CHROMS" ]] && CH=(--chroms "$CHROMS")
 
 echo "model=$MODEL_PATH mode=$MODE acc=$ACC_BW out=${OUT_PREFIX}_${ARM}.bw"
+echo "accnorm=${ACC_MEAN:-model}/${ACC_STD:-model} offset=${OFFSET_MODEL:-none}"
 $PY scripts/4.1.predict_h3k27ac_for_abc.py \
     --regions "$REG" --model-dir "$MODEL_PATH" --mode "$MODE" \
     ${ACC[@]+"${ACC[@]}"} ${CH[@]+"${CH[@]}"} ${SIG[@]+"${SIG[@]}"} \
+    ${NRM[@]+"${NRM[@]}"} ${OFF[@]+"${OFF[@]}"} \
     --chrom-sizes "$SIZES" --out-bw "$OUTDIR/${OUT_PREFIX}_${ARM}.bw"
 
 echo "Done: $OUTDIR/${OUT_PREFIX}_${ARM}.bw"

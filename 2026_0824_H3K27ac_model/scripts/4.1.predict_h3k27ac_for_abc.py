@@ -62,6 +62,23 @@ ap.add_argument("--paint", default="counts", choices=["counts", "density"],
                 help="counts: sum over region equals the prediction (default). "
                      "density: sum scales with region width, as real read counts do.")
 ap.add_argument("--batch", type=int, default=256)
+ap.add_argument("--acc-mean", type=float, default=None,
+                help="Override the accessibility log1p mean used to standardize the input. "
+                     "DEFAULT (None) uses the model's own training statistics, which is "
+                     "correct in-cell and is what every arm before 2026-09-17 used. Pass "
+                     "this together with --acc-std to normalize against the PREDICTION "
+                     "REGIONS instead, which is what a transferred model needs: its stored "
+                     "mean was computed on its own training cell type's windows, so it "
+                     "standardizes the target's accessibility to the wrong centre. Compute "
+                     "the pair with 4.26.")
+ap.add_argument("--acc-std", type=float, default=None,
+                help="See --acc-mean. Both or neither.")
+ap.add_argument("--count-offset-model", default=None,
+                help="Directory of the accessibility-only model used as the count offset "
+                     "during RESIDUAL training (the `count_offset_model` field of "
+                     "training_target.json). A residual model predicts observed MINUS this "
+                     "model's logcounts, so without it the painted track is a residual and "
+                     "not an activity estimate at all. Must be mode 'atac'.")
 ap.add_argument("--no-rc-average", dest="rc_average", action="store_false", default=True,
                 help="Disable test-time reverse-complement averaging. RC averaging is ON by "
                      "default as of 2026-09-05, matching the 2.15 evaluator: the number we "
@@ -94,6 +111,47 @@ for line in open(a.chrom_sizes):
     p = line.split()
     if len(p) >= 2:
         sizes[p[0]] = int(p[1])
+
+if (a.acc_mean is None) != (a.acc_std is None):
+    raise SystemExit("error: pass --acc-mean and --acc-std together or not at all")
+if a.acc_mean is not None and a.mode == "sequence":
+    raise SystemExit("error: --acc-mean is meaningless in sequence mode")
+if a.count_offset_model and a.mode == "atac":
+    raise SystemExit("error: an accessibility-only model was not residual-trained")
+
+
+def count_offset(offset_dir, fold, accs_raw, dev, batch):
+    """Logcount offset from the accessibility-only model, per region.
+
+    Deliberately mirrors `compute_count_offsets` in train_multimodal_bpnet.py rather than
+    this script's own prediction path, because the residual model learned to predict
+    `observed - offset` where the offset was produced THAT way. Two consequences:
+    the offset model is normalized with ITS OWN saved statistics, never with --acc-mean,
+    and there is no reverse-complement averaging even when --rc-average is on for the main
+    model. Averaging the offset would add a term the training target never contained.
+    """
+    mp = f"{offset_dir}/fold{fold}/multimodal_bpnet.torch"
+    sp = f"{offset_dir}/fold{fold}/acc_normalization_stats.json"
+    for pth in (mp, sp):
+        if not os.path.exists(pth):
+            raise SystemExit(f"error: --count-offset-model missing {pth}")
+    st_off = json.load(open(sp))
+    om = torch.load(mp, map_location="cpu", weights_only=False)
+    if not hasattr(om, "mode"):
+        om.mode = "atac"
+    if om.mode != "atac":
+        raise SystemExit(f"error: offset model mode is '{om.mode}', expected 'atac'")
+    om = om.to(dev).eval()
+    xo = normalize_accessibility(accs_raw.copy(), mean=st_off["acc_mean"],
+                                 std=st_off["acc_std"])[0].astype(np.float32)
+    outo = []
+    with torch.no_grad():
+        for i in range(0, len(xo), batch):
+            _, lco = om(torch.from_numpy(xo[i:i + batch]).to(dev))
+            outo.append(lco.squeeze(-1).cpu().numpy())
+    om.to("cpu")
+    return np.concatenate(outo) if outo else np.zeros(0, dtype=np.float32)
+
 
 reg = pd.read_csv(a.regions, sep="\t", header=None, usecols=[0, 1, 2],
                   names=["chr", "start", "end"])
@@ -132,8 +190,12 @@ for chrom, g in reg.groupby("chr", sort=True):
 
     x = accs
     if a.mode in ("multimodal", "atac"):
-        st = json.load(open(f"{md}/acc_normalization_stats.json"))
-        x = normalize_accessibility(accs, mean=st["acc_mean"], std=st["acc_std"])[0]
+        if a.acc_mean is not None:
+            nmean, nstd, nsrc = a.acc_mean, a.acc_std, "CLI (prediction regions)"
+        else:
+            st = json.load(open(f"{md}/acc_normalization_stats.json"))
+            nmean, nstd, nsrc = st["acc_mean"], st["acc_std"], "model's training stats"
+        x = normalize_accessibility(accs, mean=nmean, std=nstd)[0]
     X = (np.concatenate([seqs, x], axis=1) if a.mode == "multimodal"
          else seqs if a.mode == "sequence" else x).astype(np.float32)
 
@@ -160,8 +222,13 @@ for chrom, g in reg.groupby("chr", sort=True):
                 _, lc_rc = m(rc(xb))
                 lc = (lc + lc_rc) / 2
             out.append(lc.squeeze(-1).cpu().numpy())
-    m.to("cpu"); del X, seqs, accs, x
     lc = np.concatenate(out) if out else np.zeros(0)
+    if a.count_offset_model:
+        off = count_offset(a.count_offset_model, fold, accs, dev, a.batch)
+        if off.shape != lc.shape:
+            raise SystemExit(f"error: offset shape {off.shape} != prediction {lc.shape}")
+        lc = lc + off
+    m.to("cpu"); del X, seqs, accs, x
 
     counts = np.expm1(lc).clip(min=0.0)          # model emits log1p(counts)
     width = (kept["end"] - kept["start"]).to_numpy(float)
@@ -171,7 +238,10 @@ for chrom, g in reg.groupby("chr", sort=True):
     n_pred += len(kept)
     print(f"  {chrom}: fold{fold} in_window={in_w} n={len(kept):,} "
           f"dropped={int((~valid).sum())} median_counts={np.median(counts):.1f} "
-          f"rc={'on' if a.rc_average else 'off'}", flush=True)
+          f"rc={'on' if a.rc_average else 'off'}"
+          + (f" accnorm={nsrc} mean={nmean:.4f} std={nstd:.4f}"
+             if a.mode in ("multimodal", "atac") else "")
+          + (" +offset" if a.count_offset_model else ""), flush=True)
 
 print(f"\npredicted {n_pred:,} regions; {n_drop:,} dropped "
       f"({100.0*n_drop/max(1,n_pred+n_drop):.3f}% -- these read as 0 in ABC)", flush=True)

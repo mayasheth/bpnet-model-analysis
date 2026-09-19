@@ -12,6 +12,86 @@ validated but **no model uses them yet**. Residual-objective training helps only
 sequence-blind input and costs a multimodal one, replicated in K562 and GM12878, so it is
 a property of the objective and needs no further per-cell-type testing.
 
+## What the ATAC-input models get wrong in transfer, F-021 (opened AND partly withdrawn 2026-09-17)
+
+The best transferred ATAC-input arm is the **GM12878 p300 multimodal model into K562**, 0.4771
+against a 0.4680 floor (+0.0091, ns). Transfer costs it +0.0458 [+0.0296, +0.0610], which is 83%
+of its in-cell margin, and the cost is promoting accessible negatives (121 enter the top 10% of
+pairs against in-cell's 102, while 25 positives leave and 5 arrive). Regulated pairs peak at ATAC
+decile 9, not 10. `4.25.transfer_error_anatomy.py`.
+
+**THE MECHANISM FIRST WRITTEN HERE WAS WRONG AND IS WITHDRAWN (same day).** The 0.64-to-2.16
+accessibility slope was measured on ABC's post-qnorm activity over CRISPR-tested pairs only.
+`4.28` and `4.29` decompose it: raw bigwigs over all candidate regions give x1.20, post-qnorm
+over all elements x1.85, post-qnorm over CRISPR pairs x3.40. **The model contributes about 15%
+of the swing; qnorm and the element subset manufacture the rest.** The two models' raw outputs
+differ by a near-constant 0.48 factor. Do not describe this as the transferred model reading
+accessibility too steeply.
+
+- [x] **Accessibility-normalisation mismatch. DONE 2026-09-17. NOT the mechanism (F-022) and
+      mildly HARMFUL downstream (F-023): -0.0058 [-0.0085, -0.0029] with 100% sign retention on
+      the in-cell p300 geomean arm, null everywhere else. DO NOT ADOPT.** Re-predicted both p300 arms on region-derived statistics (`4.26` gives
+      3.7232 / 1.1428 for K562 ATAC on the ABC regions, against the models' stored 4.155 /
+      1.313 in-cell and 4.552 / 1.360 transferred). The tracks' scale moved x1.5 and x1.8 but
+      the per-element ranking moved only 1.6% and 3.7%, and **ABC's rank qnorm absorbed the
+      scale exactly**: post-qnorm activity medians 0.5372 -> 0.5374 and 0.5369 -> 0.5369.
+      So the centring asymmetry was real and is now corrected, but it cannot be what costs the
+      transferred arm 0.0458 AUPRC.
+      Benchmark confirmation is pending in the `slopefix` comparison, but the structural result
+      already settles it.
+- [x] **Monotone recalibration of the predicted track. DROPPED 2026-09-17, the premise was
+      wrong.** The plan was to fit a monotone correction on raw predictions in the source cell
+      type. `4.28` shows the raw predictions carry only a x1.20 accessibility dependence, so
+      there is almost nothing there to correct; the x3.40 came from qnorm and the CRISPR subset.
+      A correction would have to act on post-qnorm activity, but ABC re-derives that per arm
+      from the track it is given, so there is no stable target to fit against.
+      **If this line is reopened, the object of study is the SHAPE of the predicted activity
+      distribution**, since rank normalization against a shared reference is what converts a
+      shape difference into an accessibility-dependent reordering. Note F-013 already failed at
+      shape correction by quantile mapping, for a different track, and that failure is the
+      nearest prior.
+- [x] **Residual objective DOWNSTREAM on transfer. DONE 2026-09-17, NULL, F-023.**
+      Transferred residual minus transferred plain is -0.0011 [-0.0114, +0.0096] (59.3%), in-cell
+      -0.0006 [-0.0093, +0.0086] (54.9%), and the transferred residual arm is at or below the
+      floor at -0.0059 [-0.0215, +0.0095]. The benchmark agreed with the upstream measurement
+      this time. **Do not reopen without a new mechanism**; the objective relocates the
+      accessibility channel into the offset model rather than removing it.
+      Original reasoning, kept because the prediction was right:
+      **CORRECTION 2026-09-17: transfer WAS measured upstream**, in
+      `results/deploy_gm_to_k562_fold_summary.tsv` from `2.13.submit_residual_transfer.sh`,
+      and I wrongly wrote earlier today that every residual measurement was in-cell.
+      GM12878 -> K562: residual multimodal 0.823 overall / 0.600 top-quintile against plain
+      multimodal 0.828 / 0.602, with an accessibility-only floor of 0.802 / 0.541. **The two
+      objectives are indistinguishable on transfer upstream.**
+      The reason to still run it downstream is that the benchmark and top-quintile Pearson
+      have dissociated three times (F-004, F-018, F-019), twice in the direction of the
+      benchmark rewarding something Pearson scored at zero. **Expect null; do not present it
+      as promising.**
+      **A caveat on the mechanism, which weakens the original rationale.** The residual
+      objective does not remove the accessibility channel from the final prediction, it
+      relocates it: prediction = residual + offset, and the offset IS an accessibility-only
+      model, which when transferred carries its own accessibility-slope error. The in-cell
+      grids show this cleanly, `r_out_vs_atac` 0.921 for plain multimodal against 0.020 for
+      the residual output alone. So the test asks whether isolating the slope into a simpler
+      model helps, not whether the slope is gone.
+- [ ] **Add an accessibility-stratified metric to the evaluation.** Top-quintile Pearson is
+      stratified by SIGNAL quantile, which is why a 3.4x accessibility-slope error was invisible
+      upstream. Report Pearson and the predicted/observed ratio by ATAC decile; `4.25` computes
+      it on CRISPR elements and the same stratification belongs in the `2.x` genome-wide eval.
+- [ ] **Measure counts accuracy on CRISPR-tested elements, not only genome-wide.** For the p300
+      arm, transfer loses 0.115 genome-wide overall Pearson but 0.236 on CRISPR-tested elements
+      and 0.260 on regulated-pair elements, so the headline metric understates the damage where
+      the benchmark is decided by about 2x. **The H3K27ac arm goes the other way**: its counts
+      accuracy on CRISPR elements does not degrade on transfer at all (0.672 to 0.691, and 0.515
+      to 0.621 on regulated-pair elements) while both arms sit at the floor. Do not assume either
+      direction; measure it per arm.
+- [x] **Stale comment in `4.3.setup_abc_arms.py` corrected 2026-09-17.** It claimed no GM12878
+      p300 model exists. One does, at
+      `2026_0606_GM12878_transferability/GM12878_multimodal_BPNet/models/atac`, and `P300_TX` has
+      been using it all along. **It still has no `training_target.json`**, so what it predicts is
+      recorded only in the June project's `config/input_data_gm12878_multimodal.json`; writing
+      that file is worth doing so nobody has to correlate bigwigs to identify a model again.
+
 ## Highest value
 
 - [ ] **W4. Motif syntax (SHAP / TF-MoDISco / FiNeMo).** Not started; the actual scientific
