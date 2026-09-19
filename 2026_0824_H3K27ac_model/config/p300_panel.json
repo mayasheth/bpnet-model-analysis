@@ -1,0 +1,37 @@
+{
+  "K562": {
+    "peaks": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/reference/ENCSR000EGE_peaks_inliers.narrowPeak",
+    "signal_plus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2025_0703_retrain_p300_model/data/ENCSR000EGE_plus.bigWig",
+    "signal_minus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2025_0703_retrain_p300_model/data/ENCSR000EGE_minus.bigWig",
+    "accessibility_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0529_multimodal_p300_model/data/atac.bw",
+    "negatives": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/reference/genomewide_gc_stride_1000_flank_size_1057.gc.bed"
+  },
+  "GM12878": {
+    "peaks": "/oak/stanford/groups/engreitz/Users/sheth/Data/ENCODE/GM12878/EP300/ENCFF926AKK.bed.gz",
+    "signal_plus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/p300_panel/GM12878_ep300_5p_plus.bw",
+    "signal_minus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/p300_panel/GM12878_ep300_5p_minus.bw",
+    "accessibility_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0606_GM12878_transferability/data/atac.bw",
+    "negatives": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/reference/genomewide_gc_stride_1000_flank_size_1057.gc.bed"
+  },
+  "A549": {
+    "peaks": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/p300_panel/A549_ep300_peaks.narrowPeak",
+    "signal_plus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/p300_panel/A549_ep300_5p_plus.bw",
+    "signal_minus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/p300_panel/A549_ep300_5p_minus.bw",
+    "accessibility_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/p300_panel/A549_atac.bw",
+    "negatives": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/reference/genomewide_gc_stride_1000_flank_size_1057.gc.bed"
+  },
+  "HepG2": {
+    "peaks": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/p300_panel/HepG2_ep300_peaks.narrowPeak",
+    "signal_plus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/p300_panel/HepG2_ep300_5p_plus.bw",
+    "signal_minus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/p300_panel/HepG2_ep300_5p_minus.bw",
+    "accessibility_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/p300_panel/HepG2_atac.bw",
+    "negatives": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/reference/genomewide_gc_stride_1000_flank_size_1057.gc.bed"
+  },
+  "MCF-7": {
+    "peaks": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/p300_panel/MCF_7_ep300_peaks.narrowPeak",
+    "signal_plus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/p300_panel/MCF_7_ep300_5p_plus.bw",
+    "signal_minus_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/p300_panel/MCF_7_ep300_5p_minus.bw",
+    "accessibility_bw": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/p300_panel/MCF_7_atac.bw",
+    "negatives": "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/reference/genomewide_gc_stride_1000_flank_size_1057.gc.bed"
+  }
+}

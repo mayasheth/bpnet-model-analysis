@@ -41,7 +41,11 @@ EXISTING = {
         "peaks": f"{D}/reference/ENCSR000EGE_peaks_inliers.narrowPeak",
     },
     "GM12878": {
-        "ep300_plus": f"{D}/2026_0606_GM12878_transferability/data/ENCFF960OFK_plus.bw",
+        # ENCFF557UDP, the OBSERVED plus strand. NOT the 2026_0606 model's
+        # ENCFF960OFK_plus.bw, which F-025 identified as a BPNet model's PREDICTED plus
+        # strand. Comparing a rebuild against that file measures how well someone else's
+        # model predicts the data, which is not a construction control.
+        "ep300_plus": f"{D}/2026_0824_H3K27ac_model/data/p300_panel/ref/ENCFF557UDP.bigWig",
         "atac": f"{D}/2026_0606_GM12878_transferability/data/atac.bw",
         "peaks": "/oak/stanford/groups/engreitz/Users/sheth/Data/ENCODE/GM12878/EP300/"
                  "ENCFF926AKK.bed.gz",
@@ -87,21 +91,34 @@ def windows(bw_path, centres, half):
     return np.stack(rows) if rows else None
 
 
-def bg_mean(bw_path):
-    """Whole-chromosome mean, the background this enrichment is measured against."""
+def bg_mean(bw_path, centres, half, seed=0):
+    """Background from RANDOM windows read exactly like the peak windows.
+
+    The first version called pyBigWig's stats(..., "mean"), which averages over the bases
+    the bigwig actually stores, while the peak windows are read with values() and count
+    absent bases as 0. On a sparse 5'-end track that is two different denominators, and it
+    produced enrichments of 0.1x, i.e. peaks apparently quieter than background. Sampling
+    random windows through the same `windows()` path makes the two numbers comparable.
+
+    Random positions are drawn on the same chromosome and matched in count to the peak set,
+    so the comparison is like for like apart from location.
+    """
     b = pyBigWig.open(bw_path)
     if a.chrom not in b.chroms():
         b.close()
         return None
-    m = b.stats(a.chrom, 0, b.chroms()[a.chrom], type="mean", exact=True)[0]
+    size = b.chroms()[a.chrom]
     b.close()
-    return m or 0.0
+    rng = np.random.default_rng(seed)
+    rand = rng.integers(half, max(size - half, half + 1), size=max(len(centres), 1))
+    W = windows(bw_path, rand, half)
+    return float(W.mean()) if W is not None else None
 
 
 print("=" * 78)
 print("1. COMPARABILITY: EP300 enrichment at each cell type's own peaks")
 print("=" * 78)
-print(f"{'cell':<10}{'source':<10}{'peaks':>8}{'peak mean':>12}{'chrom mean':>12}"
+print(f"{'cell':<10}{'source':<10}{'peaks':>8}{'peak mean':>12}{'rand mean':>12}"
       f"{'enrichment':>12}")
 rows = []
 for cell in ("K562", "GM12878", "A549", "HepG2", "MCF-7"):
@@ -120,7 +137,7 @@ for cell in ("K562", "GM12878", "A549", "HepG2", "MCF-7"):
     if W is None or not len(centres):
         print(f"{cell:<10}{src:<10}{'(no data on ' + a.chrom + ')':>30}")
         continue
-    pm, cm = float(W.mean()), bg_mean(bw)
+    pm, cm = float(W.mean()), bg_mean(bw, centres, a.half)
     enr = pm / max(cm, 1e-12)
     rows.append((cell, enr))
     print(f"{cell:<10}{src:<10}{len(centres):>8,}{pm:>12.4f}{cm:>12.6f}{enr:>12.1f}x")
