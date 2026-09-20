@@ -596,7 +596,7 @@ MNLL minimum; `1.31` reads the LAST saved epoch, which is what the checkpoint fi
 ---
 
 ## F-021: The best ATAC-input model on the transferred CRISPR benchmark predicts p300, and its transfer failure shows up as an accessibility-dependent error that ABC's qnorm and the CRISPR element subset largely manufacture
-**Status:** the benchmark numbers are established; **the accessibility-slope MECHANISM is withdrawn, 2026-09-17, see the update below**
+**Status:** the ranking is established and survives the F-025 retrain; **the accessibility-slope MECHANISM is withdrawn, 2026-09-17, see the update below**. The transferred arm here was trained on a BPNet model's predicted plus strand (F-025); retrained on the observed target it scores **+0.0135 over the floor rather than the +0.0091 quoted below**, with a transfer penalty of +0.0414 rather than +0.0458. Quote the corrected numbers.
 **Claim:** Of every arm this project has benchmarked whose model reads ATAC (or ATAC+sequence)
 and is applied to a cell type it was not trained on, **the best is a GM12878-trained multimodal
 p300 model applied to K562**: AUPRC 0.4771 against a 0.4680 ATAC-only floor, +0.0091 [-0.0042,
