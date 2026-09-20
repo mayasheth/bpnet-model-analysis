@@ -895,7 +895,7 @@ exists to test it.
 ---
 
 ## F-025: The GM12878 p300 model was trained on a BPNet model's PREDICTED plus strand paired with the OBSERVED minus strand, so every result that uses it is compromised
-**Status:** established, and it invalidates the identity of F-021's headline arm
+**Status:** established; the provenance error is real, but the retrain (2026-09-19) shows its downstream cost is only +0.0044 and **the "conflates transfer with target corruption" claim below is WITHDRAWN**
 **Claim:** `2026_0606_GM12878_transferability/GM12878_multimodal_BPNet/models/atac`, the only
 GM12878 p300 model in the project, was trained with
 `signal_plus_bw = ENCFF960OFK_plus.bw` and `signal_minus_bw = ENCFF941MGK_minus.bw`. Those two
@@ -948,6 +948,44 @@ is the label and the interpretation, not the arithmetic. Only the plus strand is
 roughly half the target is genuine, which may be why the model works at all. Retraining
 GM12878 p300 on the corrected target is now cheap, since `0.45` has already built the correct
 tracks for the multi-cell-type panel.
+
+**Update 2026-09-19: the model was retrained on the corrected target and benchmarked. The
+provenance bug is real but its downstream cost is small, and F-021's headline SURVIVES.**
+Retrained with every hyperparameter, the peaks, negatives, accessibility track and folds
+copied from the original run, so the target was the only difference. Predicted with the same
+accessibility track and the same default normalisation as the original arm. Paired on 10,342
+element-gene pairs:
+
+| contrast | delta AUPRC | 95% CI | sign kept |
+|---|---|---|---|
+| corrected - corrupted | +0.0044 | [-0.0042, +0.0123] | 84.3% |
+| **corrected - ATAC-only floor** | **+0.0135** | [-0.0003, +0.0270] | **97.3%** |
+| corrupted - floor (the F-021 number) | +0.0091 | [-0.0042, +0.0222] | 91.4% |
+| in-cell - corrected (transfer penalty) | **+0.0414** | [+0.0256, +0.0558] | 100% |
+
+**A CLAIM IN THIS FINDING IS WITHDRAWN.** It said the +0.0458 transfer penalty "conflates
+transfer with target corruption and should not be quoted as a transfer effect". Fixing the
+target moved that penalty only to +0.0414, so corruption accounted for roughly 0.004 of it
+and the penalty is a transfer effect after all. The caution was reasonable before the test
+and wrong after it; quote +0.0414 and treat the transferred p300 arm's transfer loss as real.
+**What stands.** The provenance error itself, the identity problem (the old arm cannot be
+called a GM12878 p300 model), and the lesson about `output_type` on annotation datasets.
+F-021's ranking also stands: the transferred p300 arm is still the best transferred
+ATAC-input arm in the project, now at +0.0135 over the floor rather than +0.0091, and still
+not resolvable because the interval grazes zero at -0.0003.
+**The direction of the correction is itself another upstream/downstream dissociation.** The
+corrected model is WORSE on its own validation, count Pearson 0.75-0.78 against the original's
+0.80-0.82, because the original's predicted plus strand was smoothed and therefore easier to
+fit. It is nonetheless BETTER downstream, by +0.0044. **No upstream metric could have caught
+this bug, and the one that exists pointed the wrong way.** That is the fifth time the
+benchmark and the upstream metrics have disagreed in this project (F-004, F-018, F-019,
+F-022's retrospective reading of F-013, and now this).
+**Magnitude check, for calibration.** The corrected and corrupted predictions correlate at
+Spearman 0.939 over the 153,545 candidate regions, a mean per-element rank shift of 7.2%.
+Per F-022 only that reordering can reach ABC, since qnorm discards the 1.18x scale change.
+For reference the accessibility renormalisation shifted 3.7% of ranks and moved AUPRC by
+-0.0004, so +0.0044 from twice the reordering is the expected order of magnitude.
+
 **Tags:** p300, gm12878, data-provenance, transfer, methodology, negative-result, encode
 
 ### Evidence Ledger

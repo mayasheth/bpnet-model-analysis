@@ -1,0 +1,6 @@
+arm_a	arm_b	auprc_a	auprc_b	delta	ci_lo	ci_hi	sign_kept_frac	sign_kept_pct	n_pairs	n_regulated	n_boot
+p300pred_gm12878_corrected.ABC.Score	p300pred_gm12878_multimodal.ABC.Score	0.481506	0.477101	0.004405	-0.004214	0.012349	0.843	84.3	10342	466	2000
+p300pred_gm12878_corrected.ABC.Score	K562_ATAC_only.ABC.Score	0.481506	0.468009	0.013498	-0.000298	0.026953	0.973	97.3	10342	466	2000
+p300pred_gm12878_multimodal.ABC.Score	K562_ATAC_only.ABC.Score	0.477101	0.468009	0.009093	-0.004158	0.022238	0.914	91.4	10342	466	2000
+p300pred_k562_multimodal.ABC.Score	p300pred_gm12878_corrected.ABC.Score	0.522878	0.481506	0.041372	0.025628	0.055845	1.0	100.0	10342	466	2000
+p300only_gm12878_corrected.ABC.Score	p300only_gm12878_multimodal.ABC.Score	0.480614	0.473076	0.007538	-0.007521	0.022829	0.8365	83.65	10342	466	2000
