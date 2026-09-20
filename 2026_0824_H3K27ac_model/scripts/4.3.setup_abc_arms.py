@@ -91,7 +91,8 @@ PEAKS_ORDER = [
 ap = argparse.ArgumentParser()
 ap.add_argument("--results-dir", default="results/2026_0903_predicted_activity")
 ap.add_argument("--arms", choices=("h3k27ac", "p300", "p300transfer", "accessibility",
-                                  "dnaseinput", "multitask", "accnorm", "residualtx"),
+                                  "dnaseinput", "multitask", "accnorm", "residualtx",
+                                  "p300fix"),
                 default="h3k27ac",
                 help="Which target's predicted tracks to build arms for. p300 arms go in "
                      "their own results dir and config: re-stamping Peaks inside the "
@@ -243,7 +244,22 @@ RESIDUAL_TX = [
      "gm12878_atac5p_hw500_clw10", "GM12878 residual multimodal -> K562"),
 ]
 
-if a.arms == "accnorm":
+# THE CORRECTED GM12878 p300 MODEL, F-025. Its own results dir so the finished
+# 2026_0906_p300_transfer run is not re-stamped.
+#
+# The arm it replaces, p300pred_gm12878_multimodal, came from a model whose plus-strand
+# target was ENCFF960OFK, a BPNet model's PREDICTED profile. This one is the same
+# architecture, hyperparameters, peaks, negatives, accessibility and folds, retrained on the
+# observed target. The prediction was made with the same accessibility track and the same
+# default normalisation as the original, so the target is the only difference and the
+# benchmark delta is attributable to it.
+if a.arms == "p300fix":
+    bw = f"{PRED}/predp300gm_gm12878_multimodal_corrected.bw"
+    if not os.path.exists(bw):
+        missing.append(bw)
+    add("p300pred_gm12878_corrected", ATAC, bw, "ATAC")
+    add("p300only_gm12878_corrected", bw, "", "ATAC")
+elif a.arms == "accnorm":
     for tag, _desc in ACCNORM:
         bw = f"{PRED}/predp300an_{tag}.bw"
         if not os.path.exists(bw):
@@ -312,7 +328,8 @@ TAG = a.config_tag or {"h3k27ac": "predicted_activity", "p300": "p300_activity",
                        "dnaseinput": "dnase_input_activity",
                        "multitask": "multitask_activity",
                        "accnorm": "accnorm_activity",
-                       "residualtx": "residual_transfer"}[a.arms]
+                       "residualtx": "residual_transfer",
+                       "p300fix": "p300_corrected"}[a.arms]
 out = f"{ABC}/config/mine/config_biosamples_{TAG}.tsv"
 with open(out, "w") as f:
     f.write("\t".join(COLS) + "\n")

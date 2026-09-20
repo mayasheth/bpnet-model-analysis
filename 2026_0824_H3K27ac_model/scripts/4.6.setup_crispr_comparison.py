@@ -26,7 +26,7 @@ import subprocess
 _ap = argparse.ArgumentParser()
 _ap.add_argument("--arms",
                  choices=("h3k27ac", "p300", "p300all", "accessibility", "dnaseinput",
-                          "multitask", "slopefix"),
+                          "multitask", "slopefix", "p300fix"),
                  default="h3k27ac",
                  help="Which activity target's arms to benchmark. The p300 set reuses the "
                       "same July floor and observed-H3K27ac ceiling, so the two "
@@ -236,7 +236,28 @@ SLOPEFIX_ARMS = [
      "ATAC x predicted H3K27ac (GM12878 -> K562, residual objective)", "#74c476"),
 ]
 
-if _a.arms == "slopefix":
+# F-025 re-test: the corrected GM12878 p300 model against the corrupted one it replaces,
+# the in-cell model, and the floor, all on one pair set so every delta is paired.
+P300FIX_D = f"{ABC}/2026_0919_p300_corrected"
+P300FIX_ARMS = [
+    ("K562_ATAC_only",            JULY, "ATAC only (floor, reference)", "#bdbdbd"),
+    ("K562_ATAC_H3K27ac_element", JULY, "ATAC x observed H3K27ac (ceiling, reference)",
+     "#404040"),
+    ("p300obs_k562",              P300, "ATAC x observed p300 (ceiling)", "#54278f"),
+    ("p300pred_k562_multimodal",  P300, "ATAC x predicted p300 (K562 in-cell)", "#807dba"),
+    ("p300pred_gm12878_multimodal", P300TX,
+     "ATAC x predicted p300 (GM12878 -> K562, CORRUPTED target)", "#cb181d"),
+    ("p300pred_gm12878_corrected", P300FIX_D,
+     "ATAC x predicted p300 (GM12878 -> K562, corrected target)", "#238b45"),
+    ("p300only_gm12878_multimodal", P300TX,
+     "Predicted p300 alone (GM12878 -> K562, CORRUPTED target)", "#fdae6b"),
+    ("p300only_gm12878_corrected", P300FIX_D,
+     "Predicted p300 alone (GM12878 -> K562, corrected target)", "#74c476"),
+]
+
+if _a.arms == "p300fix":
+    ARMS = P300FIX_ARMS
+elif _a.arms == "slopefix":
     ARMS = SLOPEFIX_ARMS
 elif _a.arms == "accessibility":
     ARMS = ACC_ARMS
@@ -248,13 +269,15 @@ TAG = {"h3k27ac": "predicted_activity", "p300": "p300_activity",
        "p300all": "p300_all", "accessibility": "accessibility_activity",
        "dnaseinput": "dnase_input_activity",
        "multitask": "multitask_activity",
-       "slopefix": "slopefix"}[_a.arms]
+       "slopefix": "slopefix",
+       "p300fix": "p300_corrected"}[_a.arms]
 RUN = {"h3k27ac": "2026_0904_predicted_activity", "p300": "2026_0905_p300_activity",
        "p300all": "2026_0906_p300_all",
        "accessibility": "2026_0910_accessibility_activity",
        "dnaseinput": "2026_0915_dnase_input_activity",
        "multitask": "2026_0916_multitask_activity",
-       "slopefix": "2026_0917_slopefix"}[_a.arms]
+       "slopefix": "2026_0917_slopefix",
+       "p300fix": "2026_0919_p300_corrected"}[_a.arms]
 
 BASELINES = [
     ("distToTSS",      "FALSE", "mean", "Inf", "TRUE",  "Distance to TSS",      "#c5cad7"),
