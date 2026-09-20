@@ -139,8 +139,27 @@ def predict(cfg, fold, seqs_max, accs_by_spec):
     accs_raw = crop(accs_by_spec[cfg["accessibility_bw"]], in_w)
     x = accs_raw
     if mode in ("multimodal", "atac"):
-        st = json.load(open(f"{md}/fold{fold}/acc_normalization_stats.json"))
-        x = normalize_accessibility(accs_raw, mean=st["acc_mean"], std=st["acc_std"])[0]
+        # A MULTI-CELL-TYPE MODEL HAS NO SINGLE TRAINING STATISTIC. Its stats file is
+        # {"per_cell_type": {...}} rather than a flat {"acc_mean":..,"acc_std":..}, because
+        # accessibility is standardized per cell type during training so that library depth
+        # cannot enter the input (the F-017 mechanism). Scoring it therefore requires
+        # statistics derived from the TARGET cell type's own track, supplied per entry as
+        # acc_mean/acc_std. Reading a flat key here is what raised KeyError: 'acc_mean'.
+        if cfg.get("acc_mean") is not None:
+            if cfg.get("acc_std") is None:
+                raise SystemExit(f"{cfg['label']}: acc_mean needs acc_std")
+            a_mean, a_std = float(cfg["acc_mean"]), float(cfg["acc_std"])
+        else:
+            st = json.load(open(f"{md}/fold{fold}/acc_normalization_stats.json"))
+            if "acc_mean" not in st:
+                raise SystemExit(
+                    f"{cfg['label']}: {md}/fold{fold}/acc_normalization_stats.json has no "
+                    f"'acc_mean'. It looks like a multi-cell-type model "
+                    f"({sorted(st.get('per_cell_type', {}))}), which has no single training "
+                    f"statistic; give this entry explicit acc_mean/acc_std derived from the "
+                    f"target cell type's accessibility over these regions (see 4.26).")
+            a_mean, a_std = st["acc_mean"], st["acc_std"]
+        x = normalize_accessibility(accs_raw, mean=a_mean, std=a_std)[0]
     X = (np.concatenate([seqs, x], axis=1) if mode == "multimodal"
          else seqs if mode == "sequence" else x).astype(np.float32)
     m = torch.load(f"{md}/fold{fold}/multimodal_bpnet.torch", map_location="cpu",

@@ -993,3 +993,63 @@ For reference the accessibility renormalisation shifted 3.7% of ranks and moved 
 |------|-------------|---------|---------|--------|-----------|
 | 2026-09-18 | `0.45` rebuild (44164220), `0.46` construction control (44181538), ENCODE metadata for ENCSR038OGP | GM12878 EP300 ENCSR000DZG BAMs; annotation ENCSR038OGP bigwigs; 1,052 chr8 peaks | 2026_0824_H3K27ac_model | rebuild matches observed plus at r=1.0000 and the used track at r=0.2734; used track is output_type "predicted signal profile (plus strand)" | invalidates the identity of F-021's transferred arm |
 
+---
+
+## F-026: Training p300 across four cell types beats single-source transfer and is the first model in this project to clear an assay-matched floor on transfer
+**Status:** established upstream; NOT yet benchmarked downstream
+**Claim:** A multimodal p300 model trained on A549, GM12878, HepG2 and MCF-7 pooled, holding
+K562 out entirely, was scored on K562 p300 over K562's own EP300 peaks with K562 ATAC as the
+accessibility input. Baseline is K562's own accessibility-only p300 model, the assay-matched
+floor F-016 requires. Five chromosome folds, paired within fold.
+
+| arm | overall Pearson | top-quintile |
+|---|---|---|
+| K562 in-cell (upper reference) | 0.691 [0.671, 0.710] | 0.482 [0.430, 0.534] |
+| **multi-cell, K562 held out** | **0.574 [0.538, 0.609]** | **0.317 [0.222, 0.412]** |
+| GM12878 single-source, target-normalised | 0.530 [0.499, 0.561] | 0.266 [0.178, 0.355] |
+| GM12878 single-source, own statistics | 0.518 [0.489, 0.547] | 0.253 [0.162, 0.345] |
+| K562 accessibility-only FLOOR | 0.478 [0.450, 0.507] | 0.256 [0.165, 0.346] |
+
+| paired contrast | overall | top-quintile |
+|---|---|---|
+| **multi-cell - single-source, same normalisation** | **+0.0436** (*p*=0.0092) | **+0.0508** (*p*=0.0004) |
+| multi-cell - single-source, own statistics | +0.0557 (*p*=0.0042) | +0.0636 (*p*=0.0003) |
+| **multi-cell - assay-matched floor** | **+0.0954** (*p*=0.0002) | **+0.0614** (*p*=0.036) |
+| single-source - assay-matched floor | +0.0396 (*p*=0.016) | **-0.0022** (*p*=0.91) |
+| in-cell - multi-cell | +0.1169 (*p*=0.0004) | +0.1650 (*p*=0.006) |
+
+**Implications:** **F-016 found no model beating an assay-matched floor in six transfer
+directions, and single-source transfer fails here too on top-quintile (-0.0022, *p*=0.91).
+Pooling four source cell types clears that floor (+0.0614, *p*=0.036).** This is the first
+positive transfer result in the project. In headroom terms, against the in-cell model as the
+attainable ceiling, single-source recovers 4% of the top-quintile gap and multi-cell 27%; on
+overall Pearson, 19% against 45%.
+The comparison that carries the claim is the policy-matched one. A multi-cell model has no
+single training statistic, because accessibility is standardised per cell type so library
+depth cannot enter the input, so it MUST be normalised on the target. Scoring the
+single-source model under the same policy costs it nothing to arrange and removes
+normalisation as an explanation: the gap narrows from +0.0557 to +0.0436 overall, so about a
+fifth of the raw difference was policy and the rest is the training set.
+**Caveats:** **Pooling more cell types also pools more data, and this design does not
+separate them.** The multi-cell model saw 34,669 training peaks against GM12878's 14,602, so
+"four cell types" is confounded with "2.4x the peaks". The 2026-09-08 subsampling test is
+weak evidence against volume mattering for p300 transfer, since depth-matching K562 to
+GM12878's budget left transfer unchanged (+0.202 against +0.207), but that varied read depth
+rather than peak count and was single-source. **The clean control is a single-source model
+trained on a peak count matched to the pool**, which no single cell type here can supply;
+the nearest feasible version is pooling two cell types and then four, and seeing whether the
+gain tracks cell-type count or peak count.
+Upstream only. The multi-cell model has not been through ABC or the CRISPR benchmark, and
+this project has had the benchmark and Pearson disagree five times, so the downstream result
+should not be assumed from this. One held-out cell type, K562, because it is the only one
+with an assay-matched accessibility-only p300 floor; the other four leave-one-out models can
+be scored against each other but not against a floor without 15 more training runs. GM12878
+enters the pool with the F-025-corrected target. Single run per condition, and F-020 puts
+run-to-run variance at sd 0.0018 count Pearson, well below these effects.
+**Tags:** p300, transfer, multi-cell-type, deployment, k562, positive-result
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-09-19 | training 44301326 (25 tasks), eval 44326695 (`2.15` via `2.43`) | K562 EP300 peaks (ENCSR000EGE inliers); panel A549/GM12878/HepG2/MCF-7, 34,669 pooled training peaks | 2026_0824_H3K27ac_model | multi-cell 0.317 top-quintile against single-source 0.266 and floor 0.256; +0.0508 paired (*p*=0.0004) and +0.0614 over the floor (*p*=0.036) | first transfer result to clear an assay-matched floor; extends F-016 |
+
