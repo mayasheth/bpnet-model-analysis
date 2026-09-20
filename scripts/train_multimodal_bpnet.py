@@ -588,30 +588,6 @@ def main():
         print(f"Offset model target verified against {rec_path}")
 
     # Stranded targets give 2 output tracks (the p300 setup); unstranded give 1.
-    # n_outputs sizes the PROFILE head, so with a separate profile target it follows that
-    # target's strandedness, not the counts target's. The counts head is a single scalar
-    # either way.
-    use_prof_target = args.profile_target_plus_bw is not None
-    if use_prof_target:
-        n_outputs = 2 if args.profile_target_minus_bw is not None else 1
-        print(f"Profile head target: {args.profile_target_plus_bw}"
-              + (f" + {args.profile_target_minus_bw}"
-                 if args.profile_target_minus_bw else "")
-              + f" -> n_outputs={n_outputs}")
-        print(f"Counts head target:  {args.signal_plus_bw} (unchanged)")
-    else:
-        n_outputs = 2 if args.signal_minus_bw is not None else 1
-        print(f"Target is {'stranded' if n_outputs == 2 else 'unstranded'} "
-              f"-> n_outputs={n_outputs}")
-
-    with open(args.fold) as f:
-        fold_data = json.load(f)[str(args.fold_key)]
-    train_chroms = fold_data["train"]
-    val_chroms = fold_data["val"]
-
-    os.makedirs(args.output_dir, exist_ok=True)
-    model_prefix = os.path.join(args.output_dir, "multimodal_bpnet")
-
     # ---- multi-cell-type panel -----------------------------------------------------
     # PANEL is an ordered mapping name -> spec. The single-cell-type path is expressed as
     # a one-entry panel so there is exactly one extraction code path, and the arrays it
@@ -644,6 +620,45 @@ def main():
 
     print(f"Panel: {len(PANEL)} cell type(s): {', '.join(PANEL)}"
           + (f"  (holding out {args.holdout_cell})" if args.holdout_cell else ""))
+
+    # n_outputs sizes the PROFILE head, so with a separate profile target it follows that
+    # target's strandedness, not the counts target's. The counts head is a single scalar
+    # either way.
+    use_prof_target = args.profile_target_plus_bw is not None
+    if use_prof_target:
+        n_outputs = 2 if args.profile_target_minus_bw is not None else 1
+        print(f"Profile head target: {args.profile_target_plus_bw}"
+              + (f" + {args.profile_target_minus_bw}"
+                 if args.profile_target_minus_bw else "")
+              + f" -> n_outputs={n_outputs}")
+        print(f"Counts head target:  {args.signal_plus_bw} (unchanged)")
+    else:
+        # With a panel the minus strand comes from each cell type's entry rather than
+        # from the flag. Asking args alone builds a single-stranded model against
+        # two-stranded data, which dies inside MNLLLoss with a 2000-against-1000 shape
+        # error after the extraction has already run. Ask the panel instead.
+        _minus = {c: _spec(spec, "signal_minus_bw", args.signal_minus_bw)
+                  for c, spec in PANEL.items()}
+        _stranded = {c: v is not None for c, v in _minus.items()}
+        if len(set(_stranded.values())) > 1:
+            raise SystemExit(
+                "error: the panel mixes stranded and unstranded targets, which cannot "
+                "share one profile head: "
+                + ", ".join(f"{c}={'stranded' if v else 'unstranded'}"
+                            for c, v in sorted(_stranded.items())))
+        n_outputs = 2 if all(_stranded.values()) else 1
+        print(f"Target is {'stranded' if n_outputs == 2 else 'unstranded'} "
+              f"-> n_outputs={n_outputs}"
+              + (f" (from the panel: {len(PANEL)} cell type(s))"
+                 if args.cell_types_json else ""))
+
+    with open(args.fold) as f:
+        fold_data = json.load(f)[str(args.fold_key)]
+    train_chroms = fold_data["train"]
+    val_chroms = fold_data["val"]
+
+    os.makedirs(args.output_dir, exist_ok=True)
+    model_prefix = os.path.join(args.output_dir, "multimodal_bpnet")
 
     # Provenance is written AFTER the panel is resolved, so the file names every cell type
     # the model actually trained on and every track it read. The single-cell-type shape is

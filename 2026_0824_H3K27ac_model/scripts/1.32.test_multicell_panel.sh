@@ -86,12 +86,28 @@ run () {  # run <label> <script> [extra args...]
     grep -E 'Extracted|normalization:' "$T/$label.log" | sed 's/^/    /'
 }
 
+# A panel invoked the way 1.34 actually invokes it: NO --signal-minus-bw and NO
+# --accessibility-bw on the command line, because the panel supplies both per cell type.
+# The first version of this gate always passed those flags through its `run` helper, so
+# this path was never exercised, and it failed twice in production: once on an
+# accessibility check that ran before the panel was parsed, and once on n_outputs being
+# read from args and building a single-stranded model against two-stranded targets, which
+# only surfaced inside MNLLLoss after a 14-minute extraction.
+run_panel_only () {  # run_panel_only <label> <panel json> [extra args...]
+    local label=$1 panel=$2; shift 2
+    echo "=== running $label (panel only, no fallback flags) ==="
+    $PY scripts/train_multimodal_bpnet.py --output-dir "$T/$label"         --cell-types-json "$panel" --peaks "$K_PEAKS" --signal-plus-bw "$K_SIG_P"         "${COMMON[@]}" "$@" > "$T/$label.log" 2>&1         || { echo "FAILED: $label"; tail -25 "$T/$label.log"; return 1; }
+    grep -E 'Extracted|normalization:|n_outputs' "$T/$label.log" | sed 's/^/    /'
+}
+
 run old "$T/train_OLD.py"
 run new_single scripts/train_multimodal_bpnet.py
 run new_panel1 scripts/train_multimodal_bpnet.py --cell-types-json "$T/panel_one.json"
 run new_panel2 scripts/train_multimodal_bpnet.py --cell-types-json "$T/panel_two.json"
 run new_hold   scripts/train_multimodal_bpnet.py --cell-types-json "$T/panel_two.json" \
                                                  --holdout-cell GM12878
+
+run_panel_only new_panelonly "$T/panel_two.json"
 
 echo "=== unknown --holdout-cell must fail ==="
 if $PY scripts/train_multimodal_bpnet.py --output-dir "$T/bad" \
@@ -169,6 +185,18 @@ if hold == new_s:
     print("CHECK 4 PASS: holding out GM12878 leaves exactly the K562 single-cell set")
 else:
     fail.append(f"CHECK 4 FAILED: holdout gave {hold}, expected the K562 set {new_s}")
+
+po = counts("new_panelonly")
+po_txt = open(f"{T}/new_panelonly.log").read()
+if po != p2:
+    fail.append(f"CHECK 6 FAILED: a panel with no fallback flags extracted {po}, "
+                f"expected the same as with them, {p2}")
+elif "n_outputs=2" not in po_txt:
+    fail.append("CHECK 6 FAILED: panel-only run did not build a 2-strand profile head; "
+                "the panel supplies signal_minus_bw for every cell type")
+else:
+    print("CHECK 6 PASS: a panel with no --signal-minus-bw or --accessibility-bw "
+          "matches the flagged run and builds n_outputs=2")
 
 tr = json.load(open(f"{T}/new_panel2/training_target.json"))
 if sorted(tr.get("trained_on", [])) == ["GM12878", "K562"] and "panel" in tr:
