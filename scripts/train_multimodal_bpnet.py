@@ -609,6 +609,27 @@ def main():
     def _spec(spec, key, fallback):
         return spec.get(key, fallback)
 
+    # A PANEL ENTRY MUST BE COMPLETE. --peaks and --signal-plus-bw are required by argparse,
+    # so a caller driving a panel still has to pass something for them, and 1.34 passes
+    # K562's. Those values are inert as long as every entry overrides them -- but if an
+    # entry ever omitted a key, the fallback would silently supply the HELD-OUT cell type's
+    # data and the leave-one-out design would be broken with no error and no sign in the
+    # log. Refuse instead. The fallbacks stay usable for the single-cell-type path, which is
+    # what they are for.
+    if args.cell_types_json:
+        need = ["peaks", "signal_plus_bw"]
+        if args.mode in ("multimodal", "atac"):
+            need.append("accessibility_bw")
+        holes = {c: [k for k in need if k not in spec] for c, spec in PANEL.items()}
+        holes = {c: k for c, k in holes.items() if k}
+        if holes:
+            raise SystemExit(
+                "error: every cell type in --cell-types-json must define its own "
+                + ", ".join(need)
+                + "; falling back to the command-line flags would silently pull in whatever "
+                  "cell type those point at, including a held-out one. Missing: "
+                + "; ".join(f"{c} -> {', '.join(k)}" for c, k in sorted(holes.items())))
+
     if args.mode in ("multimodal", "atac"):
         no_acc = [c for c, spec in PANEL.items()
                   if _spec(spec, "accessibility_bw", args.accessibility_bw) is None]
