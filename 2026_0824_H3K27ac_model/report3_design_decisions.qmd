@@ -1,6 +1,6 @@
 ---
 title: "Architecture and input decisions: predicted p300 improves ABC in the training cell type, and not on transfer"
-date: "2026-09-05"
+date: "2026-09-24"
 status: "draft"
 format:
   html:
@@ -70,95 +70,86 @@ blockquote { border-left: 3px solid #ddd; margin-left: 0; padding-left: 1rem;
 
 ![](figures/fig16_p300_benchmark.png)
 
-**Figure 1 | Predicted p300 clears the ABC benchmark floor in the training cell type and not on transfer.** **Headline figure.**
+**Figure 1 | Predicted p300 clears the ABC benchmark floor in the training cell type and not on transfer.**
+
+> **Superseded (F-025, 2026-09-19):** the GM12878-trained arm was trained on a BPNet model's predicted plus strand; retrained on the observed target it scores +0.0135 [-0.0003, +0.0270] over the floor, still not resolvable, with a transfer penalty of +0.0414 [+0.0256, +0.0558].
 
 <details>
 <summary>Full legend</summary>
 
-**Figure 1 | p300 as the ABC activity term, K562 CRISPR benchmark, all nine arms plus
-distance-to-TSS.** 10,342 element-gene pairs with 466 regulated, every arm scored on the
-identical pair set. Error bars are the pipeline's **unpaired** per-predictor 95% intervals and
-they overlap for every arm, resolving nothing; the paired-bootstrap delta against the floor is
-printed at the right of each row, bold where resolvable and grey with `n.s.` where the
-interval spans zero. Both layers are shown deliberately, because the overlapping bars are what
-the eye is drawn to and they are the misleading half. Dashed lines mark the ATAC-only floor
-(0.457), and observed H3K27ac (0.519). Observed p300 is the highest arm at **0.557**
-(+0.099 [+0.079, +0.120] over the floor); the K562-trained predicted-p300 arm reaches
-**0.512** (+0.055 [+0.034, +0.074]), matching measured H3K27ac; the **GM12878-trained arm
-applied to K562 sits at 0.466** (+0.009 [-0.004, +0.022], n.s.) in a cluster at the floor
-alongside the K562 ATAC-only p300 model. The H3K27ac equivalent of this figure, in which no
-arm clears the floor, is Fig. 10. Source:
+**Figure 1 | p300 as the ABC activity term, K562 CRISPR benchmark, nine arms plus
+distance-to-TSS.** 10,342 element-gene pairs, 466 regulated, every arm scored on the same
+pair set. Error bars are the pipeline's **unpaired** 95% intervals, which overlap for every
+arm; the paired-bootstrap delta against the floor is printed at the right (bold if
+resolvable, grey `n.s.` if not). Dashed lines: ATAC-only floor (0.457)
+and observed H3K27ac (0.519). Observed p300 is highest at **0.557** (+0.099 [+0.079, +0.120]
+over the floor); K562-trained predicted p300 reaches **0.512**, matching measured H3K27ac; the
+GM12878-trained arm applied to K562 (**0.466**) sits at the floor with the K562 ATAC-only p300
+model. Fig. 10 is the H3K27ac equivalent. Source:
 `CRISPR_comparison_v3/.../results/2026_0906_p300_all/performance_summary.txt`, paired deltas
 from `scripts/4.17`.
 </details>
 
 ## Summary
 
-- Target choice was the binding constraint, not architecture. Predicted p300 as ABC's activity term clears the ATAC-only floor by **+0.055 [+0.034, +0.074]** (paired bootstrap, sign kept 100%), and matches *measured* H3K27ac; the best predicted-H3K27ac arm reaches only +0.025 [-0.003, +0.052]. The direction of the sequence contribution flips too: for p300 the sequence + ATAC model beats the ATAC-only one by +0.051, while for H3K27ac the sequence arms were the worst in the panel (0.393 and 0.275 against a 0.457 floor). Same architecture, same accessibility input, same benchmark (Figs. 1, 10).
-- Transfer is strongly asymmetric and the benchmark can only test the direction that fails. K562-trained p300 applied to GM12878 keeps **+0.207 [+0.158, +0.257]** over that cell type's own accessibility model, 83% of its local advantage; GM12878-trained applied to K562 keeps **+0.006** (*p*=0.72). Both are equally strong at home (+0.313 and +0.309 over matched floors), and equalising training-signal volume does not close it, so this is neither model quality nor data volume. Observed p300 also beats observed H3K27ac as an activity term by +0.038 [+0.019, +0.058], a fact about the assay that survives every negative result below.
-- Swapping DNase for ATAC as the accessibility input is the first change that survives transfer. It gains +0.037 in-cell K562 and +0.086 in-cell GM12878, and transferred it clears the target cell type's own ATAC-only floor by **+0.056 [+0.014, +0.099]** where the ATAC-input model manages +0.013 (*p*=0.25). DNase is the shallower library in both cell types, so the depth confound runs against the result.
-- In-cell-type gains do not travel, and the mechanism-targeted interventions are closed with controlled nulls. No architecture beats the simplest transferred (best +0.016, *p*=0.066; fragment channels exactly null in both directions). Sequence-gated accessibility, an asymmetric count loss, GC-matched training negatives, and p300 as an auxiliary head all failed, the last three with the manipulation verified before the outcome was read.
-- The failures are accessible-but-unacetylated elements, and CTCF is a passenger. CTCF-high elements are 27% of the over-predicted tail and removing them leaves the remainder over-predicted *more*; GC content correlates with the error 3-4x more strongly than CTCF does. Under-predicted elements are canonical active enhancers (EP300 3.4x, H3K4me1 3.3x, zero H3K27me3). Predicted H3K27ac fails through compressed dynamic range rather than inaccuracy (Fig. 11).
+- In K562, predicted p300 from a sequence + ATAC model beats the floor (ABC with ATAC alone as its activity term) by **+0.055 [+0.034, +0.074]** CRISPR-benchmark AUPRC, matching measured H3K27ac, and observed p300 beats observed H3K27ac by +0.038 [+0.019, +0.058] (Fig. 1; F-008, F-024). Predicted H3K27ac from the same architecture reading ATAC does not clear the floor (+0.025 [-0.003, +0.052]); reading DNase, it does, by +0.0403 [+0.0230, +0.0563] (F-018).
+- On transfer (training in one cell type, predicting in another) the p300 gain is lost. The GM12878 -> K562 arm was trained on a corrupted target; retrained it scores +0.0135 [-0.0003, +0.0270] with a transfer penalty of +0.0414, and the p300 transfer asymmetry reported here (+0.207 against +0.006) was measured with the corrupted model (F-025).
+- DNase in place of ATAC as the model's input gains +0.037 top-quintile Pearson (on the 20% of elements with the most observed signal) in-cell K562 and +0.086 in GM12878. The transfer result is withdrawn: the transferred model is -0.045 [-0.080, -0.010] below an assay-matched DNase-only floor, and no H3K27ac model transfers in any of six directions over three cell types (F-010, F-016).
+- In-cell architecture gains do not travel: no architecture beats the simplest on transfer (best +0.016, *p*=0.066), and fragment channels are exactly null in both directions. Sequence-gated accessibility, an asymmetric count loss, GC-matched negatives and p300 as an auxiliary head all failed.
+- The over-predicted elements are accessible but unacetylated, and CTCF is a passenger: CTCF-high elements are 27% of that tail and the rest are over-predicted more. Predicted H3K27ac is accurate (Spearman 0.794) but compressed at regulated elements, and ABC's rank-based quantile normalisation (qnorm) discards scale, so rescaling fixes are null by construction (F-022).
 
 ## Goals
 
-This is the workbench. It records every architecture and input change tried against the
-H3K27ac target, what each did to the reporting metric, and the verdict, followed by the
-downstream ABC/CRISPR result and the diagnosis of why it is negative.
+This report records each architecture and input change tried on the H3K27ac target and its
+verdict, then the downstream ABC/CRISPR results. Ceilings are in Report 1; scoring rules are
+in Report 2, which should be read before quoting a number from here.
 
-It changes most often of the three reports. Report 1 holds the data characterisation and
-every ceiling; Report 2 holds the scoring rules these results are read under, and should be
-read first by anyone about to quote a number from here.
-
-**Numbers in the decision table are reverse-complement-averaged**, which has been the
-default in all scoring since 2026-09-03. The figures and the per-section prose below show the
-single-pass values they were rendered from. The two differ by +0.002 to +0.016 and change no
-verdict; the exact gap for every affected result is tabulated in Methods, so the discrepancy
-is bounded rather than merely acknowledged. Figures are deliberately left uniformly
-single-pass rather than partly migrated: two of the six affected figures have no `rc_*` table
-in the format their plot script reads, and a half-migrated figure set would be harder to
-describe correctly than a consistent one.
+The decision table quotes reverse-complement-averaged values (the scoring default since
+2026-09-03); figures and section text quote single-pass values. They differ by +0.002 to
++0.016 and change no verdict (Methods lists every pair).
 
 ## Decision table
 
 Effect is the paired within-fold change in top-quintile Pearson *r* on K562 H3K27ac unless
-stated. Read every row against a between-fold `sd` of 0.041-0.046 (Report 2).
+stated; between-fold `sd` is 0.041-0.046 (Report 2). Architecture rows are one training run
+per condition; F-020 later measured a run-to-run sd of 0.00180 in validation count Pearson
+between two trainings of one configuration, so effects of that order need repeat seeds.
 
 | Change | Effect on the top quintile | Verdict |
 |---|---|---|
 | **Inputs: sequence only** | 0.397 [0.344, 0.451] absolute | reference |
 | **Inputs: ATAC only** | 0.551 [0.500, 0.601] absolute | reference |
 | **Inputs: sequence + ATAC** | 0.695 [0.677, 0.713] absolute | **adopted** |
-| **Target: p300 instead of H3K27ac** | sequence margin +0.304 against +0.127 | p300 is the better substrate for sequence; H3K27ac is the required target |
-| **Objective: residual instead of total** | sequence +0.254, multimodal **-0.018** | adopt for attribution work only; joint training remains the better predictor |
+| **Target: p300 instead of H3K27ac** | sequence margin +0.304 against +0.127 | p300 is the better substrate for sequence; H3K27ac is the required target (superseded, F-024: p300 is now the default target) |
+| **Objective: residual instead of total** | sequence +0.254, multimodal **-0.018** | attribution work only; joint training predicts better |
 | **Receptive field ~1.1 -> ~4.2 kb** | multimodal **+0.028** (*p*=0.004); GM12878 +0.016 (*p*=0.023); ATAC-only +0.017; sequence-only -0.007 (*p*=0.40) | **adopted for accessibility-input models**; the gain is accessibility neighbourhood, not sequence context |
 | **Accessibility: 5 fragment-size channels vs flat** | **+0.016** (*p*=0.002); GM12878 +0.006 (*p*=0.031) | **adopted** |
-| **Both: wide + fragments** | +0.034 vs narrow+flat; **+0.007 on top of wide alone** (*p*=0.053) | sub-additive at ~79%; take the receptive field, treat fragments as nearly redundant with it |
-| **Inference: reverse-complement averaging** | +0.008 multimodal, +0.016 sequence-only, +0.002 ATAC-only (n.s.) | **adopted as the default everywhere** |
-| **Accessibility: 5' insertion counts vs full-interval** | ATAC-only **+0.033** (*p*=0.010); multimodal +0.004 (n.s.) | **adopted**, for the cross-cell-type read-length confound rather than the gain (Report 1) |
-| **Elements: ATAC-derived instead of DNase-derived** | -0.001 [-0.015, +0.013] (*p*=0.83) | irrelevant; the derivation confound is real but has no measurable effect |
+| **Both: wide + fragments** | +0.034 vs narrow+flat; **+0.007 on top of wide alone** (*p*=0.053) | sub-additive (~79%); take the receptive field, fragments are nearly redundant with it |
+| **Inference: reverse-complement averaging** | +0.008 multimodal, +0.016 sequence-only, +0.002 ATAC-only (n.s.) | **adopted as the default** |
+| **Accessibility: 5' insertion counts vs full-interval** | ATAC-only **+0.033** (*p*=0.010); multimodal +0.004 (n.s.) | **adopted**, to remove the cross-cell-type read-length confound (Report 1) |
+| **Elements: ATAC-derived instead of DNase-derived** | -0.001 [-0.015, +0.013] (*p*=0.83) | no measurable effect |
 | **Counting window +/-500 bp** | ceiling nearly saturated, zero neighbour contamination | keep (Report 1, Fig. 3) |
-| **`count_loss_weight` = 10** | only the extremes 1 and 1000 are resolvable | keep; sits in a flat region |
-| **Profile head at 1 bp** | ceiling 0.21; models reach 0.114-0.171 | not informative, but not failing either; removing it is untested |
-| **Architecture choice on transfer** | no arm beats narrow+flat by a resolvable margin (best +0.016, *p*=0.066) | in-cell gains do not travel |
-| **Predicted H3K27ac as the ABC activity term** | AUPRC 0.482 against a floor of 0.457 and a ceiling of 0.519 | does not clear the floor; deployment arms at or below it |
-| **Predicted p300 as the ABC activity term, in-cell type** | **+0.055 [+0.034, +0.074]** over the floor, paired bootstrap | real; matches measured H3K27ac |
-| **Predicted p300 as the ABC activity term, GM12878 -> K562** | **+0.009 [-0.004, +0.022]** over the floor | **null** in this direction |
-| **Predicted p300, correlation metric, K562 -> GM12878** | **+0.207 [+0.158, +0.257]** over the target's ATAC-only model; 83% of local | **transfers**; the benchmark cannot test this direction |
-| **Observed p300 instead of observed H3K27ac as the activity term** | **+0.038 [+0.019, +0.058]** | use p300 where it is measured; model-independent |
-| **p300 as a second head alongside H3K27ac** | predicted p300 1.83x elevation against a 2.10x input control at the H3K27ac failure elements | **dropped**; p300 as the *primary* target is the version that works |
-| **DNase instead of ATAC as the accessibility input** | **+0.037** in-cell K562, **+0.086** in-cell GM12878, **+0.043** transferred; clears the target's floor by **+0.056** | **adopted**; the first model to clear the floor on transfer |
+| **`count_loss_weight` = 10** | only the extremes 1 and 1000 are resolvable | keep; flat region |
+| **Profile head at 1 bp** | ceiling 0.21; models reach 0.114-0.171 | uninformative; removal untested |
+| **Architecture choice on transfer** | no arm beats narrow+flat resolvably (best +0.016, *p*=0.066) | in-cell gains do not travel |
+| **Predicted H3K27ac as the ABC activity term** | AUPRC 0.482 against a floor of 0.457 and a ceiling of 0.519 | does not clear the floor; deployment arms at or below it (superseded, F-018, F-019: a DNase-input model and an ATAC-input retrain clear it) |
+| **Predicted p300 as the ABC activity term, in-cell** | **+0.055 [+0.034, +0.074]** over the floor, paired | real; matches measured H3K27ac |
+| **Predicted p300 as the ABC activity term, GM12878 -> K562** | **+0.009 [-0.004, +0.022]** over the floor | **null** (superseded, F-025: corrupted target; retrained +0.0135, still null) |
+| **Predicted p300, correlation metric, K562 -> GM12878** | **+0.207 [+0.158, +0.257]** over the target's ATAC-only model; 83% of local | transfers; the benchmark cannot test this direction (superseded, F-025: the asymmetry's other arm is the corrupted GM12878 model) |
+| **Observed p300 instead of observed H3K27ac as the activity term** | **+0.038 [+0.019, +0.058]** | use p300 where measured |
+| **p300 as a second head alongside H3K27ac** | predicted p300 1.83x against a 2.10x input control at the H3K27ac failure elements | **dropped**; p300 as the *primary* target is the version that works |
+| **DNase instead of ATAC as the accessibility input** | **+0.037** in-cell K562, **+0.086** in-cell GM12878, **+0.043** transferred; clears the target's floor by **+0.056** | **adopted**; first model to clear the floor on transfer (superseded, F-016: below an assay-matched floor) |
 | **Sequence-gated accessibility, and asymmetric count loss** | in-cell null; **-0.013 (*p*=0.039) transferred when combined** | **closed** |
-| **GC-matching the training negatives** | +0.001 (*p*=0.76) in-cell; -0.002 (*p*=0.33) transferred | **closed**; the GC-shortcut explanation is refuted |
+| **GC-matching the training negatives** | +0.001 (*p*=0.76) in-cell; -0.002 (*p*=0.33) transferred | **closed**; GC-shortcut explanation refuted |
 
-## Inputs: accessibility carries most of it, and sequence adds a real but small complement
+## Accessibility carries most of the H3K27ac signal, and sequence adds a small real complement
 
-**Q:** How much of H3K27ac at candidate elements is predictable from sequence, how much from
-chromatin accessibility, and how much does sequence add beyond accessibility?
+**Q:** How much of H3K27ac at candidate elements is predictable from sequence, from
+accessibility, and from both?
 
-**A:** On the elements carrying the mark, ATAC alone reaches 0.551 [0.500, 0.601] and
-sequence alone 0.397 [0.344, 0.451]; together 0.695 [0.677, 0.713], so sequence adds +0.144
-over accessibility and accessibility adds +0.298 over sequence.
+**A:** Accessibility carries most of it: on the top quintile ATAC alone reaches 0.551
+[0.500, 0.601], sequence alone 0.397 [0.344, 0.451] and both 0.695 [0.677, 0.713], so
+sequence adds +0.144 over accessibility and accessibility adds +0.298 over sequence.
 
 ![](figures/fig1_three_mode_comparison.png)
 
@@ -167,29 +158,21 @@ over accessibility and accessibility adds +0.298 over sequence.
 
 **Figure 2 | Predicting K562 H3K27ac at candidate elements, by input modality.** Pearson *r*
 between predicted and observed log counts. **a**, All elements. **b**, Top quintile by
-observed H3K27ac, the elements carrying the mark. Colour encodes input modality throughout
-all three reports: **red sequence only, blue ATAC only, purple sequence + ATAC**. Dashed line
-is the achievable ceiling (Report 1); 0.957 all elements, 0.929 top quintile. Single-pass
-top-quintile values as plotted: sequence 0.380 [0.323, 0.437], ATAC 0.548 [0.497, 0.599],
-both 0.685 [0.667, 0.704], all three intervals disjoint. Reverse-complement-averaged, which
-is the current default, the same three are 0.397, 0.551 and 0.695. The multimodal model's
-fold-to-fold spread (sd 0.015) is a third of either single-input model's (0.041-0.046), so
-combining inputs is also markedly more stable across chromosome sets. Target K562 H3K27ac
-(ENCSR000AKP), 5' end counts, 1 kb element-centred window. Source:
-`results/{,rc_}fiveprime_stratified_fold_summary.tsv`.
+observed H3K27ac. Colour encodes input modality in all three reports: **red sequence only,
+blue ATAC only, purple sequence + ATAC**. Dashed line is the ceiling (Report 1): 0.957 all
+elements, 0.929 top quintile. Plotted single-pass top-quintile values: sequence 0.380 [0.323,
+0.437], ATAC 0.548 [0.497, 0.599], both 0.685 [0.667, 0.704], all intervals disjoint. The
+multimodal model's fold-to-fold sd (0.015) is a third of either single-input model's
+(0.041-0.046). Target K562 H3K27ac (ENCSR000AKP), 5' end counts, 1 kb element-centred window.
+Source: `results/{,rc_}fiveprime_stratified_fold_summary.tsv`.
 </details>
 
-**Sequence + ATAC is the configuration everything else is measured against**, reaching 75% of
-the corrected ceiling on the top quintile against 59% for accessibility alone and 43% for
-sequence alone.
+Sequence + ATAC is the baseline for every later comparison: 75% of the corrected ceiling on
+the top quintile, against 59% for ATAC alone and 43% for sequence alone. The all-elements and
+top-quintile panels give different effect sizes (Report 2).
 
-**The all-elements panel is not a rescaling of the top-quintile panel** and the two support
-different conclusions about the size of every effect; Report 2 opens with why.
-
-**Method.**
-
-- Three input modes, five chromosome-holdout folds each, identical everything else.
-- Reported on the top quintile by observed signal, with all elements alongside.
+**Method.** Three input modes, five chromosome-holdout folds each, everything else identical;
+reported on the top quintile by observed signal, with all elements alongside.
 
 <details>
 <summary>Full methods &amp; code</summary>
@@ -203,27 +186,27 @@ Source: `scripts/2.2.evaluate_stratified.py`, `scripts/2.15.perfold_from_config.
 
 ## Sequence contributes less to H3K27ac than to p300, by a factor of 2.2
 
-**Q:** Does sequence add as much information beyond accessibility for H3K27ac as it does for p300?
+**Q:** Does sequence add as much information beyond accessibility for H3K27ac as for p300?
 
-**A:** No, sequence adds +0.304 over accessibility for p300 but only +0.127 for H3K27ac, a difference of 0.177 +/- 0.027 (about 6.6 SE), despite H3K27ac scoring higher overall.
+**A:** No: sequence adds +0.304 over accessibility for p300 and +0.127 for H3K27ac, a
+difference of 0.177 +/- 0.027 (about 6.6 SE), although H3K27ac scores higher overall.
 
 ![](figures/fig4_p300_vs_h3k27ac.png)
 
 <details>
 <summary>Figure 3 legend</summary>
 
-**Figure 3 | H3K27ac is the easier target but the weaker substrate for sequence.** Top quintile of elements by observed signal. **a**, ATAC-only (blue), and sequence + ATAC (purple) for each target; bars are the mean across five chromosome-holdout folds, whiskers the 95% CI, points the individual folds. p300 (ENCSR000EGE, stranded 5' ends): ATAC only 0.304 [0.280, 0.329], sequence + ATAC 0.608 [0.566, 0.651]. H3K27ac (ENCSR000AKP): ATAC only 0.542 [0.489, 0.596], sequence + ATAC 0.669 [0.654, 0.684]. **b**, The sequence margin (sequence + ATAC minus ATAC-only) computed **within each fold and then averaged**, a paired comparison: both models see the same held-out chromosomes in a given fold, so differencing within a fold removes the between-fold variation that dominates the absolute values in **a**. p300 **+0.304**, H3K27ac **+0.127**; the intervals do not overlap. Sequence-only is deliberately absent: there is no p300 sequence-only model in this format (the p300 sequence models are bpnet-refactor/TensorFlow checkpoints), and the margin is defined without it. Both targets are evaluated on the same K562 DNase candidate elements with element-centred +/-500 bp windows, so the comparison isolates the target. Caveat: the p300 models were *trained* on ENCSR000EGE peak summits and *evaluated* here on element centres, matching this repository's existing p300 prediction pipeline; a matched element-centred p300 model would likely raise p300 further and widen the gap. Source: `results/p300_vs_h3k27ac_stratified_per_fold.tsv`.
+**Figure 3 | H3K27ac is the easier target but the weaker substrate for sequence.** Top quintile by observed signal. **a**, ATAC-only (blue) and sequence + ATAC (purple) per target; bars are the fold mean, whiskers the 95% CI, points the folds. p300 (ENCSR000EGE, stranded 5' ends): 0.304 [0.280, 0.329] and 0.608 [0.566, 0.651]. H3K27ac (ENCSR000AKP): 0.542 [0.489, 0.596] and 0.669 [0.654, 0.684]. **b**, Sequence margin (sequence + ATAC minus ATAC-only), computed within fold and then averaged; the intervals do not overlap. No p300 sequence-only model exists in this format (those are bpnet-refactor/TensorFlow checkpoints). Same K562 DNase candidate elements and +/-500 bp windows for both targets. Caveat: the p300 models were trained on ENCSR000EGE peak summits and are evaluated on element centres, which likely understates p300 and so widens rather than closes the gap. Source: `results/p300_vs_h3k27ac_stratified_per_fold.tsv`.
 </details>
 
-**Method.**
-
-- Same elements, windows, folds and metric for both targets; only the target differs.
-- Accessibility-only control included so the sequence margin is identifiable.
+**Method.** Same elements, windows, folds and metric for both targets. The accessibility-only
+control makes the sequence margin identifiable; on joint-model correlation alone the two
+targets rank in the opposite order.
 
 <details>
 <summary>Full methods &amp; code</summary>
 
-The accessibility-only control is what makes this comparison interpretable. Without it, p300 and H3K27ac would be compared on joint-model correlation alone, which ranks them in the opposite order. p300 model directories are `2026_0529_multimodal_p300_model/models/atac` (sequence + ATAC), and `models/atac_only` (ATAC only), note `atac` there names the multimodal model whose accessibility input is ATAC; the ATAC-only mode lives in `atac_only`.
+p300 models: `2026_0529_multimodal_p300_model/models/atac` (sequence + ATAC, despite the name) and `models/atac_only` (ATAC only).
 
 ```bash
 pixi run python scripts/2.2.evaluate_stratified.py \
@@ -236,47 +219,50 @@ Source: `scripts/2.2.evaluate_stratified.py`
 
 ## The residual objective helps only a sequence-blind input, replicated in two cell types
 
-**Q:** How much does each model add beyond what accessibility alone predicts, and does sequence carry anything accessibility cannot supply?
+**Q:** Does sequence carry information that accessibility cannot supply?
 
-**A:** It does, but only a residual objective exposes it, the same sequence-only input scores 0.149 [0.076, 0.222] against the total signal and 0.459 [0.421, 0.496] against `observed − atac_pred`.
+**A:** Yes, but only a residual objective exposes it: the same sequence-only input scores
+0.149 [0.076, 0.222] on the accessibility residual when trained on total signal and 0.459
+[0.421, 0.496] when trained on the residual, `observed − atac_pred` (what an
+accessibility-only model fails to explain).
 
-The same switch *costs* a model that already sees accessibility, and both halves reproduce independently in GM12878.
-
-The training objective is what limits the sequence-only model: told to predict total signal it spends its capacity on the large accessibility-correlated component and leaves the residual alone.
+Trained on total signal, the sequence model spends its capacity on the
+accessibility-correlated component. The same switch costs a model that already sees
+accessibility, and both results reproduce in GM12878 (Fig. 4).
 
 ![](figures/fig5_residual_grid_both.png)
 
 <details>
 <summary>Figure 4 legend</summary>
 
-**Figure 4 | The residual objective helps a sequence-blind input and costs a multimodal one, in two independent cell types.** Baseline is each cell type's own accessibility-only *model* prediction, so the residual is what accessibility genuinely cannot explain. Hatching encodes the training objective (hatched = trained on `observed − atac_pred`); shade encodes cell type (solid K562, pale GM12878). Bars sharing colour and shade have **identical inputs** and differ only in objective. **a**, Residual Pearson *r*. K562 / GM12878: sequence-on-total 0.149 / 0.133; sequence-on-residual 0.459 / 0.372; multimodal-on-total 0.551 / 0.449; multimodal-on-residual 0.514 / 0.414; ATAC control −0.003 / +0.010. **b**, Residual *r* by quintile of |true residual| (5 = accessibility most wrong), pooled over folds. Every informative model rises monotonically in both cell types while the ATAC control stays flat at zero across all ten strata. **c**, The paired effect of switching objective, computed within fold. Training on the residual **gains** +0.310 [0.224, 0.395] (K562, *p*=5×10⁻⁴), and +0.239 [0.220, 0.258] (GM12878, *p*<10⁻⁴) for sequence-only input, but **costs** −0.037 [−0.039, −0.034] (*p*<10⁻⁴), and −0.035 [−0.044, −0.026] (*p*=4×10⁻⁴) when accessibility is already an input. The multimodal cost lands within 0.002 of itself across two cell types with different targets, accessibility libraries and element sets, and is negative in all ten folds; that stability is what makes it a property of the objective. n = 58,655 (K562), and 57,144 (GM12878) element-fold observations. Source: `results/{,gm12878_}residual_grid_{per_fold,fold_summary,residual_evaluation}.tsv`.
+**Figure 4 | The residual objective helps a sequence-blind input and costs a multimodal one, in two cell types.** Baseline is each cell type's own accessibility-only model. Hatched = trained on `observed − atac_pred`; solid K562, pale GM12878; bars of the same colour and shade have identical inputs. **a**, Residual Pearson *r*, K562 / GM12878: sequence-on-total 0.149 / 0.133; sequence-on-residual 0.459 / 0.372; multimodal-on-total 0.551 / 0.449; multimodal-on-residual 0.514 / 0.414; ATAC control −0.003 / +0.010. **b**, Residual *r* by quintile of |true residual| (5 = accessibility most wrong); every informative model rises monotonically and the ATAC control stays at zero in all ten strata. **c**, Paired effect of switching objective, within fold: sequence-only **gains** +0.310 [0.224, 0.395] (K562, *p*=5×10⁻⁴) and +0.239 [0.220, 0.258] (GM12878, *p*<10⁻⁴); multimodal **loses** −0.037 [−0.039, −0.034] (*p*<10⁻⁴) and −0.035 [−0.044, −0.026] (*p*=4×10⁻⁴), negative in all ten folds. n = 58,655 (K562) and 57,144 (GM12878) element-fold observations. Source: `results/{,gm12878_}residual_grid_{per_fold,fold_summary,residual_evaluation}.tsv`.
 </details>
 
-**Sequence is not redundant with accessibility.** A sequence model scoring 0.149 on the residual reflects its training objective: the identical input trained on the residual reaches 0.459.
+**The residual objective costs the multimodal model.** A multimodal model can already learn
+whatever transform of ATAC it needs, and a fixed offset removes that freedom. Joint training
+remains the best predictor, beating residual-trained sequence by +0.093 [0.072, 0.113].
 
-**The objective helps only where the input is blind to accessibility.** It triples the sequence-only score but **costs** the multimodal model 0.037 residual *r*, small, but present in all five folds, paired interval [−0.039, −0.034]. A multimodal model can already learn whatever transform of ATAC it needs; a fixed offset it cannot adjust only removes that freedom. Joint training therefore remains the best predictor, beating residual-trained sequence by +0.093 [0.072, 0.113].
+**The metric is not manufacturing the effect.** An ATAC-input model trained on the residual
+scores −0.003 [−0.065, 0.060], incremental *R²* −0.000, flat across all |residual| quintiles.
 
-**The metric is not manufacturing the effect.** An ATAC-input model trained on the residual (asked to predict an ATAC model's own errors from the same ATAC input) scores −0.003 [−0.065, 0.060], incremental *R²* −0.000, flat across all |residual| quintiles. A clearly positive control here would have made the sequence result an artifact.
+**GM12878 reproduces every sign and ordering**, with the multimodal cost within 0.002,
+despite weaker ATAC-H3K27ac coupling (0.409 vs 0.510) and a higher ceiling (0.832 vs 0.760).
 
-**The effect belongs to the training objective and holds across cell types.** It reproduces in GM12878, where weaker ATAC-H3K27ac coupling (0.409 vs 0.510), and a higher ceiling (0.832 vs 0.760) pull in opposite directions; the multimodal cost lands within 0.002 of itself. Absolute levels are lower throughout, consistent with GM12878 being harder to predict (Fig. 9), but every ordering and sign holds.
+Use residual training for attribution, where forcing the model onto signal accessibility
+cannot supply is the goal, and joint training for prediction.
 
-Residual training is therefore an interpretability tool. Its attributions are forced onto signal accessibility cannot supply (what the motif work needs, and what multimodal attributions cannot cleanly separate), and being a property of the objective, it needs no per-cell-type re-testing.
-
-**Method.**
-
-- Baseline is the accessibility-only model's held-out prediction.
-- Stratified by |true residual| so performance is scored where accessibility fails, and reported as mean +/- 95% CI over folds, since between-fold sd here is 0.041-0.046.
+**Method.** Baseline is the accessibility-only model's held-out prediction. Performance is
+stratified by |true residual|, so it is scored where accessibility fails; mean +/- 95% CI
+over folds.
 
 <details>
 <summary>Full methods &amp; code</summary>
 
-**A suspected artifact turned out to be largely closed by construction.** Because `true_resid = obs − atac_pred`, anything merely anti-correlated with `atac_pred` might earn positive residual *r* for free. It does not: `obs − atac_pred` is near-orthogonal to `atac_pred` by the least-squares residual property, so that correlation cannot leak in. The ATAC control demonstrates it, its output correlates −0.620 with `atac_pred`, the channel wide open, and it still scores −0.003. Three checks bound the risk for the residual-trained sequence model: its output correlates only −0.090 with `atac_pred`; partialling `atac_pred` out of both sides leaves 0.459 unchanged (against 0.149 -> 0.205 for the more entangled sequence-on-total model, at +0.477); and panel **c**'s incremental *R²* is scored against the observed signal, which cannot be faked out of sample. The controls were worth running and the negative control decides the result, but the alarm was disproportionate.
+**Artefact check.** Because `true_resid = obs − atac_pred`, anything anti-correlated with `atac_pred` could score for free. The ATAC control correlates −0.620 with `atac_pred` and still scores −0.003; the residual-trained sequence model correlates only −0.090 with it, and partialling `atac_pred` out of both sides leaves 0.459 unchanged (against 0.149 -> 0.205 for sequence-on-total, at +0.477).
 
-**A trap for anyone re-running this.** `MultiModalBPNet.forward()` does **not** add the count offset (that happens only inside `fit()` when scoring the loss), so an offset-trained model's raw output *is* the residual. `2.4.evaluate_residual.py` originally subtracted `atac_pred` anyway, double-counting the baseline and correlating a residual against observed signal for `overall_pearson`; both produced plausible wrong numbers instead of failing. The fix sits behind a `"residual": true` config key so earlier results stay reproducible, and `2.7.diagnose_residual_offset.py` verifies the semantics empirically first: a residual predictor's output centres near 0 (measured −0.044), a logcounts predictor near the observed mean (2.835 vs 2.786), with the plain sequence model as a control proving the test discriminates.
+**Trap for re-runs.** `MultiModalBPNet.forward()` does **not** add the count offset (only `fit()` does), so an offset-trained model's raw output *is* the residual. `2.4.evaluate_residual.py` originally subtracted `atac_pred` again, giving plausible wrong numbers; the fix sits behind a `"residual": true` config key. The evaluator refuses mismatched windows and folds lacking `training_complete.json`. `2.7.diagnose_residual_offset.py` checks the semantics first: a residual predictor centres near 0 (measured −0.044), a logcounts predictor near the observed mean (2.835 vs 2.786).
 
-The same metric applied to p300 gives residual *r* = 0.654 and incremental *R²* = +0.265, versus 0.551 and +0.102 for H3K27ac's multimodal model, reinforcing Fig. 3 on a second statistic. p300's residual *r* is also high (0.260) in the quintile where accessibility is nearly right, against 0.091 for H3K27ac, so p300's sequence contribution is broadly useful across strata. The p300 side has **not** been re-run with the residual objective; that comparison is open.
-
-The evaluator refuses to run when the baseline and comparison models use different windows, since a residual across mismatched geometries is not meaningful, and refuses folds lacking `training_complete.json`.
+For p300 the same metric gives residual *r* = 0.654 and incremental *R²* = +0.265, against 0.551 and +0.102 for H3K27ac, and 0.260 against 0.091 in the quintile where accessibility is nearly right. p300 has **not** been re-run with the residual objective.
 
 ```bash
 # semantics check, then the pooled evaluation
@@ -300,20 +286,27 @@ Source: `scripts/2.4.evaluate_residual.py`, `scripts/2.7.diagnose_residual_offse
 
 ## A wider receptive field helps only when accessibility is an input
 
-**Q:** Does widening the receptive field from ~1.1 kb to ~4.2 kb improve H3K27ac prediction, given that the mark extends well past ~1.1 kb (Report 1, Fig. 2)?
+**Q:** Does widening the receptive field from ~1.1 kb to ~4.2 kb help, given that the mark
+extends well past ~1.1 kb (Report 1, Fig. 2)?
 
-**A:** Sequence alone gains +0.043 and +0.045 on all elements and nothing on the elements carrying the mark (−0.006 and +0.010, p = 0.53 in both), while sequence + ATAC gains +0.027 and +0.014 on those same elements and lifts its accessibility residual from 0.502 to 0.547 and from 0.397 to 0.469, placing the useful long-range information in the accessibility track.
+**A:** Only with accessibility as an input: sequence + ATAC gains +0.027 (K562) and +0.014
+(GM12878) on the top quintile, while sequence alone gains nothing there (−0.006 and +0.010,
+p = 0.53 in both).
+
+Sequence alone gains only on all elements (+0.043 and +0.045). Sequence + ATAC lifts its
+accessibility residual from 0.502 to 0.547 (K562) and from 0.397 to 0.469 (GM12878), so the
+useful long-range information is in the accessibility track.
 
 ![](figures/fig10_wide_receptive_field.png)
 
 <details>
 <summary>Figure 5 legend</summary>
 
-**Figure 5 | Quadrupling the receptive field helps sequence + ATAC on the elements carrying the mark and sequence alone not at all.** `n_layers` 8 (trimming 557, 2,114 bp input, ~1.1 kb receptive field) against `n_layers` 10 (trimming 2,093, 5,186 bp input, ~4.2 kb). Grey lines are individual folds, coloured line the mean; the comparison is paired within fold because fold `sd` here is 0.041-0.046, several times the effect. **a**, **b**, Sequence only: all elements 0.494 -> 0.537 in K562 (paired +0.043, p = 0.003), and 0.475 -> 0.520 in GM12878 (+0.045, p = 0.005); top quintile 0.381 -> 0.375 (−0.006, p = 0.53), and 0.221 -> 0.232 (+0.010, p = 0.53), the sign flipping between cell types. **c**, **d**, Sequence + ATAC: top quintile 0.690 -> 0.717 in K562 (+0.027, p = 0.006), and 0.579 -> 0.593 in GM12878 (+0.014, p = 0.025), with all five folds rising in both cell types. Both models are scored on the intersection of regions each could accept; in K562 that intersection costs nothing, the per-fold element counts being identical at both window sizes (10,143 / 14,392 / 12,801 / 12,021 / 9,298), so the comparison carries no region-coverage confound. Everything except `n_layers` and the derived window geometry is byte-identical between the two arms. An ATAC-only arm is training and will show whether the gain needs sequence at all. Source: `results/wide_{k562,gm12878}_per_fold.tsv`.
+**Figure 5 | Quadrupling the receptive field helps sequence + ATAC on the elements carrying the mark and sequence alone not at all.** `n_layers` 8 (trimming 557, 2,114 bp input, ~1.1 kb receptive field) against `n_layers` 10 (trimming 2,093, 5,186 bp input, ~4.2 kb). Grey lines are folds, coloured line the mean; paired within fold. **a**, **b**, Sequence only: all elements 0.494 -> 0.537 in K562 (p = 0.003) and 0.475 -> 0.520 in GM12878 (p = 0.005); top quintile 0.381 -> 0.375 and 0.221 -> 0.232. **c**, **d**, Sequence + ATAC, top quintile: 0.690 -> 0.717 in K562 (p = 0.006) and 0.579 -> 0.593 in GM12878 (p = 0.025), all five folds rising in both. Scored on the intersection of regions both models accept; in K562 the per-fold element counts are identical at both sizes (10,143 / 14,392 / 12,801 / 12,021 / 9,298). Only `n_layers` and the derived window geometry differ between arms. Source: `results/wide_{k562,gm12878}_per_fold.tsv`.
 </details>
 
-**Method.** (Scripts generated from the existing submit scripts with exactly three edits) `n_layers`, the derived trimming sum, and the output directory, so the narrow models are a matched baseline.
-- Scored on the intersection of valid regions, so the receptive field is not confounded with which regions near chromosome ends were scorable.
+**Method.** The wide scripts are the existing submit scripts with three edits (`n_layers`,
+the derived trimming sum, the output directory), scored on the intersection of valid regions.
 
 <details>
 <summary>Full methods &amp; code</summary>
@@ -331,22 +324,23 @@ Source: `scripts/make_wide_scripts.py`, `scripts/2.17.submit_regression_and_wide
 
 ## Fragment-size-stratified accessibility adds real information
 
-**Q:** Does supplying fragment length, which flat ATAC coverage discards and which distinguishes nucleosome-free from nucleosome-occupied DNA, improve prediction?
+**Q:** Does adding fragment length, which flat ATAC coverage discards and which separates
+nucleosome-free from nucleosome-occupied DNA, improve prediction?
 
-**A:** Yes, on the elements carrying the mark: +0.0135 [+0.0075, +0.0195], p = 0.0034, taking sequence + ATAC from 0.690 to 0.703, with the accessibility residual rising from 0.502 to 0.516.
+**A:** Yes, on the top quintile: +0.0135 [+0.0075, +0.0195], p = 0.0034, taking sequence +
+ATAC from 0.690 to 0.703, with the accessibility residual rising from 0.502 to 0.516.
 
 ![](figures/fig12_fragment_channels.png)
 
 <details>
 <summary>Figure 6 legend</summary>
 
-**Figure 6 | Five fragment-size accessibility channels beat one flat channel on the elements carrying H3K27ac.** K562 sequence + ATAC, 5 folds, paired within fold. Accessibility input is `[all, sub ≤139, mono 140–329, di 330–620, poly ≥621]` bp, every channel a single-base Tn5 insertion count. **a**, All elements 0.876 -> 0.878 (paired +0.0024, p = 0.030). **b**, Top quintile 0.690 -> 0.703 (paired +0.0135, p = 0.0034), every fold rising. Grey lines individual folds, purple the mean. The four length bins sum to the flat 5' track exactly (zero discrepancy across 545,661,218 insertions and zero largest single-base difference over 2 Mb), so the input is a strict superset of the baseline and the gain is added information rather than a changed input definition. Bin edges sit in the troughs of the fragment-length distribution (Report 1, Fig. 5); the earlier `sub`/`mono` channels used full-fragment coverage and covered half the fragments, and are superseded. The Tn5 shift needed to build them from the paired-end BAMs was measured against the existing track rather than assumed (*r* = 1.0000 at +4/−5). Source: `results/fragchan_k562_per_fold.tsv`.
+**Figure 6 | Five fragment-size accessibility channels beat one flat channel on the elements carrying H3K27ac.** K562 sequence + ATAC, 5 folds, paired within fold. Accessibility input is `[all, sub ≤139, mono 140–329, di 330–620, poly ≥621]` bp, each a single-base Tn5 insertion count. **a**, All elements 0.876 -> 0.878 (paired +0.0024, p = 0.030). **b**, Top quintile, every fold rising. The four length bins sum exactly to the flat 5' track (zero discrepancy across 545,661,218 insertions; zero largest single-base difference over 2 Mb), so the input is a strict superset of the baseline. Bin edges sit in the troughs of the fragment-length distribution (Report 1, Fig. 5); the earlier full-fragment `sub`/`mono` channels are superseded. The Tn5 shift was measured against the existing track (*r* = 1.0000 at +4/−5). Source: `results/fragchan_k562_per_fold.tsv`.
 </details>
 
-**Method.**
-
-- Fragment length lives in TLEN, so the channels come from the paired-end BAMs while the flat track comes from tagAligns; agreement to the base confirms the two sources hold the same reads.
-- `n_acc_filters` stays 8, so the merged representation is still 64 + 8 wide and the only change is what the accessibility branch can see.
+**Method.** Channels come from the paired-end BAMs (fragment length is in TLEN) and the flat
+track from tagAligns; agreement to the base confirms they hold the same reads. `n_acc_filters`
+stays 8, so the merged representation is still 64 + 8 wide.
 
 <details>
 <summary>Full methods &amp; code</summary>
@@ -364,23 +358,25 @@ Source: `scripts/0.23`, `scripts/0.24`, `scripts/1.15`, `scripts/3.9`
 
 ## Test-time reverse-complement averaging is free and always helps
 
-**Q:** Training already augments with reverse complements; does averaging each prediction with its reverse complement at inference add anything?
+**Q:** Training already augments with reverse complements; does averaging each prediction
+with its reverse complement at inference add anything?
 
-**A:** Yes, and by an amount that tracks how much the model relies on sequence: +0.0162 for sequence only, +0.0081 for sequence + ATAC, and +0.0016 for ATAC only, which is the negative control and the one result that is not significant.
+**A:** Yes, in proportion to reliance on sequence: +0.0162 for sequence only, +0.0081 for
+sequence + ATAC, and +0.0016 for ATAC only, the negative control and the one non-significant
+result.
 
 ![](figures/fig13_rc_averaging.png)
 
 <details>
 <summary>Figure 7 legend</summary>
 
-**Figure 7 | Reverse-complement averaging at inference, paired within fold, ordered by reliance on sequence.** K562 residual grid, 5 folds. Points are the mean paired difference between the RC-averaged and single-pass prediction, bars the t-based 95% CI. **a**, Top quintile counts: sequence only +0.0162 [+0.0097, +0.0227], p = 0.0023; sequence + ATAC +0.0081 [+0.0057, +0.0105], p = 0.0007; residual-trained sequence +0.0054 and residual-trained multimodal +0.0073, both significant; ATAC only +0.0016 [−0.0004, +0.0036] at p = 0.086, and its residual counterpart +0.0018 at p = 0.090, both consistent with no effect. **b**, Top quintile profile shape, significant for every model, +0.0012 to +0.0060. Colour follows the input-modality convention. The gradient is the mechanism: RC averaging cancels residual strand asymmetry in the sequence branch, so a model whose only input is unstranded accessibility coverage has nothing to gain, and the two ATAC-only rows behave as that control predicts. Predictions are averaged in probability space over the flattened strand-and-position multinomial, which is the space the loss is defined in. Cost is one extra forward pass and no retraining. Source: `results/prof_{,rc_}residual_grid_per_fold.tsv`.
+**Figure 7 | Reverse-complement averaging at inference, paired within fold, ordered by reliance on sequence.** K562 residual grid, 5 folds; points are mean paired differences, bars t-based 95% CIs. **a**, Top quintile counts: sequence only +0.0162 [+0.0097, +0.0227], p = 0.0023; sequence + ATAC +0.0081 [+0.0057, +0.0105], p = 0.0007; residual-trained sequence +0.0054 and multimodal +0.0073, both significant; ATAC only +0.0016 [−0.0004, +0.0036], p = 0.086, and its residual counterpart +0.0018, p = 0.090. **b**, Top quintile profile shape, significant for every model, +0.0012 to +0.0060. RC averaging cancels strand asymmetry in the sequence branch, so an unstranded-accessibility-only model has nothing to gain. Predictions are averaged in probability space over the flattened strand-and-position multinomial. Cost is one extra forward pass. Source: `results/prof_{,rc_}residual_grid_per_fold.tsv`.
 </details>
 
-**Method.**
-
-- The reverse complement flips the one-hot channel axis and the position axis; accessibility channels are strand-agnostic and are reversed along position only. Profiles are un-flipped and strands swapped before averaging.
-- Verified against a deliberately wrong control that reverses positions without complementing: the correct transform agrees with the forward pass at *r* = 0.9918 against 0.9485.
-- Off by default (`--rc-average`), so every other number in this report is single-pass and remains comparable to earlier runs.
+**Method.** The reverse complement flips the one-hot channel and position axes; accessibility
+is reversed along position only, and profiles are un-flipped with strands swapped before
+averaging. A wrong control that reverses without complementing agrees with the forward pass
+at *r* = 0.9485, against 0.9918 for the correct transform. Enabled with `--rc-average`.
 
 <details>
 <summary>Full methods &amp; code</summary>
@@ -394,36 +390,33 @@ Source: `scripts/2.15.perfold_from_config.py` (`--rc-average`), `scripts/2.20.pa
 
 ## A sharper accessibility input helps the ATAC-only model and nothing else
 
-**Q:** Our accessibility tracks use `genomecov -bg` over the whole tagAlign interval so coverage scales with read length, whereas ChromBPNet uses single-base 5' insertion counts, does the convention matter?
+**Q:** Our accessibility tracks use `genomecov -bg` over the whole tagAlign interval, so
+coverage scales with read length; ChromBPNet uses single-base 5' insertion counts. Does the
+convention matter?
 
-**A:** Only for the model with nothing but accessibility, ATAC-only gains +0.032 (K562), and +0.023 (GM12878) on the top quintile, while sequence + ATAC is unchanged in both.
+**A:** Only for the model whose sole input is accessibility: ATAC-only gains +0.032 (K562)
+and +0.023 (GM12878) on the top quintile, and sequence + ATAC is unchanged in both.
+
+A 94-95 bp interval smears each insertion across ~95 bases. A model with only accessibility
+feels that blur; a model that also sees sequence already has the positional detail.
 
 ![](figures/fig9_atac_5prime_input.png)
 
 <details>
 <summary>Figure 8 legend</summary>
 
-**Figure 8 | Sharpening the accessibility input helps only a model with no other input.** Every ATAC-input model was retrained on `bedtools genomecov -bg -5` single-base insertion counts and paired within fold against its counterpart on full-interval coverage. The training scripts are byte-identical copies apart from the accessibility path and the output directory, and both arms are scored in one run with each reading its own input and its own saved normalisation statistics, so the only difference is the input definition. **a**, Top signal quintile. ATAC-only: K562 **+0.032** [0.012, 0.053] *p*=0.011; GM12878 **+0.023** [0.006, 0.039] *p*=0.019; p300 +0.019 [−0.054, 0.092] *p*=0.51. Sequence + ATAC: +0.003, −0.001, +0.009, none significant. **b**, All elements, the same split, ATAC-only +0.016 (*p*=0.001), and +0.015 (*p*<0.001), multimodal +0.001 in both. p300 is underpowered: 11,412 elements pooled against 57,144 for H3K27ac, giving intervals roughly 5× wider, with point estimates trending the same way. Source: `results/accs5p_{k562,gm12878,p300}_stratified_per_fold.tsv`.
+**Figure 8 | Sharpening the accessibility input helps only a model with no other input.** Every ATAC-input model retrained on `bedtools genomecov -bg -5` single-base insertion counts, paired within fold against its full-interval counterpart. **a**, Top quintile. ATAC-only: K562 **+0.032** [0.012, 0.053] *p*=0.011; GM12878 **+0.023** [0.006, 0.039] *p*=0.019; p300 +0.019 [−0.054, 0.092] *p*=0.51. Sequence + ATAC: +0.003, −0.001, +0.009, none significant. **b**, All elements: ATAC-only +0.016 (*p*=0.001) and +0.015 (*p*<0.001), multimodal +0.001 in both. p300 is underpowered (11,412 elements pooled against 57,144 for H3K27ac, intervals roughly 5× wider). Source: `results/accs5p_{k562,gm12878,p300}_stratified_per_fold.tsv`.
 </details>
 
-**Method.**
-
-- Each model retrained on `genomecov -bg -5` and paired within fold against its full-interval counterpart; training scripts differ only in the accessibility path and output directory.
-- Both arms scored in one run, each reading its own input and its own saved normalisation statistics.
-- Reported as the paired within-fold difference, since the effects are smaller than the between-fold spread.
-
-**Why the split.** Within a cell type read length is constant, so the switch is not a change of scale and z-normalisation has nothing to absorb. What it does change is **resolution**: a 94-95 bp interval smears each insertion across ~95 bases. A model with only accessibility feels that blur directly. A model that also sees sequence does not, because sequence already supplies the fine positional detail the smeared track lacked, the sharper input is redundant with what it had. This is the same shape as the residual result in Fig. 4: joint training already extracts what is available, and improving one input does not add to it.
+**Method.** Training scripts differ only in the accessibility path and output directory. Both
+arms are scored in one run, each with its own input and saved normalisation statistics.
 
 <details>
 <summary>Full methods &amp; code</summary>
 
-**Where the convention actually matters is across cell types, which this comparison does not test.** Read length is constant within a cell type, so the smear is a constant there; it becomes a confound when cell types differ. Our K562 and GM12878 tagAligns are both 94-95 bp (which is why their transfer results were never affected), but TeloHAEC's are 35-36 bp, making its full-interval coverage a different quantity from theirs. The 5' tracks are read-length independent by construction and remove that confound.
+The convention matters across cell types: K562 and GM12878 tagAligns are 94-95 bp, TeloHAEC's 35-36 bp, and 5' tracks are read-length independent. Check: `sum(full-interval) / sum(5′)` equals the mean read length; measured 84.5 and 85.6 for K562/GM12878 and 30.9-35.5 for the four TeloHAEC conditions. With read length removed, the K562-vs-TeloHAEC gap falls from 13-27× to 5.3-12.3× nuclear depth.
 
-Verified by an arithmetic identity: `sum(full-interval) / sum(5′)` must equal the mean read length, since full-interval coverage counts `read_length` bases per read and 5' counting counts exactly one. Measured 84.5 and 85.6 for K562/GM12878 (94-95 bp reads), and 30.9-35.5 for the four TeloHAEC conditions (35-36 bp). With read length removed, the K562-vs-TeloHAEC gap falls from 13-27× to 5.3-12.3× nuclear depth, which is genuine sequencing depth.
-
-ChromBPNet's convention, from `chrombpnet/helpers/preprocessing/reads_to_bigwig.py`: `bedtools genomecov -bg -5`, unstranded, with ATAC shift `4-plus_shift, -4-minus_shift` and DNase `-plus_shift, 1-minus_shift`, the shift applied before `-5`. Our tagAligns are already Tn5-shifted, so the deltas are zero and the correct build reduces to adding `-5`; applying the shift again would double-shift.
-
-Nothing in the rest of this report uses the 5' input. Switching would require retraining every ATAC-input model as a set, and mixing the two inputs across results is invalid.
+ChromBPNet's convention (`chrombpnet/helpers/preprocessing/reads_to_bigwig.py`): `bedtools genomecov -bg -5`, unstranded, with ATAC shift `4-plus_shift, -4-minus_shift` and DNase `-plus_shift, 1-minus_shift`, applied before `-5`. Our tagAligns are already Tn5-shifted, so the build reduces to adding `-5`; shifting again would double-shift. Mixing the two inputs across results is invalid.
 
 ```bash
 pixi run bash scripts/0.20.make_atac_5prime_bigwigs.sh    # build *_atac_5p.bw
@@ -434,29 +427,34 @@ pixi run python scripts/3.5.plot_accs5p_figure.py         # Fig 8
 Source: `scripts/0.20`, `0.21`, `2.10`, `3.5`; training scripts `1.11`, `1.12` (H3K27ac), and `1.1b`, `1.3b` (p300), generated by `scripts/make_accs5p_scripts.py`.
 </details>
 
-## Transfer is asymmetric: GM12878 is the harder cell type, in both directions
+## GM12878 is the harder cell type to predict, in both transfer directions
 
-**Q:** Does the sequence component fail to generalise across cell types, or is one cell type simply harder to predict?
+**Q:** Does the sequence component fail to generalise across cell types, or is one cell type
+harder to predict?
 
-**A:** Mostly the latter, GM12878-trained models score *higher* on K562 than in their own cell type for every modality (sequence 34% vs 23% of ceiling), so the one-directional picture of a sequence collapse does not survive the reciprocal.
+**A:** Mostly the latter: GM12878-trained models score higher on K562 than in GM12878 for
+every modality (sequence 34% vs 23% of ceiling).
+
+Sequence is still weak in all four settings (15-41% of ceiling against 50-59% for
+accessibility), and its margin over accessibility shrinks on transfer in both directions
+(+0.138 -> +0.044; +0.086 -> +0.061). The inter-replicate ceiling cannot show which cell type
+is harder: it measures how reproducibly the target is measured, not how strongly the inputs
+determine it.
 
 ![](figures/fig6_transfer.png)
 
 <details>
 <summary>Figure 9 legend</summary>
 
-**Figure 9 | Both transfer directions, each scored against the ceiling of the cell type being predicted.** Top-quintile Pearson as a percentage of that cell type's corrected ceiling. Solid = evaluated in the training cell type, hatched = transferred. **a**, Trained on K562. **b**, Trained on GM12878 with identical settings (same architecture, window, count-loss weight, negative cap, folds and 5' target processing), so the directions are comparable. Absolute top-quintile values (sequence / ATAC / both): K562->K562 0.380 / 0.548 / 0.685; K562->GM12878 0.146 / 0.476 / 0.519; GM->GM 0.221 / 0.493 / 0.579; GM->K562 0.317 / 0.539 / 0.600; as a percentage of the relevant ceiling, 41/59/74, 15/50/54, 23/52/61, 34/58/65. **Every GM-trained model does better on K562 than in GM12878**, so much of what a one-directional analysis reads as failed transfer is that GM12878 is harder to predict, which the inter-replicate ceiling cannot capture, since it measures how reproducibly the target can be measured, which is a different quantity from how strongly the inputs determine it. Two conclusions survive the reciprocal: sequence is weak in all four settings (15-41% of ceiling against 50-59% for accessibility), and its margin over accessibility shrinks on transfer in both directions (+0.138 -> +0.044; +0.086 -> +0.061). Sources: `results/{fiveprime,k562_to_gm_5p,gm_incell,gm_to_k562}_stratified_fold_summary.tsv`.
+**Figure 9 | Both transfer directions, each scored against the ceiling of the cell type being predicted.** Top-quintile Pearson as a percentage of that cell type's corrected ceiling. Solid = in the training cell type, hatched = transferred. **a**, Trained on K562. **b**, Trained on GM12878 with identical settings. Absolute values (sequence / ATAC / both): K562->K562 0.380 / 0.548 / 0.685; K562->GM12878 0.146 / 0.476 / 0.519; GM->GM 0.221 / 0.493 / 0.579; GM->K562 0.317 / 0.539 / 0.600; as % of ceiling 41/59/74, 15/50/54, 23/52/61, 34/58/65. Sources: `results/{fiveprime,k562_to_gm_5p,gm_incell,gm_to_k562}_stratified_fold_summary.tsv`.
 </details>
 
-**Method.**
-
-- Four evaluations: both transfer directions and both in-cell-type references.
-- Each scored against the ceiling of the cell type being predicted.
+**Method.** Both transfer directions and both in-cell references, each against the ceiling
+of the cell type being predicted. The GM12878 ceiling agrees across both target processings
+(top quintile 0.832 on 5' ends, 0.834 otherwise).
 
 <details>
 <summary>Full methods &amp; code</summary>
-
-Transfer numbers need the target ceiling in *both* cell types: a raw cross-cell-type correlation cannot distinguish a model that fails to generalise from a target that is simply harder. The GM12878 ceiling agrees across both processings of the target (top quintile 0.832 on 5' ends, 0.834 otherwise), so the normalisation holds either way.
 
 ```bash
 pixi run python scripts/2.2.evaluate_stratified.py \
@@ -467,11 +465,13 @@ pixi run python scripts/2.2.evaluate_stratified.py \
 Source: `scripts/2.2.evaluate_stratified.py`, `scripts/0.7.make_gm12878_5prime.sh`
 </details>
 
-## Deploying to a new cell type: transfer the multimodal model
+## For a new cell type with only ATAC, transfer the multimodal model
 
-**Q:** In the intended application there is ATAC in the new cell type but no H3K27ac, which model should be transferred?
+**Q:** In the intended application the new cell type has ATAC but no H3K27ac. Which model
+should be transferred?
 
-**A:** The multimodal one; it matches the residual alternative on the top signal quintile and is simpler, with no offset model to ship alongside it.
+**A:** The multimodal one: it matches the residual alternative on the top signal quintile and
+needs no offset model shipped alongside it.
 
 **Top signal quintile, deployable configuration** (everything transferred; only target ATAC used):
 
@@ -480,41 +480,42 @@ Source: `scripts/2.2.evaluate_stratified.py`, `scripts/0.7.make_gm12878_5prime.s
 | K562 -> GM12878 | 0.477 | 0.147 | **0.520** | 0.512 |
 | GM12878 -> K562 | 0.541 | 0.317 | **0.602** | 0.600 |
 
-**Sequence adds on transfer.** Every sequence-containing model beats transferred ATAC-only by 0.04-0.06 on the top quintile. That margin is what sequence buys.
+Every sequence-containing model beats transferred ATAC-only by 0.04-0.06 on the top quintile.
 
-**Accessibility is portable but must be measured locally.** Transferring the ATAC baseline costs only ~0.017 against fitting it in the target (0.494 -> 0.477), while sequence-only transfer is useless (0.147, 0.317).
+> **Superseded (F-016, 2026-09-14):** scored against the target's own locally trained DNase-only model, no sequence + DNase H3K27ac model beats it on transfer in any of six directions over three cell types; the 0.04-0.06 here is over a transferred ATAC-only model, not a local one.
 
-**A shallow target H3K27ac library would be worth more than its size suggests.** The residual design beats multimodal once the accessibility baseline is fitted in the target (+0.005 to +0.011 on all elements, *p* < 0.01 both directions). Fitting that baseline needs only an ATAC-only model (far less data than training a full model), so even a modest H3K27ac library in a new cell type would make the residual architecture preferable.
+Accessibility must be measured in the target: transferring the ATAC baseline costs only
+~0.017 against fitting it locally (0.494 -> 0.477), while sequence-only transfer is useless.
 
-**Method.**
+A shallow target H3K27ac library, enough to fit an ATAC-only model, would make the residual
+architecture preferable: with the baseline fitted in the target, residual beats multimodal by
++0.005 to +0.011 on all elements (*p* < 0.01 both directions).
 
-- Two variants per direction: offset from the target's own ATAC model (an optimistic upper bound, since that model requires target H3K27ac), and offset from the transferred source ATAC model (deployable). (Headline metric is correlation with *observed* H3K27ac in the target) the quantity the application needs, reported on the top signal quintile.
-- Paired within fold, since the differences are far below the between-fold spread.
+**Method.** Two offset variants per direction: the target's own ATAC model (an upper bound,
+since it needs target H3K27ac) and the transferred source ATAC model (deployable). Scored
+against observed H3K27ac in the target, paired within fold.
 
 <details>
 <summary>Full methods &amp; code</summary>
 
-**The all-elements stratum tells a different and misleading story.** There, residual-multimodal beats multimodal by +0.005 (K562->GM, *p*=0.009), and +0.011 (GM->K562, *p*=0.003) with a locally fitted baseline and loses by −0.005 (*p*=0.012, 0.022) when it is transferred, a clean sign flip, all four significant. None of it is resolvable on the top quintile (*p* = 0.17-0.76). All-elements correlation here is dominated by the dead-versus-active contrast accessibility already resolves, so that effect sits in the contrast and is not reported as a finding.
-
-A residual model predicts `observed − atac_pred`, so transferring it requires choosing whose `atac_pred`. Both choices are evaluated because the gap between them is itself informative: it measures what is lost by being unable to fit the accessibility baseline in the target cell type.
+On all elements, residual-multimodal beats multimodal by +0.005 (K562->GM, *p*=0.009) and +0.011 (GM->K562, *p*=0.003) with a locally fitted baseline and loses by −0.005 (*p*=0.012, 0.022) with a transferred one. None of it is resolvable on the top quintile (*p* = 0.17-0.76); all-elements correlation is dominated by the dead-versus-active contrast accessibility already resolves.
 
 ```bash
 pixi run bash scripts/2.13.submit_residual_transfer.sh    # upper bound: local offset
 pixi run bash scripts/2.14.submit_deployment_transfer.sh  # deployable: transferred offset
 pixi run bash scripts/2.16.submit_transfer_perfold.sh     # per-fold CIs + paired tests
 ```
-Per-fold scoring uses `scripts/2.15.perfold_from_config.py`, which is driven by the same config JSON as `2.4`, so in-cell grids and transfer runs are scored through one code path with identical metric definitions, a difference between cell types cannot come from which evaluator ran.
+Per-fold scoring uses `scripts/2.15.perfold_from_config.py`, driven by the same config JSON as `2.4`, so in-cell grids and transfer runs share one code path.
 </details>
 
 ## No architecture transfers better than the simplest
 
 **Q:** The receptive-field and fragment-channel gains were measured in the training cell
-type. Which architecture should actually be deployed to a new cell type?
+type. Which architecture should be deployed to a new cell type?
 
-**A:** The question has a null answer. Every transferred architecture lands within 0.016 of
-the simplest one on the top quintile, in both directions, and the two gains that were
-significant in-cell type are not significant transferred. The richer models also have the
-*larger* transfer drops.
+**A:** None beats the simplest: every transferred architecture lands within 0.016 of it on
+the top quintile in both directions, the two in-cell gains lose significance, and the richer
+models have the *larger* transfer drops.
 
 **Top-quintile Pearson, transferred against the target cell type's own ATAC-only model:**
 
@@ -535,50 +536,31 @@ significant in-cell type are not significant transferred. The richer models also
 | narrow + fragments | -0.0012 [-0.0185, +0.0162] *p*=0.86 | -0.0029 [-0.0267, +0.0208] *p*=0.75 |
 | wide + fragments | +0.0159 [-0.0017, +0.0335] *p*=0.066 | not run |
 
-**Fragment channels do not travel at all.** -0.0012 and -0.0029, both directions, both
-comfortably null. Whatever the five channels add in-cell type, and it is real, *p*=0.002
-locally, is either cell-type-specific or library-specific. That is the outcome the
-comparison was designed to detect: fragment-length structure is a property of a particular
-ATAC library as much as of the chromatin, and nothing in a paired in-cell-type test can tell
-those apart.
+**Fragment channels do not travel**, despite a real in-cell gain (*p*=0.002). Fragment-length
+structure belongs to a particular ATAC library as much as to the chromatin, and a paired
+in-cell test cannot separate the two.
 
-**The wider receptive field survives directionally but not statistically.** +0.0115 and
-+0.0053, and +0.0159 when combined with fragments, which is the largest transferred effect
-in the matrix at *p*=0.066. It is the only arm worth carrying forward, and it is not
-established.
+**The wider receptive field is directionally positive but not significant.** It is the only
+arm worth carrying forward.
 
-**The better in-cell-type models lose more on transfer.** Paired local-minus-transferred, top
-quintile: narrow + flat +0.0546 and +0.0847, wide + flat +0.0593 and +0.1073, narrow +
-fragments +0.0613 and +0.1033 (all *p* < 0.006). Every architecture change that helped
-locally increased the transfer drop, which is the signature of fitting cell-type-specific
-structure rather than a portable rule.
+**The better in-cell models lose more on transfer.** Local minus transferred, top quintile:
+narrow + flat +0.0546 and +0.0847, wide + flat +0.0593 and +0.1073, narrow + fragments +0.0613
+and +0.1033 (all *p* < 0.006). Every change that helped locally fitted cell-type-specific
+structure.
 
-**What transfer actually buys over doing nothing clever.** Between +0.013 and +0.036 on the
-top quintile over the target cell type's own ATAC-only model, against a locally trained model
-reaching 0.602 and 0.733. On the mechanistic metric the shortfall is larger: transferred
-`residual_pearson` is 0.212-0.262 where a local model reaches 0.406-0.481, so roughly half
-of what a model extracts beyond accessibility does not survive the move.
+**Transfer buys +0.013 to +0.036 over the target's own ATAC-only model**, against locally
+trained models at 0.602 and 0.733. Transferred `residual_pearson` is 0.212-0.262 where a
+local model reaches 0.406-0.481: about half of what a model extracts beyond accessibility is
+lost.
 
-**Method.**
-
-- One config JSON per direction through `2.15.perfold_from_config.py`, so every arm in the
-  matrix is scored by the same code path with the same metric definitions.
-- Each direction includes the target's own ATAC-only model as the floor and each
-  architecture's locally trained counterpart, so the transfer drop is paired per architecture.
-- All arms reverse-complement-averaged.
+**Method.** One config JSON per direction through `2.15.perfold_from_config.py`; each
+direction includes the target's ATAC-only floor and each architecture's local counterpart;
+all arms RC-averaged.
 
 <details>
 <summary>Full methods &amp; code</summary>
 
-Each pairing answers a distinct question, and they are listed in the submit script's own
-header so the next reader does not have to reconstruct them: transferred against
-`atac_LOCAL` asks whether transferring beats the target's own accessibility; wide against
-narrow and fragments against flat, both transferred, ask whether each gain travels; local
-against transferred, per architecture, is the transfer drop.
-
-The `WIDE_FRAG` transferred arm exists only in the K562 -> GM12878 direction because there is
-no GM12878 wide + fragment model; GM12878 fragment channels required its paired-end BAMs,
-which were downloaded later than the K562 set.
+Pairings: transferred against `atac_LOCAL` (does transfer beat the target's own accessibility?); wide against narrow and fragments against flat, both transferred (does each gain travel?); local against transferred per architecture (the transfer drop). There is no GM12878 wide + fragment model, because GM12878's paired-end BAMs arrived later.
 
 ```bash
 sbatch scripts/2.24.submit_transfer_matrix.sh
@@ -587,44 +569,33 @@ Source: `scripts/make_transfer_matrix.py`, `scripts/2.24.submit_transfer_matrix.
 `results/txmatrix_{k562_to_gm12878,gm12878_to_k562}_{per_fold,fold_summary}.tsv`
 </details>
 
-## The downstream benchmark: predicted H3K27ac does not improve ABC
+## Predicted H3K27ac does not improve ABC
 
-**Q:** Substituted for observed H3K27ac in ABC's activity term, do the model's predictions
-recover CRISPR-benchmark performance?
+> **Superseded (F-018, 2026-09-15):** this holds for the ATAC-input model only; the same architecture reading DNase clears the floor by +0.0403 [+0.0230, +0.0563] with ATAC in the geomean, and a 100-epoch ATAC-input retrain clears it by +0.0208 [+0.0039, +0.0373], a gain whose cause is unresolved (F-019, F-020).
 
-**A:** No. The best predicted arm reaches AUPRC 0.482 [0.437, 0.530] against a floor of
-0.457 (ATAC-only activity), and a ceiling of 0.519 (ATAC x observed H3K27ac), so it does not
-clear the floor with a resolvable margin, and the two deployment arms, GM12878-trained
-models applied to K562, land at 0.455 and 0.452, at or below it.
+**Q:** Substituted for observed H3K27ac in ABC's activity term, do the predictions recover
+CRISPR-benchmark performance?
+
+**A:** No: the best predicted arm reaches AUPRC 0.482 [0.437, 0.530] against a floor of
+0.457 (ATAC-only activity) and a ceiling of 0.519 (ATAC x observed H3K27ac), and the two
+GM12878-trained deployment arms land at 0.455 and 0.452.
 
 ![](figures/fig14_crispr_benchmark.png)
 
 <details>
 <summary>Figure 10 legend</summary>
 
-**Figure 10 | CRISPR-benchmark AUPRC for eleven predicted-H3K27ac arms, K562.** Same geometry,
-floor and ceiling as Fig. 1, so the two targets can be read against each other; the two runs
-share both anchor arms and agree on them to 1e-4. Best predicted arm is predicted H3K27ac used
-as the entire activity term from the K562 multimodal model, at **0.482 [0.437, 0.530]**: above the floor's point estimate with an interval overlapping both anchors. The geometric mean
-with observed ATAC scores 0.469, and the two GM12878-trained deployment arms score 0.455 and
-0.452, at or below the floor. Every sequence-only arm is far below distance-to-TSS (0.435):
-0.393 for the geometric mean and 0.275 for predicted-alone, the opposite of the p300 result,
-where the sequence-containing arm is the best predicted one. **Re-tested with the paired
-bootstrap and confirmed**: best arm minus floor is +0.025 [-0.003, +0.052] with the sign kept
-in 95.3% of resamples, so it is suggestive and not resolvable, against p300's +0.055 at 100%.
-Source: `.../results/2026_0904_predicted_activity/performance_summary.txt`,
+**Figure 10 | CRISPR-benchmark AUPRC for eleven predicted-H3K27ac arms, K562.** Same layout,
+floor and ceiling as Fig. 1; the two runs agree on both shared anchor arms to 1e-4. The best
+arm uses predicted H3K27ac from the K562 multimodal model as the entire activity term; its
+geometric mean with observed ATAC scores 0.469. Every sequence-only arm is below
+distance-to-TSS (0.435), the opposite of p300. Source:
+`.../results/2026_0904_predicted_activity/performance_summary.txt`,
 `results/paired_auprc_h3k27ac.tsv`.
 </details>
 
-**The ceiling is only 0.062 above the floor.** Observed H3K27ac itself buys ABC very little
-here, paired, +0.062 [+0.044, +0.080], sign kept 100%, so the experiment had limited room
-from the start. Any conclusion about the model has to be read against that: a predicted track
-cannot demonstrate much when the observed track it replaces demonstrates 0.062.
-
-**The paired re-test confirms the negative rather than overturning it.** These arms were
-originally read off overlapping unpaired intervals, which the p300 run later showed cannot
-resolve differences of this size (Report 2), so the conclusion was re-run through the same
-paired bootstrap:
+Observed H3K27ac itself is only 0.062 above the floor, so a predicted replacement has little
+room. Paired bootstrap over the shared pairs:
 
 | comparison | delta | paired 95% CI | sign kept |
 |---|---|---|---|
@@ -634,38 +605,19 @@ paired bootstrap:
 | best predicted - observed H3K27ac | -0.037 | [-0.062, -0.013] | 99.9% |
 | GM12878 deployment arm - floor | -0.005 | [-0.022, +0.011] | 72.7% |
 
-The best H3K27ac arm is suggestive at 95.3% sign retention but its interval includes zero, and
-it is clearly below observed H3K27ac. The deployment arms are flatly null. So "no
-predicted-H3K27ac arm clears the floor" survives the better test, and the contrast with
-p300's +0.055 at 100% sign retention is a difference in kind; both were measured the same way.
+The best arm's interval includes zero and it is resolvably below observed H3K27ac; the
+deployment arms are null. Sequence-only arms score 0.393 (geometric mean with ATAC) and 0.275
+(predicted alone), below distance-to-TSS: worse than no activity information.
 
-**Sequence-only arms are far below distance-to-TSS.** 0.393 for the geometric mean with
-observed ATAC and 0.275 for predicted-alone, against 0.435 for distance to TSS. A
-sequence-only activity track is worse than using no activity information at all.
-
-**Method.**
-
-- Model predictions painted over the ABC candidate regions as `predicted_counts / width`,
-  substituted for the H3K27ac term, with observed ATAC retained.
-- Floor and ceiling arms run in the same pipeline invocation so nothing but the activity
-  track differs.
-- Per-chromosome fold assembly from `val` union `test`, so no region is scored by a model
-  that trained on its chromosome.
+**Method.** Predictions painted over the ABC candidate regions as `predicted_counts / width`
+and substituted for the H3K27ac term, observed ATAC retained; floor and ceiling run in the
+same invocation; per-chromosome fold assembly from `val` union `test`, so no region is scored
+by a model that trained on its chromosome.
 
 <details>
 <summary>Full methods &amp; code</summary>
 
-Nine biosample arms plus the two anchors. `run_qnorm` is rank-based, so the arbitrary scale
-of a painted prediction track is irrelevant and only the ordering matters, the scale
-compatibility worry that motivated the check turned out to be moot. The qnorm *reference* is
-built from observed K562 signal, so a predicted track still inherits the observed
-distribution's shape; a qnorm-off arm is listed as open.
-
-The pipeline is ABC on snakemake 7 with `--use-conda` and a cluster profile, so every rule
-instance is a job. Setting up the arms required staggering the `Peaks` file mtimes along the
-rule chain, because Snakemake requires outputs strictly newer than inputs and a copied
-results tree has uniform timestamps; `4.3.setup_abc_arms.py` does that and then verifies the
-chain is strictly increasing rather than assuming it.
+Nine biosample arms plus the two anchors. `run_qnorm` is rank-based, so only the ordering of a painted track matters, but its reference is built from observed K562 signal. `4.3.setup_abc_arms.py` staggers the `Peaks` file mtimes along the rule chain, because Snakemake 7 requires outputs newer than inputs and a copied results tree has uniform timestamps.
 
 ```bash
 pixi run python scripts/4.1.predict_h3k27ac_for_abc.py ...   # or 4.4 for the CPU sweep
@@ -683,10 +635,12 @@ Source: `scripts/4.1`, `4.3`-`4.8`
 **Q:** Is the benchmark result caused by inaccurate predictions, or by accurate predictions
 whose dynamic range is too compressed for ABC's ranking?
 
-**A:** The latter. Predicted and observed H3K27ac agree at Spearman 0.79 over all 153,545
-ABC regions, but the predicted activity term's spread is compressed exactly where it matters:
-on the regions carrying a regulated pair, p99/p50 is 4.03 against 6.00 observed, and the
-top-decile mean/median ratio is 4.23 against 6.46.
+**A:** Accurate but compressed: predicted and observed H3K27ac agree at Spearman 0.79 over
+all 153,545 ABC regions, but on regions carrying a regulated pair the predicted activity
+term's p99/p50 is 4.03 against 6.00 observed, and its top-decile mean/median 4.23 against
+6.46.
+
+> **Superseded (F-022, 2026-09-17):** ABC's rank qnorm keeps only each element's within-arm rank, so the compression describes the failure but no rescaling of the predicted track can fix it; only per-element ordering reaches ABC.
 
 | stratum | *n* | Spearman | Pearson (log) |
 |---|---|---|---|
@@ -694,29 +648,20 @@ top-decile mean/median ratio is 4.23 against 6.46.
 | CRISPR-tested regions | 3,016 | 0.824 | 0.785 |
 | regions of regulated pairs | 339 | 0.663 | 0.666 |
 
-**Agreement is worst exactly where the benchmark is decided.** 0.66 on the regions of
-regulated pairs against 0.79 genome-wide. The regions that matter are the strongly acetylated
-ones, which is the stratum the top-quintile reporting standard exists for.
+Agreement is worst on the regions of regulated pairs, the strongly acetylated ones that
+decide the benchmark. Of 429 regulated pairs scored by all three arms, observed catches 322
+and predicted 325; 12 are caught by observed and missed by predicted, 15 the other way. At
+those 12, observed H3K27ac RPM has a median of 22.79 against a predicted 0.71, where the
+genome-wide medians are 0.59 and 0.11: observed calls them 39x elevated and predicted 6x,
+enough to move them out of the top of ABC's ranking.
 
-**The arms disagree on only a handful of pairs.** Of 429 regulated pairs scored by all three,
-the observed arm catches 322 and the predicted arm 325; 12 are caught by observed and missed
-by predicted, 15 the other way. At those 12, observed H3K27ac RPM has a median of 22.79
-against a predicted 0.71, where the genome-wide medians are 0.59 and 0.11, so observed
-calls them 39x elevated and predicted calls them 6x. The model is not blind to them; it
-under-states them by enough to move them out of the top of ABC's ranking.
-
-**Method.**
-
-- Join on ABC's `EnhancerList.txt` per arm, reconstructing coordinates rather than trusting
-  the `name` column, whose format differs between the enhancer list and the prediction table.
-- Every stratum asserted to hold more than 100 regions before any statistic is computed.
+**Method.** Joined on ABC's `EnhancerList.txt` per arm by reconstructed `chr:start-end`
+coordinates (the `name` column is `class|chr:start-end` there and bare coordinates in
+`pred_elements`, so a join on `name` is silently empty); every stratum asserted to hold more
+than 100 regions.
 
 <details>
 <summary>Full methods &amp; code</summary>
-
-`EnhancerList` `name` is `class|chr:start-end` while `pred_elements` carries bare
-coordinates, so an index built on `name` silently produces an empty join. The script now
-indexes on reconstructed `chr:start-end` and asserts each stratum's size.
 
 ```bash
 sbatch scripts/4.9.submit_diagnose.sh
@@ -726,16 +671,16 @@ Source: `scripts/4.9.diagnose_abc_gap.py`
 
 ## The mis-predicted elements are accessible but unacetylated, and CTCF explains a quarter of them
 
-**Q:** Do the over- and under-predicted elements have a chromatin signature, and in
-particular is the over-prediction the CTCF-site pattern, open but not acetylated?
+**Q:** Do the over- and under-predicted elements have a chromatin signature, and is the
+over-prediction the CTCF-site pattern, open but not acetylated?
 
-**A:** The under-predicted tail is unambiguous: canonical active enhancer, EP300 3.4x and
-H3K4me1 3.3x above typical with zero H3K27me3. The over-predicted tail is **not** explained
-by CTCF, despite a real 2.6x CTCF enrichment in pooled signal. Element by element, CTCF-high
-elements are only **27%** of that tail, and removing them leaves the remaining 73% over-predicted
-just as badly, median error 0.82 against 0.76 for the CTCF-high subset, with the CTCF-*low*
-subset over-predicted more (3.8x against 1.6x). CTCF is a passenger. The phenotype is
-"accessible but unacetylated", of which CTCF sites are one instance.
+**A:** The over-predicted elements are accessible but unacetylated, and CTCF is a passenger:
+CTCF-high elements are only **27%** of that tail, and the other 73% are over-predicted more
+(median error 0.82 against 0.76; predicted fold 3.8x against 1.6x).
+
+The under-predicted tail is canonical active enhancer: EP300 3.4x and H3K4me1 3.3x above
+typical, with zero H3K27me3. Strata are defined by the multimodal model's
+accessibility-residualised prediction error over the 153,545 ABC regions.
 
 ![](figures/fig15_error_strata.png)
 
@@ -743,22 +688,15 @@ subset over-predicted more (3.8x against 1.6x). CTCF is a passenger. The phenoty
 <summary>Figure 11 legend</summary>
 
 **Figure 11 | The two error tails, what marks them, and why CTCF does not explain the
-over-predicted one.** Strata defined by the multimodal model's accessibility-residualised
-prediction error over 153,545 K562 ABC candidate regions; the 1% tails are n = 1,536 each and
-the typical stratum is the middle 50%, n = 76,771. **a**, The phenotype in
-(accessibility, H3K27ac) space. Grey is all regions; over-predicted elements are open and
-unacetylated, under-predicted ones acetylated and comparatively closed. **b**, RPKM by mark as
-fold change over the typical stratum, log axis, with IgG as the background control; this is
-a *pooled* per-stratum statistic and panel **c** shows why that matters. **c**, Peak overlap
-against quantitative signal for the over-predicted tail: peaks report enrichment for every
-mark, signal reports CTCF only. **d**, The attributable fraction. Splitting the over-predicted
-tail at the 90th percentile of typical-stratum CTCF signal leaves 27% CTCF-high and 73%
-CTCF-low, and both are over-predicted; the CTCF-low subset more so. Source:
+over-predicted one.** The 1% tails are n = 1,536 each; the typical stratum is the middle 50%,
+n = 76,771. **a**, The phenotype in (accessibility, H3K27ac) space; grey is all regions. **b**,
+RPKM by mark as fold change over the typical stratum, log axis, IgG as background; a
+*pooled* per-stratum statistic. **c**, Peak overlap against quantitative signal for the
+over-predicted tail: peaks report enrichment for every mark, signal for CTCF only. **d**,
+Splitting the over-predicted tail at the 90th percentile of typical-stratum CTCF gives 27%
+CTCF-high and 73% CTCF-low; both are over-predicted, CTCF-low more so. Source:
 `results/error_strata_{rpkm,peak_overlap,elements,ctcf_elements}.tsv`.
 </details>
-
-Strata are defined by the multimodal model's accessibility-residualised prediction error over
-the 153,545 ABC regions.
 
 **Composition (`results/prediction_error_strata.tsv`):**
 
@@ -770,12 +708,11 @@ the 153,545 ABC regions.
 | over-predicted 5% | 7,678 | 0.52 | 0.35 | 5.23 | 9.09 | 0.574 | 0.475 | 25.0 |
 | over-predicted 1% | 1,536 | 0.59 | 0.80 | 9.93 | 13.25 | 0.593 | 0.551 | 31.6 |
 
-The `ATAC/H3K27ac` column is the accessible-but-unacetylated signature, and it spans a factor
-of 60 across the strata. The over-predicted tail is GC-rich, CpG-rich and promoter-enriched;
-the under-predicted tail is GC-*poor* and distal.
+The `ATAC/H3K27ac` ratio spans a factor of 60. The over-predicted tail is GC-rich, CpG-rich
+and promoter-enriched; the under-predicted tail is GC-*poor* and distal.
 
-**Peak overlaps and quantitative signal disagree, and the quantitative version is the one to
-believe.** Fraction of each stratum overlapping a peak:
+**Peak overlap suggests enrichment for everything (CTCF 2.1x, EP300 1.9x, H3K27ac 1.9x);
+quantitative signal does not.** Fraction of each stratum overlapping a peak:
 
 | stratum | CTCF | EP300 | H3K4me1 | H3K27me3 | H3K27ac |
 |---|---|---|---|---|---|
@@ -785,9 +722,7 @@ believe.** Fraction of each stratum overlapping a peak:
 | under-predicted 1% | 9.3% | 57.7% | 86.8% | 0.0% | 100.0% |
 | under-predicted 5% | 10.8% | 52.3% | 83.2% | 0.0% | 99.6% |
 
-Read as peaks, the over-predicted tail looks enriched for everything, CTCF 2.1x, EP300
-1.9x, H3K27ac 1.9x, which supports no mechanism in particular. RPKM from the same BAMs,
-with an IgG control, says something much sharper:
+RPKM from the same BAMs, with an IgG control:
 
 | stratum | CTCF | EP300 | H3K4me1 | H3K27me3 | H3K27ac | IgG |
 |---|---|---|---|---|---|---|
@@ -797,16 +732,11 @@ with an IgG control, says something much sharper:
 | under-predicted 1% | 1.20 | **2.90** | **4.35** | 0.31 | **17.52** | 0.68 |
 | under-predicted 5% | 1.31 | 2.42 | 3.78 | 0.31 | 12.57 | 0.65 |
 
-**The CTCF enrichment is real but it is a pooled statistic, and pooled statistics are how
-this analysis went wrong twice.** RPKM per stratum is total reads over total kilobases, so a
-minority of strongly bound elements sets the value. Element by element the over-predicted 1%
-has CTCF **median 0.72 RPKM against 0.55 typical**: a 1.3x difference, not 2.6x, and only
-**15.7%** of it exceeds the 90th percentile of typical-stratum CTCF (against 10.0% of typical
-by construction). For the over-predicted 5% the figures are 26.5% CTCF-high and a median of
-1.10. So the tail is not a set of CTCF sites; it contains rather more CTCF sites than average.
-
-**The decisive test is what happens when the CTCF-high elements are removed, and CTCF fails
-it.** Splitting the over-predicted 5% at that threshold:
+**The 2.6x CTCF enrichment is a pooled statistic, set by a minority of strongly bound
+elements.** Element by element, the over-predicted 1% has a CTCF median of 0.72 RPKM against
+0.55 typical (1.3x), and only 15.7% of it exceeds the 90th percentile of typical-stratum CTCF (10.0%
+of typical by definition); for the over-predicted 5% the figures are 26.5% and a median of
+1.10. Splitting the over-predicted 5% at that threshold:
 
 | subset | *n* | % of tail | observed fold | predicted fold | median error | CTCF median |
 |---|---|---|---|---|---|---|
@@ -815,43 +745,23 @@ it.** Splitting the over-predicted 5% at that threshold:
 | **CTCF-low** | **5,640** | **73.5** | 0.94 | **3.83** | **0.821** | 0.65 |
 | typical | 76,771 |, | 0.74 | 0.78 | 0.042 | 0.55 |
 
-The CTCF-low three-quarters is over-predicted *more* than the CTCF-high quarter, on both the
-error and the predicted-fold columns. Whatever causes the over-prediction is present with or
-without CTCF binding.
+**GC content tracks the error more closely than CTCF does.** Within accessibility deciles,
+Spearman rho(error, CTCF) is 0.02 to 0.23 (median 0.084) and rho(error, GC) 0.24 to 0.37 in
+every decile. Partialling out accessibility, GC, CpG and promoter class leaves
+rho(error, CTCF) at +0.191, but the IgG control gives -0.126 rather than zero, so that number
+is suggestive at best.
 
-**GC content is a much better correlate of the error than CTCF is.** Within accessibility
-deciles (necessary because CTCF sites are open and the model reads accessibility) Spearman
-rho(error, CTCF) is 0.02 to 0.23 with a median of 0.084, while rho(error, GC) is 0.24 to 0.37
-in **every** decile. Partialling accessibility, GC, CpG and promoter class out leaves
-rho(error, CTCF) at +0.191, above the IgG control's -0.126 in magnitude but with a control
-that is not cleanly zero, so read that number as suggestive at best.
+The over-predicted elements carry no more H3K27ac (0.9x) or H3K4me1 (0.95x) than a random
+element despite 5-10x more accessibility, and IgG is below typical (0.39 against 0.48), so
+this is not an antibody-accessibility artefact. In the under-predicted tail IgG is elevated
+only 1.4x, H3K27me3 is depleted (0.31 against 0.53) and CTCF is depleted (0.67x).
 
-**What survives.** H3K27ac itself is at 0.9x in the over-predicted tail and H3K4me1 at 0.95x,
-so these elements genuinely carry no more of the mark than a random element despite being
-5-10x more accessible, and IgG is *below* typical there (0.39 against 0.48), so none of it is
-an antibody-accessibility artifact. The description "accessible, GC-rich, CpG-rich,
-promoter-enriched and unacetylated" is supported element by element. "CTCF sites" is not.
-
-**The under-predicted tail is canonical active enhancer.** EP300 3.4x and H3K4me1 3.3x above
-typical, against an IgG elevation of only 1.4x, so both are real; H3K27me3 is *depleted*
-(0.31 against 0.53), and no element in the stratum overlaps an H3K27me3 peak; CTCF is depleted
-(0.67x). These are the elements the model most needs to get right and most under-states.
-
-**Method.**
-
-- Strata residualised on accessibility before defining the error, so they are not simply
-  "more open"; the composition table above shows the residualisation does not remove the ATAC
-  difference, which is the point.
-- Enrichment computed **both** ways: peak overlap with `bedtools`, and RPKM from the same
-  BAMs with mapped-read totals as denominators and an IgG control alongside.
+**Method.** Error residualised on accessibility before defining strata. Enrichment computed
+as peak overlap (`bedtools`) and as RPKM from the same BAMs with mapped-read totals as
+denominators and an IgG control; quote the RPKM version.
 
 <details>
 <summary>Full methods &amp; code</summary>
-
-Peak overlaps alone were the first version and were misleading, for the reason above: a peak
-call is a thresholded statement and a stratum can be enriched for weak peaks without carrying
-more signal. Quantitative signal with a background control is the version to quote. Both are
-kept because the disagreement between them is itself the finding.
 
 Mapped-read totals used as RPKM denominators: CTCF 9,231,994; EP300 24,485,729; H3K4me1
 8,476,072; H3K27me3 73,060,514; H3K27ac 6,335,377; IgG 24,933,797. Track sources are in
@@ -867,16 +777,13 @@ Source: `scripts/4.10`, `4.11`, `4.13`
 
 ## The sequence branch does not separate either error tail
 
-**Q:** CpG islands and CTCF motifs are strong local sequence signals and the first
-convolution is 21 bp, wide enough for a 19 bp CTCF motif. Does the sequence branch already
-know these elements are not acetylated, with the accessibility channel overriding it, or does
-it fail to see the signature at all?
+**Q:** CpG islands and CTCF motifs are strong local sequence signals, and the 21 bp first
+convolution can see a 19 bp CTCF motif. Does the sequence branch know these elements are
+unacetylated and get overridden by accessibility?
 
-**A:** It fails to see it. On a scale-free statistic the sequence-only arm puts the
-over-predicted and under-predicted tails at essentially the *same* level, fold elevation
-1.55x and 1.44x, ratio 1.07, where the truth separates them by a factor of 31 (ratio 0.032).
-Its apparent near-correctness on the over-predicted tail is an artifact of having almost no
-dynamic range.
+**A:** No, it does not see the signature: the sequence-only arm puts the two tails at nearly
+the same fold elevation, 1.55x over-predicted and 1.44x under-predicted (ratio 1.07), where
+the truth separates them by a factor of 31 (ratio 0.032).
 
 **Fold elevation against each arm's own genome-wide median**, over the 153,545 ABC regions:
 
@@ -888,42 +795,23 @@ dynamic range.
 | over-predicted 5% | 7,678 | 0.87 | 1.17 | 4.19 | 3.10 |
 | over-predicted 1% | 1,536 | **1.00** | 1.55 | 8.41 | 7.12 |
 
-Responsiveness-normalised over-prediction, the over-1% elevation divided by the same arm's
-under-1% elevation, which is scale-free within an arm: **observed 0.032, sequence 1.07,
-multimodal 1.22, ATAC-only 1.68.**
+Over-1% elevation divided by the same arm's under-1% elevation (scale-free within an arm):
+**observed 0.032, sequence 1.07, multimodal 1.22, ATAC-only 1.68.**
 
-**Reading the over-predicted column alone inverts the conclusion, and did.** Taken by itself,
-sequence at 1.55x against a truth of 1.00x looks nearly right while multimodal is 7.12x, and
-that reads as "the signal is in sequence and accessibility drowns it". The under-predicted
-column shows why that is wrong: the sequence arm only reaches 1.44x where the truth is 31x,
-so it is not correctly declining at the CTCF elements, it is flat everywhere. Both hypotheses
-predict a low number in the over-predicted column and only one of them survives the control.
+Read alone, the over-predicted row makes sequence look nearly right (1.55x against a truth of
+1.00x, where multimodal is 7.12x). The under-predicted row shows it is flat everywhere
+(1.44x where the truth is 31x). A predictor this flat over ABC regions cannot rank them,
+which is what AUPRC 0.275 for predicted-sequence-alone reflects. The indicated fix is
+representational: explicit GC and CpG-density channels or motif-derived features.
 
-**This also explains the sequence arms' benchmark scores.** A predictor with almost no
-dynamic range over ABC regions cannot rank them, which is what AUPRC 0.275 for
-predicted-sequence-alone means.
-
-**The indicated fix is representational.** Explicit GC and CpG-density input channels, or
-motif-derived features, rather than rebalancing what the model already has. The gating and
-loss-reweighting arms below were built on the opposite hypothesis and are worth scoring
-anyway, since they were cheap and are already trained; but this result lowers the prior on
-them.
-
-**Method.**
-
-- Fold elevation against each arm's **own** genome-wide median, because the painted
-  prediction tracks have medians of 0.11-0.18 against 0.59 for observed RPM and are not on a
-  common scale.
-- The opposite tail carried as each arm's own responsiveness scale, so a compressed predictor
-  cannot pass by being flat.
+**Method.** Fold elevation against each arm's **own** median, since the painted tracks have
+medians of 0.11-0.18 against 0.59 for observed RPM; the opposite tail is each arm's
+responsiveness scale, so a compressed predictor cannot pass by being flat.
 
 <details>
 <summary>Full methods &amp; code</summary>
 
-The first version of this analysis used accessibility-residualised error and printed the
-opposite verdict. It could not have worked: the over-predicted stratum is *defined* as
-accessibility-says-high and H3K27ac-says-low, so the observed residual is strongly negative
-there and any predictor that does not track accessibility downward (including a constant) scores as over-predicting. Report 2 records the general form of the mistake.
+A first version used accessibility-residualised error and gave the opposite verdict. The over-predicted stratum is *defined* by high accessibility and low H3K27ac, so any predictor that does not track accessibility downward, including a constant, scores as over-predicting there (Report 2).
 
 ```bash
 srun -p engreitz -t 20 --mem=24G python scripts/4.12.can_sequence_see_it.py
@@ -931,16 +819,14 @@ srun -p engreitz -t 20 --mem=24G python scripts/4.12.can_sequence_see_it.py
 Source: `scripts/4.12.can_sequence_see_it.py`
 </details>
 
-## p300 as a second target: not learnable where H3K27ac fails
+## p300 is not learnable where H3K27ac fails, so it cannot be a second target
 
-**Q:** The under-predicted elements are EP300-enriched. p300 is one step closer to the
-sequence-specified events, so would a p300-target model, or a multi-head model predicting
-both, recover them?
+**Q:** The under-predicted elements are EP300-enriched. Would a p300-target model, or a
+multi-head model predicting both, recover them?
 
-**A:** No. Where the H3K27ac model fails, observed p300 is elevated 4.89x but its own input
-control is at 2.10x, so real enrichment is only about 2.3x; the p300 models predict 1.83x
-(multimodal), and 1.55x (ATAC-only), *below* that control. The p300 models fail on the same
-elements, so neither a second head nor stacking p300 predictions as an input can help.
+**A:** No: where the H3K27ac model fails, observed p300 is 4.89x elevated but its input
+control is 2.10x (real enrichment about 2.3x), and the p300 models predict 1.83x (multimodal)
+and 1.55x (ATAC-only), *below* that control.
 
 **Fold elevation against each track's own genome-wide median:**
 
@@ -952,40 +838,21 @@ elements, so neither a second head nor stacking p300 predictions as an input can
 | H3K27ac over-predicted 5% | 7,678 | 0.87 | 3.10 | 1.33 | 0.80 | 1.59 | 1.60 |
 | H3K27ac over-predicted 1% | 1,536 | 1.00 | 7.12 | 1.36 | 0.50 | 1.92 | 1.79 |
 
-**The input control changed the answer.** Peak overlap put EP300 at 6.6x enrichment in this
-stratum, which made a p300 target look promising. Against its own input control the real
-elevation is 2.3x; the premise was substantially an accessibility artifact, which is why the
-control was included before the expensive version was built.
+Peak overlap put EP300 at 6.6x in this stratum; against its input control the elevation is
+2.3x. The p300 models also over-predict the accessible-but-unmarked tail (1.92x and 1.79x,
+where observed p300 is 1.36x and its control 0.50x), so the failure is not specific to the
+H3K27ac target. Both p300 ideas are dropped: the multi-head model and predicted p300 as an
+input feature. p300 remains the better substrate for sequence attribution (Fig. 3).
 
-**The p300 models fail the same way, in the same direction.** At the over-predicted tail they
-predict 1.92x and 1.79x where observed p300 is 1.36x and its control is 0.50x. So p300
-models over-predict the accessible-but-unmarked elements too. Whatever causes the H3K27ac
-model's failure is not specific to the H3K27ac target.
-
-**Consequence.** Both p300 ideas are dropped: the multi-head model, and using predicted p300
-as an input feature. This closes a branch that would otherwise have cost roughly fifteen GPU
-jobs. It does not affect the separate, already-reported finding that p300 is the better
-substrate for *sequence* attribution (Fig. 3); that is about where motif work should be
-done, not about predicting H3K27ac.
-
-**Method.**
-
-- Existing p300 models scored over the same ABC candidate regions through the same prediction
-  path as the H3K27ac arms, with `4.4` generalised by environment overrides rather than
-  forked, so the two targets cannot differ by which script ran.
-- p300's own **input control** track carried through every stratum, since p300 ChIP without
-  its control cannot distinguish binding from accessibility.
-- The verdict threshold was written into the script before it ran: predicted p300 must reach
-  at least half of observed p300's elevation for the multi-head idea to proceed.
+**Method.** Existing p300 models scored over the same ABC regions through the same prediction
+path (`4.4` with environment overrides), with p300's input control carried through every
+stratum. The verdict threshold was set before the run: predicted p300 must reach half of
+observed p300's elevation for the multi-head idea to proceed.
 
 <details>
 <summary>Full methods &amp; code</summary>
 
-p300 checkpoints predate the `mode` attribute, so loading them raises `AttributeError`;
-`4.1` already handles that by setting `m.mode = mode` when the attribute is absent. Model
-directories are `2026_0529_multimodal_p300_model/models/atac` (multimodal, despite the name), and `models/atac_only`. Target and control tracks are
-`2025_0703_retrain_p300_model/data/ENCSR000EGE_{plus,minus}.bigWig` and
-`ENCSR000EGE_control_{plus,minus}.bigWig`.
+p300 checkpoints predate the `mode` attribute; `4.1` sets `m.mode = mode` when it is absent. Models: `2026_0529_multimodal_p300_model/models/atac` (multimodal, despite the name) and `models/atac_only`. Target and control tracks: `2025_0703_retrain_p300_model/data/ENCSR000EGE_{plus,minus}.bigWig` and `ENCSR000EGE_control_{plus,minus}.bigWig`.
 
 ```bash
 MODEL_ROOT=... OUT_PREFIX=predp300 sbatch scripts/4.4.submit_predict_h3k27ac_cpu.sh atac 0
@@ -996,40 +863,21 @@ Source: `scripts/4.4`, `scripts/4.14.p300_at_h3k27ac_failures.py`
 
 ## Predicted p300 improves ABC in the training cell type, and not on transfer
 
-**Q:** The H3K27ac arms failed the benchmark. p300 is one step closer to the
-sequence-specified events, does substituting *predicted p300* for the activity term do
-better, is observed p300 even a better activity term to begin with, and does any of it
-survive transfer to a cell type with only ATAC?
+**Q:** Does predicted p300 do better than predicted H3K27ac as ABC's activity term, is
+observed p300 a better activity term, and does either survive transfer to a cell type with
+only ATAC?
 
-**A:** Yes to both, and the second explains part of the first. Observed p300 beats observed
-H3K27ac as ABC's activity term by **+0.038 AUPRC [+0.019, +0.058]**. A sequence + ATAC model
-predicting p300 beats the ATAC-only floor by **+0.055 [+0.034, +0.074]** with the sign
-preserved in 100% of paired resamples, and is indistinguishable from *measured* H3K27ac
-(-0.007 [-0.032, +0.017]). This is the first predicted-activity arm in the project to clear
-the floor with a resolvable margin. **It does not transfer**: a GM12878-trained p300 model
-applied to K562 lands at +0.009 [-0.004, +0.022] over the floor, an interval spanning zero.
+**A:** In K562 yes to both; on transfer the gain disappears.
 
-Fig. 1 is this result; its legend carries the full arm list. The tables below give the
-numbers, including the transfer arms that the figure shows clustered at the floor.
+A sequence + ATAC model predicting p300 beats the ATAC-only floor by **+0.055 [+0.034,
++0.074]** (sign kept in 100% of paired resamples) and is indistinguishable from measured
+H3K27ac. Observed p300 beats observed H3K27ac by **+0.038 [+0.019, +0.058]**. A
+GM12878-trained p300 model applied to K562 lands at +0.009 [-0.004, +0.022] over the floor;
+the transfer drop removes 83% of the in-cell gain. Deployment therefore fails for both
+targets (H3K27ac arms 0.455 and 0.452, p300 0.466, floor 0.457), so the barrier is transfer,
+as the architecture work also found (F-005).
 
-<details>
-<summary>Figure 1, restated (see Headline figure)</summary>
-
-**Figure 11 | p300 as the ABC activity term: the gain is real in the training cell type and
-absent on transfer.** Forest plot of AUPRC against the CRISPR benchmark for all nine arms plus
-distance-to-TSS, on 10,342 element-gene pairs with 466 regulated, every arm scored on the
-identical pair set. Error bars are the pipeline's **unpaired** per-predictor 95% intervals;
-the dashed lines mark the ATAC-only floor (0.457), and observed H3K27ac (0.519). The paired
-bootstrap delta against the floor is printed at the right of each row, because the unpaired
-intervals drawn here overlap for every arm and cannot resolve any of the comparisons, the
-figure shows both so that the misleading layer alongside the informative one sit together. Observed
-p300 (0.557) is the highest arm; the K562-trained predicted-p300 arm (0.512) reaches observed
-H3K27ac; the GM12878-trained arm applied to K562 (0.466) sits at the floor with an interval
-spanning zero. Geometry, floor and reference line match Fig. 1 so the two are directly
-comparable, which the two shared anchor arms agreeing to 1e-4 across the runs licenses.
-Source: `CRISPR_comparison_v3/.../results/2026_0906_p300_all/performance_summary.txt`,
-`scripts/4.17` for the paired deltas.
-</details>
+> **Superseded (F-025, 2026-09-19):** the GM12878 p300 model was trained on a BPNet model's predicted plus strand; retrained on the observed target it scores +0.0135 [-0.0003, +0.0270] over the floor and the transfer penalty is +0.0414 [+0.0256, +0.0558], so the loss is a real transfer effect.
 
 **AUPRC on the CRISPR benchmark, 10,342 element-gene pairs, 466 regulated:**
 
@@ -1046,10 +894,8 @@ Source: `CRISPR_comparison_v3/.../results/2026_0906_p300_all/performance_summary
 | predicted p300 alone, ATAC-only model | 0.443 | [0.394, 0.491] |
 | distance to TSS | 0.435 | [0.386, 0.485] |
 
-**The unpaired intervals resolve nothing and the paired ones resolve everything**, which is
-the same lesson as the within-fold pairing in Report 2, applied downstream. Every interval
-above overlaps every other; the arms are scored on the *identical* pair set, so resampling
-pairs once and recomputing all arms on that resample removes the shared variance:
+Every unpaired interval overlaps every other. Because the arms share one pair set, resampling
+pairs once and recomputing every arm removes the shared variance:
 
 | comparison | delta | paired 95% CI | sign kept |
 |---|---|---|---|
@@ -1065,33 +911,19 @@ pairs once and recomputing all arms on that resample removes the shared variance
 | **local - transferred (the transfer drop)** | **+0.046** | [+0.030, +0.061] | 100% |
 | transferred - observed H3K27ac | -0.053 | [-0.074, -0.032] | 100% |
 
-**Sequence is what makes it work, and that is the opposite of the H3K27ac result.** The
-multimodal p300 model beats the ATAC-only p300 model by +0.051 with the sign preserved in
-every resample, while the ATAC-only p300 model is at the floor (+0.004, interval spanning
-zero). For H3K27ac the sequence-containing arms were the *worst* in the whole panel, 0.393
-for the geometric mean and 0.275 predicted-alone, both far below distance-to-TSS. Same
-architecture, same accessibility input, same benchmark: the target was the binding constraint.
+**Sequence is what makes p300 work.** The multimodal p300 model beats the ATAC-only p300
+model in every resample, and the ATAC-only p300 model sits at the floor. For H3K27ac the
+sequence-containing arms were the worst in the panel (0.393 and 0.275). With architecture,
+accessibility input and benchmark fixed, the target was the binding constraint.
 
-**Two causes contribute and should not be conflated.** Observed p300 is a
-better activity term than observed H3K27ac (+0.038), so the *concept* has more headroom over
-the floor, 0.099 against 0.062. And the model captures more of the headroom it is given:
-55% of p300's against a non-resolvable fraction of H3K27ac's. The first of these is a fact
-about the assay and survives the transfer result; the second is a fact about a K562-trained
-model on K562 and does not.
+> **Superseded (F-018, 2026-09-15):** predicted H3K27ac clears the floor when the model reads DNase, so for H3K27ac the input assay, not only the target, limits this benchmark.
 
-**The transfer result is the one that matters for the stated goal, and it is a null.** The
-whole point is a model deployable in any cell type with only ATAC. Transferred, predicted p300
-buys +0.009 [-0.004, +0.022] over that cell type's own ATAC-only activity, nothing. The drop
-of -0.046 [-0.061, -0.030] removes 83% of the in-cell-type gain, and the transferred arm is
--0.053 below measured H3K27ac. Deployment now fails for **both** targets: the H3K27ac
-deployment arms scored 0.455 and 0.452 against the 0.457 floor, the p300 one scores 0.466. So
-the barrier is transfer, not target choice, which is the same conclusion the architecture
-programme reached (F-005) by a completely different route.
+Observed p300 has more headroom over the floor (0.099 against 0.062), and the K562 model
+captures 55% of it, against a non-resolvable fraction for H3K27ac.
 
-**The missing control has now run, and it changes the conclusion.** Scoring both p300 models
-in both cell types on their own targets, the local-versus-transferred 2x2 the H3K27ac matrix
-used throughout, separates "transfer is fatal" from "one model is weaker", and the answer is
-neither. Top-quintile Pearson on each cell type's own EP300:
+### Both p300 models fit their own cell type equally well, and transfer is asymmetric
+
+Top-quintile Pearson, each cell type's own EP300 as target:
 
 | | evaluated on K562 | evaluated on GM12878 |
 |---|---|---|
@@ -1108,29 +940,16 @@ neither. Top-quintile Pearson on each cell type's own EP300:
 | K562 -> GM12878 drop (transferred - local) | -0.102 | [-0.121, -0.083] | 1e-4 |
 | GM12878 -> K562 drop (transferred - local) | -0.307 | [-0.327, -0.286] | <1e-4 |
 
-**Both models are equally strong at home**, +0.313 and +0.309 over matched floors of 0.306 and
-0.299, so the GM12878 model is not the weaker model and that confound is closed.
+K562 -> GM12878 keeps 83% of the local advantage, with a positive accessibility residual
+(+0.139 [+0.067, +0.210]). GM12878 -> K562 is at K562's floor with a **negative** residual
+(-0.088 [-0.140, -0.035]), worse than the accessibility baseline at what the baseline already
+does. CRISPR data exist only for K562, so the benchmark can only test GM12878 -> K562, the
+failing direction. The +0.207 is top-quintile Pearson on p300, not AUPRC, so it does not show
+that predicted p300 deploys.
 
-**Transfer is strongly asymmetric, and the benchmark could only test the failing direction.**
-K562-trained transferred to GM12878 keeps 0.507 of its 0.619, which is **+0.207 over the
-target cell type's own accessibility model** and 83% of the local advantage, with a positive
-accessibility residual (+0.139 [+0.067, +0.210]). GM12878-trained transferred to K562 lands
-at 0.312 against a 0.306 floor, indistinguishable, *p*=0.72, with a **negative** residual
-(-0.088 [-0.140, -0.035]), meaning it is worse than the accessibility baseline at the thing
-the baseline already does. CRISPR data exists only for K562, so the downstream benchmark can
-*only* run the GM12878 -> K562 direction. Its null is real for that direction and says nothing
-about the other.
+> **Superseded (F-025, 2026-09-18):** the GM12878-trained model in these tables was trained on a BPNet model's predicted plus strand, so the GM12878 -> K562 row and the asymmetry built on it describe a corrupted-target model, and whether the GM12878 evaluation target is the same file has not been checked.
 
-**What this does and does not license.** It does not license "predicted p300 deploys": the
-+0.207 is top-quintile Pearson on p300, not benchmark AUPRC, and no downstream test of the
-working direction is possible with K562-only CRISPR data. It does retire two earlier readings; that the p300 gain simply does not transfer, and that the GM12878 model was weak. And it
-makes the training cell type a first-class design variable: the same architecture and target
-gives +0.207 or +0.006 over the floor depending only on which cell type it was trained in.
-
-**The asymmetry is not explained by training-signal volume, and that has now been tested
-directly.** Both cell types are equally *predictable* locally, so the H3K27ac explanation for
-its own transfer asymmetry (that GM12878 is the harder cell type) cannot apply here. The two
-EP300 experiments do differ in volume:
+**Training-signal volume does not explain the asymmetry.**
 
 | | K562, ENCSR000EGE | GM12878, ENCSR000DZG | ratio |
 |---|---|---|---|
@@ -1140,15 +959,9 @@ EP300 experiments do differ in volume:
 | FRiP (pooled) | 0.070 | 0.052 | 1.35x |
 | FRiP (per replicate) | 0.053, 0.086 | 0.067, 0.038 |, |
 
-FRiP does not separate the two once replicate variance is accounted for: the within-experiment
-spread is 1.6x in K562 (0.053 to 0.086), and 1.8x in GM12878 (0.038 to 0.067), both wider than
-the 1.35x pooled difference, and GM12878's better replicate has a *higher* FRiP than K562's
-worse one. So the "cleaner target" version of the hypothesis was out from the start, leaving
-"more signal to learn portable features from".
-
-**That version is now refuted.** Retraining K562 on GM12878's exact budget (30.0M mapped
-reads and 21,068 peaks, `scripts/0.31` and `1.21`) costs almost nothing in-cell type and
-nothing at all on transfer:
+FRiP does not separate them: the within-experiment spread (1.6x K562, 1.8x GM12878) exceeds
+the 1.35x pooled difference. Retraining K562 on GM12878's exact budget (30.0M mapped reads,
+21,068 peaks; `scripts/0.31` and `1.21`) leaves transfer unchanged:
 
 | | in-cell K562 | transferred to GM12878 |
 |---|---|---|
@@ -1156,58 +969,26 @@ nothing at all on transfer:
 | depth-matched K562 model | 0.599 | **0.501 (+0.202 [+0.147, +0.257] over that floor)** |
 | paired difference | -0.020 [-0.040, +0.001] (*p*=0.056) | **-0.005 [-0.021, +0.010]** (*p*=0.40) |
 
-A K562 model trained on 41% fewer reads and 26% fewer peaks still transfers at +0.202 while
-the GM12878 model, trained on that same budget, transfers at +0.006. The in-cell arm is the
-control that keeps this readable: the depth-matched model is barely worse at home, so it is
-not simply a weaker model.
+With 41% fewer reads and 26% fewer peaks the K562 model still transfers. Peak geometry is
+also excluded: both training sets are summit-centred fixed-width
+(316 bp K562, 350 bp GM12878), the trainer centres on `start + summit`, and GM12878's summits
+are the tighter (|summit - midpoint| p90 of 0 bp against 6 bp). In `0.31` the full-depth
+rebuild matched the existing target at *r* = 1.0000 on both strands (sum ratio 0.9984), so
+the existing K562 model is the full-depth arm.
 
-**Peak-set geometry is also ruled out.** Both training sets are summit-centred fixed-width
-(316 bp for K562, 350 bp for GM12878), and the trainer centres its window on `start + summit`,
-so neither set is mis-registered against the p300 summit; GM12878's summits are the tighter of
-the two (|summit - midpoint| p90 of 0 bp against 6 bp).
+With two cell types, "K562-trained models are portable" and "K562 happens to transfer to
+GM12878" cannot be separated, so a third cell type is required.
 
-**What remains.** The asymmetry is a property of K562 and GM12878 as training cell types that
-survives equalising volume and is not an artifact of peak geometry. Two cell types cannot
-distinguish "K562-trained models are portable in general" from "K562 happens to transfer to
-GM12878", so a third cell type is now required rather than merely desirable. The construction
-control for these tracks is recorded in `0.31`: the full-depth rebuild matched the existing
-target at *r* = 1.0000 on both strands with a sum ratio of 0.9984, which is what licenses
-using the existing K562 model as the full-depth arm instead of retraining it.
+> **Superseded (F-016, 2026-09-14):** a third cell type (THP-1) was run for DNase-input H3K27ac models and neither "K562 is a good training cell type" nor "K562 -> GM12878 is a good pair" survives; F-017 then traced that asymmetry to accessibility-library depth.
 
-**This does not contradict the earlier p300 negative, and the distinction matters.** The
-learnability test below shows p300 is *not* predictable at the specific elements where the
-H3K27ac model fails, which correctly killed the multi-head and stacking ideas. It says
-nothing about p300 as the *primary* target, where the relevant question is whether the
-predicted track ranks elements well enough for ABC, a different quantity, now measured, and
-positive.
-
-**Method.**
-
-- Own ABC results directory and config, reusing the July floor and observed-H3K27ac ceiling
-  so the numbers are directly comparable to the H3K27ac run.
-- Observed p300 carried as this concept's own ceiling; a predicted arm with no observed anchor
-  decides nothing.
-- Differences tested by paired bootstrap over the shared pair set, 2,000 resamples.
+**Method.** Own ABC results directory and config, reusing the July floor and observed-H3K27ac
+anchors; observed p300 as this target's ceiling; paired bootstrap over the shared pair set,
+2,000 resamples.
 
 <details>
 <summary>Full methods &amp; code</summary>
 
-**Cross-run comparability is verified, not assumed.** The two shared anchors reproduce across
-the independent pipeline runs: ATAC-only floor 0.4573 here against 0.4572 in the H3K27ac
-run, and observed H3K27ac 0.5192 against 0.5192. Agreement to 1e-4 on both is what licenses
-comparing 0.512 here against 0.482 there.
-
-**A systematic offset between the two AUPRC estimators, which does not affect any delta.**
-`4.17` computes average precision directly and reports 0.5673 / 0.5296 / 0.4680 for observed
-p300 / observed H3K27ac / floor where the pipeline reports 0.5569 / 0.5192 / 0.4573, a
-constant +0.0105 on all three, so it is a tie-handling or interpolation difference in the
-estimator rather than a difference in the data. Deltas are unaffected, which is why the
-paired table quotes deltas and the unpaired table quotes the pipeline's values.
-
-The ABC driver for this run stalled at 18 of 21 steps with every child job COMPLETED and
-nothing queued; the outstanding steps were a QC plot and aggregation, which nothing downstream
-reads. The five `EnhancerPredictionsAllPutative.tsv.gz` files were verified as valid gzip at
-10.1-10.3M rows each before the driver was cancelled and the benchmark run.
+The shared anchors reproduce across the independent pipeline runs (floor 0.4573 against 0.4572, observed H3K27ac 0.5192 against 0.5192), which licenses comparing 0.512 here with 0.482 there. `4.17` reports 0.5673 / 0.5296 / 0.4680 for observed p300 / observed H3K27ac / floor where the pipeline reports 0.5569 / 0.5192 / 0.4573, a constant +0.0105 from the estimator that leaves every delta unchanged; the paired table quotes deltas and the unpaired table the pipeline's values. The ABC driver stalled at 18 of 21 steps on a QC plot and aggregation that nothing downstream reads; the five `EnhancerPredictionsAllPutative.tsv.gz` files were verified as valid gzip at 10.1-10.3M rows each before the benchmark ran.
 
 ```bash
 pixi run python scripts/4.3.setup_abc_arms.py --arms p300 \
@@ -1223,15 +1004,16 @@ Source: `scripts/4.3`, `4.5`-`4.7`, `4.17.paired_auprc_bootstrap.py`
 
 ## DNase beats ATAC as the accessibility input, and it is the first H3K27ac model to clear the floor on transfer
 
-**Q:** DNase couples to H3K27ac and to enhancer activity better than ATAC does, and observed
-DNase already beats observed ATAC inside ABC. Does that carry into a model's input?
+**Q:** DNase couples to H3K27ac better than ATAC, and observed DNase already beats observed
+ATAC inside ABC. Does that carry into a model's input?
 
-**A:** Yes, in every arm, and by more where DNase is the shallower library. In-cell type DNase
-gains **+0.037 [+0.019, +0.056]** in K562 and **+0.086 [+0.076, +0.095]** in GM12878.
-Transferred from K562 to GM12878 it gains **+0.043 [+0.003, +0.084]** over the ATAC-input
-model, and it is **the first H3K27ac model in this project to clear the target cell type's own
-ATAC-only floor with a resolvable margin: +0.056 [+0.014, +0.099]**, where the ATAC-input
-model manages +0.013 (*p*=0.25).
+**A:** Yes, in every arm, and by more where DNase is the shallower library: in-cell DNase
+gains **+0.037 [+0.019, +0.056]** in K562 and **+0.086 [+0.076, +0.095]** in GM12878, and
+transferred from K562 to GM12878 it gains **+0.043 [+0.003, +0.084]** over the ATAC-input
+model and clears GM12878's own ATAC-only floor by **+0.056 [+0.014, +0.099]**, where the
+ATAC-input model manages +0.013 (*p*=0.25).
+
+> **Superseded (F-016, 2026-09-14):** a DNase-input model must be compared with a DNase-only floor; against GM12878's (0.615, against 0.518 for ATAC-only) the transferred model's 0.570 is -0.045 [-0.080, -0.010] (*p*=0.023) below it. The in-cell gains stand.
 
 | top-quintile Pearson | ATAC input | DNase input |
 |---|---|---|
@@ -1248,46 +1030,30 @@ model manages +0.013 (*p*=0.25).
 | **transferred DNase - GM12878's ATAC-only floor** | **+0.056** | **[+0.014, +0.099]** | **0.020** |
 | transferred ATAC - that same floor | +0.013 | [-0.014, +0.041] | 0.25 |
 
-**The accessibility residual is where the gap is widest.** Transferred, the DNase-input model
-scores *r* = 0.236 [0.211, 0.262] against accessibility, the ATAC-input model 0.041
-[0.003, 0.079], and the floor arm 0.026. On the metric that asks what a model adds beyond
-accessibility, the transferred ATAC model adds nothing and the transferred DNase model adds
-real signal.
+Transferred, the DNase-input model scores accessibility residual *r* = 0.236 [0.211, 0.262],
+the ATAC-input model 0.041 [0.003, 0.079], and the floor arm 0.026.
 
-**The depth confound runs against the result, which makes it a lower bound.** DNase is the
-*shallower* input in both cell types: 301.1M usable reads against ATAC's 545.7M in K562, and
-53.8M against 571.4M in GM12878 (Report 1). GM12878's DNase is also the weaker library by its
-own inter-replicate count ceiling, 0.445 against K562's 0.925. Before running this I flagged
-the GM12878 arms as confounded and said I would not read an assay conclusion off them. The
-confound is real and it is pointed the wrong way for the conclusion: DNase wins by **+0.086**
-in the cell type where it is 10.6x shallower, against **+0.037** where it is only 1.8x
-shallower. Depth-matching would be expected to widen the gap, not close it.
+**Depth runs against the result.** DNase is the shallower input in both cell types (301.1M
+usable reads against ATAC's 545.7M in K562; 53.8M against 571.4M in GM12878; Report 1), and
+GM12878's DNase is the weaker library by its own count ceiling (0.445 against K562's 0.925).
+DNase wins by more where it is 10.6x shallower (+0.086) than where it is 1.8x shallower
+(+0.037), so depth-matching would be expected to widen the gap.
 
-**Consequence for the converter.** The premise it needed is now measured rather than assumed:
-DNase is the better representation to be in, the advantage survives transfer, and DNase has a
-reproducible base-resolution profile for a converter to target (Report 1). All three had to
-hold and all three do.
+This supplied the premise for an ATAC-to-DNase converter: DNase is the better input, the
+advantage survives transfer, and DNase has a reproducible base-resolution profile to target
+(Report 1).
 
-**Method.**
+> **Superseded (F-014, 2026-09-13):** the converter was built and closed; its converted track is resolvably worse than plain ATAC as an input in every direction tested, and F-016 withdrew the "survives transfer" premise.
 
-- Each scoring entry carries its own accessibility bigwig, so a DNase-trained model is always
-  fed DNase and an ATAC-trained model always ATAC, transferred included. The comparison is
-  assay-versus-assay end to end rather than a model being handed the wrong input.
-- `1.22` and `1.23` are `1.11` and `1.12` with exactly two changes each, the accessibility
-  bigwig and the output directory, verified by diff on the comment-stripped scripts.
-- The transfer arm is scored against GM12878's own ATAC-only model, which is the floor a
-  deployed model has to beat to be worth anything.
+**Method.** Each scoring entry carries its own accessibility bigwig, so DNase-trained models
+always get DNase, transferred included. `1.22` and `1.23` are `1.11` and `1.12` with two
+changes each (accessibility bigwig, output directory), verified by diff on the
+comment-stripped scripts.
 
 <details>
 <summary>Full methods &amp; code</summary>
 
-The DNase inputs are `genomecov -bg -5` unstranded, matching how `atac_5p.bw` was built, so
-the swap changes the assay and nothing else. Replicates are pooled by merging the filtered
-BAMs and calling `genomecov` once; an earlier version summed per-replicate bedGraphs through
-`bedtools merge`, which collapses bookended intervals and produced a K562 track with 34x the
-correct signal that exited 0 and looked valid. The build now asserts that the track sum equals
-the main-chromosome read count exactly, with the contig list read from the same chrom-sizes
-file the track filters on.
+DNase inputs are `genomecov -bg -5` unstranded, built like `atac_5p.bw`. Replicates are pooled by merging the filtered BAMs and calling `genomecov` once. An earlier version summed per-replicate bedGraphs through `bedtools merge`, which collapses bookended intervals and produced a K562 track with 34x the correct signal that exited 0; the build now asserts that the track sum equals the main-chromosome read count, with contigs read from the same chrom-sizes file the track filters on.
 
 ```bash
 sbatch scripts/0.32.make_dnase_5prime.sh
@@ -1298,20 +1064,17 @@ done
 sbatch scripts/2.29.submit_dnase_swap_eval.sh
 ```
 Source: `scripts/0.32`, `1.22`, `1.23`, `2.29`
+</details>
 
 ## GC-matching the training negatives changes nothing
 
-**Q:** Every model in this repository was trained with ChromBPNet's genome-wide GC-*annotated*
-tiling passed straight to `--negatives`, which is the matching INPUT rather than its output
-(Report 1). The pool sits at mean GC 0.389 against 0.466-0.593 for candidate elements, and it
-is 10% of every batch, so a sequence branch could satisfy much of that contrast with a coarse
-GC detector, the leading explanation for why the H3K27ac sequence branch has almost no
-dynamic range within candidate elements. Does actually GC-matching the pool help?
+**Q:** Does GC-matching the training negatives help? The current pool, ChromBPNet's
+genome-wide GC-*annotated* tiling passed straight to `--negatives` (Report 1), has mean GC
+0.389 against 0.466-0.593 for candidate elements and is 10% of every batch, so a sequence
+branch could meet much of the contrast with a coarse GC detector.
 
-**A:** No, and not marginally: **+0.0011 [-0.0080, +0.0102]** in-cell type (*p*=0.76), and
-**-0.0024 [-0.0083, +0.0036]** transferred to GM12878 (*p*=0.33). Absolute top-quintile
-Pearson is 0.700 against 0.699 locally and 0.529 against 0.531 transferred. The hypothesis is
-refuted.
+**A:** No: **+0.0011 [-0.0080, +0.0102]** in-cell (*p*=0.76) and **-0.0024 [-0.0083,
++0.0036]** transferred to GM12878 (*p*=0.33).
 
 | | matched negatives | unmatched (baseline) | paired difference |
 |---|---|---|---|
@@ -1319,51 +1082,25 @@ refuted.
 | K562 -> GM12878 | 0.529 [0.501, 0.556] | 0.531 [0.500, 0.562] | -0.0024 (*p*=0.33) |
 | transferred vs the target's own ATAC-only model | +0.0108 (*p*=0.28) | +0.0132 (*p*=0.25) |, |
 
-**The transfer arm was the one the hypothesis actually predicted**, since a GC shortcut should
-cost most where accessibility does not generalise. It moved by -0.002. The transferred model
-still beats the target's own ATAC-only model by the same non-significant ~0.011 it did before.
+The transfer arm, where a GC shortcut should cost most, moved by -0.002.
 
-**The match was verified before the result was read**, which is what makes this a real null
-rather than a failed intervention. `scripts/0.29` recovers GC by joining the matched pool's
-coordinates back to the tiling's own annotation, so both sides are measured with one
-estimator: the mean-GC gap to the elements fell from 0.0842 to 0.0128 (6.6x closer) in K562
-and 0.0655 to 0.0141 in GM12878, and the largest per-bin discrepancy fell from 0.072 to 0.015.
+The match was verified before the result was read (`scripts/0.29`, one GC estimator for both
+sides): the mean-GC gap to the elements fell from 0.0842 to 0.0128 (6.6x closer) in K562 and
+from 0.0655 to 0.0141 in GM12878, and the largest per-bin discrepancy from 0.072 to 0.015.
+The matched pool still undershoots the GC-rich tail (p90 0.570 against the elements' 0.590),
+so a shortcut confined to the extreme high-GC end is not excluded; closing 85% of the mean
+gap and 80% of the per-bin discrepancy moved the metric by 0.001.
 
-**The one caveat, stated in advance.** The matched pool still undershoots the GC-rich tail, p90 0.570 against the elements' 0.590, because a genome-background pool does not contain
-enough very-high-GC windows, which is also why the matching tool hangs on the full element set
-(Methods). So this does not exclude a shortcut confined to the extreme high-GC end. It does
-exclude one large enough to be worth chasing: closing 85% of the mean gap and 80% of the
-per-bin discrepancy moved the metric by 0.001.
+Training-element composition is closed as an explanation for the sequence branch's flatness.
 
-**Consequence.** Training-element composition is closed as an explanation for the sequence
-branch's flatness, and with it the cheapest remaining fix. The two hypotheses that survived
-the session (explicit GC/CpG input channels, and the accessible-but-unacetylated reweighting) are now the only composition-adjacent ideas left, and both are weaker a priori than the one
-just refuted.
-
-**Method.**
-
-- `1.20` is `1.11` with exactly two changes, verified by diff on the comment-stripped scripts:
-  the negatives file and the output directory. The baseline is `1.11`'s own output with
-  identical settings, so the paired comparison isolates the negatives.
-- Negatives built with `bpnet-gc-background`, the same tool used for the p300 v3 negatives in
-  Oct 2025, instead of a reimplementation, so a matched-versus-unmatched comparison cannot
-  be confounded by two different matching algorithms.
-- Scored in-cell type and transferred, paired within fold, RC-averaged.
+**Method.** `1.20` is `1.11` with two changes, the negatives file and the output directory,
+verified by diff. Negatives built with `bpnet-gc-background`, the tool used for the p300 v3
+negatives in Oct 2025. Scored in-cell and transferred, paired within fold, RC-averaged.
 
 <details>
 <summary>Full methods &amp; code</summary>
 
-`residual_pearson` is reported in these tables against the **unmatched multimodal model**,
-because that is this config's baseline entry, not against an ATAC-only model as everywhere
-else in this report. It is therefore not comparable to any other `residual_pearson` here and
-is not quoted.
-
-Failure modes of `bpnet-gc-background` are recorded in the repository learnings: it exits
-0 having written a 0-byte file when `bedtools` is absent from its environment, and it hangs
-rather than reporting a shortfall when the foreground is GC-rich enough to exhaust the high-GC
-bins, 93% in 15 seconds, then no progress for two hours. The fix for the second is to
-subsample the foreground to 50,000 regions, since only the GC distribution defines the
-matching target and 50,000 equals the trainer's `--max-negatives` cap.
+`residual_pearson` in these runs is against the unmatched multimodal model, not an ATAC-only model, so it is not quoted. `bpnet-gc-background` exits 0 with a 0-byte file when `bedtools` is absent, and hangs (93% in 15 seconds, then no progress for two hours) when the foreground exhausts the high-GC bins; subsampling the foreground to 50,000 regions, the trainer's `--max-negatives` cap, fixes the second.
 
 ```bash
 sbatch scripts/0.28.make_gc_matched_negatives.sh
@@ -1374,17 +1111,15 @@ sbatch scripts/2.26.submit_gcmatch_eval.sh
 Source: `scripts/0.28`, `0.29`, `1.20`, `2.26`
 </details>
 
-## Sequence-gated accessibility and an asymmetric count loss
+## Sequence-gated accessibility and an asymmetric count loss do not help, and together they hurt on transfer
 
-**Q:** The multimodal trunk merges a sequence branch and an accessibility branch additively,
-so it has no way to *withhold* accessibility at elements where accessibility is misleading.
-Two cheap interventions target that: a gate that lets sequence modulate the accessibility
-representation position by position, and a loss that penalises over-prediction more than
-under-prediction. Do either help?
+**Q:** The multimodal trunk merges the sequence and accessibility branches additively, so it
+cannot withhold accessibility where accessibility misleads. Does a sequence-driven gate on
+the accessibility representation, or a loss that penalises over-prediction more, help?
 
-**A:** Neither helps, and together they hurt. In-cell type all three arms are
-indistinguishable from the ungated symmetric baseline; transferred to GM12878 the gate is
-null, the asymmetric loss trends negative, and the combination is **significantly worse**.
+**A:** Neither helps, and together they hurt on transfer: in-cell all three arms match the
+ungated symmetric baseline, and transferred to GM12878 the combination is **significantly
+worse**.
 
 **Paired within-fold difference in top-quintile Pearson against the matched ungated baseline:**
 
@@ -1394,74 +1129,36 @@ null, the asymmetric loss trends negative, and the combination is **significantl
 | asymmetric loss | +0.0001 [-0.0122, +0.0124] *p*=0.98 | -0.0078 [-0.0183, +0.0026] *p*=0.11 |
 | both | -0.0032 [-0.0157, +0.0092] *p*=0.51 | **-0.0128 [-0.0246, -0.0010]** *p*=0.039 |
 
-For scale, on the transfer arm the gated model beats the target cell type's own ATAC-only
-model by +0.0117 (*p*=0.21), and the ungated baseline beats it by +0.0132 (*p*=0.25), so both
-sit in the same place relative to the floor, and neither intervention moved anything.
+On transfer the gated model and the ungated baseline sit at the same place relative to the
+target's own ATAC-only model (+0.0117, *p*=0.21; +0.0132, *p*=0.25).
 
-**This is the outcome the corrected sequence analysis predicted.** Both interventions assume
-the sequence branch already knows which elements are not acetylated and is being overridden
-by accessibility. The section above shows it does not know: the sequence arm's elevation is
-1.55x at the over-predicted tail and 1.44x at the under-predicted tail, where the truth
-separates them 1.00x against 31.3x. A gate cannot surface information that is not in the
-branch it gates, and reweighting the loss cannot either. The prediction was recorded before
-the scoring ran.
+Both interventions assume the sequence branch knows which elements are unacetylated. It does
+not (1.55x at the over-predicted tail and 1.44x at the under-predicted, against a truth of
+1.00x and 31.3x), and a gate or a reweighted loss cannot surface information the branch lacks.
+This outcome was predicted and recorded before scoring. Both are closed; further work here
+must first make the sequence branch discriminative.
 
-**Why the combination is actively worse on transfer is worth one line of speculation and no
-more.** Tripling the over-prediction penalty pushes predictions down; a gate that can also
-suppress accessibility gives a second route to the same thing, and on transfer, where the
-accessibility term is the part that generalises, suppressing it costs more than the
-over-prediction it avoids. That is a hypothesis, not a result; the experiment was not designed
-to test it and neither arm should be pursued.
-
-**The design.** A 2x2 factorial against a matched ungated symmetric baseline, same
-accessibility bigwig, same `n_layers`, same `count_loss_weight`, differing only in the two
-flags, so the interaction is identifiable rather than inferred from separate one-change
-runs.
+**Design.** A 2x2 factorial against a matched ungated symmetric baseline (same accessibility
+bigwig, `n_layers` and `count_loss_weight`).
 
 - **GATE.** `X_acc = X_acc * sigmoid(gate_conv(X_seq))`, a 21 bp convolution from the
   sequence representation to the accessibility channels, initialised open (`weight = 0`,
-  `bias = 4.0`, so the gate starts at 0.982 and the model begins as its own baseline). This
-  is a mixture-of-experts gate in the sense asked for: it learns, per position, how much to
-  weight accessibility against sequence, so promoters and distal elements can be treated
-  differently without that distinction being hand-specified.
-- **ASYM.** `overprediction_weight = 3.0` in the count loss: squared error is tripled where
-  the prediction exceeds the target. The default `log1pMSE` is already about 400x more
-  sensitive to missing signal than to inventing it in the regime these elements sit in, so
-  this pushes in the direction the error analysis says is needed.
-- **GATE + ASYM**, and the ungated symmetric baseline.
+  `bias = 4.0`, gate 0.982), so the model starts as its own baseline and learns per position
+  how much to weight accessibility.
+- **ASYM.** `overprediction_weight = 3.0`: squared count error tripled where the prediction
+  exceeds the target. The default `log1pMSE` is already about 400x more sensitive to missing
+  signal than to inventing it in this regime.
+- **GATE + ASYM**.
 
-**Scored in-cell type *and* transferred, because the two questions differ.** In-cell type asks
-what the fix costs where accessibility is trustworthy; K562 -> GM12878 asks whether it helps
-where over-reliance actually bites, which is the reason the gate exists.
-
-**Verdict: both closed.** The gate and the asymmetric loss are the two cheapest
-interventions against accessibility over-reliance and neither works, for a reason that is now
-measured rather than guessed. Anything further in this direction has to make the sequence
-branch discriminative first.
-
-**Method.**
-
-- Both flags live in `scripts/multimodal_bpnet.py` and
-  `scripts/train_multimodal_bpnet.py` behind `--gate-accessibility` and
-  `--overprediction-weight`, rather than in a forked model file, so the baseline and the
-  variants are the same code.
-- Guarded by `scripts/test_asymmetric_loss.py`, a four-check regression gate.
+**Method.** Both flags live in `scripts/multimodal_bpnet.py` and
+`scripts/train_multimodal_bpnet.py` behind `--gate-accessibility` and
+`--overprediction-weight`, guarded by `scripts/test_asymmetric_loss.py`, a four-check
+regression gate.
 
 <details>
 <summary>Full methods &amp; code</summary>
 
-The asymmetric loss mirrors bpnetlite's `_mixture_loss` so that
-`overprediction_weight = 1.0` reproduces it exactly; both the train and validation paths
-route through the same function via `getattr(self, "overprediction_weight", 1.0)`, so a
-pre-gate checkpoint still loads and scores identically.
-
-The regression gate asserts its own preconditions after a first version that verified
-nothing, see Report 2. Its checks: weight 1.0 matches bpnetlite to a relative
-tolerance of 1e-5; a weight above 1 raises the loss by exactly the predicted amount, with
-`3 <= n_over <= N-3` asserted so the check cannot be vacuous; a pre-gate checkpoint loads and
-is deterministic, and a **weight-matched** gate comparison differs by 0.39%, the matching
-being necessary because adding `gate_conv` consumes extra RNG draws and unmatched
-initialisations differ by 108%.
+The asymmetric loss mirrors bpnetlite's `_mixture_loss`, so `overprediction_weight = 1.0` reproduces it; both train and validation paths use `getattr(self, "overprediction_weight", 1.0)`, so pre-gate checkpoints load and score identically. Regression checks: weight 1.0 matches bpnetlite to a relative tolerance of 1e-5; a weight above 1 raises the loss by exactly the predicted amount, with `3 <= n_over <= N-3` asserted; a pre-gate checkpoint loads and is deterministic; a **weight-matched** gate comparison differs by 0.39% (unmatched initialisations differ by 108%, because `gate_conv` consumes extra RNG draws).
 
 ```bash
 pixi run python scripts/test_asymmetric_loss.py
@@ -1479,114 +1176,54 @@ Source: `scripts/multimodal_bpnet.py`, `scripts/train_multimodal_bpnet.py`,
 
 ## Open questions / next steps
 
-**The central question now has a positive answer, but for p300 rather than H3K27ac.**
-Predicted H3K27ac does not improve ABC (Fig. 1); predicted p300 from a sequence + ATAC model
-clears the floor by +0.055 [+0.034, +0.074] and matches measured H3K27ac. For planning: the p300 target is where the effort should go, and the H3K27ac diagnostics
-(compressed dynamic range, a sequence branch that does not discriminate) explain why *that*
-target underperformed rather than describing the approach as a whole.
+p300 is now the project's default target (F-024).
 
-**1. Explain the transfer asymmetry, because it is now the largest lever in the project.**
-The same architecture and target gives +0.207 or +0.006 over the target's floor depending
-only on which cell type it was trained in, and both models fit their own cell type equally
-well. Compare the two EP300 experiments directly, peak count, depth, FRiP,
-signal-to-noise for ENCSR000EGE against ENCSR000DZG, and add a third cell type to
-distinguish "K562-trained models are portable in general" from "K562 happens to transfer to
-GM12878". TeloHAEC is the cheapest third cell type, and it has no EP300, so this needs either
-a DNase/H3K27ac proxy there or a fourth cell type with EP300.
+**Still open, in order of expected value**
 
-**2. Get a downstream test of the working transfer direction, or accept that there is none.**
-The CRISPR benchmark exists only for K562, so it can only ever run GM12878 -> K562, which is
-the direction that fails. Every deployment claim therefore rests on correlation metrics unless
-a benchmark in another cell type becomes available. This is a structural limitation worth
-stating in any write-up rather than discovering later: the project's terminal metric cannot
-evaluate its best transfer result.
-
-Then, in order of expected value:
-
-**3. Training-element composition, now largely closed.** GC-matching the negative pool was
-the leading hypothesis for the sequence branch's flatness and it is refuted: +0.001 in-cell
-and -0.002 transferred, with the match verified beforehand (see above). Two weaker ideas
-remain in this family and neither is a priority: The negative pool is not GC-matched (Report 1): it is a uniform
-random genome sample at mean GC 0.389 against 0.466-0.593 for candidate elements, and it is
-10% of every batch. A sequence branch can satisfy that contrast with a coarse GC detector,
-which is exactly what its behaviour looks like, 0.397 correlation *across* candidate
-elements and almost no dynamic range *within* them. Three experiments, cheapest first.
-
-- **Harder negatives: accessible but unacetylated regions.** Sampling negatives from open
-  chromatin rather than random genome removes accessibility as a discriminator too, forcing
-  the sequence branch onto the distinction that actually matters downstream. Note these
-  elements are already in the *positive* set with near-zero targets, so the honest framing is
-  reweighting rather than relabelling, up-weight the accessible-but-unacetylated quadrant
-  and measure what happens to the over-predicted tail.
-- **`negative_ratio` and the 50,000-window cap are untested.** Both were inherited from the
-  p300 setup and neither has been swept. They set how much of the loss is spent on the
-  positive-versus-background contrast rather than on grading elements against each other.
-
-**4. Give the model the sequence features it is not learning.** Now the strongest surviving
-idea in this family, though weakened: the GC-shortcut result says the branch's flatness is not
-caused by what it was trained *against*, so explicit GC/CpG channels are a bet on
-representation rather than on removing a confound. Explicit GC-content and CpG-density channels, computed by the same route as the
-existing accessibility channels, with an indicator-channel control to confirm the gain comes
-from the feature rather than from the extra capacity. Motif-derived channels are the heavier
-version of the same idea. Run this after the composition experiments, since a GC channel and
-a GC-matched negative set are two ways of attacking the same problem and the second is
-cheaper.
-
-**5. Attack the dynamic range directly.** The benchmark fails on compression, not on ranking
-error, and no architecture change tried so far targets compression. Candidates: a loss on the
-predicted *spread* over each batch, training on rank-transformed targets, or predicting the
-composite `geomean(accessibility, H3K27ac)` that downstream consumers actually use. That last
-one carries a design caution: if the accessibility input is the same assay as the
-accessibility term in the target, half the target is readable off the input and the comparison
-is circular, so it must be `geomean(DHS, H3K27ac)` predicted from sequence + ATAC and
-baselined against the two-step route scored on the *same* composite.
-
-**6. Motif syntax, which is the remaining scientific question and has never been started.**
-SHAP / TF-MoDISco / FiNeMo on the **residual-trained** model, whose predictions are forced
-onto signal accessibility cannot supply. Use the +/-500 bp window, which carries no neighbour
-contamination. Expect less attributable signal than p300 (Fig. 3).
+1. **A downstream test outside K562.** CRISPR data exist only for K562, so no transfer into
+   another cell type, including K562 -> GM12878, can be benchmarked downstream.
+2. **Improve element ranking, not prediction spread.** Scale-only fixes are null in ABC
+   (F-022), and the ranking of the CRISPR-tested elements carries 62% (in-cell) and 80%
+   (transferred) of the gap between predicted and observed p300 (F-028). Predicting the
+   composite `geomean(DHS, H3K27ac)` from sequence + ATAC is a candidate, baselined against
+   the two-step route on the same composite (not `geomean(accessibility, H3K27ac)` with the
+   input assay, which would make half the target readable off the input).
+3. **Give the model the sequence features it is not learning**: explicit GC-content and
+   CpG-density channels, with an indicator-channel control for the extra capacity;
+   motif-derived channels are the heavier version.
+4. **Reweight accessible-but-unacetylated elements**, already in the positive set with
+   near-zero targets, and measure the over-predicted tail. `negative_ratio` and the
+   50,000-window cap, inherited from the p300 setup, have never been swept.
+5. **Motif syntax, never started.** SHAP / TF-MoDISco / FiNeMo on the **residual-trained**
+   model with the +/-500 bp window. Expect less attributable signal than p300 (Fig. 3).
+6. **Re-measure the p300 transfer asymmetry with the corrected GM12878 model.** The +0.006 was
+   measured on the corrupted-target model (F-025). F-026's GM12878 single-source arm may
+   already answer this if it used the corrected target.
 
 **Also open, smaller**
 
-- **Run the dynamic-range diagnostic on the p300 arms.** `4.9` established that predicted
-  H3K27ac fails through compression rather than inaccuracy. The same diagnostic on the p300
-  arms would say whether p300 succeeds by being less compressed, the mechanism behind the
-  headline result is currently inferred, not measured.
-- **Re-test the H3K27ac benchmark deltas with the paired bootstrap.** Those arms were read off
-  overlapping unpaired intervals, which the p300 run demonstrates resolves nothing. The best
-  H3K27ac arm was +0.025 over the floor unpaired, and +0.055 turned out to be resolvable for
-  p300, so "no H3K27ac arm clears the floor" should be re-tested paired before it is treated
-  as settled.
-- **A qnorm-off ABC arm.** `run_qnorm` is rank-based so scale is irrelevant, but the reference
-  is built from observed K562 signal, so a predicted track inherits the observed
-  distribution's shape. Worth one arm.
-- **Remove the profile head.** The base-resolution multinomial term is largely fitting Poisson
-  noise (Report 1, Fig. 4). Removing it should be free and may help the counts head; untested.
-- **Coarser profile resolution.** Binning the profile target to 20-50 bp raises its ceiling
-  from 0.21 to about 0.72. The input stays single-base. Only worth doing if the profile head
-  is kept.
-- **Characterise the twelve threshold-level false negatives individually.** They are named in
-  the diagnostic output; a per-element look may be more informative than the aggregate.
-- **ATAC to DNase converter.** DNase tracks H3K27ac and enhancer activity better than ATAC
-  does, so a converter would improve the input everywhere at once. Gate it on a cheap
-  coupling comparison first, in the one cell type where both assays exist.
-- **A third cell type and multi-cell-type training.** TeloHAEC is the only one available
-  without new data processing, and its +/-IL1b / +/-TNFa / +/-VEGF conditions are a sharper
-  and cheaper test than a new cell line: same genome, genuinely different regulatory state,
-  no input-domain shift. Run the model-free coupling first (Report 2).
-- **Repeat the residual-objective comparison for p300.** Resolved only for H3K27ac. p300's
-  residual *r* is already 0.654, so the headroom may be smaller.
-- **Train the p300 models with whichever multimodal architecture wins**, since the same
-  accessibility over-reliance is likely present there.
+- A qnorm-off ABC arm: the qnorm reference is built from observed K562 signal, so a predicted
+  track inherits that distribution's shape.
+- Remove the profile head, or bin its target to 20-50 bp (ceiling 0.21 -> about 0.72; input
+  stays single-base); the base-resolution term largely fits Poisson noise (Report 1, Fig. 4).
+  F-015 swapped its target to DNase instead; removal is untested.
+- Characterise the twelve threshold-level false negatives individually.
+- Repeat the residual-objective comparison for p300 (residual *r* already 0.654).
+- Train the p300 models with whichever multimodal architecture wins.
 
 **Closed, do not reopen without new evidence**
 
-- **p300 as a second head or a stacked input**: the target is not predictable where H3K27ac
-  fails, and the premise was largely an input-control artifact.
-- **Element derivation**: ATAC-derived against DNase-derived training elements,
-  *p* = 0.83.
-- **Fragment channels for deployment**: real in-cell type, exactly null transferred in both
-  directions.
+- p300 as a second head or a stacked input: not predictable where H3K27ac fails.
+- Element derivation: ATAC-derived against DNase-derived training elements, *p* = 0.83.
+- Fragment channels for deployment: null transferred in both directions.
+- GC-matching the negatives: +0.001 in-cell, -0.002 transferred.
+- Paired re-test of the H3K27ac benchmark deltas: done; the ATAC-input arms stay at the floor
+  (F-004).
+- Dynamic-range diagnostic on the p300 arms: moot, since rank qnorm discards scale (F-022).
+- ATAC-to-DNase converter: worse than ATAC as a model input (F-014) and not resolvably better
+  in ABC (F-012).
+- A third cell type and multi-cell-type training: THP-1 added for H3K27ac (F-016); pooling
+  four source cell types for p300 does not beat single-source transfer downstream (F-027).
 
 ## Methods
 
@@ -1603,19 +1240,18 @@ positives (Report 1). Negatives are 10% of each batch and are never evaluated on
 `47 + sum(2^i for i in 1..n_layers)`.
 
 `w = 10` was chosen from a single-fold sweep over 1, 3, 10, 100 and 1,000. Only the extremes
-are resolvable at the measured noise level: 10 clearly beats 1 (0.437), and 1,000 (0.464),
+are resolvable at the measured noise level: 10 clearly beats 1 (0.437) and 1,000 (0.464),
 while 3, 10 and 100 are within run-to-run variance of one another. With between-fold `sd` of
-0.041-0.046, a single-fold sweep could not have resolved those differences at all, so this
-choice rests on a flat region rather than on a measured optimum.
+0.041-0.046, a single-fold sweep could not resolve those differences, so this choice rests on
+a flat region rather than a measured optimum.
 
 Scoring rules, metric definitions and the paired-test procedure are in Report 2; ceilings,
 track definitions and the data inventory are in Report 1.
 
 ### Single-pass against reverse-complement-averaged, for every result where it matters
 
-Test-time RC averaging became the scoring default on 2026-09-03. The decision table above
-quotes the RC values; the figures and section prose quote single-pass. This is the complete
-list of differences, so no reader has to guess whether a discrepancy is material.
+Test-time RC averaging became the scoring default on 2026-09-03. The decision table quotes
+the RC values; the figures and section prose quote single-pass. Every difference:
 
 | result, top quintile | single-pass | RC-averaged |
 |---|---|---|
@@ -1632,15 +1268,13 @@ list of differences, so no reader has to guess whether a discrepancy is material
 | residual *r*: ATAC negative control | -0.003 | -0.002 |
 
 Every RC value is equal or larger except the sequence-only residual *r*, and the negative
-control stays at zero, which is what a change that removes strand-asymmetry noise rather than
-adding signal should look like. No sign, ordering or significance verdict differs between the
-two columns. Source: `results/{,rc_}{fiveprime,wide_*,fragchan_*,residual_grid_*}_*.tsv`.
+control stays at zero, as expected for a change that removes strand-asymmetry noise rather
+than adding signal. No sign, ordering or significance verdict differs between the two
+columns. Source: `results/{,rc_}{fiveprime,wide_*,fragchan_*,residual_grid_*}_*.tsv`.
 
-**Why the figures were not migrated.** `3.1` and `3.4` read the `2.2`-evaluator table format,
-for which no `rc_*` equivalent exists, the RC re-scoring ran through `2.15`, which emits
-different columns. Migrating them means either re-running the `2.2` evaluators with RC or
-rewriting the plot scripts' data handling, both of which carry more risk of introducing an
-error than the 0.002-0.016 they would correct. Recorded as open rather than done.
+**The figures stay single-pass.** `3.1` and `3.4` read the `2.2`-evaluator table format, for
+which no `rc_*` equivalent exists (the RC re-scoring ran through `2.15`); migrating them is
+riskier than the 0.002-0.016 it would correct. Recorded as open.
 
 ### Regenerate
 

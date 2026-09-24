@@ -1,6 +1,6 @@
 ---
-title: "What the H3K27ac and ATAC data are, and what is predictable from them"
-date: "2026-09-05"
+title: "H3K27ac is broader than ATAC and has no reproducible base-resolution profile, which sets the ceiling for every model"
+date: "2026-09-24"
 status: "draft"
 format:
   html:
@@ -75,40 +75,21 @@ blockquote { border-left: 3px solid #ddd; margin-left: 0; padding-left: 1rem;
 <details>
 <summary>Full legend</summary>
 
-See the coupling section below for the complete legend. The two points that make this the
-headline: the model-free ATAC-H3K27ac correlation on the elements carrying the mark is
-0.51 in K562 against 0.33-0.41 in every other cell type measured, so an accessibility-based
-number is not comparable across cell types without this denominator, and on all elements the
-ordering inverts, with TeloHAEC highest, because that stratum is dominated by the
-dead-versus-active contrast every accessible-element set shares. Source:
+Complete legend under Figure 1 below. Source:
 `results/atac_vs_h3k27ac_by_celltype.tsv`, `results/coupling_panel_recomputed.tsv`.
 </details>
 
 ## Summary
 
-- The target sits away from the input. ATAC peaks on the element centre; H3K27ac is bimodal with shoulders at +/-250 bp and is still at 28% of maximum at +/-2 kb, so its extent exceeds the models' ~1.1 kb receptive field by an unmeasured margin (Fig. 2).
-- A 1 kb counting window is the widest choice with zero neighbour contamination, and the achievable ceiling is nearly saturated there: top-quintile inter-replicate *r* rises only 0.760 to 0.798 from +/-500 to +/-2000 bp while the fraction of windows containing another element's centre rises from 0% to 41.5% (Fig. 3).
-- There is almost nothing at base resolution to predict. A perfect model caps at *r* = 0.21 (K562), and 0.18 (GM12878) on the top quintile at 1 bp, rising to 0.72 and 0.70 at 50 bp binning (Fig. 4). Any profile-head number must be read against that cap, not against 1.
-- Accessibility-H3K27ac coupling varies two-fold across cell types and the strata disagree about the ordering. (Fig. 1), which is why every evaluation in this project is stratified and why a new cell type gets its coupling measured before any model is trained in it.
-- The ATAC library supports fragment-size stratification: a clean nucleosomal ladder with a sub-nucleosomal mode at 42 bp and a mono-nucleosomal peak near 205 bp (Fig. 5).
+- ATAC peaks on the element centre. H3K27ac peaks on the flanking nucleosomes at +/-250 bp and is still at 28% of maximum at +/-2 kb, past the models' ~1.1 kb receptive field (Fig. 2).
+- +/-500 bp is the widest counting window with no other element's centre inside it. Widening to +/-2000 bp raises the replicate ceiling on the top quintile (the 20% of elements with the most H3K27ac signal) only from 0.760 to 0.798 (Fig. 3).
+- At 1 bp a perfect model of H3K27ac shape reaches only *r* = 0.21 (K562) and 0.18 (GM12878) on the top quintile, and 0.72 and 0.70 at 50 bp bins (Fig. 4). Profile-head scores should be read against that cap.
+- Accessibility explains H3K27ac best in K562 (top-quintile *r* 0.51 against 0.33-0.41 elsewhere), and the ordering changes when all elements are scored (Fig. 1). So every evaluation is stratified, and coupling is measured in each new cell type before training.
+- K562 ATAC has a clean nucleosomal ladder, with a sub-nucleosomal mode at 42 bp and a mono-nucleosomal peak near 205 bp, so fragment-size channels can be built (Fig. 5).
 
 ## Goals
 
-This report records what the H3K27ac and ATAC data *are*, and what is predictable from them
-in principle, separately from any model. It exists so that the other two reports can cite a
-ceiling, a coupling or a track definition without re-deriving it, and so that a number
-quoted anywhere in the project can be checked against the measurement it came from. Every
-ceiling in the project lives here.
-
-Three companion documents:
-
-- **Report 2, evaluation methodology**: how a comparison in this project is scored and what
-  each metric can and cannot support. Standing cautions, each with the incident that
-  motivated it.
-- **Report 3, design decisions**: the workbench. Which architecture and input changes were
-  tried, what each did to the reporting metric, and the verdict.
-- `reference/DATA_INVENTORY.md`: the full assay inventory across all nine cell types,
-  including which assays exist where and which files must not be used.
+This report describes the H3K27ac and ATAC data and what is predictable from them without a model, including every ceiling in the project. See also Report 2 (evaluation methodology), Report 3 (design decisions: each architecture and input change tried, and its verdict) and `reference/DATA_INVENTORY.md` (every assay across the nine cell types, including files that must not be used).
 
 ## Datasets
 
@@ -122,24 +103,15 @@ Three companion documents:
 | **GM12878 candidate elements** | Candidate regulatory elements, n = 154,224 | Repo: `2026_0606_GM12878_transferability/reference/` | Transfer coordinate system |
 | **K562 p300** | EP300 ChIP-seq, stranded | ENCODE ENCSR000EGE | Reference target for the sequence-margin comparison |
 | **K562 DNase** | DNase-seq, ENCSR000EOT (pe + se), and ENCSR000EKS (se); 301.1M usable reads | ENCODE | Alternative accessibility input |
-| **GM12878 DNase** | DNase-seq, ENCSR000EMT (se); 53.8M usable reads, 9.5% chrM, count ceiling 0.445 on the top quintile | ENCODE | Alternative accessibility input, materially weaker than K562's |
-| **hg38 CV folds** | Chromosome-holdout 5-fold split | Repo: `reference/hg38_five_folds.json` | Shared across all models so numbers are comparable |
+| **GM12878 DNase** | DNase-seq, ENCSR000EMT (se); 53.8M usable reads, 9.5% chrM, count ceiling 0.445 on the top quintile | ENCODE | Alternative accessibility input; a much weaker library than K562's |
+| **hg38 CV folds** | Chromosome-holdout 5-fold split | Repo: `reference/hg38_five_folds.json` | Shared by all models so numbers are comparable |
 | **Training negative pool** | ChromBPNet genome-wide GC-*annotated* tiling, hg38; n = 3,088,298 bins, 1 kb stride, mean GC 0.389. **Not GC-matched to the positives**, see the negatives section below | Repo: `reference/genomewide_gc_stride_1000_flank_size_1057.gc.bed` | Training negatives only; never evaluated on |
 
-All ChIP-seq targets are counted as **5' read ends** at single-base resolution (`bedtools genomecov -5 -dz`, stranded), matching the convention already used for the p300 models in this repository. Model architecture is `MultiModalBPNet` (`scripts/multimodal_bpnet.py`), a BPNet variant with a profile head and a counts head; only the counts head is analysed here. All correlations are on log counts.
+The model is `MultiModalBPNet` (`scripts/multimodal_bpnet.py`), a BPNet variant; only its counts head is analysed here, on log counts. Target counting is in Methods.
 
-## Accessibility explains less of H3K27ac outside K562, and the strata disagree about the ordering
+## Accessibility explains less of H3K27ac outside K562, and the ordering changes when all elements are scored
 
-**Q:** Is the ATAC-only model's lower score in GM12878 a failure to generalise, or is accessibility less coupled to H3K27ac there?
-
-**A:** Accessibility is less coupled there, the model-free ATAC-H3K27ac correlation is 0.409 in GM12878 against 0.510 in K562, while the ATAC-only model extracts a larger fraction of that available signal in GM12878 (ratio 1.14) than in K562 (1.06).
-
-![](figures/fig8_coupling_across_celltypes.png)
-
-<details>
-<summary>Figure 1 legend</summary>
-
-**Figure 1 | Accessibility-H3K27ac coupling weakens outside K562.** **a-c**, log1p summed ATAC against log1p summed H3K27ac over identical +/-500 bp element-centred windows, one panel per cell type; colour is element density on a log scale. No model is involved, so these bound what any accessibility-only predictor could reach. Top-quintile Pearson **0.512 (K562), 0.409 (GM12878), 0.371 (TeloHAEC)**, on n = 150,519 / 154,215 / 151,399 elements. The x-range differs in **c** because the TeloHAEC ATAC library is shallower; correlation is unaffected by that scale. **d, e**, Coupling across all six cell types and conditions measured so far, on all elements (**d**), and the top signal quintile (**e**). **The ordering inverts between the two.** On all elements TeloHAEC scores highest (0.73), and every cell type sits within 0.06 of the others, because that stratum is dominated by the dead-versus-active contrast every accessible-element set shares. On the top quintile the range triples and K562 stands clear at 0.51 against 0.33-0.41 elsewhere. The top quintile is the informative stratum, and the contrast between **d** and **e** is why this report stratifies throughout. Placing the ATAC-only model against the top-quintile reference:
+The ATAC-only model scores lower in GM12878 because accessibility and H3K27ac are less coupled there. Coupling, the model-free correlation of summed ATAC with summed H3K27ac per element, is the denominator that makes accessibility-based scores comparable across cell types. Relative to it, the model does better in GM12878 than in K562:
 
 | | K562 | GM12878 |
 |---|---|---|
@@ -147,18 +119,20 @@ All ChIP-seq targets are counted as **5' read ends** at single-base resolution (
 | ATAC-only model | 0.542 | 0.467 |
 | model / coupling | 1.06 | 1.14 |
 
-The ATAC-only model does not degrade across cell types (it exceeds the raw coupling in both, by a wider margin in GM12878), so its lower absolute score there is a property of the assay pair. Sequence-only falls 0.360 -> 0.146 with no analogous denominator to absorb it. This sharpens the transfer conclusion: accessibility transfers, only sequence collapses. K562 and GM12878 use the same 5' target processing and window; TeloHAEC uses its read-1-only equivalent. Sources: `results/atac_vs_h3k27ac_by_celltype.tsv`, `results/coupling_panel_recomputed.tsv`.
+Sequence-only falls 0.360 -> 0.146 with no such denominator to explain the drop. This sharpens the transfer conclusion: accessibility transfers, only sequence collapses.
+
+> **Superseded (F-016, 2026-09-14):** Scored against the target cell type's own accessibility-only model trained on the same assay (the floor), no transferred sequence+accessibility H3K27ac model beats it in any of six directions, so transfer fails for the full model too.
+
+![](figures/fig8_coupling_across_celltypes.png)
+
+<details>
+<summary>Figure 1 legend</summary>
+
+**Figure 1 | Accessibility-H3K27ac coupling weakens outside K562.** **a-c**, log1p summed ATAC against log1p summed H3K27ac over +/-500 bp element-centred windows, no model; colour is element density (log scale). Top-quintile Pearson **0.512 (K562), 0.409 (GM12878), 0.371 (TeloHAEC)**, n = 150,519 / 154,215 / 151,399 elements. The x-range differs in **c** because TeloHAEC's ATAC library is shallower; correlation is unaffected. **d, e**, Coupling in all six cell types and conditions measured, on all elements (**d**) and the top quintile (**e**). On all elements TeloHAEC is highest (0.73) and all lie within 0.06, because that stratum is dominated by the inactive-versus-active contrast every accessible-element set shares. On the top quintile the range triples. TeloHAEC targets use read 1 only. Sources: `results/atac_vs_h3k27ac_by_celltype.tsv`, `results/coupling_panel_recomputed.tsv`.
 </details>
-
-**Method.**
-
-- Summed ATAC against summed H3K27ac over identical element windows; no model.
-- Reported on the top H3K27ac quintile, matching every other evaluation here.
 
 <details>
 <summary>Full methods &amp; code</summary>
-
-This is the model-free reference for the ATAC-only baseline: it separates how much accessibility can explain in principle from how well a network learns it. Both are needed to read a cross-cell-type comparison, because the coupling is the denominator that makes accessibility-based numbers comparable between cell types. Results accumulate one row-set per label into a single TSV, so the panel extends by one invocation per cell type.
 
 ```bash
 pixi run python scripts/0.12.atac_vs_h3k27ac.py --label K562 \
@@ -172,27 +146,20 @@ Source: `scripts/0.12.atac_vs_h3k27ac.py`
 
 ## H3K27ac sits on flanking nucleosomes and is far broader than ATAC
 
-**Q:** Are ATAC and H3K27ac located in the same place relative to a candidate element?
-
-**A:** No, ATAC peaks on the element centre (offset −12 bp, no dip), while H3K27ac is bimodal with shoulders at +/-250 bp and is far broader, still at 28% of maximum at +/-2 kb where ATAC has fallen to 17%.
+ATAC peaks on the element centre (offset −12 bp, no central dip). H3K27ac has shoulders at +/-250 bp on the flanking nucleosomes and is still at 28% of its maximum at +/-2 kb, where ATAC has fallen to 17%. That is the edge of the profiled window, so H3K27ac extends further than measured here.
 
 ![](figures/profile_comparison.png)
 
 <details>
 <summary>Figure 2 legend</summary>
 
-**Figure 2 | H3K27ac is displaced onto flanking nucleosomes and is much broader than accessibility.** Meta-profiles over the top quintile of elements by H3K27ac signal (n = 30,000 elements sampled with seed 0; profiles computed on the same element set for all tracks so the comparison is not confounded by each track selecting its own strong elements). **a**, Each track normalised to its own maximum, so the comparison is one of *location*. **b**, Raw magnitudes, log scale. Tracks: K562 ATAC (teal), K562 H3K27ac as 5' ends (orange). Dashed vertical line marks the element centre. Summary statistics (`results/profile_comparison_summary.tsv`): peak offset −12.5 bp for ATAC versus −262.5 bp for H3K27ac 5' ends; centre-to-peak ratio 1.000 for ATAC (no dip) versus 0.944 for H3K27ac. The bimodality is the expected signature of a nucleosome-free element flanked by acetylated nucleosomes. The breadth difference is the more consequential one for modelling: at +/-2 kb, the edge of the profiled window, H3K27ac is still at 28% of its maximum where ATAC has fallen to 17%, so its true extent is wider than these profiles measure. Source: `results/profile_comparison.tsv`.
+**Figure 2 | H3K27ac is displaced onto flanking nucleosomes and is much broader than accessibility.** Meta-profiles in 50 bp bins, top H3K27ac quintile (n = 30,000 elements, seed 0), all tracks on the same elements. **a**, Each track normalised to its own maximum. **b**, Raw magnitudes, log scale. Teal, K562 ATAC; orange, K562 H3K27ac 5' ends; dashed line, element centre. Peak offset −12.5 bp (ATAC) against −262.5 bp (H3K27ac); centre-to-peak ratio 1.000 against 0.944 (`results/profile_comparison_summary.tsv`). Source: `results/profile_comparison.tsv`.
 </details>
-
-**Method.**
-
-- Meta-profiles binned at 50 bp over +/-2 kb, restricted to the top H3K27ac quintile.
-- All tracks profiled on the identical element set; each normalised to its own maximum.
 
 <details>
 <summary>Full methods &amp; code</summary>
 
-Windows are centred on the candidate-element midpoint. The `summit` column of `K562_DNase_candidate_elements.narrowPeak` equals `width/2`, so element-centred windows require no change to the extraction code. Elements within `flank` of a contig end are dropped. Signal is read with pyBigWig and `nan` treated as zero.
+Window centring and signal reading are in Methods.
 
 ```bash
 pixi run python scripts/0.6.compare_profiles.py \
@@ -206,29 +173,27 @@ Source: `scripts/0.6.compare_profiles.py`
 
 ## A 1 kb counting window is the best trade-off between signal and neighbour contamination
 
-**Q:** How wide should the window be over which H3K27ac counts are summed?
-
-**A:** +/-500 bp, wider windows raise the achievable ceiling only marginally (0.760 -> 0.798 from +/-500 to +/-2000), while the fraction of elements containing a *different* candidate element rises from 0% to 41.5%.
+Count H3K27ac over +/-500 bp. Wider windows add little signal (top-quintile ceiling 0.760 at +/-500, 0.798 at +/-2000) and increasingly contain another element's centre (41.5% at +/-2000), whose reads cannot be attributed to the centred element. That matters for sequence attribution.
 
 ![](figures/fiveprime_h3k27ac_replicate_ceiling.png)
 
 <details>
 <summary>Figure 3 legend</summary>
 
-**Figure 3 | The achievable ceiling saturates by +/-1 kb, while neighbour contamination keeps rising.** Inter-replicate Pearson correlation of log H3K27ac counts between the two ENCSR000AKP replicates, as a function of the half-width of the symmetric counting window, over all n = 150,526 candidate elements (teal), and the top signal quintile (purple). Because the two replicates measure the same biology, their agreement bounds how well any model can predict the merged target. Top-quintile values: 0.729 (+/-250 bp), 0.760 (+/-500), 0.776 (+/-750), 0.785 (+/-1000), 0.795 (+/-1500), 0.798 (+/-2000). The countervailing cost is neighbour contamination, the fraction of elements with another candidate element's centre inside the window, which is a property of element spacing and independent of the assay: 0% at +/-250 and +/-500 bp, 9.9% at +/-750, 19.9% at +/-1000, 33.1% at +/-1500, 41.5% at +/-2000 (`results/window_tradeoff.tsv`). A contaminated window's count is not attributable to the element it is centred on, which matters for any subsequent sequence-attribution work. +/-500 bp is the widest window with zero contamination. Source: `results/fiveprime_replicate_ceiling_by_window.tsv`.
+**Figure 3 | The achievable ceiling saturates by +/-1 kb, while neighbour contamination keeps rising.** Pearson correlation of log H3K27ac counts between the two ENCSR000AKP replicates, by counting-window half-width, over all n = 150,526 candidate elements (teal) and the top quintile (purple). Replicate agreement bounds any model of the merged target. Top quintile: 0.729 (+/-250 bp), 0.760 (+/-500), 0.776 (+/-750), 0.785 (+/-1000), 0.795 (+/-1500), 0.798 (+/-2000). Elements with another element's centre in the window: 0% at +/-250 and +/-500 bp, 9.9% at +/-750, 19.9% at +/-1000, 33.1% at +/-1500, 41.5% at +/-2000 (`results/window_tradeoff.tsv`). Source: `results/fiveprime_replicate_ceiling_by_window.tsv`.
 </details>
 
 **Method.**
 
-- Per-replicate 5'-end BigWigs built with identical processing to the merged training target.
+- Per-replicate 5'-end BigWigs built with the same processing as the merged training target.
 - Neighbour contamination computed from element-centre spacing per chromosome.
 
 <details>
 <summary>Full methods &amp; code</summary>
 
-Ceilings are reported as the raw inter-replicate *r*. Converting to a bound on model performance requires two corrections, applied wherever a fraction-of-ceiling is quoted in this report: Spearman-Brown for the fact that the model predicts the two-replicate *merge* rather than one replicate (`rel = 2r/(1+r)`), then a square root, since a model predicts the expected signal while a replicate is one noisy realisation of it. At +/-500 bp this converts a raw 0.760 into a bound of 0.929 on the top quintile, and a raw 0.844 into 0.957 over all elements.
+Converting raw *r* to a bound on model performance is described in Methods.
 
-A separate test asked whether excluding the nucleosome-free centre sharpens the target, on the reasoning that H3K27ac is deposited on the flanks. It does not: excluding +/-125/+/-250/+/-375 bp lowers the top-quintile ceiling monotonically (0.760 -> 0.747 -> 0.729 -> 0.717), because the shallow central dip means the centre still carries ~94% of peak signal, so excluding it discards real reads. The flanking-only count also correlates 0.93-0.99 with the full-window count, so the two targets are barely different. Full symmetric window retained (`results/flanking_vs_full_window.tsv`).
+Excluding the nucleosome-free centre lowers the top-quintile ceiling (excluding +/-125/+/-250/+/-375 bp: 0.760 -> 0.747 -> 0.729 -> 0.717), because the centre still carries ~94% of peak signal. Flanking-only counts correlate 0.93-0.99 with full-window counts, so the full window is kept (`results/flanking_vs_full_window.tsv`).
 
 ```bash
 pixi run python scripts/0.3.replicate_ceiling_by_window.py \
@@ -243,23 +208,20 @@ Source: `scripts/0.3.replicate_ceiling_by_window.py`, `scripts/0.4.flanking_vs_f
 
 ## H3K27ac has no reproducible base-resolution profile
 
-**Q:** Is there base-resolution structure in the H3K27ac profile for the 1 bp profile head to learn, and if not, at what bin size does reproducible structure appear?
-
-**A:** A perfect model caps at *r* = 0.21 in K562 and 0.18 in GM12878 on the top quintile at 1 bp, rising to 0.72 and 0.70 when binned to 50 bp and 0.79 and 0.78 at 100 bp, so the base-resolution multinomial term is largely fitting Poisson noise.
+At 1 bp a perfect model caps at *r* = 0.21 in K562 and 0.18 in GM12878 on the top quintile, so the base-resolution multinomial term of the loss is mostly fitting Poisson noise. The cap rises to 0.72 and 0.70 at 50 bp bins, and 0.79 and 0.78 at 100 bp.
 
 ![](figures/fig11_profile_ceiling.png)
 
 <details>
 <summary>Figure 4 legend</summary>
 
-**Figure 4 | The reproducible part of the H3K27ac profile appears only after coarse binning.** Two replicates of the same experiment, correlated *within* each element across positions so the element's total count drops out and only shape remains; 16,148 K562 and 15,589 GM12878 elements, +/-500 bp windows, strands summed. **a**, Raw replicate-vs-replicate agreement: 0.023 and 0.016 at 1 bp on the top quintile. **b**, The corresponding ceiling on the pooled track. Raw agreement understates what a model can reach, each replicate is signal plus independent noise, while the model is scored against the pooled track whose noise variance is halved, so the reachable value is `sqrt(2r/(1+r))`, the same correction applied to the count ceiling. Solid lines top quintile, dashed all elements; K562 dark, GM12878 light. The curve is close to log-linear in bin size and still rising at 250 bp, so it identifies no preferred resolution; in particular there is no step near the ~180 bp nucleosome repeat, indicating a broad envelope rather than sharply phased peaks. Source: `results/profile_ceiling_binsize_{k562,gm12878}.tsv`.
+**Figure 4 | The reproducible part of the H3K27ac profile appears only after coarse binning.** Replicate-versus-replicate correlation across positions *within* each element, so only shape counts; 16,148 K562 and 15,589 GM12878 elements, +/-500 bp windows, strands summed. **a**, Raw agreement: 0.023 and 0.016 at 1 bp, top quintile. **b**, Ceiling on the pooled track the model is scored against, `sqrt(2r/(1+r))` (Methods). Solid, top quintile; dashed, all elements; dark, K562; light, GM12878. The curve is close to log-linear in bin size and still rising at 250 bp, so no bin size is preferred. There is no step near the ~180 bp nucleosome repeat, which indicates a broad envelope rather than sharply phased peaks. Source: `results/profile_ceiling_binsize_{k562,gm12878}.tsv`.
 </details>
 
 **Method.**
 
-- Within-element correlation across positions removes the count signal, which the count ceiling already covers.
-- Elements flat in either replicate are excluded rather than scored as 0, which would conflate unreproducible with no-shape-to-reproduce.
-- 500 bp is omitted: a 1 kb window gives 2 bins, too few for a within-element correlation.
+- Elements flat in either replicate are excluded; scoring them as 0 would mix "not reproducible" with "no shape to reproduce".
+- 500 bp bins are omitted: a 1 kb window gives only 2 bins.
 
 <details>
 <summary>Full methods &amp; code</summary>
@@ -272,22 +234,20 @@ Source: `scripts/0.25.profile_ceiling_by_binsize.py`
 
 ## The ATAC library supports fragment-size stratification
 
-**Q:** Does the K562 ATAC data contain a usable mono-nucleosomal population?
-
-**A:** Yes, a clean nucleosomal ladder with a sub-nucleosomal mode at 42 bp and mono-nucleosomal peak at ~205 bp, though the two currently-built channels capture only 50% of fragments.
+K562 ATAC fragments form a clean nucleosomal ladder, but the two channels built so far capture only 50% of fragments. A four-channel input of [all fragments, sub, mono, di] would contain the current flat-accessibility input, so it cannot regress, and would add the higher-order peaks.
 
 ![](figures/atac_fragment_lengths.png)
 
 <details>
 <summary>Figure 5 legend</summary>
 
-**Figure 5 | K562 ATAC fragment lengths show clear nucleosomal laddering.** Fragment-length density from TLEN of properly-paired reads, chr1, ~1.4 million fragments per replicate, three ENCSR868FGK replicates overlaid (ENCFF077FBI, ENCFF128WZG, ENCFF534DCE). Sub-nucleosomal mode at 42 bp, mono-nucleosomal peak at ~205 bp, di-nucleosomal at ~400 bp and tri-nucleosomal at ~600 bp; median 201 bp; replicates superimpose. Shaded bands are the two channel windows built so far: sub-nucleosomal 1-99 bp (30.3% of fragments), and mono-nucleosomal 180-247 bp (19.7%), leaving **50.0% of fragments in neither**, the 100-180 bp trough and everything above 247 bp, including both higher-order peaks. A four-channel design of [all fragments, sub, mono, di] would make the input a strict superset of the current flat-accessibility baseline, so it cannot regress, while adding the higher-order structure the ladder shows is present. Source: `results/atac_fragment_length_summary.tsv`.
+**Figure 5 | K562 ATAC fragment lengths show clear nucleosomal laddering.** Fragment-length density from TLEN of properly-paired reads, chr1, ~1.4 million fragments per replicate; the three ENCSR868FGK replicates (ENCFF077FBI, ENCFF128WZG, ENCFF534DCE) superimpose. Modes at 42 bp (sub-nucleosomal), ~205 bp (mono-), ~400 bp (di-) and ~600 bp (tri-); median 201 bp. Shaded: sub-nucleosomal channel 1-99 bp (30.3% of fragments) and mono-nucleosomal channel 180-247 bp (19.7%). **50.0% of fragments are in neither** (100-180 bp and above 247 bp, including both higher-order peaks). Source: `results/atac_fragment_length_summary.tsv`.
 </details>
 
 **Method.**
 
-- TLEN from properly-paired reads; each pair counted once via positive TLEN.
-- Fragment lengths require the paired-end BAMs; the Tn5 tagAlign files are per-read and lose them.
+- Each properly-paired fragment counted once, via positive TLEN.
+- Fragment lengths need the paired-end BAMs; the per-read Tn5 tagAlign files lose them.
 
 <details>
 <summary>Full methods &amp; code</summary>
@@ -303,142 +263,61 @@ Source: `scripts/0.10.plot_fragment_lengths.py`, `scripts/0.9.make_atac_fragment
 
 ## DNase cut sites are reproducible at base resolution
 
-**Q:** H3K27ac has almost no reproducible 1 bp profile, which caps what any profile head can
-score. Does DNase behave the same way, or are cut sites reproducible where acetylation is not?
-
-**A:** Reproducible, by roughly a factor of four. The 1 bp top-quintile ceiling is **0.848** in
-K562 and **0.686** in GM12878, against 0.21 and 0.18 for H3K27ac in the same cell types and by
-the same method (Fig. 4).
+By the method of Fig. 4, the 1 bp top-quintile ceiling is about four times higher for DNase than for H3K27ac:
 
 | 1 bp, top quintile | DNase | H3K27ac |
 |---|---|---|
 | K562 | 0.848 | 0.21 |
 | GM12878 | 0.686 | 0.18 |
 
-K562 DNase saturates quickly: 0.921 at 5 bp and 0.946 at 10 bp, so a model predicting DNase at
-5-10 bp rather than 1 bp would give up almost nothing.
+K562 DNase reaches 0.921 at 5 bp and 0.946 at 10 bp, so predicting it at 5-10 bp loses almost nothing.
 
-**Why this matters beyond characterisation.** An ATAC-to-DNase converter has to emit something
-the downstream model can consume, and that model reads accessibility as a base-resolution 5'
-insertion track. A converter predicting only per-element DNase counts and painting them flat
-would strip the structure the accessibility branch uses. These ceilings say the profile is
-there to be predicted, which makes the profile head the decisive component of a converter,
-having been near-useless everywhere else in this project.
+The downstream model reads accessibility as a base-resolution 5' insertion track, so an ATAC-to-DNase converter that predicted only per-element counts would strip the structure it uses. With a reproducible DNase profile to predict, the profile head becomes the decisive component of a converter, having been near-useless everywhere else in this project.
 
-**The two DNase libraries are not of equal quality, and the gap is large.** The count ceiling
-over the same +/-500 bp windows is *r* = 0.925 in K562 and **0.445** in GM12878 on the top
-quintile. Usable depth on the main chromosomes is 301.1M reads for K562 against 53.8M for
-GM12878, a 5.6x gap, where the two cell types' ATAC libraries are matched at 545.7M and
-571.4M. GM12878's DNase also carries 9.5% mitochondrial reads against K562's 0.075%.
+> **Superseded (F-014, 2026-09-13):** A converter that reproduced the DNase profile at 95% of its inter-replicate ceiling (F-011) still made a worse model input than plain ATAC in every direction tested, so predicting the profile well was not enough.
 
-Any DNase-versus-ATAC comparison in GM12878 therefore confounds assay with library quality,
-and a cross-cell-type DNase comparison confounds it with a 5.6x depth difference. The K562
-in-cell comparison is the clean one, and it is conservative: DNase is the *shallower* input
-there (301.1M against ATAC's 545.7M), so a DNase advantage would hold despite the handicap.
+GM12878's DNase library is much weaker than K562's: top-quintile count ceiling *r* = **0.445** against 0.925 (+/-500 bp windows), 53.8M usable main-chromosome reads against 301.1M (5.6x), and 9.5% mitochondrial reads against 0.075%. The two ATAC libraries are matched (545.7M, 571.4M). DNase comparisons in GM12878 therefore confound assay with library quality, and cross-cell-type DNase comparisons confound it with depth. The K562 in-cell comparison is clean and conservative, because DNase is the *shallower* input there (301.1M against ATAC's 545.7M).
 
 **Method.**
 
-- Same script and same procedure as the H3K27ac ceilings, so the numbers sit on one scale:
-  within-element correlation across positions between two replicates, which removes the count
-  signal and leaves shape.
-- Stranded per-replicate 5' tracks, read 1 only for paired BAMs, detected per file rather than
-  read from the metadata table.
+- Same script and procedure as the H3K27ac ceilings, so the numbers share one scale.
+- Stranded per-replicate 5' tracks; read 1 only for paired BAMs, with pairing detected per file rather than from the metadata table.
 
 <details>
 <summary>Full methods &amp; code</summary>
 
-**A recorded constraint says mixed run types make an inter-replicate ceiling uncomputable**,
-which is why HCT116's H3K27ac was excluded. K562's ENCSR000EOT is listed as pe + se, so that
-objection applies here in principle. It is weaker under 5' counting, which takes one cut site
-per read regardless of length and uses read 1 only for paired data, making a PE and an SE
-library comparable at the cut-site level. GM12878's ENCSR000EMT is two clean SE replicates and
-was run as the control: it gives the same shape of curve, so the mixed run type is not
-generating K562's result. K562's replicates agree *better* (0.562 at 1 bp on the top quintile)
-than GM12878's two matched SE replicates do (0.307).
+K562's ENCSR000EOT is listed as pe + se, and a recorded constraint says mixed run types make an inter-replicate ceiling uncomputable (the reason HCT116's H3K27ac was excluded). 5' counting weakens that objection: one cut site per read, read 1 only for paired data, makes PE and SE libraries comparable at the cut-site level. The control, GM12878's ENCSR000EMT (two clean SE replicates), gives the same shape of curve, and K562's replicates agree *better* (0.562 at 1 bp, top quintile) than GM12878's (0.307). The mixed run type is not producing K562's result.
 
 ```bash
 sbatch scripts/0.33.dnase_profile_ceiling.sh
 ```
 Source: `scripts/0.33`, `scripts/0.25.profile_ceiling_by_binsize.py`,
 `results/profile_ceiling_binsize_{k562,gm12878}_dnase.tsv`
+</details>
 
-## Accessibility track conventions, and the read-length confound they hide
+## 5' insertion tracks remove a read-length confound that full-interval coverage carries
 
-Two conventions are in play for the accessibility input and they are different quantities.
+Full-interval coverage (`bedtools genomecov -bg` over the tagAlign interval) counts `read_length` bases per read, smearing each Tn5 insertion across ~95 bases in our K562 and GM12878 libraries. 5' insertion counts (`genomecov -bg -5`) count one base per read, so they compare across cell types sequenced at different read lengths. This is the ChromBPNet convention (`chrombpnet/helpers/preprocessing/reads_to_bigwig.py`: `-bg -5`, unstranded, ATAC shift `4-plus_shift, -4-minus_shift`). Our tagAligns are already Tn5-shifted, so the build only adds `-5`; shifting again would double-shift.
 
-**Full-interval coverage** (`bedtools genomecov -bg` over the tagAlign interval) counts
-`read_length` bases per read, so the track scales with read length and smears each Tn5
-insertion across ~95 bases in our K562 and GM12878 libraries.
-
-**5' insertion counts** (`genomecov -bg -5`) count exactly one base per read, which is the
-ChromBPNet convention (`chrombpnet/helpers/preprocessing/reads_to_bigwig.py`: `-bg -5`,
-unstranded, ATAC shift `4-plus_shift, -4-minus_shift`). Our tagAligns are already
-Tn5-shifted, so the correct build reduces to adding `-5`; applying the shift again would
-double-shift.
-
-**The difference is a constant within a cell type and a confound across them.** Verified by
-an arithmetic identity: `sum(full-interval) / sum(5')` must equal the mean read length.
-Measured 84.5 and 85.6 for K562 and GM12878 (94-95 bp reads), and 30.9-35.5 for the four
-TeloHAEC conditions (35-36 bp). So K562-versus-GM12878 comparisons were never affected,
-but TeloHAEC's full-interval coverage is a different quantity from theirs. With read length
-removed, the K562-versus-TeloHAEC gap falls from 13-27x to 5.3-12.3x nuclear depth, which
-is genuine sequencing depth rather than an artifact of the convention.
-
-The 5' tracks are read-length independent by construction and are the correct choice the
-moment a third cell type enters. What the switch does to model performance is a design
-decision, not a property of the data, and is reported in Report 3.
+`sum(full-interval) / sum(5')` must equal the mean read length: 84.5 and 85.6 for K562 and GM12878 (94-95 bp reads), 30.9-35.5 for the four TeloHAEC conditions (35-36 bp). K562-versus-GM12878 comparisons were never affected, but TeloHAEC's full-interval coverage is a different quantity. With read length removed, the K562-versus-TeloHAEC gap falls from 13-27x to 5.3-12.3x nuclear depth, which is real sequencing depth. The effect of switching to 5' tracks on model performance is in Report 3.
 
 ## Element derivation differs between cell types, which is a standing confound
 
-Documented in full in `reference/ELEMENT_DERIVATION.md`. The K562 and GM12878 candidate
-element sets are DNase-derived; TeloHAEC's are ATAC-derived. TeloHAEC is therefore the one
-cell type whose elements match its own input assay, and the two cell types carrying most of
-this project's results do not.
-
-An ATAC-derived K562 set exists (`reference/K562_ATAC_candidate_elements.narrowPeak`, same
-rE2G model type as TeloHAEC's), so the confound is testable rather than merely noted; the
-test and its result are in Report 3. The ABC candidate regions used for the downstream
-benchmark are ATAC-derived, from observed K562 ATAC.
+K562 and GM12878 candidate elements are DNase-derived; TeloHAEC's are ATAC-derived (`reference/ELEMENT_DERIVATION.md`). So the two cell types behind most results use elements from a different assay than their input. An ATAC-derived K562 set (`reference/K562_ATAC_candidate_elements.narrowPeak`, same rE2G model type as TeloHAEC's) makes this testable; the test is in Report 3. The ABC candidate regions for the downstream benchmark are ATAC-derived, from observed K562 ATAC.
 
 ## The training negative pool is not GC-matched, despite its filename
 
-`reference/genomewide_gc_stride_1000_flank_size_1057.gc.bed` is ChromBPNet's genome-wide
-GC-*annotated* tiling: 3,088,298 bins at 1 kb stride with GC in column 4. That file is the
-*input* to GC matching, not its output. Our training code reads only columns 1-3, discarding
-the GC column, and the sampler draws uniformly at random from a 50,000-window random
-subsample of it. So the training negatives are a uniform random sample of the genome, at mean
-GC **0.389** against **0.466-0.593** for candidate elements, and no matching to either cell
-type's positive set takes place. The same pool is used for K562 and GM12878, which would be
-wrong if matching were happening (since the positives differ per cell type), and is moot
-because it is not.
+Training negatives are a uniform random sample of the genome, with mean GC **0.389** against **0.466-0.593** for candidate elements. Retraining on GC-matched negatives changes nothing measurable.
 
-What follows:
+`reference/genomewide_gc_stride_1000_flank_size_1057.gc.bed` is ChromBPNet's GC-*annotated* genome tiling (3,088,298 bins, 1 kb stride, GC in column 4), the *input* to GC matching. Our training code reads only columns 1-3 and samples uniformly from a 50,000-window random subsample, using the same pool for K562 and GM12878.
 
-- **Negatives are not mislabelled.** They carry their *true* extracted H3K27ac signal rather
-  than a hard zero, so the 1 kb bins that happen to overlap a real candidate element get
-  their real signal. They are also restricted to each fold's training chromosomes.
-- **No reported number is computed on them.** Evaluation runs on the candidate element set
-  only (Report 2), so every correlation in these three reports is an element-only number.
-- **It was a plausible cause of the sequence branch's flatness, and it is not the cause.**
-  A positive/negative contrast separable on GC alone is a known way to turn a BPNet-style
-  sequence branch into a coarse GC detector, and negatives are 10% of every batch differing
-  from positives by ~0.1 in mean GC. **Tested and refuted**: retraining on properly GC-matched
-  negatives gives +0.001 in-cell type (*p*=0.76), and -0.002 transferred (*p*=0.33), with the
-  match verified beforehand, mean-GC gap to the elements closed 6.6x and the largest per-bin
-  discrepancy 5x (Report 3). So the mismatch is real and documented here for anyone
-  reproducing the training, but it is not decisive for any result.
+- Negatives carry their true H3K27ac signal, not a hard zero, and are restricted to each fold's training chromosomes.
+- No reported number is computed on them; evaluation uses candidate elements only (Report 2).
+- GC-separable negatives can turn a BPNet-style sequence branch into a coarse GC detector (negatives are 10% of every batch, ~0.1 lower in mean GC), so this was tested as the cause of the flat sequence branch. GC-matched negatives give +0.001 in-cell type (*p*=0.76) and -0.002 transferred (*p*=0.33), with the match verified first: mean-GC gap closed 6.6x, largest per-bin discrepancy 5x (Report 3).
 
-**Practical consequence for reproduction.** Nothing needs re-running on account of the
-unmatched pool. If you build new models, `data/gc_negatives_{k562,gm12878}_h3k27ac.bed` are
-matched sets produced by `scripts/0.28`; they change nothing measurable, and using the tiling
-directly keeps new numbers comparable to every existing one. Failure modes of the matching
-tool are recorded in the repository learnings; it exits 0 having written nothing when
-`bedtools` is absent, and it hangs rather than reporting a shortfall when the foreground is
-GC-rich enough to exhaust the high-GC bins.
+Nothing needs re-running. For new models, matched sets are `data/gc_negatives_{k562,gm12878}_h3k27ac.bed` (from `scripts/0.28`); the tiling keeps new numbers comparable with existing ones. The matching tool exits 0 having written nothing when `bedtools` is absent, and hangs when the foreground is GC-rich enough to exhaust the high-GC bins (repository learnings).
 
-**Separately, the candidate element set itself spans active and inactive elements**, so most
-of it carries no H3K27ac whatever the negatives are doing. That is the reason every
-evaluation in this project is stratified, and it is independent of the issue above.
+Separately, most candidate elements carry no H3K27ac, since the set spans active and inactive elements. That is why every evaluation is stratified.
 
 ## Methods
 
