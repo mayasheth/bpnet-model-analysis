@@ -1,0 +1,3 @@
+class	n_tested	rho_tested_vs_obs	rho_tested_pred_vs_obs_before	rho_untested_unchanged	n_elements	n_regions_touched
+promoter	44	1.0	0.5565891472868216	0.9999999999999999	3939	3406
+nonpromoter	3362	0.9999999999210543	0.6403318380257291	1.0	3939	3406

@@ -996,7 +996,7 @@ For reference the accessibility renormalisation shifted 3.7% of ranks and moved 
 ---
 
 ## F-026: Training p300 across four cell types beats single-source transfer and is the first model in this project to clear an assay-matched floor on transfer
-**Status:** established upstream; NOT yet benchmarked downstream
+**Status:** established upstream; the advantage over single-source DOES NOT REPLICATE downstream, see F-027 (2026-09-22)
 **Claim:** A multimodal p300 model trained on A549, GM12878, HepG2 and MCF-7 pooled, holding
 K562 out entirely, was scored on K562 p300 over K562's own EP300 peaks with K562 ATAC as the
 accessibility input. Baseline is K562's own accessibility-only p300 model, the assay-matched
@@ -1053,3 +1053,163 @@ run-to-run variance at sd 0.0018 count Pearson, well below these effects.
 |------|-------------|---------|---------|--------|-----------|
 | 2026-09-19 | training 44301326 (25 tasks), eval 44326695 (`2.15` via `2.43`) | K562 EP300 peaks (ENCSR000EGE inliers); panel A549/GM12878/HepG2/MCF-7, 34,669 pooled training peaks | 2026_0824_H3K27ac_model | multi-cell 0.317 top-quintile against single-source 0.266 and floor 0.256; +0.0508 paired (*p*=0.0004) and +0.0614 over the floor (*p*=0.036) | first transfer result to clear an assay-matched floor; extends F-016 |
 
+## F-027: The multi-cell-type advantage does not survive the CRISPR benchmark, and both transferred arms sit at the floor
+**Status:** established
+**Claim:** The F-026 multi-cell p300 model (A549+GM12878+HepG2+MCF-7, K562 held out) was
+painted onto K562's ABC candidate regions, run through ABC, and benchmarked against the K562
+CRISPR data alongside a policy-matched single-source comparator. Upstream the multi-cell
+model beat that comparator by +0.0508 top-quintile Pearson (*p*=0.0004). Downstream the same
+contrast is **-0.0020 [-0.0128, +0.0079]**, with the sign retained in 62.5% of resamples.
+Paired bootstrap, 2,000 resamples, 10,342 element-gene pairs scored by every arm, 466
+regulated (4.51%).
+
+| arm | AUPRC (shared pair set) |
+|---|---|
+| ATAC x observed p300 (ceiling) | 0.5673 |
+| ATAC x predicted p300, K562 in-cell | 0.5229 |
+| GM12878 single-source, target-derived norm | 0.4829 |
+| GM12878 single-source, own statistics | 0.4815 |
+| **multi-cell, K562 held out** | **0.4810** |
+| ATAC only (floor) | 0.4680 |
+
+| paired contrast | delta AUPRC | 95% CI | sign kept |
+|---|---|---|---|
+| **multi-cell - single-source, same normalisation** | **-0.0020** | [-0.0128, +0.0079] | 62.5% |
+| multi-cell - floor | +0.0130 | [-0.0041, +0.0287] | 94.2% |
+| single-source (target norm) - floor | +0.0149 | [+0.0012, +0.0278] | 98.1% |
+| target-derived norm - own statistics | +0.0014 | [-0.0042, +0.0074] | 67.5% |
+| K562 in-cell - floor | +0.0549 | [+0.0343, +0.0741] | 100% |
+| observed p300 - floor | +0.0993 | [+0.0786, +0.1198] | 100% |
+
+**Implications:** **This is the sixth time the CRISPR benchmark has disagreed with a
+correlation metric, and the first time it has erased a result that looked like the project's
+headline.** F-026's upstream claim stands as measured; what fails is the inference from it.
+The two transferred arms are indistinguishable from each other and barely separated from the
+floor, at roughly a quarter of the in-cell model's margin and an eighth of the observed-p300
+ceiling. **Pooling source cell types is not, on this evidence, a route to deployable
+transfer**, and the 2-vs-4 cell ladder proposed in F-026 to break the data-volume confound is
+no longer worth running for its own sake: there is no downstream effect left to attribute.
+The normalisation policy is separately worth nothing (+0.0014, sign kept 67.5%). That does
+NOT make the policy-matched comparator wasted work -- it is the measurement that rules
+normalisation out as an explanation for the upstream gap, and without it the downstream null
+would be ambiguous between "multi-cell does not help" and "the two arms were normalised
+differently".
+**Caveats:** One benchmark, one held-out cell type, and AUPRC on 466 regulated pairs is a
+coarse instrument: the floor-to-ceiling span is only 0.0993, so a 0.002 difference is well
+inside the noise of what this benchmark can resolve. The arms share one pair set and one
+resample per draw, so the deltas are paired, but the CIs still overlap heavily for every
+transferred arm. **This does not overturn F-024** (observed p300 beats observed H3K27ac as
+the activity term); that contrast is between OBSERVED tracks and is unaffected.
+**Tags:** p300, transfer, multi-cell-type, crispr-benchmark, k562, negative-result
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-09-22 | predictions 44736068/44736070, ABC 44748720, benchmark 44763411, bootstrap `4.17` | K562 ABC candidate regions (153,545) and K562 CRISPR pairs; multi-cell panel A549/GM12878/HepG2/MCF-7 | 2026_0824_H3K27ac_model | multi-cell 0.4810 AUPRC against single-source 0.4829 and floor 0.4680; -0.0020 [-0.0128, +0.0079] paired | contradicts the downstream reading of F-026; extends the Pearson/benchmark disagreement to six |
+
+## F-028: Most of the gap between predicted and observed p300 in ABC comes from how the CRISPR-tested elements are ranked
+**Status:** established
+**Claim:** Oracle substitution. For each model, a hybrid activity track was built (`4.31`)
+that gives the 3,406 ABC candidate regions overlapping a CRISPR-tested element their
+OBSERVED p300 within-class rank, and keeps the model's predicted values at the other 150,139
+regions. Ranks rather than values, because ABC's rank qnorm keeps only ranks (F-022). The
+hybrid was run through ABC and the benchmark alongside the all-predicted and all-observed
+arms, on one shared pair set (10,342 pairs, 466 regulated), paired bootstrap 2,000 resamples.
+
+| arm | AUPRC |
+|---|---|
+| C: observed p300 everywhere | 0.5673 |
+| B': in-cell model, observed ranks at tested elements | 0.5504 |
+| B: multi-cell model, observed ranks at tested elements | 0.5502 |
+| A': in-cell model, predicted everywhere | 0.5229 |
+| A: multi-cell model, predicted everywhere | 0.4810 |
+| ATAC only (floor) | 0.4680 |
+
+| contrast | delta AUPRC | 95% CI | share of gap |
+|---|---|---|---|
+| multi-cell: B - A (tested elements) | +0.0692 | [+0.0511, +0.0868] | 80% |
+| multi-cell: C - B (all other elements) | +0.0171 | [+0.0047, +0.0312] | 20% |
+| in-cell: B' - A' (tested elements) | +0.0276 | [+0.0126, +0.0430] | 62% |
+| in-cell: C - B' (all other elements) | +0.0169 | [+0.0052, +0.0289] | 38% |
+
+**Implications:** **The activity term fails mainly on the ordering of the elements the
+benchmark scores, not on the surrounding elements that enter ABC's denominator and qnorm
+reference.** A better activity model can in principle close most of the gap, so work aimed
+at element ranking (the ranking loss, better inputs) is aimed at the right quantity. Both
+oracle arms land at the same 0.550 although the models start 0.042 apart: **the whole
+difference between the in-cell and the transferred model is in how they rank the tested
+elements**; on the other 97% of candidates they cost ABC the same ~0.017. That ~0.017 is a
+floor on what a model that gets only the tested elements right can reach.
+**Caveats:** An oracle, not a model: it uses observed p300 at the tested elements and is
+never deployable. The tested elements are, by construction, where AUPRC is computed, so B - A
+is the upper bound on what fixing their ranks can buy, not an estimate of what a real model
+will. Two models; the decomposition could differ for an activity track with a very different
+error structure.
+**Tags:** p300, abc, crispr-benchmark, oracle, diagnostic, k562
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-09-23 | oracle tracks `4.31`, ABC 44913144, benchmark 44930707, bootstrap `4.17` | K562 ABC candidate regions and K562 CRISPR pairs | 2026_0824_H3K27ac_model | tested-element ranks carry 80% (transfer) and 62% (in-cell) of the predicted-to-observed gap | locates the F-027 loss; supports ranking-targeted work |
+
+## F-029: In ENCODE-rE2G, observed p300 adds +0.12 AUPRC over ATAC alone and predicted p300 adds nothing, because the predictions carry little beyond ATAC
+**Status:** established for the rE2G result; the explanation is supported, not established
+**Claim:** ENCODE-rE2G (ATAC, powerlaw contact) retrained on the K562 CRISPR data only, with
+every model on the ALL-features table (10 features ATAC-only, 14 with an activity track) and
+the activity slot filled by each p300 track. All five datasets share the July ABC candidate
+region set (`4.32`), so the comparison is paired. Leave-one-chromosome-out predictions,
+paired bootstrap over all 10,356 K562 pairs (471 regulated), scored exactly as rE2G's
+`compare_all_models.py` scores them (`4.34`; reproduces rE2G's table to within 0.0014).
+
+| model | AUPRC | delta vs ATAC-only | 95% CI | sign kept |
+|---|---|---|---|---|
+| ATAC + observed p300 | 0.6660 | **+0.1225** | [+0.0884, +0.1517] | 100% |
+| ATAC + observed H3K27ac | 0.6266 | +0.0831 | [+0.0537, +0.1093] | 100% |
+| ATAC + predicted p300, multi-cell | 0.5516 | +0.0082 | [-0.0106, +0.0230] | 78% |
+| ATAC + predicted p300, K562 in-cell | 0.5484 | +0.0050 | [-0.0289, +0.0365] | 61% |
+| ATAC only | 0.5435 | | | |
+
+Observed p300 beats observed H3K27ac by +0.0394 [+0.0107, +0.0679], **replicating F-024 in a
+second framework.**
+
+**Why the predicted tracks add nothing (`4.35`).** Partial rank correlation of each activity
+track with observed p300 after removing ATAC, over all 153,545 candidate regions, within
+ABC's classes:
+
+| track | rho with obs p300 | rho with ATAC | partial rho given ATAC (non-promoter) | (promoter) |
+|---|---|---|---|---|
+| ATAC itself | 0.628 | 1 | 0 | 0 |
+| observed H3K27ac (reference) | 0.698 | 0.590 | 0.522 | 0.600 |
+| predicted p300, K562 in-cell | 0.675 | 0.675 | 0.437 | 0.368 |
+| predicted p300, multi-cell | 0.623 | 0.770 | 0.281 | 0.318 |
+| predicted p300, GM12878 target norm | 0.573 | 0.793 | 0.157 | 0.280 |
+| predicted p300, GM12878 own stats | 0.562 | 0.798 | 0.130 | 0.230 |
+
+(non-promoter rows shown for the first two columns; 132,186 non-promoter and 21,359
+promoter regions.)
+
+**Implications:** **The transferred predictions correlate with observed p300 no better than
+raw ATAC does (0.56-0.62 against 0.63) and correlate with ATAC at 0.77-0.80: they are mostly
+ATAC re-encoded.** What they carry beyond ATAC is partial rho 0.13-0.28, against 0.44 for the
+in-cell model and 0.52 for observed H3K27ac. A supervised model that already has ATAC
+features has little to gain from them, which is the rE2G result. The partial correlation is
+a leak-free upstream metric that orders the arms the way the benchmark does at the extremes
+(in-cell far above transfer); within the transferred arms it separates multi-cell from
+single-source where the benchmark cannot resolve a difference (F-027).
+**It does not explain everything.** The in-cell model's partial rho (0.437 non-promoter) is
+not far below observed H3K27ac's (0.522), yet in rE2G one adds +0.005 and the other +0.083.
+So agreement with observed p300 beyond ATAC, at the element, is not the whole of what rE2G
+extracts from a real activity track. The largest gap between the two is at PROMOTERS (0.368
+against 0.600), and rE2G uses promoter activity of the target gene as a feature; that is the
+leading hypothesis, testable by ablating rE2G's promoter-activity features.
+**Caveats:** One cell type, one CRISPR dataset. The partial correlation controls for ATAC at
+the element only, not for rE2G's other features (neighbourhood sums, contact, distance), so
+some of the in-cell model's beyond-ATAC signal may be redundant with those. Comparing a
+predicted-p300 track with observed H3K27ac against observed p300 mixes assays; H3K27ac is a
+reference for "what a real activity track looks like", not a like-for-like comparator.
+**Tags:** p300, re2g, supervised-e2g, crispr-benchmark, k562, negative-result, metric
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-09-23 | rE2G configs `4.32`, driver 44914391 (`4.33`), bootstrap `4.34`, partial correlation `4.35` | K562 CRISPR ensemble (10,356 pairs), K562 ABC candidate regions | ENCODE_rE2G results/2026_0923_p300_features; 2026_0824_H3K27ac_model | observed p300 +0.1225, predicted p300 +0.0050 to +0.0082 over ATAC-only rE2G; transferred predictions partial rho 0.13-0.28 given ATAC | replicates F-024; predicted activity not useful in a supervised framework as built |

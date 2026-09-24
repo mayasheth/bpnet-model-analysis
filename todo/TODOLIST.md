@@ -92,6 +92,25 @@ accessibility too steeply.
       recorded only in the June project's `config/input_data_gm12878_multimodal.json`; writing
       that file is worth doing so nobody has to correlate bigwigs to identify a model again.
 
+## Where the activity term loses, 2026-09-23 (F-028, F-029)
+
+- [x] **Oracle decomposition** (F-028). 80% of the transfer gap is tested-element ranking.
+- [x] **ENCODE-rE2G with p300 in the activity slot** (F-029). Observed p300 +0.12, predicted
+      +0.005 to +0.008. Predictions are mostly ATAC re-encoded (partial rho 0.13-0.28).
+- [ ] **Ranking-loss models (1.36), weights 2 and 10.** Trained; ABC predictions running
+      (44954760, 44954762). Then 4.3/4.5 ABC, 4.6/4.7 benchmark, 4.35 partial rho, and add to
+      the rE2G run. Stopping epochs 36.4 / 34.0 against the MSE baseline's 34.6.
+- [ ] **rE2G promoter-feature ablation.** Tests F-029's leading hypothesis for why in-cell
+      predicted p300 adds nothing while observed H3K27ac adds +0.083: drop
+      normalizedH3K27ac_prom and combinedActivity_prom and retrain.
+- [ ] **Use partial rho given ATAC (4.35) as the upstream screening metric** for new models,
+      over all candidate regions, never on the tested elements.
+- **AlphaGenome: ON HOLD (Maya, 2026-09-23).** Every released AlphaGenome model was trained
+  on K562 EP300 and H3K27ac, so no K562 evaluation is a transfer test. The only cell types
+  it has not seen the target in (WTC11, Jurkat, HCT116 for EP300) have small, differently
+  designed CRISPR sets that are not a reliable benchmark. K562 stays the benchmark.
+  Weights and the PyTorch port are already on Oak if this reopens.
+
 ## Highest value
 
 - [ ] **W4. Motif syntax (SHAP / TF-MoDISco / FiNeMo).** Not started; the actual scientific

@@ -1889,3 +1889,40 @@ previous handover says was unpushed, and note the unpushed SHAs in the handover 
 detectable rather than silent. The 2026-09-16 handover DID list its unpushed SHAs, which is how
 yesterday's loss was caught too.
 
+## A cluster SLURM upgrade broke every Snakemake rule job, and the fix lives outside the repo (2026-09-22)
+
+Sherlock moved to **SLURM 25.11.8** between 2026-09-19 and 2026-09-22. Every ABC rule job then
+died before doing any work:
+
+    srun: fatal: cpus-per-task set by two different environment variables
+          SLURM_CPUS_PER_TASK=4 != SLURM_TRES_PER_TASK=cpu=1
+
+**The mechanism is a partition property, not a workflow bug.** Snakemake's SLURM executor
+submits each rule with `--cpus-per-task=1 --mem 32000` and then runs `srun -n1 --cpu-bind=q`
+inside the allocation. The `normal` partition has `MaxMemPerCPU=8000`, so a 32 GB request is
+bumped to 4 CPUs; `SLURM_CPUS_PER_TASK` becomes 4 while the job's `TresPerTask` stays `cpu=1`.
+Older SLURM tolerated the disagreement, 25.11 makes it fatal. `engreitz` (64000) and `owners`
+(48000) do not bump at 32 GB, **so the failure is intermittent and depends on where each rule
+lands** -- and a rule asking for more than 48 GB would start failing on `owners` too.
+
+**Diagnosis came from `sacct -o SubmitLine`, not from reading the workflow.** Three guesses
+about environment inheritance were all wrong; the submit line settled it in one query.
+Two probe jobs then separated the hypotheses: a child submitted with `--cpus-per-task=4` is
+consistent either way, and a child mimicking the real submission on `engreitz` never bumped.
+**When a scheduler contradicts you, ask the scheduler what was actually submitted.**
+
+**The fix is one line in the installed snakemake**, at
+`.conda/envs/run_snakemake/lib/python3.11/site-packages/snakemake/executors/slurm/slurm_jobstep.py`:
+
+    call = ("srun -n1 --cpus-per-task ${SLURM_CPUS_PER_TASK:-1} --cpu-bind=q "
+            + self.format_job_exec(job))
+
+replacing the unqualified `srun -n1 --cpu-bind=q`. A `.orig` backup sits beside it. This is
+what upstream Snakemake 8 does for the same reason.
+
+**It will be silently reverted by `conda update snakemake` or an env rebuild, and the symptom
+will look like a workflow bug rather than a missing patch.** It also affects every workflow
+run through that profile, not just ABC. The profile's `cluster:` line already carries an
+`unset SLURM_CPUS_PER_TASK SLURM_TRES_PER_TASK`, which is dead code: `slurm: True` selects the
+built-in executor and the generic `cluster:` submission path is never used. Do not read that
+line as protection.

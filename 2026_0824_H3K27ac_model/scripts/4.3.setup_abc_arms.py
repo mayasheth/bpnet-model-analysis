@@ -92,7 +92,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument("--results-dir", default="results/2026_0903_predicted_activity")
 ap.add_argument("--arms", choices=("h3k27ac", "p300", "p300transfer", "accessibility",
                                   "dnaseinput", "multitask", "accnorm", "residualtx",
-                                  "p300fix"),
+                                  "p300fix", "multicell", "oracle"),
                 default="h3k27ac",
                 help="Which target's predicted tracks to build arms for. p300 arms go in "
                      "their own results dir and config: re-stamping Peaks inside the "
@@ -244,6 +244,24 @@ RESIDUAL_TX = [
      "gm12878_atac5p_hw500_clw10", "GM12878 residual multimodal -> K562"),
 ]
 
+# THE MULTI-CELL-TYPE p300 MODEL, F-026, and its policy-matched comparator.
+#
+# The model was trained on A549+GM12878+HepG2+MCF-7 with K562 HELD OUT, so scoring it on the
+# K562 CRISPR benchmark is a clean transfer test. Upstream it beats K562's assay-matched
+# accessibility-only floor by +0.0614 top-quintile Pearson; the benchmark has disagreed with
+# Pearson five times, which is why this arm exists.
+#
+# WHY THE COMPARATOR IS RE-PREDICTED. A multi-cell model has no single training statistic for
+# accessibility -- normalisation is per cell type before pooling -- so it MUST be predicted
+# with target-derived statistics (4.26: 3.7232/1.1428 on the ABC candidate regions). The
+# existing corrected-GM12878 arm was predicted with its own training statistics. Comparing
+# the two directly would confound the training set with the normalisation policy, so the
+# corrected single-source model is re-predicted under the same statistics and scored here.
+MULTICELL = [
+    ("multicell_holdK562",        "p300 trained on 4 cell types, K562 held out"),
+    ("gm12878_corrected_tgtnorm", "corrected GM12878 p300 -> K562, same normalisation"),
+]
+
 # THE CORRECTED GM12878 p300 MODEL, F-025. Its own results dir so the finished
 # 2026_0906_p300_transfer run is not re-stamped.
 #
@@ -253,7 +271,29 @@ RESIDUAL_TX = [
 # observed target. The prediction was made with the same accessibility track and the same
 # default normalisation as the original, so the target is the only difference and the
 # benchmark delta is attributable to it.
-if a.arms == "p300fix":
+# ORACLE ARMS, the activity-loss decomposition. Built by 4.31: observed-p300 within-class
+# ranks at the 3,406 candidate regions overlapping a CRISPR-tested element, the model's
+# predicted values everywhere else. Scored against the all-predicted and all-observed arms,
+# they split the predicted-to-observed AUPRC gap into the part owed to the tested elements
+# (numerator) and the part owed to every other candidate (denominator and qnorm reference).
+# Not deployable; an oracle by construction.
+ORACLE = [("multicell_holdK562", "multi-cell p300, oracle at tested elements"),
+          ("k562_multimodal",    "K562 in-cell p300, oracle at tested elements")]
+
+if a.arms == "oracle":
+    for tag, _desc in ORACLE:
+        bw = f"{PRED}/predp300oracle_{tag}.bw"
+        if not os.path.exists(bw):
+            missing.append(bw)
+        add(f"p300pred_oracle_{tag}", ATAC, bw, "ATAC")
+elif a.arms == "multicell":
+    for tag, _desc in MULTICELL:
+        bw = f"{PRED}/predp300mc_{tag}.bw"
+        if not os.path.exists(bw):
+            missing.append(bw)
+        add(f"p300pred_{tag}", ATAC, bw, "ATAC")
+        add(f"p300only_{tag}", bw, "", "ATAC")
+elif a.arms == "p300fix":
     bw = f"{PRED}/predp300gm_gm12878_multimodal_corrected.bw"
     if not os.path.exists(bw):
         missing.append(bw)
@@ -329,7 +369,9 @@ TAG = a.config_tag or {"h3k27ac": "predicted_activity", "p300": "p300_activity",
                        "multitask": "multitask_activity",
                        "accnorm": "accnorm_activity",
                        "residualtx": "residual_transfer",
-                       "p300fix": "p300_corrected"}[a.arms]
+                       "p300fix": "p300_corrected",
+                       "multicell": "p300_multicell",
+                       "oracle": "p300_oracle"}[a.arms]
 out = f"{ABC}/config/mine/config_biosamples_{TAG}.tsv"
 with open(out, "w") as f:
     f.write("\t".join(COLS) + "\n")

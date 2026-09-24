@@ -26,7 +26,7 @@ import subprocess
 _ap = argparse.ArgumentParser()
 _ap.add_argument("--arms",
                  choices=("h3k27ac", "p300", "p300all", "accessibility", "dnaseinput",
-                          "multitask", "slopefix", "p300fix"),
+                          "multitask", "slopefix", "p300fix", "multicell", "oracle"),
                  default="h3k27ac",
                  help="Which activity target's arms to benchmark. The p300 set reuses the "
                       "same July floor and observed-H3K27ac ceiling, so the two "
@@ -255,7 +255,63 @@ P300FIX_ARMS = [
      "Predicted p300 alone (GM12878 -> K562, corrected target)", "#74c476"),
 ]
 
-if _a.arms == "p300fix":
+# F-026 downstream: the multi-cell-type p300 model on the K562 CRISPR benchmark.
+#
+# The model never saw K562. Upstream it clears K562's assay-matched accessibility-only floor
+# by +0.0614 top-quintile Pearson, the project's first positive transfer result; the CRISPR
+# benchmark has disagreed with Pearson five times, so the claim is not settled until it runs
+# here.
+#
+# THE COMPARATOR IS POLICY-MATCHED. A multi-cell model has no single training statistic for
+# accessibility, so it must be predicted with target-derived statistics. Scoring it against
+# p300pred_gm12878_corrected, which used its own training statistics, would confound the
+# training set with the normalisation policy. The _tgtnorm arm is the same corrected
+# single-source model re-predicted under the multi-cell model's statistics, and IT is the
+# comparator the headline rests on. The own-statistics arm is carried as a reference so the
+# normalisation effect itself stays visible.
+MULTICELL_D = f"{ABC}/2026_0922_p300_multicell"
+MULTICELL_ARMS = [
+    ("K562_ATAC_only",            JULY, "ATAC only (floor, reference)", "#bdbdbd"),
+    ("K562_ATAC_H3K27ac_element", JULY, "ATAC x observed H3K27ac (ceiling, reference)",
+     "#404040"),
+    ("p300obs_k562",              P300, "ATAC x observed p300 (ceiling)", "#54278f"),
+    ("p300pred_k562_multimodal",  P300, "ATAC x predicted p300 (K562 in-cell)", "#807dba"),
+    ("p300pred_gm12878_corrected", f"{ABC}/2026_0919_p300_corrected",
+     "ATAC x predicted p300 (GM12878 -> K562, own-stats norm)", "#cb181d"),
+    ("p300pred_gm12878_corrected_tgtnorm", MULTICELL_D,
+     "ATAC x predicted p300 (GM12878 -> K562, target-derived norm)", "#fd8d3c"),
+    ("p300pred_multicell_holdK562", MULTICELL_D,
+     "ATAC x predicted p300 (4 cell types, K562 held out)", "#238b45"),
+    ("p300only_gm12878_corrected_tgtnorm", MULTICELL_D,
+     "Predicted p300 alone (GM12878 -> K562, target-derived norm)", "#fdd0a2"),
+    ("p300only_multicell_holdK562", MULTICELL_D,
+     "Predicted p300 alone (4 cell types, K562 held out)", "#74c476"),
+]
+
+# Activity-loss decomposition (4.31). For each model, three arms on one pair set:
+#   A  predicted everywhere          (existing)
+#   B  observed ranks at tested elements, predicted elsewhere   (oracle)
+#   C  observed everywhere           (existing ceiling)
+# B - A is the AUPRC owed to ranking the tested elements; C - B is the AUPRC owed to every
+# other candidate element.
+ORACLE_D = f"{ABC}/2026_0923_p300_oracle"
+ORACLE_ARMS = [
+    ("K562_ATAC_only",              JULY, "ATAC only (floor)", "#bdbdbd"),
+    ("p300obs_k562",                P300, "C: observed p300 everywhere", "#54278f"),
+    ("p300pred_multicell_holdK562", f"{ABC}/2026_0922_p300_multicell",
+     "A: multi-cell predicted everywhere", "#238b45"),
+    ("p300pred_oracle_multicell_holdK562", ORACLE_D,
+     "B: multi-cell, observed ranks at tested elements", "#74c476"),
+    ("p300pred_k562_multimodal",    P300, "A': in-cell predicted everywhere", "#807dba"),
+    ("p300pred_oracle_k562_multimodal", ORACLE_D,
+     "B': in-cell, observed ranks at tested elements", "#bcbddc"),
+]
+
+if _a.arms == "oracle":
+    ARMS = ORACLE_ARMS
+elif _a.arms == "multicell":
+    ARMS = MULTICELL_ARMS
+elif _a.arms == "p300fix":
     ARMS = P300FIX_ARMS
 elif _a.arms == "slopefix":
     ARMS = SLOPEFIX_ARMS
@@ -270,14 +326,18 @@ TAG = {"h3k27ac": "predicted_activity", "p300": "p300_activity",
        "dnaseinput": "dnase_input_activity",
        "multitask": "multitask_activity",
        "slopefix": "slopefix",
-       "p300fix": "p300_corrected"}[_a.arms]
+       "p300fix": "p300_corrected",
+       "multicell": "p300_multicell",
+       "oracle": "p300_oracle"}[_a.arms]
 RUN = {"h3k27ac": "2026_0904_predicted_activity", "p300": "2026_0905_p300_activity",
        "p300all": "2026_0906_p300_all",
        "accessibility": "2026_0910_accessibility_activity",
        "dnaseinput": "2026_0915_dnase_input_activity",
        "multitask": "2026_0916_multitask_activity",
        "slopefix": "2026_0917_slopefix",
-       "p300fix": "2026_0919_p300_corrected"}[_a.arms]
+       "p300fix": "2026_0919_p300_corrected",
+       "multicell": "2026_0922_p300_multicell",
+       "oracle": "2026_0923_p300_oracle"}[_a.arms]
 
 BASELINES = [
     ("distToTSS",      "FALSE", "mean", "Inf", "TRUE",  "Distance to TSS",      "#c5cad7"),
