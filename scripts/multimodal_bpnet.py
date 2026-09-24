@@ -23,9 +23,50 @@ import torch
 from bpnetlite.losses import MNLLLoss, log1pMSELoss, _mixture_loss
 
 
+def _pairwise_rank_loss(pred, target, groups, min_gap=0.1, max_n=4096, generator=None):
+    """RankNet-style pairwise logistic loss on log counts, within groups only.
+
+    WHY A RANKING TERM. ABC's rank qnorm keeps only each element's within-class RANK of the
+    activity track and discards its scale (F-022), so the counts head is scored downstream on
+    ordering alone, while log1p MSE also spends capacity on getting the scale right. This
+    term scores ordering directly: for every pair with target_i > target_j + min_gap it adds
+    softplus(-(pred_i - pred_j)), which is log(2) for a tie and falls to 0 as the pair is
+    ordered correctly by a wide margin.
+
+    WITHIN GROUPS. In a multi-cell-type batch, a pair drawn from two cell types compares two
+    libraries, and the target difference then carries library depth rather than biology.
+    Pairs are formed only within a group (cell type); `groups` is an integer per example.
+
+    min_gap drops near-ties, whose order is inside replicate noise. max_n caps a group's
+    size so the O(n^2) pair matrix stays bounded on the full-validation-set call; larger
+    groups are randomly subsampled.
+    """
+    pred = pred.reshape(-1).float()
+    target = target.reshape(-1).float()
+    groups = groups.reshape(-1)
+    terms = []
+    for g in torch.unique(groups):
+        idx = torch.nonzero(groups == g, as_tuple=False).reshape(-1)
+        if idx.numel() < 2:
+            continue
+        if idx.numel() > max_n:
+            perm = torch.randperm(idx.numel(), generator=generator, device="cpu")[:max_n]
+            idx = idx[perm.to(idx.device)]
+        p, t = pred[idx], target[idx]
+        dt = t.reshape(-1, 1) - t.reshape(1, -1)
+        dp = p.reshape(-1, 1) - p.reshape(1, -1)
+        mask = dt > min_gap
+        if mask.any():
+            terms.append(torch.nn.functional.softplus(-dp[mask]))
+    if not terms:
+        return pred.sum() * 0.0
+    return torch.cat(terms).mean()
+
+
 def _asymmetric_mixture_loss(y, y_hat_logits, y_hat_logcounts, count_loss_weight,
                              overprediction_weight, labels=None, y_profile=None,
-                             profile_loss_weight=1.0):
+                             profile_loss_weight=1.0, rank_loss_weight=0.0,
+                             rank_min_gap=0.1):
     """_mixture_loss with the count term made asymmetric.
 
     Identical to bpnetlite's `_mixture_loss` when overprediction_weight == 1.0 and
@@ -70,7 +111,7 @@ def _asymmetric_mixture_loss(y, y_hat_logits, y_hat_logcounts, count_loss_weight
             f"channel count, not the counts target's")
 
     if labels is not None:
-        profile_loss = MNLLLoss(y_hat_logits[labels == 1], yp[labels == 1]).mean()
+        profile_loss = MNLLLoss(y_hat_logits[labels >= 1], yp[labels >= 1]).mean()
     else:
         profile_loss = MNLLLoss(y_hat_logits, yp).mean()
 
@@ -83,6 +124,19 @@ def _asymmetric_mixture_loss(y, y_hat_logits, y_hat_logcounts, count_loss_weight
     count_loss = (w * err.pow(2)).mean()
 
     loss = profile_loss_weight * profile_loss + count_loss_weight * count_loss
+
+    # Ranking term, off by default so every existing run is unchanged. Scored over PEAKS
+    # only (labels >= 1), grouped by label value: label = 1 + cell-type index for a
+    # multi-cell panel, 1 for a single cell type. Negatives are excluded because
+    # peak-vs-background ordering is already enforced by the MSE term, and would dominate
+    # the pair count with easy pairs.
+    if rank_loss_weight > 0:
+        if labels is None:
+            raise ValueError("rank_loss_weight > 0 needs labels to find peaks and groups")
+        pk = labels >= 1
+        rank_loss = _pairwise_rank_loss(y_hat_logcounts[pk], torch.log(y_[pk] + 1),
+                                        labels[pk], min_gap=rank_min_gap)
+        loss = loss + rank_loss_weight * rank_loss
     # profile_loss is returned UNWEIGHTED so the logged and compared value stays on the
     # same scale as every existing run's; only the gradient is reweighted.
     return profile_loss, count_loss, loss
@@ -251,7 +305,7 @@ class MultiModalBPNet(torch.nn.Module):
     def fit(self, training_data, optimizer, scheduler=None, offset_valid=None,
             X_valid=None, y_valid=None, max_epochs=100, batch_size=64,
             dtype='float32', device='cuda', early_stopping=None,
-            profile_target=False, y_profile_valid=None):
+            profile_target=False, y_profile_valid=None, labels_valid=None):
         """Train the model.
 
         Parameters
@@ -326,7 +380,9 @@ class MultiModalBPNet(torch.nn.Module):
                         self.count_loss_weight,
                         getattr(self, "overprediction_weight", 1.0), labels,
                         y_profile=y_prof,
-                        profile_loss_weight=getattr(self, "profile_loss_weight", 1.0)
+                        profile_loss_weight=getattr(self, "profile_loss_weight", 1.0),
+                        rank_loss_weight=getattr(self, "rank_loss_weight", 0.0),
+                        rank_min_gap=getattr(self, "rank_min_gap", 0.1)
                     )
 
                 loss.backward()
@@ -348,11 +404,16 @@ class MultiModalBPNet(torch.nn.Module):
                     y_hat_logcounts = y_hat_logcounts + \
                         offset_valid.to(y_hat_logcounts.device).reshape(-1, 1)
 
+                _rw = getattr(self, "rank_loss_weight", 0.0)
                 valid_profile_loss, valid_count_loss, valid_loss = _asymmetric_mixture_loss(
                     y_valid, y_hat_logits, y_hat_logcounts, self.count_loss_weight,
                     getattr(self, "overprediction_weight", 1.0),
+                    labels=(labels_valid.to(y_hat_logcounts.device)
+                            if (_rw > 0 and labels_valid is not None) else None),
                     y_profile=y_profile_valid,
-                    profile_loss_weight=getattr(self, "profile_loss_weight", 1.0)
+                    profile_loss_weight=getattr(self, "profile_loss_weight", 1.0),
+                    rank_loss_weight=_rw if labels_valid is not None else 0.0,
+                    rank_min_gap=getattr(self, "rank_min_gap", 0.1)
                 )
 
                 # Two calls when the heads read different targets: one y cannot serve both,

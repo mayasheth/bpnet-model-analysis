@@ -120,6 +120,13 @@ def parse_args():
                         "prediction EXCEEDS the truth. 1.0 reproduces bpnetlite exactly. "
                         "Pair it with --gate-accessibility: the gate has no gradient "
                         "pressure to close while the loss is symmetric.")
+    p.add_argument("--rank-loss-weight", type=float, default=0.0,
+                   help="Add a pairwise ranking term on the counts head, scored over peak "
+                        "pairs within each cell type, at this weight. 0 (default) leaves "
+                        "the loss unchanged. ABC keeps only element ranks (F-022), so "
+                        "this aims the counts head at ordering rather than scale.")
+    p.add_argument("--rank-min-gap", type=float, default=0.1,
+                   help="Ignore pairs whose log1p target counts differ by less than this.")
     p.add_argument("--batch-size", type=int, default=64)
     p.add_argument("--max-epochs", type=int, default=100)
     p.add_argument("--early-stopping", type=int, default=10)
@@ -361,7 +368,7 @@ class MultiModalPeakNegativeSampler(torch.utils.data.Dataset):
                  negative_ratio=0.1, in_window=2114, out_window=1000,
                  max_jitter=0, reverse_complement=False, random_state=None,
                  mode='multimodal', peak_offsets=None, neg_offsets=None,
-                 peak_profiles=None, neg_profiles=None):
+                 peak_profiles=None, neg_profiles=None, peak_groups=None):
         self.peak_seqs = peak_seqs
         self.peak_accs = peak_accs
         self.peak_signals = peak_signals
@@ -400,6 +407,14 @@ class MultiModalPeakNegativeSampler(torch.utils.data.Dataset):
         self.neg_offsets = neg_offsets
         self.use_offsets = peak_offsets is not None
 
+        # Peak label is 1 + group (cell-type index) when groups are given, else 1.
+        # Negatives stay 0. Every consumer tests labels >= 1 for "is a peak", so a
+        # single-cell run's labels are exactly the old {0, 1}.
+        self.peak_groups = peak_groups
+        if peak_groups is not None and len(peak_groups) != self.n_peaks:
+            raise ValueError(f"peak_groups has {len(peak_groups)} rows for "
+                             f"{self.n_peaks} peaks")
+
         self.rng = np.random.RandomState(random_state)
         self.n_peaks_seen = 0
         self.peak_ordering = self.rng.permutation(self.n_peaks)
@@ -415,7 +430,7 @@ class MultiModalPeakNegativeSampler(torch.utils.data.Dataset):
         if self.rng.uniform() >= self.negative_likelihood:
             i = self.peak_ordering[self.n_peaks_seen % self.n_peaks]
             jitter = self.rng.randint(self.max_jitter * 2) if self.max_jitter > 0 else 0
-            label = 1
+            label = 1 if self.peak_groups is None else 1 + int(self.peak_groups[i])
             seqs, accs, signals = self.peak_seqs, self.peak_accs, self.peak_signals
             offsets = self.peak_offsets
             prof = self.peak_profiles
@@ -553,6 +568,8 @@ def main():
         "n_layers": args.n_layers,
         "count_loss_weight": args.count_loss_weight,
         "profile_loss_weight": args.profile_loss_weight,
+        "rank_loss_weight": args.rank_loss_weight,
+        "rank_min_gap": args.rank_min_gap,
         "count_offset_model": args.count_offset_model,
     }
 
@@ -727,10 +744,13 @@ def main():
 
     bins = {k: [] for k in ("tr_seqs", "tr_sigs", "tr_accs", "tr_prof",
                             "neg_seqs", "neg_sigs", "neg_accs", "neg_prof",
-                            "val_seqs", "val_sigs", "val_accs", "val_prof")}
+                            "val_seqs", "val_sigs", "val_accs", "val_prof",
+                            "tr_grp", "val_grp")}
     acc_stats, per_cell_counts = {}, {}
 
-    for cell, spec in PANEL.items():
+    # Cell-type index per peak, in panel order, so the ranking term can form pairs within a
+    # cell type only. Always built; unused unless --rank-loss-weight > 0.
+    for cell_i, (cell, spec) in enumerate(PANEL.items()):
         tag = "" if cell == "_single" else f"[{cell}] "
         pk_path = _spec(spec, "peaks", args.peaks)
         ng_path = _spec(spec, "negatives", args.negatives)
@@ -801,6 +821,8 @@ def main():
                      ("neg_accs", n_accs), ("neg_prof", n_prof), ("val_seqs", v_seqs),
                      ("val_sigs", v_sigs), ("val_accs", v_accs), ("val_prof", v_prof)):
             bins[k].append(v)
+        bins["tr_grp"].append(np.full(len(a_sigs), cell_i, dtype=np.int64))
+        bins["val_grp"].append(np.full(len(v_sigs), cell_i, dtype=np.int64))
         per_cell_counts[cell] = {"train_peaks": int(len(a_sigs)),
                                  "train_negatives": int(len(n_sigs)),
                                  "val_peaks": int(len(v_sigs))}
@@ -817,6 +839,9 @@ def main():
                                               _cat("neg_accs"), _cat("neg_prof"))
     val_seqs, val_sigs, val_accs, val_prof = (_cat("val_seqs"), _cat("val_sigs"),
                                               _cat("val_accs"), _cat("val_prof"))
+    tr_grp, val_grp = _cat("tr_grp"), _cat("val_grp")
+    assert len(tr_grp) == len(tr_sigs) and len(val_grp) == len(val_sigs), \
+        "cell-type index does not line up with the pooled peaks"
 
     if len(PANEL) > 1:
         print("\nPooled across the panel:")
@@ -875,7 +900,8 @@ def main():
         peak_offsets=tr_off,
         neg_offsets=neg_off,
         peak_profiles=tr_prof,
-        neg_profiles=neg_prof
+        neg_profiles=neg_prof,
+        peak_groups=tr_grp if args.rank_loss_weight > 0 else None
     )
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=args.batch_size,
@@ -913,6 +939,13 @@ def main():
         name=model_prefix,
         verbose=True
     )
+    # Set as attributes rather than constructor arguments so the shared model class and
+    # its regression gate are untouched; fit() reads them with getattr defaults.
+    model.rank_loss_weight = args.rank_loss_weight
+    model.rank_min_gap = args.rank_min_gap
+    if args.rank_loss_weight > 0:
+        print(f"ranking loss: weight {args.rank_loss_weight}, min gap {args.rank_min_gap}, "
+              f"pairs within {len(PANEL)} cell type(s)")
     if args.gate_accessibility:
         assert args.mode == "multimodal", "--gate-accessibility needs multimodal mode"
         print("accessibility gating: ON (initialised open)")
@@ -949,7 +982,8 @@ def main():
         device=args.device,
         early_stopping=args.early_stopping,
         profile_target=use_prof_target,
-        y_profile_valid=(torch.from_numpy(val_prof) if use_prof_target else None)
+        y_profile_valid=(torch.from_numpy(val_prof) if use_prof_target else None),
+        labels_valid=(torch.from_numpy(1 + val_grp) if args.rank_loss_weight > 0 else None)
     )
 
     # Completion marker, written LAST. A preempted job (the `owners` partition is
