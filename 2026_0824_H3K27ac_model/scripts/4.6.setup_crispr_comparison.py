@@ -26,7 +26,8 @@ import subprocess
 _ap = argparse.ArgumentParser()
 _ap.add_argument("--arms",
                  choices=("h3k27ac", "p300", "p300all", "accessibility", "dnaseinput",
-                          "multitask", "slopefix", "p300fix", "multicell", "oracle"),
+                          "multitask", "slopefix", "p300fix", "multicell", "oracle",
+                          "rank"),
                  default="h3k27ac",
                  help="Which activity target's arms to benchmark. The p300 set reuses the "
                       "same July floor and observed-H3K27ac ceiling, so the two "
@@ -307,7 +308,33 @@ ORACLE_ARMS = [
      "B': in-cell, observed ranks at tested elements", "#bcbddc"),
 ]
 
-if _a.arms == "oracle":
+# Ranking-loss models (1.36) against the MSE-only multi-cell model they were derived from.
+# Same panel, folds, normalisation and stopping rule; stopping epochs 36.4 (w=2), 34.0 (w=10)
+# against 34.6, so training length is not a confound. Headline contrasts:
+#   p300pred_multicell_holdK562_rank{2,10}  vs  p300pred_multicell_holdK562
+#   p300only_multicell_holdK562_rank{2,10}  vs  p300only_multicell_holdK562
+RANK_D = f"{ABC}/2026_0924_p300_rank"
+RANK_ARMS = [
+    ("K562_ATAC_only",            JULY, "ATAC only (floor)", "#bdbdbd"),
+    ("p300obs_k562",              P300, "ATAC x observed p300 (ceiling)", "#54278f"),
+    ("p300pred_k562_multimodal",  P300, "ATAC x predicted p300 (K562 in-cell)", "#807dba"),
+    ("p300pred_multicell_holdK562", MULTICELL_D,
+     "ATAC x predicted p300 (multi-cell, MSE only)", "#238b45"),
+    ("p300pred_multicell_holdK562_rank2", RANK_D,
+     "ATAC x predicted p300 (multi-cell, ranking loss w=2)", "#6baed6"),
+    ("p300pred_multicell_holdK562_rank10", RANK_D,
+     "ATAC x predicted p300 (multi-cell, ranking loss w=10)", "#08519c"),
+    ("p300only_multicell_holdK562", MULTICELL_D,
+     "Predicted p300 alone (multi-cell, MSE only)", "#74c476"),
+    ("p300only_multicell_holdK562_rank2", RANK_D,
+     "Predicted p300 alone (multi-cell, ranking loss w=2)", "#fdae6b"),
+    ("p300only_multicell_holdK562_rank10", RANK_D,
+     "Predicted p300 alone (multi-cell, ranking loss w=10)", "#d94801"),
+]
+
+if _a.arms == "rank":
+    ARMS = RANK_ARMS
+elif _a.arms == "oracle":
     ARMS = ORACLE_ARMS
 elif _a.arms == "multicell":
     ARMS = MULTICELL_ARMS
@@ -328,7 +355,8 @@ TAG = {"h3k27ac": "predicted_activity", "p300": "p300_activity",
        "slopefix": "slopefix",
        "p300fix": "p300_corrected",
        "multicell": "p300_multicell",
-       "oracle": "p300_oracle"}[_a.arms]
+       "oracle": "p300_oracle",
+       "rank": "p300_rank"}[_a.arms]
 RUN = {"h3k27ac": "2026_0904_predicted_activity", "p300": "2026_0905_p300_activity",
        "p300all": "2026_0906_p300_all",
        "accessibility": "2026_0910_accessibility_activity",
@@ -337,7 +365,8 @@ RUN = {"h3k27ac": "2026_0904_predicted_activity", "p300": "2026_0905_p300_activi
        "slopefix": "2026_0917_slopefix",
        "p300fix": "2026_0919_p300_corrected",
        "multicell": "2026_0922_p300_multicell",
-       "oracle": "2026_0923_p300_oracle"}[_a.arms]
+       "oracle": "2026_0923_p300_oracle",
+       "rank": "2026_0924_p300_rank"}[_a.arms]
 
 BASELINES = [
     ("distToTSS",      "FALSE", "mean", "Inf", "TRUE",  "Distance to TSS",      "#c5cad7"),

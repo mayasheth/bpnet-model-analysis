@@ -41,6 +41,10 @@ ARMS = [
      f"{ABC}/2026_0922_p300_multicell/p300pred_gm12878_corrected_tgtnorm"),
     ("predicted p300, GM12878 own stats",
      f"{ABC}/2026_0919_p300_corrected/p300pred_gm12878_corrected"),
+    ("predicted p300, multi-cell + ranking loss w=2",
+     f"{ABC}/2026_0924_p300_rank/p300pred_multicell_holdK562_rank2"),
+    ("predicted p300, multi-cell + ranking loss w=10",
+     f"{ABC}/2026_0924_p300_rank/p300pred_multicell_holdK562_rank10"),
 ]
 KEY = ["chr", "start", "end"]
 

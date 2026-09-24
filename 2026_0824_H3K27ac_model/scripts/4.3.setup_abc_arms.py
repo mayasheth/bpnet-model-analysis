@@ -92,7 +92,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument("--results-dir", default="results/2026_0903_predicted_activity")
 ap.add_argument("--arms", choices=("h3k27ac", "p300", "p300transfer", "accessibility",
                                   "dnaseinput", "multitask", "accnorm", "residualtx",
-                                  "p300fix", "multicell", "oracle"),
+                                  "p300fix", "multicell", "oracle", "rank"),
                 default="h3k27ac",
                 help="Which target's predicted tracks to build arms for. p300 arms go in "
                      "their own results dir and config: re-stamping Peaks inside the "
@@ -280,7 +280,21 @@ MULTICELL = [
 ORACLE = [("multicell_holdK562", "multi-cell p300, oracle at tested elements"),
           ("k562_multimodal",    "K562 in-cell p300, oracle at tested elements")]
 
-if a.arms == "oracle":
+# RANKING-LOSS ARMS (1.36). The multi-cell model retrained with a within-cell-type pairwise
+# ranking term added to the counts MSE, weights 2 and 10. Same panel, folds, hyperparameters
+# and target-derived normalisation as p300pred_multicell_holdK562, which is the comparator.
+# Aimed at F-028: most of the transfer loss is in how the tested elements are ranked.
+RANK = [("multicell_holdK562_rank2",  "multi-cell p300 + ranking loss, weight 2"),
+        ("multicell_holdK562_rank10", "multi-cell p300 + ranking loss, weight 10")]
+
+if a.arms == "rank":
+    for tag, _desc in RANK:
+        bw = f"{PRED}/predp300mc_{tag}.bw"
+        if not os.path.exists(bw):
+            missing.append(bw)
+        add(f"p300pred_{tag}", ATAC, bw, "ATAC")
+        add(f"p300only_{tag}", bw, "", "ATAC")
+elif a.arms == "oracle":
     for tag, _desc in ORACLE:
         bw = f"{PRED}/predp300oracle_{tag}.bw"
         if not os.path.exists(bw):
@@ -371,7 +385,8 @@ TAG = a.config_tag or {"h3k27ac": "predicted_activity", "p300": "p300_activity",
                        "residualtx": "residual_transfer",
                        "p300fix": "p300_corrected",
                        "multicell": "p300_multicell",
-                       "oracle": "p300_oracle"}[a.arms]
+                       "oracle": "p300_oracle",
+                       "rank": "p300_rank"}[a.arms]
 out = f"{ABC}/config/mine/config_biosamples_{TAG}.tsv"
 with open(out, "w") as f:
     f.write("\t".join(COLS) + "\n")

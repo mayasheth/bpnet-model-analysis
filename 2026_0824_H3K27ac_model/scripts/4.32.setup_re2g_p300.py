@@ -55,6 +55,9 @@ DATASETS = [
     ("ATAC_p300obs_powerlaw",       P300_OBS),
     ("ATAC_p300incell_powerlaw",    f"{PRED}/predp300_multimodal.bw"),
     ("ATAC_p300multicell_powerlaw", f"{PRED}/predp300mc_multicell_holdK562.bw"),
+    # ranking-loss multi-cell models (1.36), added 2026-09-24
+    ("ATAC_p300mcrank2_powerlaw",   f"{PRED}/predp300mc_multicell_holdK562_rank2.bw"),
+    ("ATAC_p300mcrank10_powerlaw",  f"{PRED}/predp300mc_multicell_holdK562_rank10.bw"),
 ]
 FT_ATAC = "resources/feature_tables/ATAC_pl_all.tsv"
 FT_ACT = "resources/feature_tables/ATAC_H3K27ac_pl_all.tsv"
@@ -64,6 +67,10 @@ ap.add_argument("--results-dir", default="results/2026_0923_p300_features")
 ap.add_argument("--stage-peaks", action="store_true",
                 help="Seed every dataset's Peaks/ from the July ABC run. Run once the "
                      "results dir is about to be used; re-running re-stamps.")
+ap.add_argument("--stage-new", action="store_true",
+                help="Stage Peaks only for datasets that have none, and leave an existing "
+                     "chrom-sizes BED alone. Re-stamping finished datasets or the BED "
+                     "would make their outputs stale and re-run them.")
 a = ap.parse_args()
 
 inputs = set(ATAC.split(","))
@@ -127,7 +134,7 @@ ORDER = [
     lambda f: f.endswith("candidateRegions.bed"),
     lambda f: f in ("candidateRegions.qc.txt", "params.txt"),
 ]
-if a.stage_peaks:
+if a.stage_peaks or a.stage_new:
     newest = max(os.path.getmtime(p) for _, act in DATASETS
                  for p in (ATAC + ("," + act if act else "")).split(","))
     base_t = max(newest, time.time()) + 60
@@ -138,15 +145,21 @@ if a.stage_peaks:
     tmpd = f"{E2G}/{a.results_dir}/tmp"
     os.makedirs(tmpd, exist_ok=True)
     bed = f"{tmpd}/GRCh38_EBV.no_alt.chrom.sizes.tsv.bed"
-    with open(sizes) as fi, open(bed, "w") as fo:
-        for line in fi:
-            f_ = line.rstrip("\n").split("\t")
-            fo.write(f"{f_[0]}\t0\t{f_[1]}\n" if line.strip() else line)
-    t_bed = max(base_t - 30, os.path.getmtime(sizes) + 1)
-    os.utime(bed, (t_bed, t_bed))
-    print(f"wrote {bed}")
+    if a.stage_new and os.path.exists(bed):
+        print(f"kept {bed}")
+    else:
+        with open(sizes) as fi, open(bed, "w") as fo:
+            for line in fi:
+                f_ = line.rstrip("\n").split("\t")
+                fo.write(f"{f_[0]}\t0\t{f_[1]}\n" if line.strip() else line)
+        t_bed = max(base_t - 30, os.path.getmtime(sizes) + 1)
+        os.utime(bed, (t_bed, t_bed))
+        print(f"wrote {bed}")
     for name, _ in DATASETS:
         dst = f"{E2G}/{a.results_dir}/{name}/Peaks"
+        if a.stage_new and os.path.isdir(dst):
+            print(f"kept {dst}")
+            continue
         if os.path.isdir(dst):
             shutil.rmtree(dst)
         shutil.copytree(JULY_PEAKS, dst)
