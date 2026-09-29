@@ -1,0 +1,7 @@
+arm_a	arm_b	auprc_a	auprc_b	delta	ci_lo	ci_hi	sign_kept_frac	sign_kept_pct	n_pairs	n_regulated	n_boot
+p300pred_nbrx_multicell_boostnbr.ABC.Score	p300pred_nbr_multicell_boostnonbr.ABC.Score	0.483072	0.48406	-0.000988	-0.008923	0.007683	0.588	58.8	10342	466	2000
+p300pred_nbrx_incell_boostnbr.ABC.Score	p300pred_nbr_incell_boostnonbr.ABC.Score	0.518463	0.514545	0.003918	-0.002909	0.01151	0.866	86.6	10342	466	2000
+p300pred_nbrx_multicell_boostnbr.ABC.Score	p300pred_nbr_multicell_boostnbr.ABC.Score	0.483072	0.482466	0.000607	-0.006871	0.008934	0.5765	57.65	10342	466	2000
+p300pred_nbrx_atac_boostnbr.ABC.Score	K562_ATAC_only.ABC.Score	0.463925	0.468009	-0.004084	-0.014665	0.006685	0.757	75.7	10342	466	2000
+p300pred_nbrx_atac_boostnbr.ABC.Score	p300pred_multicell_holdK562.ABC.Score	0.463925	0.480967	-0.017042	-0.034147	0.000435	0.9725	97.25	10342	466	2000
+p300pred_nbrx_multicell_boostnbr.ABC.Score	p300pred_multicell_holdK562.ABC.Score	0.483072	0.480967	0.002105	-0.01035	0.014377	0.6325	63.25	10342	466	2000

@@ -38,7 +38,8 @@ FOLDS=$P/../reference/hg38_five_folds.json
 GEN=/oak/stanford/groups/engreitz/Users/sheth/hg38_resources/hg38.fa
 cd "$P"; mkdir -p log
 
-WEIGHTS=(2 10)
+# RANK_WEIGHTS overrides the list, e.g. RANK_WEIGHTS="20 50 100" with --array=0-14.
+WEIGHTS=(${RANK_WEIGHTS:-2 10})
 i=${SLURM_ARRAY_TASK_ID:-0}
 RW=${WEIGHTS[$(( i / 5 ))]}
 FOLD=$(( i % 5 ))
@@ -49,7 +50,9 @@ TRIMMING=557
 OUT_WINDOW=$(( 2 * HALF_WINDOW ))
 IN_WINDOW=$(( OUT_WINDOW + 2 * TRIMMING ))
 CLW=10
-OUT_DIR="$P/models/p300_multicell_hold${HOLD}_hw${HALF_WINDOW}_clw${CLW}_rank${RW}/fold${FOLD}"
+# TAG names a variant of the panel (PANEL_JSON), e.g. TAG=motifact_oracle for the ranking
+# term plus the Test 1 TF-activity channel; it keeps the output apart from the plain rank model.
+OUT_DIR="$P/models/p300_multicell_hold${HOLD}_hw${HALF_WINDOW}_clw${CLW}_rank${RW}${TAG:+_$TAG}/fold${FOLD}"
 mkdir -p "$OUT_DIR"
 
 echo "task $i: hold out $HOLD, fold $FOLD, rank weight $RW"

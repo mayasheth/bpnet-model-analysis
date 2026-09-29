@@ -1,0 +1,10 @@
+arm_a	arm_b	auprc_a	auprc_b	delta	ci_lo	ci_hi	sign_kept_frac	sign_kept_pct	n_pairs	n_regulated	n_boot
+p300pred_multicell_holdK562_rank2.ABC.Score	p300pred_multicell_holdK562.ABC.Score	0.484918	0.480967	0.003951	-0.00131	0.009458	0.9285	92.85	10342	466	2000
+p300pred_multicell_holdK562_rank10.ABC.Score	p300pred_multicell_holdK562.ABC.Score	0.489681	0.480967	0.008714	0.000638	0.017945	0.983	98.3	10342	466	2000
+p300pred_multicell_holdK562_rank20.ABC.Score	p300pred_multicell_holdK562.ABC.Score	0.484355	0.480967	0.003388	-0.002783	0.009854	0.8345	83.45	10342	466	2000
+p300pred_multicell_holdK562_rank50.ABC.Score	p300pred_multicell_holdK562.ABC.Score	0.482969	0.480967	0.002002	-0.006785	0.011694	0.661	66.1	10342	466	2000
+p300pred_multicell_holdK562_rank100.ABC.Score	p300pred_multicell_holdK562.ABC.Score	0.480642	0.480967	-0.000325	-0.009357	0.009807	0.5235	52.35	10342	466	2000
+p300pred_multicell_holdK562_rank20.ABC.Score	p300pred_multicell_holdK562_rank10.ABC.Score	0.484355	0.489681	-0.005326	-0.014547	0.002518	0.8845	88.45	10342	466	2000
+p300pred_multicell_holdK562_rank50.ABC.Score	p300pred_multicell_holdK562_rank10.ABC.Score	0.482969	0.489681	-0.006712	-0.014662	0.000623	0.9605	96.05	10342	466	2000
+p300pred_multicell_holdK562_rank100.ABC.Score	p300pred_multicell_holdK562_rank10.ABC.Score	0.480642	0.489681	-0.009038	-0.017628	-0.000797	0.9835	98.35	10342	466	2000
+p300pred_multicell_holdK562.ABC.Score	K562_ATAC_only.ABC.Score	0.480967	0.468009	0.012958	-0.004064	0.028745	0.942	94.2	10342	466	2000
