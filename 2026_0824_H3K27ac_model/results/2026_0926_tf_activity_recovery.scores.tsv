@@ -1,0 +1,41 @@
+cell	estimate	truth	spearman	top20_overlap
+K562	within-cell ATAC association	beyond ATAC	0.5729421587264688	15
+K562	within-cell ATAC association	plain	0.8493805018558797	15
+K562	cell-specific ATAC association	beyond ATAC	0.0418512684512702	7
+K562	cell-specific ATAC association	plain	0.26139793374480974	7
+K562	discriminative (open here, not elsewhere)	beyond ATAC	-0.08962259179550523	7
+K562	discriminative (open here, not elsewhere)	plain	-0.04079123539383705	7
+K562	chromVAR deviation	beyond ATAC	0.06295509302183423	7
+K562	chromVAR deviation	plain	0.19865882217612343	7
+GM12878	within-cell ATAC association	beyond ATAC	0.513100591297847	14
+GM12878	within-cell ATAC association	plain	0.7733739760893199	16
+GM12878	cell-specific ATAC association	beyond ATAC	0.2744016884645578	6
+GM12878	cell-specific ATAC association	plain	0.37676334666009414	6
+GM12878	discriminative (open here, not elsewhere)	beyond ATAC	0.12284619540903781	5
+GM12878	discriminative (open here, not elsewhere)	plain	0.31975274979245	5
+GM12878	chromVAR deviation	beyond ATAC	0.21349193252686202	5
+GM12878	chromVAR deviation	plain	0.39521135467722923	5
+HepG2	within-cell ATAC association	beyond ATAC	0.4217680647770711	2
+HepG2	within-cell ATAC association	plain	0.8042871026124445	2
+HepG2	cell-specific ATAC association	beyond ATAC	-0.038844541634007225	2
+HepG2	cell-specific ATAC association	plain	0.14111317749344277	2
+HepG2	discriminative (open here, not elsewhere)	beyond ATAC	0.042315777883037475	3
+HepG2	discriminative (open here, not elsewhere)	plain	0.04667876885502779	3
+HepG2	chromVAR deviation	beyond ATAC	0.24502678049569285	0
+HepG2	chromVAR deviation	plain	0.3987525270607923	0
+A549	within-cell ATAC association	beyond ATAC	0.5082515103143628	17
+A549	within-cell ATAC association	plain	0.8387137733583427	18
+A549	cell-specific ATAC association	beyond ATAC	0.260277475064142	16
+A549	cell-specific ATAC association	plain	0.5270730882040451	17
+A549	discriminative (open here, not elsewhere)	beyond ATAC	0.26866265950432316	17
+A549	discriminative (open here, not elsewhere)	plain	0.27380731914897033	16
+A549	chromVAR deviation	beyond ATAC	0.42349016994555977	17
+A549	chromVAR deviation	plain	0.5578328420489265	18
+MCF-7	within-cell ATAC association	beyond ATAC	0.11988064734913695	0
+MCF-7	within-cell ATAC association	plain	0.5709529060559222	17
+MCF-7	cell-specific ATAC association	beyond ATAC	0.23339918923267589	0
+MCF-7	cell-specific ATAC association	plain	0.3793678716961262	0
+MCF-7	discriminative (open here, not elsewhere)	beyond ATAC	0.15401911698089496	0
+MCF-7	discriminative (open here, not elsewhere)	plain	0.39244487491845803	0
+MCF-7	chromVAR deviation	beyond ATAC	-0.020014055481763358	0
+MCF-7	chromVAR deviation	plain	0.2771761982064832	0
