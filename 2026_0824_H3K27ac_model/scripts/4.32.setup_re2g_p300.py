@@ -58,6 +58,26 @@ DATASETS = [
     # ranking-loss multi-cell models (1.36), added 2026-09-24
     ("ATAC_p300mcrank2_powerlaw",   f"{PRED}/predp300mc_multicell_holdK562_rank2.bw"),
     ("ATAC_p300mcrank10_powerlaw",  f"{PRED}/predp300mc_multicell_holdK562_rank10.bw"),
+    # ranking-loss sweep, added 2026-09-25
+    ("ATAC_p300mcrank20_powerlaw",  f"{PRED}/predp300mc_multicell_holdK562_rank20.bw"),
+    ("ATAC_p300mcrank50_powerlaw",  f"{PRED}/predp300mc_multicell_holdK562_rank50.bw"),
+    ("ATAC_p300mcrank100_powerlaw", f"{PRED}/predp300mc_multicell_holdK562_rank100.bw"),
+    # Test 1, TF-activity channel with oracle weights (1.37), added 2026-09-27
+    ("ATAC_p300mcmotifact_powerlaw", f"{PRED}/predp300mc_multicell_holdK562_motifact_oracle.bw"),
+    # Test 1 follow-ups, added 2026-09-28: deployable channel; oracle channel + ranking loss
+    ("ATAC_p300mcmotifctcf_powerlaw", f"{PRED}/predp300mc_multicell_holdK562_motifact_assoc_noctcf.bw"),
+    ("ATAC_p300mcmotifrank_powerlaw", f"{PRED}/predp300mc_multicell_holdK562_rank10_motifact_oracle.bw"),
+    # teaching the model to use the oracle channel (1.38), added 2026-09-28
+    ("ATAC_p300mcteachhead_powerlaw", f"{PRED}/predp300mc_multicell_holdK562_motifact_oracle_head.bw"),
+    ("ATAC_p300mcteachpair_powerlaw", f"{PRED}/predp300mc_multicell_holdK562_motifact_oracle_pair.bw"),
+    ("ATAC_p300mcteachheadpair_powerlaw", f"{PRED}/predp300mc_multicell_holdK562_motifact_oracle_headpair.bw"),
+    # seed replicates (1.37 SEED=1,2), added 2026-09-29
+    ("ATAC_p300mcseed1_powerlaw", f"{PRED}/predp300mc_multicell_holdK562_seed1.bw"),
+    ("ATAC_p300mcseed2_powerlaw", f"{PRED}/predp300mc_multicell_holdK562_seed2.bw"),
+    ("ATAC_p300mcmotifactseed1_powerlaw", f"{PRED}/predp300mc_multicell_holdK562_motifact_oracle_seed1.bw"),
+    ("ATAC_p300mcmotifactseed2_powerlaw", f"{PRED}/predp300mc_multicell_holdK562_motifact_oracle_seed2.bw"),
+    ("ATAC_p300mcmotifctcfseed1_powerlaw", f"{PRED}/predp300mc_multicell_holdK562_motifact_assoc_noctcf_seed1.bw"),
+    ("ATAC_p300mcmotifctcfseed2_powerlaw", f"{PRED}/predp300mc_multicell_holdK562_motifact_assoc_noctcf_seed2.bw"),
 ]
 FT_ATAC = "resources/feature_tables/ATAC_pl_all.tsv"
 FT_ACT = "resources/feature_tables/ATAC_H3K27ac_pl_all.tsv"

@@ -1,0 +1,16 @@
+cell	estimate	spearman	top20_overlap	ctcf_best_rank
+K562	raw ATAC association	0.5729421587264688	15	1
+K562	ATAC association, CTCF removed by hand	0.595191485186005	15	780
+K562	learned (leave this cell out)	0.7311394400077078	13	776
+GM12878	raw ATAC association	0.513100591297847	14	72
+GM12878	ATAC association, CTCF removed by hand	0.5345205421599059	14	780
+GM12878	learned (leave this cell out)	0.7336560141918717	8	773
+HepG2	raw ATAC association	0.4217680647770711	2	2
+HepG2	ATAC association, CTCF removed by hand	0.43744347252226884	2	780
+HepG2	learned (leave this cell out)	0.7090951414750023	7	779
+A549	raw ATAC association	0.5082515103143628	17	26
+A549	ATAC association, CTCF removed by hand	0.5365320154256499	17	780
+A549	learned (leave this cell out)	0.636900169216599	9	744
+MCF-7	raw ATAC association	0.11988064734913695	0	1
+MCF-7	ATAC association, CTCF removed by hand	0.14836817620614745	0	780
+MCF-7	learned (leave this cell out)	0.4812449177227505	0	737

@@ -92,7 +92,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument("--results-dir", default="results/2026_0903_predicted_activity")
 ap.add_argument("--arms", choices=("h3k27ac", "p300", "p300transfer", "accessibility",
                                   "dnaseinput", "multitask", "accnorm", "residualtx",
-                                  "p300fix", "multicell", "oracle", "rank"),
+                                  "p300fix", "multicell", "oracle", "rank", "nbr", "nbrx", "ranksweep", "gata", "motifact", "motifact2", "teach", "seeds"),
                 default="h3k27ac",
                 help="Which target's predicted tracks to build arms for. p300 arms go in "
                      "their own results dir and config: re-stamping Peaks inside the "
@@ -287,7 +287,73 @@ ORACLE = [("multicell_holdK562", "multi-cell p300, oracle at tested elements"),
 RANK = [("multicell_holdK562_rank2",  "multi-cell p300 + ranking loss, weight 2"),
         ("multicell_holdK562_rank10", "multi-cell p300 + ranking loss, weight 10")]
 
-if a.arms == "rank":
+# NEIGHBOUR ARMS (4.36 -> 4.37). The predicted track reordered by a held-out boosting fit
+# on the prediction, ATAC and power-law-weighted neighbour terms (boostnbr), or on the
+# prediction and ATAC alone (boostnonbr, the comparator). Fitted on K562 observed p300 with
+# 5-fold chromosome CV, so for the multi-cell model this is an UPPER BOUND, not a deployable
+# track.
+NBR = [(f"{m}_{v}") for m in ("multicell", "incell") for v in ("boostnbr", "boostnonbr")]
+
+# CROSS-CLASS NEIGHBOUR ARMS (4.36 --graph cross). One graph over all regions with the
+# neighbour terms split by the neighbour's class. The atac arm has NO p300 model: its only
+# inputs are the element's own ATAC and its neighbours' ATAC (the carrier bigwig is the
+# multi-cell track, whose values ABC's rank qnorm discards; only the order is new).
+NBRX = [f"{m}_boostnbr" for m in ("multicell", "incell", "atac")]
+
+# RANKING-LOSS SWEEP, weights 20/50/100 (1.36 with RANK_WEIGHTS). Its own results dir so
+# the finished weight-2/10 arms in 2026_0924_p300_rank are not re-stamped; 4.6 scores both
+# dirs on one pair set. Geomean arms only, the form every headline contrast uses.
+RANKSWEEP = [f"multicell_holdK562_rank{w}" for w in (20, 50, 100)]
+
+# GATA ORACLE (4.42): the multi-cell track with GATA-motif regions given in-cell or observed
+# ranks, and an ATAC-matched non-GATA control given in-cell ranks.
+GATA_ARMS = ["gata_incell", "gata_obs", "ctrl_incell", "ctrl_obs"]
+
+# TEST 1 (1.37): the multi-cell model trained with a TF-activity channel, predicted in K562
+# with K562's own activity track. Oracle weights: an upper bound, not deployable.
+MOTIFACT = ["multicell_holdK562_motifact_oracle"]
+# Test 1 follow-ups (2026-09-28), own results dir so the finished oracle arm is not re-stamped:
+# the DEPLOYABLE channel (ATAC association with CTCF removed, 4.45 assoc_noctcf) and the
+# oracle channel combined with the ranking loss w=10 (1.36 TAG=motifact_oracle).
+MOTIFACT2 = ["multicell_holdK562_motifact_assoc_noctcf", "multicell_holdK562_rank10_motifact_oracle"]
+# Teaching the model to use the oracle channel (1.38, 2026-09-28): additive motif head, cross-cell
+# paired loss, both.
+# Seed replicates (1.37 SEED=1,2) of the MSE-only, oracle-channel and assoc_noctcf models.
+SEEDS = ['multicell_holdK562_seed1', 'multicell_holdK562_seed2', 'multicell_holdK562_motifact_oracle_seed1', 'multicell_holdK562_motifact_oracle_seed2', 'multicell_holdK562_motifact_assoc_noctcf_seed1', 'multicell_holdK562_motifact_assoc_noctcf_seed2']
+TEACH = ['multicell_holdK562_motifact_oracle_head', 'multicell_holdK562_motifact_oracle_pair', 'multicell_holdK562_motifact_oracle_headpair']
+
+if a.arms in ("motifact", "motifact2", "teach", "seeds"):
+    for tag in {"motifact": MOTIFACT, "motifact2": MOTIFACT2, "teach": TEACH,
+                "seeds": SEEDS}[a.arms]:
+        bw = f"{PRED}/predp300mc_{tag}.bw"
+        if not os.path.exists(bw):
+            missing.append(bw)
+        add(f"p300pred_{tag}", ATAC, bw, "ATAC")
+elif a.arms == "gata":
+    for tag in GATA_ARMS:
+        bw = f"{PRED}/predp300gata_{tag}.bw"
+        if not os.path.exists(bw):
+            missing.append(bw)
+        add(f"p300pred_gataoracle_{tag}", ATAC, bw, "ATAC")
+elif a.arms == "ranksweep":
+    for tag in RANKSWEEP:
+        bw = f"{PRED}/predp300mc_{tag}.bw"
+        if not os.path.exists(bw):
+            missing.append(bw)
+        add(f"p300pred_{tag}", ATAC, bw, "ATAC")
+elif a.arms == "nbrx":
+    for tag in NBRX:
+        bw = f"{PRED}/predp300nbrx_{tag}.bw"
+        if not os.path.exists(bw):
+            missing.append(bw)
+        add(f"p300pred_nbrx_{tag}", ATAC, bw, "ATAC")
+elif a.arms == "nbr":
+    for tag in NBR:
+        bw = f"{PRED}/predp300nbr_{tag}.bw"
+        if not os.path.exists(bw):
+            missing.append(bw)
+        add(f"p300pred_nbr_{tag}", ATAC, bw, "ATAC")
+elif a.arms == "rank":
     for tag, _desc in RANK:
         bw = f"{PRED}/predp300mc_{tag}.bw"
         if not os.path.exists(bw):
@@ -386,7 +452,15 @@ TAG = a.config_tag or {"h3k27ac": "predicted_activity", "p300": "p300_activity",
                        "p300fix": "p300_corrected",
                        "multicell": "p300_multicell",
                        "oracle": "p300_oracle",
-                       "rank": "p300_rank"}[a.arms]
+                       "rank": "p300_rank",
+                       "nbr": "p300_nbr",
+                       "nbrx": "p300_nbrx",
+                       "ranksweep": "p300_ranksweep",
+                       "gata": "p300_gataoracle",
+                       "motifact": "p300_motifact",
+                       "motifact2": "p300_motifact2",
+                       "teach": "p300_teach",
+                       "seeds": "p300_seeds"}[a.arms]
 out = f"{ABC}/config/mine/config_biosamples_{TAG}.tsv"
 with open(out, "w") as f:
     f.write("\t".join(COLS) + "\n")

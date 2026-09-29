@@ -146,6 +146,77 @@ from bpnetlite.logging import Logger
 from tangermeme.predict import predict
 
 
+def _motif_head_features(mot, acc):
+    """Four window-level summaries of the TF-activity channel for the additive motif head.
+
+    mot: (N, 1, W) raw activity channel; acc: (N, 1, W) normalised ATAC over the same bases.
+    Positive and negative motif weights are kept apart so they cannot cancel, and each is
+    also taken weighted by accessibility (softplus keeps it positive), so the head can say
+    "active-TF motifs in open chromatin".
+    """
+    pos, neg = torch.relu(mot), torch.relu(-mot)
+    a = torch.nn.functional.softplus(acc)
+    return torch.stack([pos.mean((1, 2)), neg.mean((1, 2)),
+                        (pos * a).mean((1, 2)), (neg * a).mean((1, 2))], dim=1)
+
+
+class PairedCellWindows:
+    """The SAME genomic windows seen in several training cell types, for the cross-cell loss.
+
+    WHY. Across cell types the DNA of a window is identical, so the difference in its p300
+    between two cell types can only be explained by the inputs that differ: ATAC and the
+    TF-activity channel. Scoring the predicted difference against the observed one teaches
+    the model directly that "a TF active here, in this cell" changes p300, which the pooled
+    per-window loss never asks for.
+
+    seq (N, 4, L) is shared; acc (C, N, n_acc, L) and logc (C, N), log1p total target counts,
+    are per cell type, with ATAC normalised by that cell's own statistics. Library depth
+    differs by cell type, so each difference is CENTRED within its cell-type pair: only how
+    the difference varies across windows is scored, not its overall level.
+    """
+
+    def __init__(self, seq, acc, logc, seed=0):
+        self.seq = torch.from_numpy(seq)
+        self.acc = torch.from_numpy(acc)
+        self.logc = torch.from_numpy(logc).float()
+        self.C, self.N = self.logc.shape
+        self.gen = torch.Generator().manual_seed(seed)
+
+    @staticmethod
+    def _centred_mse(dp, dt, grp, n_grp):
+        d = dp - dt
+        cnt = torch.bincount(grp, minlength=n_grp).clamp(min=1).to(d.dtype)
+        mean = torch.zeros(n_grp, dtype=d.dtype, device=d.device).index_add_(0, grp, d) / cnt
+        return (d - mean[grp]).pow(2).mean()
+
+    def train_loss(self, model, device, batch):
+        idx = torch.randint(self.N, (batch,), generator=self.gen)
+        c1 = torch.randint(self.C, (batch,), generator=self.gen)
+        c2 = (c1 + torch.randint(1, self.C, (batch,), generator=self.gen)) % self.C
+        lo, hi = torch.minimum(c1, c2), torch.maximum(c1, c2)
+        X = torch.cat([torch.cat([self.seq[idx], self.acc[lo, idx]], dim=1),
+                       torch.cat([self.seq[idx], self.acc[hi, idx]], dim=1)], dim=0)
+        _, yc = model(X.to(device).float())
+        yc = yc.reshape(-1).float()
+        dt = (self.logc[lo, idx] - self.logc[hi, idx]).to(device)
+        grp = (lo * self.C + hi).to(device)
+        return self._centred_mse(yc[:batch] - yc[batch:], dt, grp, self.C * self.C)
+
+    @torch.no_grad()
+    def valid_loss(self, model, device, batch_size=256):
+        P = torch.empty(self.C, self.N)
+        for c in range(self.C):
+            for s in range(0, self.N, batch_size):
+                X = torch.cat([self.seq[s:s + batch_size], self.acc[c, s:s + batch_size]], dim=1)
+                P[c, s:s + batch_size] = model(X.to(device).float())[1].reshape(-1).float().cpu()
+        terms = []
+        for a in range(self.C):
+            for b in range(a + 1, self.C):
+                d = (P[a] - P[b]) - (self.logc[a] - self.logc[b])
+                terms.append((d - d.mean()).pow(2).mean())
+        return torch.stack(terms).mean().to(device)
+
+
 class MultiModalBPNet(torch.nn.Module):
     """BPNet model with DNA sequence and base-pair accessibility inputs.
 
@@ -278,6 +349,13 @@ class MultiModalBPNet(torch.nn.Module):
         y_counts:  torch.Tensor, shape (N, 1)
         """
         start, end = self.trimming, X.shape[2] - self.trimming
+        # Additive motif head: the TF-activity channel (last input channel) is taken OUT of the
+        # trunk and enters only through a 4-weight linear term on the counts, so a cell type's
+        # motif weights act the same way in every cell type. getattr keeps old checkpoints
+        # loadable.
+        mot = None
+        if getattr(self, "use_motif_head", False):
+            mot, X = X[:, -1:, :], X[:, :-1, :]
 
         if self.mode == 'multimodal':
             X_seq = self.seq_relu(self.seq_conv(X[:, :4, :]))
@@ -299,13 +377,17 @@ class MultiModalBPNet(torch.nn.Module):
 
         X_pooled = torch.mean(X_merged[:, :, start - 37:end + 37], dim=2)
         y_counts = self.linear(X_pooled).reshape(X.shape[0], 1)
+        if mot is not None:
+            y_counts = y_counts + self.motif_head(_motif_head_features(
+                mot[:, :, start - 37:end + 37], X[:, 4:5, start - 37:end + 37]))
 
         return y_profile, y_counts
 
     def fit(self, training_data, optimizer, scheduler=None, offset_valid=None,
             X_valid=None, y_valid=None, max_epochs=100, batch_size=64,
             dtype='float32', device='cuda', early_stopping=None,
-            profile_target=False, y_profile_valid=None, labels_valid=None):
+            profile_target=False, y_profile_valid=None, labels_valid=None,
+            pair_data=None, pair_valid=None, pair_loss_weight=0.0, pair_batch=32):
         """Train the model.
 
         Parameters
@@ -384,6 +466,10 @@ class MultiModalBPNet(torch.nn.Module):
                         rank_loss_weight=getattr(self, "rank_loss_weight", 0.0),
                         rank_min_gap=getattr(self, "rank_min_gap", 0.1)
                     )
+                    # Cross-cell paired term (PairedCellWindows), off unless weighted.
+                    if pair_loss_weight > 0:
+                        loss = loss + pair_loss_weight * pair_data.train_loss(
+                            self, device, pair_batch)
 
                 loss.backward()
                 torch.nn.utils.clip_grad_norm_(self.parameters(), 1)
@@ -415,6 +501,11 @@ class MultiModalBPNet(torch.nn.Module):
                     rank_loss_weight=_rw if labels_valid is not None else 0.0,
                     rank_min_gap=getattr(self, "rank_min_gap", 0.1)
                 )
+                # Early stopping scores the same objective as training.
+                if pair_loss_weight > 0 and pair_valid is not None:
+                    _vp = pair_valid.valid_loss(self, device)
+                    valid_loss = valid_loss + pair_loss_weight * _vp
+                    print(f"  epoch {epoch}: validation pair loss {_vp.item():.4f}", flush=True)
 
                 # Two calls when the heads read different targets: one y cannot serve both,
                 # and logging profile_pearson against the counts target would report the

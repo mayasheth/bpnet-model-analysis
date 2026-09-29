@@ -1,0 +1,7 @@
+arm_a	arm_b	auprc_a	auprc_b	delta	ci_lo	ci_hi	sign_kept_frac	sign_kept_pct	n_pairs	n_regulated	n_boot
+p300pred_multicell_holdK562_motifact_oracle.ABC.Score	p300pred_multicell_holdK562.ABC.Score	0.484525	0.480967	0.003558	-0.004408	0.012639	0.7775	77.75	10342	466	2000
+p300pred_multicell_holdK562_motifact_oracle.ABC.Score	p300pred_multicell_holdK562_rank10.ABC.Score	0.484525	0.489681	-0.005156	-0.011025	0.000377	0.9635	96.35	10342	466	2000
+p300pred_multicell_holdK562_motifact_oracle.ABC.Score	K562_ATAC_only.ABC.Score	0.484525	0.468009	0.016516	0.000223	0.031631	0.977	97.7	10342	466	2000
+p300pred_multicell_holdK562_motifact_oracle.ABC.Score	p300pred_k562_multimodal.ABC.Score	0.484525	0.522878	-0.038354	-0.053573	-0.02312	1.0	100.0	10342	466	2000
+p300pred_multicell_holdK562_motifact_oracle.ABC.Score	p300pred_gataoracle_gata_obs.ABC.Score	0.484525	0.522317	-0.037792	-0.051498	-0.024568	1.0	100.0	10342	466	2000
+p300pred_multicell_holdK562.ABC.Score	K562_ATAC_only.ABC.Score	0.480967	0.468009	0.012958	-0.004064	0.028745	0.942	94.2	10342	466	2000

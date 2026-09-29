@@ -49,6 +49,10 @@ ap.add_argument("--regions", required=True, help="ABC candidateRegions.bed (chr 
 ap.add_argument("--model-dir", required=True, help="contains fold0..fold4")
 ap.add_argument("--mode", required=True, choices=["sequence", "atac", "multimodal"])
 ap.add_argument("--accessibility-bw", default=None)
+ap.add_argument("--motif-activity-bw", default=None,
+                help="TF-activity track for the TARGET cell type, for models trained with one "
+                     "(train_multimodal_bpnet.py --motif-activity-bw); appended as the last "
+                     "channel and not normalised, exactly as in training")
 ap.add_argument("--chrom-sizes", required=True, help="ABC's chrom sizes, for the output bigwig")
 ap.add_argument("--out-bw", required=True)
 ap.add_argument("--signal-bw", default=None,
@@ -181,10 +185,15 @@ for chrom, g in reg.groupby("chr", sort=True):
 
     df = g.copy().reset_index(drop=True)
     df["summit"] = ((df["end"] - df["start"]) // 2).astype(int)
+    acc_arg = (f"{a.accessibility_bw},{a.motif_activity_bw}" if a.motif_activity_bw
+               else a.accessibility_bw)
     seqs, _, accs, valid = extract_windows(
         df, GEN if a.mode != "atac" else None,
         a.signal_bw, None,
-        a.accessibility_bw, in_w, OUT_W, 0, is_peak=True)
+        acc_arg, in_w, OUT_W, 0, is_peak=True)
+    mot = None
+    if a.motif_activity_bw:
+        mot, accs = accs[:, -1:].copy(), np.ascontiguousarray(accs[:, :-1])
     kept = df[valid].reset_index(drop=True)
     n_drop += int((~valid).sum())
 
@@ -196,6 +205,8 @@ for chrom, g in reg.groupby("chr", sort=True):
             st = json.load(open(f"{md}/acc_normalization_stats.json"))
             nmean, nstd, nsrc = st["acc_mean"], st["acc_std"], "model's training stats"
         x = normalize_accessibility(accs, mean=nmean, std=nstd)[0]
+        if mot is not None:
+            x = np.concatenate([x, mot], axis=1).astype(np.float32)
     X = (np.concatenate([seqs, x], axis=1) if a.mode == "multimodal"
          else seqs if a.mode == "sequence" else x).astype(np.float32)
 

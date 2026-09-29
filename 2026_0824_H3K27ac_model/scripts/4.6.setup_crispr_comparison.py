@@ -27,7 +27,7 @@ _ap = argparse.ArgumentParser()
 _ap.add_argument("--arms",
                  choices=("h3k27ac", "p300", "p300all", "accessibility", "dnaseinput",
                           "multitask", "slopefix", "p300fix", "multicell", "oracle",
-                          "rank"),
+                          "rank", "nbr", "nbrx", "ranksweep", "gata", "motifact", "motifact2", "teach", "seeds"),
                  default="h3k27ac",
                  help="Which activity target's arms to benchmark. The p300 set reuses the "
                       "same July floor and observed-H3K27ac ceiling, so the two "
@@ -332,7 +332,126 @@ RANK_ARMS = [
      "Predicted p300 alone (multi-cell, ranking loss w=10)", "#d94801"),
 ]
 
-if _a.arms == "rank":
+# Neighbour upper bound (4.36/4.37). Headline contrast: boostnbr vs boostnonbr for each
+# model, both refit to K562 labels the same way, so the difference is the neighbour terms.
+NBR_D = f"{ABC}/2026_0924_p300_nbr"
+NBR_ARMS = [
+    ("K562_ATAC_only",            JULY, "ATAC only (floor)", "#bdbdbd"),
+    ("p300obs_k562",              P300, "ATAC x observed p300 (ceiling)", "#54278f"),
+    ("p300pred_k562_multimodal",  P300, "ATAC x predicted p300 (K562 in-cell)", "#807dba"),
+    ("p300pred_nbr_incell_boostnonbr", NBR_D,
+     "in-cell, boosting refit without neighbours", "#bcbddc"),
+    ("p300pred_nbr_incell_boostnbr", NBR_D,
+     "in-cell, boosting refit with neighbours", "#3f007d"),
+    ("p300pred_multicell_holdK562", MULTICELL_D,
+     "ATAC x predicted p300 (multi-cell, MSE only)", "#238b45"),
+    ("p300pred_nbr_multicell_boostnonbr", NBR_D,
+     "multi-cell, boosting refit without neighbours", "#a1d99b"),
+    ("p300pred_nbr_multicell_boostnbr", NBR_D,
+     "multi-cell, boosting refit with neighbours", "#00441b"),
+    ("p300pred_multicell_holdK562_rank10", RANK_D,
+     "multi-cell, ranking loss w=10 (reference)", "#08519c"),
+]
+
+# Cross-class neighbour upper bound, scored together with the same-class arms and their
+# no-neighbour comparators so every contrast is paired. The atac arm's comparator is the floor.
+NBRX_D = f"{ABC}/2026_0924_p300_nbrx"
+NBRX_ARMS = NBR_ARMS + [
+    ("p300pred_nbrx_multicell_boostnbr", NBRX_D,
+     "multi-cell, boosting with cross-class neighbours", "#006d2c"),
+    ("p300pred_nbrx_incell_boostnbr", NBRX_D,
+     "in-cell, boosting with cross-class neighbours", "#54278f"),
+    ("p300pred_nbrx_atac_boostnbr", NBRX_D,
+     "no p300 model: ATAC + neighbour ATAC, boosting", "#737373"),
+]
+
+# Ranking-loss dose-response: MSE-only, then weights 2, 10, 20, 50, 100, one pair set.
+RANKSWEEP_D = f"{ABC}/2026_0925_p300_ranksweep"
+RANKSWEEP_ARMS = [
+    ("K562_ATAC_only",            JULY, "ATAC only (floor)", "#bdbdbd"),
+    ("p300obs_k562",              P300, "ATAC x observed p300 (ceiling)", "#54278f"),
+    ("p300pred_multicell_holdK562", MULTICELL_D, "multi-cell, MSE only", "#238b45"),
+    ("p300pred_multicell_holdK562_rank2", RANK_D, "ranking loss w=2", "#c6dbef"),
+    ("p300pred_multicell_holdK562_rank10", RANK_D, "ranking loss w=10", "#6baed6"),
+    ("p300pred_multicell_holdK562_rank20", RANKSWEEP_D, "ranking loss w=20", "#2171b5"),
+    ("p300pred_multicell_holdK562_rank50", RANKSWEEP_D, "ranking loss w=50", "#08519c"),
+    ("p300pred_multicell_holdK562_rank100", RANKSWEEP_D, "ranking loss w=100", "#08306b"),
+]
+
+# GATA oracle. Headline: gata_incell - multicell (what K562 GATA biology is worth), and
+# gata_incell - ctrl_incell (the part specific to GATA rather than to replacing N regions).
+GATA_D = f"{ABC}/2026_0926_p300_gataoracle"
+GATA_ARMS = [
+    ("K562_ATAC_only",            JULY, "ATAC only (floor)", "#bdbdbd"),
+    ("p300obs_k562",              P300, "ATAC x observed p300 (ceiling)", "#54278f"),
+    ("p300pred_k562_multimodal",  P300, "in-cell model", "#807dba"),
+    ("p300pred_multicell_holdK562", MULTICELL_D, "multi-cell model", "#238b45"),
+    ("p300pred_gataoracle_gata_incell", GATA_D, "multi-cell, GATA elements at in-cell ranks", "#d94801"),
+    ("p300pred_gataoracle_gata_obs", GATA_D, "multi-cell, GATA elements at observed ranks", "#7f2704"),
+    ("p300pred_gataoracle_ctrl_incell", GATA_D, "multi-cell, matched non-GATA at in-cell ranks", "#fdae6b"),
+    ("p300pred_gataoracle_ctrl_obs", GATA_D, "multi-cell, matched non-GATA at observed ranks", "#fdd0a2"),
+]
+
+# Test 1. Headline: motifact_oracle vs the MSE-only multi-cell model (same training except
+# the channel). The GATA oracle arms and rank w=10 are carried as reference points.
+MOTIFACT_D = f"{ABC}/2026_0927_p300_motifact"
+MOTIFACT_ARMS = [
+    ("K562_ATAC_only",            JULY, "ATAC only (floor)", "#bdbdbd"),
+    ("p300obs_k562",              P300, "ATAC x observed p300 (ceiling)", "#54278f"),
+    ("p300pred_k562_multimodal",  P300, "in-cell model", "#807dba"),
+    ("p300pred_multicell_holdK562", MULTICELL_D, "multi-cell, MSE only", "#238b45"),
+    ("p300pred_multicell_holdK562_rank10", RANK_D, "multi-cell, ranking loss w=10", "#08519c"),
+    ("p300pred_multicell_holdK562_motifact_oracle", MOTIFACT_D,
+     "multi-cell + TF-activity channel (oracle weights)", "#d94801"),
+    ("p300pred_gataoracle_gata_obs", GATA_D, "GATA elements at observed ranks (reference)", "#7f2704"),
+]
+
+# Test 1 follow-ups (2026-09-28): the deployable channel and oracle channel + ranking loss.
+MOTIFACT2_D = f"{ABC}/2026_0928_p300_motifact2"
+MOTIFACT2_ARMS = [a_ for a_ in MOTIFACT_ARMS if not a_[0].startswith("p300pred_gataoracle")] + [
+    ("p300pred_multicell_holdK562_motifact_assoc_noctcf", MOTIFACT2_D,
+     "multi-cell + TF-activity channel (ATAC association, CTCF removed)", "#fd8d3c"),
+    ("p300pred_multicell_holdK562_rank10_motifact_oracle", MOTIFACT2_D,
+     "multi-cell + oracle channel + ranking loss w=10", "#7f2704"),
+]
+
+# Teaching the model to use the oracle channel (1.38): comparator is the oracle channel model.
+TEACH_D = f"{ABC}/2026_0928_p300_teach"
+TEACH_ARMS = MOTIFACT2_ARMS + [
+    ("p300pred_multicell_holdK562_motifact_oracle_head", TEACH_D,
+     "oracle channel, additive motif head", "#6baed6"),
+    ("p300pred_multicell_holdK562_motifact_oracle_pair", TEACH_D,
+     "oracle channel, cross-cell paired loss", "#3182bd"),
+    ("p300pred_multicell_holdK562_motifact_oracle_headpair", TEACH_D,
+     "oracle channel, head + paired loss", "#08306b"),
+]
+
+# Seed replicates (1.37 SEED=1,2): the original run of each model plus two replicates.
+SEEDS_D = f"{ABC}/2026_0929_p300_seeds"
+SEEDS_ARMS = [a_ for a_ in MOTIFACT2_ARMS if "rank10_motifact" not in a_[0]] + [
+    (f"p300pred_multicell_holdK562{m}_seed{n}", SEEDS_D, f"{lab}, seed {n}", col)
+    for m, lab, col in (("", "multi-cell, MSE only", "#238b45"),
+                        ("_motifact_oracle", "oracle channel", "#d94801"),
+                        ("_motifact_assoc_noctcf", "assoc_noctcf channel", "#fd8d3c"))
+    for n in (1, 2)]
+
+if _a.arms == "motifact":
+    ARMS = MOTIFACT_ARMS
+elif _a.arms == "motifact2":
+    ARMS = MOTIFACT2_ARMS
+elif _a.arms == "teach":
+    ARMS = TEACH_ARMS
+elif _a.arms == "seeds":
+    ARMS = SEEDS_ARMS
+elif _a.arms == "gata":
+    ARMS = GATA_ARMS
+elif _a.arms == "ranksweep":
+    ARMS = RANKSWEEP_ARMS
+elif _a.arms == "nbrx":
+    ARMS = NBRX_ARMS
+elif _a.arms == "nbr":
+    ARMS = NBR_ARMS
+elif _a.arms == "rank":
     ARMS = RANK_ARMS
 elif _a.arms == "oracle":
     ARMS = ORACLE_ARMS
@@ -356,7 +475,15 @@ TAG = {"h3k27ac": "predicted_activity", "p300": "p300_activity",
        "p300fix": "p300_corrected",
        "multicell": "p300_multicell",
        "oracle": "p300_oracle",
-       "rank": "p300_rank"}[_a.arms]
+       "rank": "p300_rank",
+       "nbr": "p300_nbr",
+       "nbrx": "p300_nbrx",
+       "ranksweep": "p300_ranksweep",
+       "gata": "p300_gataoracle",
+       "motifact": "p300_motifact",
+       "motifact2": "p300_motifact2",
+       "teach": "p300_teach",
+       "seeds": "p300_seeds"}[_a.arms]
 RUN = {"h3k27ac": "2026_0904_predicted_activity", "p300": "2026_0905_p300_activity",
        "p300all": "2026_0906_p300_all",
        "accessibility": "2026_0910_accessibility_activity",
@@ -366,7 +493,15 @@ RUN = {"h3k27ac": "2026_0904_predicted_activity", "p300": "2026_0905_p300_activi
        "p300fix": "2026_0919_p300_corrected",
        "multicell": "2026_0922_p300_multicell",
        "oracle": "2026_0923_p300_oracle",
-       "rank": "2026_0924_p300_rank"}[_a.arms]
+       "rank": "2026_0924_p300_rank",
+       "nbr": "2026_0924_p300_nbr",
+       "nbrx": "2026_0924_p300_nbrx",
+       "ranksweep": "2026_0925_p300_ranksweep",
+       "gata": "2026_0926_p300_gataoracle",
+       "motifact": "2026_0927_p300_motifact",
+       "motifact2": "2026_0928_p300_motifact2",
+       "teach": "2026_0928_p300_teach",
+       "seeds": "2026_0929_p300_seeds"}[_a.arms]
 
 BASELINES = [
     ("distToTSS",      "FALSE", "mean", "Inf", "TRUE",  "Distance to TSS",      "#c5cad7"),

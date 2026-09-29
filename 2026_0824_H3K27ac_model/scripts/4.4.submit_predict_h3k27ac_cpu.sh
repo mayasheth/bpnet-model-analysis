@@ -84,15 +84,19 @@ if [[ -n "${OFFSET_MODEL:-}" ]]; then
 fi
 SIG=()
 [[ -n "${SIGNAL_BW:-}" ]] && SIG=(--signal-bw "$SIGNAL_BW")
+# MOTIF_BW: the TARGET cell type's TF-activity track (4.45), for models trained with
+# --motif-activity-bw (1.37). Unset for every other model.
+MOT=()
+[[ -n "${MOTIF_BW:-}" ]] && MOT=(--motif-activity-bw "$MOTIF_BW")
 CH=()
 [[ -n "$CHROMS" ]] && CH=(--chroms "$CHROMS")
 
 echo "model=$MODEL_PATH mode=$MODE acc=$ACC_BW out=${OUT_PREFIX}_${ARM}.bw"
-echo "accnorm=${ACC_MEAN:-model}/${ACC_STD:-model} offset=${OFFSET_MODEL:-none}"
+echo "accnorm=${ACC_MEAN:-model}/${ACC_STD:-model} offset=${OFFSET_MODEL:-none} motif=${MOTIF_BW:-none}"
 $PY scripts/4.1.predict_h3k27ac_for_abc.py \
     --regions "$REG" --model-dir "$MODEL_PATH" --mode "$MODE" \
     ${ACC[@]+"${ACC[@]}"} ${CH[@]+"${CH[@]}"} ${SIG[@]+"${SIG[@]}"} \
-    ${NRM[@]+"${NRM[@]}"} ${OFF[@]+"${OFF[@]}"} \
+    ${NRM[@]+"${NRM[@]}"} ${OFF[@]+"${OFF[@]}"} ${MOT[@]+"${MOT[@]}"} \
     --chrom-sizes "$SIZES" --out-bw "$OUTDIR/${OUT_PREFIX}_${ARM}.bw"
 
 echo "Done: $OUTDIR/${OUT_PREFIX}_${ARM}.bw"

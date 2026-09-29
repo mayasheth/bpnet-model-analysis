@@ -43,7 +43,7 @@ import pyBigWig
 import torch
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from multimodal_bpnet import MultiModalBPNet
+from multimodal_bpnet import MultiModalBPNet, PairedCellWindows
 
 NARROWPEAK_COLS = ["chr", "start", "end", "name", "score", "strand",
                    "signalValue", "pValue", "qValue", "summit"]
@@ -87,6 +87,15 @@ def parse_args():
                    # applied to the wrong inputs. The order used is recorded in
                    # training_target.json.
                    help="Accessibility BigWig (ATAC or DNase)")
+    # TF-ACTIVITY CHANNEL (--motif-activity-bw, or a panel entry's motif_activity_bw). A per-base
+# track equal to the sum over motifs of (motif hit here) x (that motif's activity in this cell
+# type), built by 2026_0824_H3K27ac_model/scripts/4.45. It is appended as the LAST accessibility
+# channel so it is extracted in the same loop and against the same valid mask as the ATAC
+# tracks, then split off before normalisation: the ATAC channels are normalised exactly as
+# without it, and the activity channel enters raw, since its weights are already standardised
+# within each cell type.
+    p.add_argument("--motif-activity-bw", default=None,
+                   help="TF-activity track appended as the last input channel (not normalised)")
     p.add_argument("--cell-types-json", default=None,
                    help="Train on SEVERAL cell types. JSON mapping a cell-type name to an "
                         "object with peaks, signal_plus_bw, and optionally signal_minus_bw, "
@@ -127,6 +136,26 @@ def parse_args():
                         "this aims the counts head at ordering rather than scale.")
     p.add_argument("--rank-min-gap", type=float, default=0.1,
                    help="Ignore pairs whose log1p target counts differ by less than this.")
+    # TEACHING THE MODEL TO USE THE TF-ACTIVITY CHANNEL (2026-09-28). With oracle weights the
+    # channel shrank the GATA error by only a third (F-035): fed into the trunk with only four
+    # training cell types, it can act as a cell fingerprint rather than as local evidence.
+    p.add_argument("--motif-head", action="store_true",
+                   help="Route the TF-activity channel (last channel) around the trunk into a "
+                        "4-weight additive term on the counts head, initialised to zero.")
+    p.add_argument("--pair-loss-weight", type=float, default=0.0,
+                   help="Weight on the cross-cell paired loss: the same windows in two "
+                        "training cell types, predicted minus observed log-count difference, "
+                        "centred within each cell-type pair. Needs a panel of >= 2.")
+    p.add_argument("--pair-n-train", type=int, default=20000,
+                   help="Training windows for the paired loss, sampled from pooled peaks.")
+    p.add_argument("--pair-n-val", type=int, default=5000)
+    p.add_argument("--pair-batch", type=int, default=32,
+                   help="Window pairs per training step (each costs two forward passes).")
+    p.add_argument("--seed", type=int, default=None,
+                   help="Seed for torch, numpy and the batch sampler, for replicate runs. "
+                        "Default None keeps the historical behaviour: sampler seed 42, torch "
+                        "unseeded. The negative pool is sampled with its own fixed seed either "
+                        "way, so replicates see the same data in a different order.")
     p.add_argument("--batch-size", type=int, default=64)
     p.add_argument("--max-epochs", type=int, default=100)
     p.add_argument("--early-stopping", type=int, default=10)
@@ -558,6 +587,7 @@ def main():
         "profile_target_plus_bw": args.profile_target_plus_bw,
         "profile_target_minus_bw": args.profile_target_minus_bw,
         "accessibility_bw": args.accessibility_bw,
+        "motif_activity_bw": args.motif_activity_bw,
         "accessibility_channels": (
             [p for p in args.accessibility_bw.split(",") if p]
             if args.accessibility_bw else []),
@@ -571,7 +601,17 @@ def main():
         "rank_loss_weight": args.rank_loss_weight,
         "rank_min_gap": args.rank_min_gap,
         "count_offset_model": args.count_offset_model,
+        "motif_head": args.motif_head,
+        "pair_loss_weight": args.pair_loss_weight,
+        "pair_n_train": args.pair_n_train,
+        "pair_n_val": args.pair_n_val,
+        "pair_batch": args.pair_batch,
+        "seed": args.seed,
     }
+    if args.seed is not None:
+        torch.manual_seed(args.seed)
+        np.random.seed(args.seed)
+        print(f"seed {args.seed} (torch, numpy, batch sampler)")
 
     if args.count_offset_model is not None:
         # The offset must be an accessibility prediction OF THIS TARGET. A model fit to a
@@ -724,11 +764,15 @@ def main():
                    profile_minus_bw=args.profile_target_minus_bw)
 
     def _extract(spec, regions, jitter, is_peak, label):
+        _acc = _spec(spec, "accessibility_bw", args.accessibility_bw)
+        _mot = _spec(spec, "motif_activity_bw", args.motif_activity_bw)
+        if _mot is not None:
+            _acc = f"{_acc},{_mot}"                     # the activity track is the LAST channel
         out = extract_windows(
             regions, genome,
             _spec(spec, "signal_plus_bw", args.signal_plus_bw),
             _spec(spec, "signal_minus_bw", args.signal_minus_bw),
-            _spec(spec, "accessibility_bw", args.accessibility_bw),
+            _acc,
             args.in_window, args.out_window, jitter,
             is_peak=is_peak, **prof_kw
         )
@@ -747,6 +791,7 @@ def main():
                             "val_seqs", "val_sigs", "val_accs", "val_prof",
                             "tr_grp", "val_grp")}
     acc_stats, per_cell_counts = {}, {}
+    pair_regions = {"train": [], "val": []}
 
     # Cell-type index per peak, in panel order, so the ranking term can form pairs within a
     # cell type only. Always built; unused unless --rank-loss-weight > 0.
@@ -755,11 +800,22 @@ def main():
         pk_path = _spec(spec, "peaks", args.peaks)
         ng_path = _spec(spec, "negatives", args.negatives)
         acc_bw = _spec(spec, "accessibility_bw", args.accessibility_bw)
+        mot_bw = _spec(spec, "motif_activity_bw", args.motif_activity_bw)
+        if mot_bw is not None and (acc_bw is None or args.count_offset_model is not None):
+            raise SystemExit(f"error: {cell}: a motif-activity channel needs an accessibility "
+                             "track and is not supported with --count-offset-model")
+        if args.cell_types_json and args.motif_activity_bw is not None:
+            raise SystemExit("error: with a panel, give motif_activity_bw per cell type in "
+                             "the JSON; the flag would apply one cell's activities to all")
 
         print(f"{tag}Loading peaks...")
         c_train_peaks = load_peaks(pk_path, train_chroms)
         c_val_peaks = load_peaks(pk_path, val_chroms)
         print(f"  Train peaks: {len(c_train_peaks)}, Val peaks: {len(c_val_peaks)}")
+        pair_regions["train"].append(c_train_peaks)
+        pair_regions["val"].append(c_val_peaks)
+        if args.motif_head and mot_bw is None:
+            raise SystemExit(f"error: --motif-head needs a motif_activity_bw for {cell}")
 
         print(f"{tag}Loading negatives...")
         c_negs = load_negatives(ng_path, train_chroms)
@@ -809,11 +865,21 @@ def main():
             # these arrays. Copy before that happens rather than extracting a second time.
             raw_accs_for_offset = (a_accs.copy(), n_accs.copy(), v_accs.copy())
         if acc_bw is not None:
+            if mot_bw is not None:
+                mots = [x[:, -1:].copy() for x in (a_accs, n_accs, v_accs)]
+                a_accs, n_accs, v_accs = (np.ascontiguousarray(x[:, :-1])
+                                          for x in (a_accs, n_accs, v_accs))
             a_accs, m, sd = normalize_accessibility(a_accs, mean=args.acc_mean,
                                                     std=args.acc_std)
             n_accs = normalize_accessibility(n_accs, mean=m, std=sd)[0]
             v_accs = normalize_accessibility(v_accs, mean=m, std=sd)[0]
-            acc_stats[cell] = {"acc_mean": float(m), "acc_std": float(sd)}
+            acc_stats[cell] = {"acc_mean": float(m), "acc_std": float(sd),
+                               "motif_activity_bw": mot_bw}
+            if mot_bw is not None:
+                a_accs, n_accs, v_accs = (np.concatenate([x, mo], axis=1).astype(np.float32)
+                                          for x, mo in zip((a_accs, n_accs, v_accs), mots))
+                print(f"  {tag}motif-activity channel: train mean {mots[0].mean():.3f}, "
+                      f"sd {mots[0].std():.3f}, nonzero {100 * (mots[0] != 0).mean():.1f}%")
             print(f"  {tag}accessibility normalization: mean={m:.4f}, std={sd:.4f}")
 
         for k, v in (("tr_seqs", a_seqs), ("tr_sigs", a_sigs), ("tr_accs", a_accs),
@@ -886,6 +952,54 @@ def main():
     else:
         print("No --accessibility-bw given; skipping accessibility normalization")
 
+    # Cross-cell paired windows: pooled peaks of every training cell type, each window
+    # extracted in EVERY cell type, keeping only windows valid in all of them.
+    pair_tr = pair_va = None
+    if args.pair_loss_weight > 0:
+        if len(PANEL) < 2:
+            raise SystemExit("error: --pair-loss-weight needs a panel of at least 2 cell types")
+
+        def _paired(key, n, seed):
+            reg = pd.concat(pair_regions[key], ignore_index=True).drop_duplicates(
+                ["chr", "start", "summit"])
+            reg = reg.sample(min(n, len(reg)), random_state=seed).reset_index(drop=True)
+            per = []
+            for j, (cell, spec) in enumerate(PANEL.items()):
+                _acc = _spec(spec, "accessibility_bw", args.accessibility_bw)
+                _mot = _spec(spec, "motif_activity_bw", args.motif_activity_bw)
+                if _mot is not None:
+                    _acc = f"{_acc},{_mot}"
+                per.append(extract_windows(
+                    reg, genome if j == 0 else None,
+                    _spec(spec, "signal_plus_bw", args.signal_plus_bw),
+                    _spec(spec, "signal_minus_bw", args.signal_minus_bw),
+                    _acc, args.in_window, args.out_window, 0, is_peak=True))
+            common = np.logical_and.reduce([o[3] for o in per])
+            seq, accs, logc = None, [], []
+            for (cell, spec), o in zip(PANEL.items(), per):
+                rows = (np.cumsum(o[3]) - 1)[common]
+                if seq is None:
+                    seq = o[0][rows]
+                a = o[2][rows]
+                has_mot = _spec(spec, "motif_activity_bw", args.motif_activity_bw) is not None
+                atac, mo = (a[:, :-1], a[:, -1:]) if has_mot else (a, None)
+                atac = normalize_accessibility(atac, mean=acc_stats[cell]["acc_mean"],
+                                               std=acc_stats[cell]["acc_std"])[0]
+                a = atac if mo is None else np.concatenate([atac, mo], axis=1)
+                accs.append(a.astype(np.float32))
+                logc.append(np.log1p(o[1][rows].sum(axis=(1, 2))).astype(np.float32))
+            logc = np.stack(logc)
+            diffs = [logc[i] - logc[k] for i in range(len(logc)) for k in range(i + 1, len(logc))]
+            sd = np.mean([np.std(d) for d in diffs])
+            print(f"  paired {key}: {int(common.sum()):,} of {len(reg):,} windows valid in all "
+                  f"{len(PANEL)} cell types; mean sd of cross-cell log-count differences "
+                  f"{sd:.3f}")
+            return PairedCellWindows(seq, np.stack(accs), logc, seed=seed)
+
+        print(f"Paired windows for the cross-cell loss (weight {args.pair_loss_weight}):")
+        pair_tr = _paired("train", args.pair_n_train, 1)
+        pair_va = _paired("val", args.pair_n_val, 2)
+
     # Build datasets
     train_dataset = MultiModalPeakNegativeSampler(
         tr_seqs, tr_accs, tr_sigs,
@@ -895,7 +1009,7 @@ def main():
         out_window=args.out_window,
         max_jitter=args.max_jitter,
         reverse_complement=True,
-        random_state=42,
+        random_state=42 if args.seed is None else args.seed,
         mode=args.mode,
         peak_offsets=tr_off,
         neg_offsets=neg_off,
@@ -923,6 +1037,11 @@ def main():
     n_acc_channels = tr_accs.shape[1]
     if args.mode in ("multimodal", "atac"):
         print(f"Accessibility input channels: {n_acc_channels}")
+    if args.motif_head:
+        assert args.mode == "multimodal", "--motif-head needs multimodal mode"
+        n_acc_channels -= 1                     # the activity channel bypasses the trunk
+        print("motif head: TF-activity channel routed to an additive counts term, "
+              f"trunk sees {n_acc_channels} accessibility channel(s)")
 
     # Model
     model = MultiModalBPNet(
@@ -943,6 +1062,10 @@ def main():
     # its regression gate are untouched; fit() reads them with getattr defaults.
     model.rank_loss_weight = args.rank_loss_weight
     model.rank_min_gap = args.rank_min_gap
+    if args.motif_head:
+        model.use_motif_head = True
+        model.motif_head = torch.nn.Linear(4, 1, bias=False)
+        torch.nn.init.zeros_(model.motif_head.weight)   # starts as the no-channel model
     if args.rank_loss_weight > 0:
         print(f"ranking loss: weight {args.rank_loss_weight}, min gap {args.rank_min_gap}, "
               f"pairs within {len(PANEL)} cell type(s)")
@@ -983,8 +1106,14 @@ def main():
         early_stopping=args.early_stopping,
         profile_target=use_prof_target,
         y_profile_valid=(torch.from_numpy(val_prof) if use_prof_target else None),
-        labels_valid=(torch.from_numpy(1 + val_grp) if args.rank_loss_weight > 0 else None)
+        labels_valid=(torch.from_numpy(1 + val_grp) if args.rank_loss_weight > 0 else None),
+        pair_data=pair_tr, pair_valid=pair_va, pair_loss_weight=args.pair_loss_weight,
+        pair_batch=args.pair_batch
     )
+    if args.motif_head:
+        w_ = model.motif_head.weight.detach().cpu().numpy().ravel()
+        print("motif head weights [pos, neg, pos x acc, neg x acc]: "
+              + ", ".join(f"{v:+.4f}" for v in w_))
 
     # Completion marker, written LAST. A preempted job (the `owners` partition is
     # preemptible) leaves a best-so-far checkpoint that is indistinguishable from a
