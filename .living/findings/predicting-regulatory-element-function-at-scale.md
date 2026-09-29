@@ -1213,3 +1213,350 @@ reference for "what a real activity track looks like", not a like-for-like compa
 | Date | Run/Session | Dataset | Project | Result | Direction |
 |------|-------------|---------|---------|--------|-----------|
 | 2026-09-23 | rE2G configs `4.32`, driver 44914391 (`4.33`), bootstrap `4.34`, partial correlation `4.35` | K562 CRISPR ensemble (10,356 pairs), K562 ABC candidate regions | ENCODE_rE2G results/2026_0923_p300_features; 2026_0824_H3K27ac_model | observed p300 +0.1225, predicted p300 +0.0050 to +0.0082 over ATAC-only rE2G; transferred predictions partial rho 0.13-0.28 given ATAC | replicates F-024; predicted activity not useful in a supervised framework as built |
+
+## F-030: A within-cell-type ranking loss gives the transferred p300 model its first resolvable benchmark gain, peaking at weight 10
+**Status:** supported (one training run per weight)
+**Claim:** The multi-cell p300 model (K562 held out) retrained with a RankNet pairwise term added
+to the counts MSE (`_pairwise_rank_loss`, pairs within a cell type, `1.36`), five folds per
+weight, everything else identical to the MSE-only comparator. Paired bootstrap on one pair set
+per framework (ABC: 10,342 pairs, 466 regulated; ENCODE-rE2G: 10,356 pairs, 471 regulated).
+
+| rank weight | ABC delta vs MSE-only | rE2G delta vs MSE-only | best epoch | val count Pearson |
+|---|---|---|---|---|
+| 0 (MSE only) | | | 23.6 | 0.7129 |
+| 2 | +0.0040 [-0.0013, +0.0095] | **+0.0143** [+0.0048, +0.0250] | 25.4 | 0.7149 |
+| 10 | **+0.0087** [+0.0006, +0.0179] | **+0.0172** [+0.0072, +0.0293] | 23.0 | 0.7225 |
+| 20 | +0.0034 [-0.0028, +0.0099] | -0.0060 [-0.0178, +0.0053] | 25.6 | 0.7275 |
+| 50 | +0.0020 [-0.0068, +0.0117] | +0.0032 [-0.0076, +0.0153] | 22.0 | 0.7193 |
+| 100 | -0.0003 [-0.0094, +0.0098] | +0.0028 [-0.0084, +0.0157] | 14.4 | 0.7198 |
+
+Weight 10 against the ATAC-only floor: +0.0217 [+0.0049, +0.0374] in ABC and +0.0255
+[+0.0066, +0.0413] in rE2G; the MSE-only model clears neither (+0.0130 [-0.0041, +0.0287];
++0.0082 [-0.0106, +0.0230]). Weights 20-100 are below weight 10 in both frameworks (rE2G
+-0.0140 to -0.0232, all resolvable; ABC -0.0053 to -0.0090, resolvable only for weight 100).
+**Implications:** **The first training change for the transferred model that moves the benchmark
+in both frameworks, and the first transferred p300 model to clear the floor in both.** It is
+small (about +0.01 AUPRC, a quarter of the 0.042 in-cell gap) and does not touch the TF-identity
+errors of F-032: the weight-10 model's GATA and CEBP residual coefficients match the MSE-only
+model's. Weight 20 had the best validation Pearson and is among the worst downstream: the
+upstream metric picked the wrong model again. Partial rho given ATAC (4.35) PREDICTED
+NO GAIN (0.271 and 0.265 against 0.281 over all non-promoter candidates, with rho with ATAC rising 0.770 ->
+0.783 and 0.800); the gain sits at the tested elements (weight 10's tested-element partial rho
+0.266 -> 0.295), which the all-candidate screen cannot see. Report 2 was updated to say a flat
+screen score does not rule out a gain.
+**Caveats:** One training run per weight. The non-monotone rE2G curve (weight 20 below 50 and
+100) is the size of the run-to-run variation F-020 predicts, so the weight-2/10 gains may be
+partly the luck of those runs; a seed replicate of weight 10 would settle it. Weight 100 stops
+~9 epochs earlier than the rest, a training-length confound (F-019) for that row only. The
+predicted-p300-alone arms do not agree (weight 2 -0.0071, weight 10 +0.0103, both n.s.).
+**Tags:** p300, ranking-loss, transfer, multicell, abc, re2g, crispr-benchmark, k562
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-09-24 | training 44916433 (w 2, 10); ABC 45081577, CRISPR 45101720, rE2G 45081983 | K562 CRISPR (ABC and rE2G pair sets) | 2026_0824_H3K27ac_model; ENCODE_rE2G 2026_0923_p300_features | w10 +0.0087 ABC, +0.0172 rE2G over MSE-only | first resolvable transfer gain |
+| 2026-09-26 | sweep training 45134216 / 45233340 (w 20, 50, 100); ABC 45253419, CRISPR 45395938, rE2G 45261496 | same | same | gain peaks at w10, falls back above it | bounds the effect at ~+0.01 |
+
+## F-031: Power-law neighbour information raises partial correlation with p300 but adds nothing to ABC, even fitted on K562's own p300
+**Status:** established for ABC; not tested in rE2G
+**Claim:** For each ABC candidate region, the power-law-weighted (ABC's gamma 1.024, scale 5.96,
+5 kb floor) mean and log-sum of the predictions and ATAC of every other region within 1 Mb (median
+149 neighbours), fitted to K562 observed p300 with 5-fold chromosome CV (`4.36`), linearly and by
+gradient boosting, against the same fit without neighbour terms. Two graphs: within ABC class, and
+across classes with terms split by the neighbour's class. Reordered tracks (`4.37`) run through ABC
+and the benchmark.
+
+| non-promoter partial rho given ATAC | boosting, no neighbours | + same-class neighbours | + cross-class |
+|---|---|---|---|
+| K562 in-cell model | 0.437 | 0.500 | 0.516 |
+| multi-cell model | 0.291 | 0.377 | 0.397 |
+| ATAC only | -0.014 | 0.119 | 0.204 |
+
+| ABC delta | same-class | cross-class |
+|---|---|---|
+| multi-cell: with vs without neighbours | -0.0016 [-0.0104, +0.0070] | -0.0010 [-0.0089, +0.0077] |
+| in-cell: with vs without neighbours | -0.0030 [-0.0091, +0.0029] | +0.0039 [-0.0029, +0.0115] |
+| ATAC + neighbour ATAC vs ATAC-only floor | | -0.0041 [-0.0147, +0.0067] |
+
+**Implications:** **Neighbour information is real for predicting p300 and useless to ABC.** The
+likely reason is ABC's own formula: an element's score is its activity x contact over the sum of
+activity x contact of every candidate near the gene, so boosting elements in active neighbourhoods
+raises the denominator by the same route. A graph network feeding ABC's activity term is therefore
+not worth building. Within-locus ranking (`local_rho`) improved slightly in every fit, so this is
+not smoothing. **The partial-correlation screen failed a second time, in the opposite direction to
+F-030**: +0.09 partial rho, zero AUPRC. Refitting to K562 labels without neighbours also bought
+nothing (+0.0031 multi-cell, -0.0083 in-cell).
+**Caveats:** An upper bound by design (fitted on K562 labels); a deployable version would be
+weaker. rE2G, whose logistic regression could weight neighbour features separately from activity,
+was not tested; it already has neighbourhood features.
+**Tags:** p300, graph, neighbours, abc, negative-result, metric, k562
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-09-25 | `4.36` same-class and cross-class; ABC 45233335 / 45141432; CRISPR 45254263 / 45395936 | K562 candidate regions, K562 CRISPR | 2026_0824_H3K27ac_model | +0.06 to +0.22 partial rho, no AUPRC change | closes the neighbour line for ABC |
+
+## F-032: The transferred p300 model mis-ranks elements by which TFs are active in K562, and GATA elements carry about half the transfer gap
+**Status:** established
+**Claim:** Per candidate region, within ABC class, residual r = rank(observed p300) - rank(predicted)
+in percentile points, regressed on each JASPAR 2024 motif (FIMO p < 1e-4, centre +/- 250 bp) and on
+ENCODE K562 peak overlaps, partialling out ATAC rank (+ square), GC, CpG o/e and log distance to TSS
+(`4.41`, 153,545 regions). Transfer-specific = r_multicell - r_incell.
+
+| non-promoter | regions | in-cell | multi-cell | transfer-specific |
+|---|---|---|---|---|
+| GATA2 | 12,532 | -2.65 | +6.87 | **+9.52** |
+| GATA1::TAL1 | 17,154 | -3.18 | +5.02 | **+8.20** |
+| AP-1 (FOS::JUN) | 15,266 | +1.25 | +2.96 | +1.71 |
+| STAT5a::STAT5b | 19,124 | -0.53 | +1.24 | +1.77 |
+| CEBPB | 2,630 | +0.39 | -4.90 | **-5.29** |
+| ESR2 | 18,752 | +0.25 | -4.47 | **-4.71** |
+| EP300 peak | 19,660 | +12.81 | +21.14 | +8.33 |
+| H3K4me1 peak | 52,470 | +3.63 | +8.60 | +4.97 |
+
+The top seven transfer-specific motifs are all GATA-family (GATA2-6, GATA1::TAL1, TRPS1);
+promoters show the same at about half the size (GATA5 +4.72). The ranking-loss model (F-030) has
+the same coefficients as the MSE-only one (GATA2 +6.79 against +6.87).
+
+GATA oracle (`4.42`): the multi-cell track with the 43,513 GATA-motif regions (28.3% of
+candidates) given another track's within-class ranks, against the same number of ATAC-decile- and
+class-matched non-GATA regions given the same ranks, ABC and benchmark, paired against the
+multi-cell model:
+
+| ranks from | GATA regions | matched non-GATA | GATA-specific |
+|---|---|---|---|
+| in-cell model | +0.0186 [+0.0108, +0.0266] | +0.0083 [+0.0003, +0.0156] | +0.0103 [-0.0001, +0.0213] |
+| observed p300 | +0.0414 [+0.0295, +0.0538] | +0.0197 [+0.0097, +0.0296] | **+0.0217** [+0.0060, +0.0385] |
+
+(in-cell model over multi-cell: +0.0419 [+0.0278, +0.0556].)
+**Implications:** **The missing signal is TF identity.** The transferred model has learned that
+the training cells' TFs recruit p300 (CEBP from HepG2 and A549, ESR from MCF-7) and applies that
+in K562, where they are weak, while never having seen GATA1/TAL1 recruit p300, since no panel cell
+is erythroid. The in-cell model shows neither pattern, so the motifs are not hard to predict; the
+training cells taught the wrong mapping. Ranking GATA elements as observed p300 does recovers about
+twice what the same number of matched elements does, and the GATA-specific part (+0.022) is about
+half the transfer gap; ranking them as the in-cell model does gives +0.010, a quarter. **This
+explains why no intervention so far moved the transferred model by more than ~0.01: none gave it
+information about the target cell's TFs.**
+**Caveats:** FIMO hits are sequence matches, not binding; eight near-identical GATA matrices define
+the GATA set. An oracle: not deployable. One cell type; the analogous test for another held-out
+cell type needs a CRISPR benchmark there.
+**Tags:** p300, transfer, tf-identity, gata, motifs, error-analysis, oracle, abc, k562
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-09-25 | `4.41` job 45293000 | K562 candidate regions, JASPAR 2024, ENCODE K562 peaks | 2026_0824_H3K27ac_model | GATA +9.5, CEBP/ESR -4.7 to -5.3 transfer-specific | names the missing factor |
+| 2026-09-27 | `4.42`; ABC 45396268 / 45440340; CRISPR 45437389 / 45540585 | K562 CRISPR | 2026_0824_H3K27ac_model | GATA-specific +0.0217 (observed ranks), +0.0103 (in-cell ranks) | GATA is about half the transfer gap |
+
+## F-033: ATAC and sequence recover the TF activities that matter for transfer to K562, but not the whole motif ranking
+**Status:** supported
+**Claim:** In each of the five p300-panel cell types, over the union of their ABC candidate regions
+(`4.43`), the TRUTH is each motif's coefficient for p300 beyond ATAC (from that cell's own p300),
+against four estimates from ATAC and sequence only: within-cell ATAC association, cell-specific
+association (minus the other cells' mean), a discriminative score (open here, not elsewhere), and a
+chromVAR-style deviation.
+
+| estimate vs truth (beyond ATAC), Spearman across ~780 motifs | K562 | GM12878 | HepG2 | A549 | MCF-7 |
+|---|---|---|---|---|---|
+| within-cell ATAC association | 0.573 | 0.513 | 0.422 | 0.508 | 0.120 |
+| chromVAR deviation | 0.063 | 0.213 | 0.245 | 0.423 | -0.020 |
+
+For the K562-minus-panel contrast, the best estimate reaches Spearman 0.32 with the true contrast
+(7 of the top 20 shared). The true contrast itself correlates 0.63 with F-032's transfer-specific
+residuals. Every estimator places the GATA family high in K562 and low in the four panel cells
+(chromVAR z +29.4 in K562, -4.7 to -14.7 elsewhere), and CEBP high in HepG2 (+10.2) and low in K562
+(-7.2). CTCF is the top motif by within-cell ATAC association in K562 and near the bottom of the
+truth (rank 741 of 782); the discriminative and chromVAR estimators place it at 311-664, the
+cell-specific one only at 15-52.
+**Implications:** **The TF activities that drive the transfer errors can be read from the target
+cell's ATAC, so telling a model about them is deployable.** Raw accessibility strength is the wrong
+estimator (it puts CTCF first). The specificity-based estimators remove CTCF but measure "different
+from the reference panel", so a new cell type similar to a training cell would have its important
+TFs cancelled; the proposed alternative is to learn the mapping from each motif's ATAC-only
+features to its p300 importance across the panel, evaluated leave-one-cell-out. Test 1 (a model
+with a TF-activity input channel) is running with oracle weights first.
+**Caveats:** Five cell types. Truth and estimates share the region set and the FIMO calls, so
+FIMO's limits apply to both. The per-cell top-20 overlap varies from 0-2 (HepG2, MCF-7) to 15-18.
+**Tags:** p300, tf-activity, chromvar, atac, motifs, transfer, deployment
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-09-26 | `4.43` job 45437518; panel ABC regions 2026_0924_p300_panel_obs | K562, GM12878, HepG2, A549, MCF-7 ATAC + p300 bigwigs | 2026_0824_H3K27ac_model | GATA and CEBP recovered; whole ranking -0.09 to 0.57 | TF-activity input is deployable in principle |
+
+## F-034: Learning motif p300 importance from ATAC-only features ranks motifs better overall but loses the cell-specific part; plain ATAC association minus CTCF keeps it best
+**Status:** supported
+**Claim:** Target: F-033's truth (each motif's coefficient for p300 beyond ATAC, standardised within
+cell). Features per (cell, motif), from that cell's ATAC and the sequence only, no motif identity:
+ATAC association, top-decile association, promoter fraction, prevalence, CTCF co-occurrence,
+footprint depth and flank height from base-level ATAC at genome-wide FIMO hits, motif GC.
+Gradient boosting, leave one cell out (`4.47`). Two corrections (`4.48`): STACK = least-squares
+mix of the learned score and ATAC association, weights fitted on inner leave-one-out predictions;
+DEPARTURE = mean truth over the training cells plus a model trained to predict each cell's
+departure from the other training cells' mean. "Departure" columns score (estimate - prior)
+against (truth - prior), prior = mean truth over the other four cells: the cell-specific part.
+
+| estimate | mean Spearman vs truth | mean departure Spearman | K562 departure | K562-minus-panel vs true contrast | GATA in K562 (truth +3.88) |
+|---|---|---|---|---|---|
+| raw ATAC association | 0.427 | **0.413** | **0.767** | **+0.445** | **+3.22** |
+| learned (`4.47`) | 0.658 | 0.300 | 0.361 | +0.096 | +1.15 |
+| stack: learned + association | 0.654 | 0.371 | 0.518 | +0.153 | +2.05 |
+| departure: prior + model | **0.693** | 0.114 | 0.178 | -0.154 | -0.09 |
+
+Per held-out cell, learned vs raw association: K562 0.731 vs 0.573, GM12878 0.734 vs 0.513, HepG2
+0.709 vs 0.422, A549 0.637 vs 0.508, MCF-7 0.481 vs 0.120; top-20 overlap is lower for learned in
+K562, GM12878 and A549. Learned pushes CTCF to ranks 737-779 without being told to. Permutation
+importance: association 0.29, CTCF co-occurrence 0.19, top-decile 0.18, promoter fraction 0.16,
+footprint depth 0.13. Stack weights: learned 0.49-0.61, association 0.14-0.26.
+**Implications:** **The learned estimators gain Spearman by learning which motifs matter for p300
+beyond ATAC in ANY cell** (AP-1 tops the learned K562 list), which is the part the transferred model
+already has. The cell-specific part, the part F-032 says is missing, is carried best by the target
+cell's own ATAC association, whose only large K562 error is CTCF (rank 1; truth rank 741). With
+CTCF removed its K562 top 10 is the GATA family, TRPS1 and GATA1::TAL1. That is the deployable
+weighting taken forward (`4.45 --weighting assoc_noctcf`). No estimator works in MCF-7.
+**Caveats:** Five cell types, so every leave-one-out model trains on four. The departure model's
+failure may be that four cells are too few to learn departures from, not that the features lack
+them. FIMO calls shared by truth and estimates.
+**Tags:** p300, tf-activity, motifs, atac, estimator, deployment, gradient-boosting
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-09-28 | `4.47` job 45613770; `4.48` job 45709699 | five p300-panel cell types, ATAC + p300 + FIMO | 2026_0824_H3K27ac_model | learned 0.66 mean Spearman but K562 contrast +0.10; raw association +0.45 | use ATAC association minus CTCF |
+
+## F-035: Telling the transferred model which TFs matter (oracle weights) matches the ranking loss in rE2G, barely moves ABC, and shrinks the GATA error by a third
+**Status:** supported (one training run)
+**Claim:** The multi-cell p300 model (K562 held out) retrained with one extra input channel, a
+TF-activity track: at each base, the sum over genome-wide FIMO hits of that motif's truth weight in
+the cell (F-033, from the cell's own p300), rescaled to genome-wide sd 1 (`4.44`-`4.46`, `1.37`).
+Predicted in K562 with K562's own oracle track. Everything else identical to the MSE-only
+comparator. Paired bootstrap as in F-030.
+
+| motifact_oracle minus | ABC | rE2G |
+|---|---|---|
+| MSE-only multi-cell | +0.0036 [-0.0044, +0.0126] | **+0.0171** [+0.0061, +0.0288] |
+| ranking loss w=10 | -0.0052 [-0.0110, +0.0004] | -0.0002 [-0.0100, +0.0092] |
+| ATAC-only floor | **+0.0165** [+0.0002, +0.0316] | **+0.0253** [+0.0060, +0.0413] |
+| in-cell model | **-0.0384** [-0.0536, -0.0231] | +0.0203 [-0.0085, +0.0488] |
+
+Validation count Pearson 0.7343 against 0.7129; best epoch 29.4 against 23.6. Oracle tops per
+cell are the expected regulators (K562 GATA, GM12878 SPIB/ETS/RUNX, HepG2 CEBP, A549 AP-1, MCF-7
+ESR). F-032's residual screen on this model (`4.41 --extra`), non-promoter, percentile points at
+matched ATAC:
+
+| motif | in-cell | multi-cell | rank w=10 | + oracle channel |
+|---|---|---|---|---|
+| GATA family (mean of 8) | -2.65 | +5.65 | +5.63 | **+3.15** |
+| GATA1::TAL1 | -3.18 | +5.02 | +4.97 | +3.18 |
+| CEBPB | +0.39 | -4.90 | -5.09 | -2.52 |
+| ESR2 | +0.25 | -4.47 | -3.96 | -1.05 |
+
+The channel model's transfer-specific pattern correlates 0.87 with the MSE-only model's across
+motifs; mean |coefficient| rises slightly (0.77 -> 0.82).
+**Implications:** **Even with the true answer the model uses TF information only partly.** It
+removes about a third of the GATA under-ranking and half the CEBP/ESR over-ranking, and adds
+small errors elsewhere; the ABC gain is a sixth of what directly re-ranking the GATA elements
+gave (F-032, +0.022). In rE2G it equals the ranking loss, and the two were combined
+(rank10_motifact_oracle) to test whether they add. The upstream metric improved more than any
+previous change (+0.021 Pearson) and ABC barely moved: the upstream metric misled a third time.
+**The bottleneck is now how the model uses the channel, not whether the information exists.**
+Likely reasons: only four training cells, so the channel can act as a cell fingerprint rather than
+local evidence; one summed track mixes positive and negative motifs; the weights include
+cell-invariant importance (AP-1) the model already has from sequence.
+**Caveats:** One training run; the channel model trained ~6 epochs longer, and training length
+alone moved ABC by +0.0086 in F-019, so the ABC delta may be partly length. Oracle weights: not
+deployable.
+**Tags:** p300, tf-activity, input-channel, transfer, oracle, abc, re2g, crispr-benchmark, k562, gata
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-09-28 | `1.37` oracle; predict 45613275; ABC 45613278; CRISPR 45709851; bootstrap 45731270; rE2G 45616410, bootstrap 45709881; `4.41` 45732088 | K562 CRISPR (ABC and rE2G pair sets), K562 candidate regions | 2026_0824_H3K27ac_model; ENCODE_rE2G 2026_0923_p300_features | rE2G +0.0171, ABC +0.0036 over MSE-only; GATA residual +5.65 -> +3.15 | information helps; model under-uses it |
+
+## F-036: The deployable TF-activity channel (ATAC association, CTCF removed) is the best transferred p300 model so far in both frameworks; adding the ranking loss to the oracle channel does not add
+**Status:** supported (one training run per model)
+**Claim:** Two follow-ups to F-035, same design and pair sets. `assoc_noctcf`: the channel built
+from each cell's own within-cell ATAC association (F-033), CTCF-family motifs set to 0, in
+training and at K562 prediction (`4.45 --weighting assoc_noctcf`, `1.37 WEIGHTING=assoc_noctcf`).
+`rank10_motifact_oracle`: the oracle channel plus the ranking loss w=10 (`1.36 TAG=motifact_oracle`).
+
+| minus | ABC | rE2G |
+|---|---|---|
+| assoc_noctcf - MSE-only multi-cell | **+0.0100** [+0.0031, +0.0177] | **+0.0221** [+0.0120, +0.0331] |
+| assoc_noctcf - oracle channel | +0.0065 [-0.0002, +0.0131] | +0.0047 [-0.0047, +0.0138] |
+| assoc_noctcf - ATAC-only floor | **+0.0230** [+0.0063, +0.0393] | **+0.0300** [+0.0091, +0.0475] |
+| rank10 + oracle - MSE-only | +0.0028 [-0.0069, +0.0130] | **+0.0122** [+0.0005, +0.0238] |
+| rank10 + oracle - rank10 | -0.0059 [-0.0135, +0.0014] | -0.0054 [-0.0146, +0.0032] |
+| rank10 + oracle - oracle channel | -0.0008 [-0.0080, +0.0060] | -0.0052 [-0.0143, +0.0040] |
+
+AUPRC: ABC assoc_noctcf 0.4910 (rank10 0.4897, oracle 0.4845, MSE-only 0.4810, in-cell 0.5229);
+rE2G 0.5735 (rank10 0.5689, oracle 0.5688, MSE-only 0.5514). Best epoch / val count Pearson:
+MSE-only 23.6 / 0.7129, oracle 29.4 / 0.7344, assoc_noctcf 31.2 / 0.7285, rank10 + oracle
+29.2 / 0.7390.
+**Implications:** **A TF-activity channel built from the target cell's own ATAC, with no p300
+and no reference panel, gives the largest transfer gain yet** (+0.010 ABC, +0.022 rE2G), at
+least as large as the oracle channel's. One reading: its training weights come from the same
+estimator used at prediction, so there is no train/test mismatch, whereas the oracle weights
+are noisy regression coefficients in training and exact in K562. The ranking loss and the
+channel do not add (in both frameworks the combination is at or below either alone), so they
+likely fix the same errors. Still about three quarters of the in-cell gap remains in ABC.
+**Caveats:** One run per model, and F-020's run-to-run noise is about the size of the
+assoc_noctcf vs oracle difference; a seed replicate is needed before claiming it beats the
+oracle. The channel models trained 6-8 epochs longer than MSE-only (F-019 training-length
+confound).
+**Tags:** p300, tf-activity, input-channel, deployment, transfer, abc, re2g, crispr-benchmark, k562
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-09-28 | tracks 45718829; training 45723634 / 45718831; predict 45732090 / 45732092; ABC 45732096; CRISPR 45759984; rE2G 45739352; bootstraps 45793992 / 45793995 | K562 CRISPR (ABC and rE2G pair sets) | 2026_0824_H3K27ac_model; ENCODE_rE2G 2026_0923_p300_features | assoc_noctcf +0.0100 ABC, +0.0221 rE2G over MSE-only | deployable channel works; rank + channel do not add |
+
+## F-037: Teaching the model to use the oracle channel (additive head, cross-cell paired loss) shrinks the GATA error further but does not move the benchmark beyond the channel alone
+**Status:** supported (one training run per arm)
+**Claim:** Three arms on the oracle channel (`1.38`), otherwise identical to it. HEAD: the channel
+bypasses the trunk and enters the counts through 4 weights (positive and negative motif weight,
+each also times softplus(ATAC)), zero-initialised (`--motif-head`). PAIR: the channel in the trunk
+plus a cross-cell loss on 20,000 pooled training-peak windows extracted in all four training cell
+types: predicted minus observed log-count difference between two cell types, centred within each
+cell-type pair, weight 10 (`--pair-loss-weight`). HEADPAIR: both.
+
+| arm | ABC vs oracle channel | ABC vs MSE-only | rE2G vs oracle channel | rE2G vs MSE-only |
+|---|---|---|---|---|
+| head | +0.0019 [-0.0074, +0.0105] | **+0.0055** [+0.0001, +0.0108] | +0.0003 [-0.0117, +0.0125] | **+0.0176** [+0.0077, +0.0282] |
+| pair | +0.0032 [-0.0093, +0.0152] | +0.0068 [-0.0048, +0.0182] | +0.0037 [-0.0102, +0.0172] | **+0.0210** [+0.0082, +0.0337] |
+| headpair | +0.0069 [-0.0044, +0.0178] | **+0.0105** [+0.0009, +0.0196] | +0.0053 [-0.0070, +0.0180] | **+0.0226** [+0.0110, +0.0358] |
+
+Against the deployable `assoc_noctcf` channel (F-036), every arm is within +/-0.005 in both
+frameworks (headpair +0.0004 ABC, +0.0005 rE2G). AUPRC: ABC headpair 0.4914, assoc_noctcf 0.4910,
+pair 0.4877, head 0.4864, oracle 0.4845, MSE-only 0.4810, in-cell 0.5229.
+
+F-032's residual screen (`4.41 --extra`), non-promoter, percentile points at matched ATAC:
+
+| | in-cell | MSE-only | oracle | assoc_noctcf | head | pair | headpair |
+|---|---|---|---|---|---|---|---|
+| GATA family | -2.64 | +5.69 | +3.15 | +4.77 | +5.39 | **+2.14** | +4.88 |
+| CEBP family | -0.09 | -3.61 | -2.15 | -2.14 | -2.67 | -2.74 | -2.83 |
+| ESR1/2 | +0.28 | -3.89 | -0.10 | -1.99 | -3.08 | -0.69 | -3.19 |
+| mean abs coefficient | 0.60 | 0.77 | 0.82 | 0.80 | 0.69 | **0.60** | 0.67 |
+
+Learned head weights (final): positive motifs +0.09 to +0.30, negative motifs -0.49 to -1.24,
+negative x ATAC +0.25 to +0.91. Validation count Pearson: head 0.712, pair 0.726, headpair 0.711
+(oracle channel 0.734, MSE-only 0.713).
+**Implications:** **The paired loss does what it was designed to do, and the benchmark does not
+follow.** It gives the smallest GATA error of any transferred model and an overall residual size
+equal to the in-cell model's, yet its ABC gain over the channel alone is +0.003 (n.s.). The head
+alone barely changes the GATA error, so a fixed additive use of TF activity is not enough: the
+channel has to interact with sequence and ATAC in the trunk. Every TF-channel variant, oracle or
+deployable, now sits in one band (ABC 0.485-0.491, rE2G 0.569-0.574) about +0.005-0.010 ABC and
++0.017-0.023 rE2G above MSE-only, with differences among them inside one-run noise. The GATA
+residual and the benchmark have come apart: residuals are over all 153k candidates, the benchmark
+over 3,406 tested elements, the same gap that sank the partial-correlation screen (F-030, F-031).
+**Caveats:** One run per arm; the ~0.005 spread among channel models is F-020-sized. Oracle
+weights only; the paired loss on the deployable channel is untested.
+**Tags:** p300, tf-activity, input-channel, paired-loss, motif-head, transfer, abc, re2g, k562, gata
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-09-29 | `1.38` 45793888; predict 45826172/176/242; ABC 45826245; CRISPR 45842255; rE2G 45829844; bootstraps 45856314/5; `4.41` 45826253 | K562 CRISPR, K562 candidate regions | 2026_0824_H3K27ac_model; ENCODE_rE2G 2026_0923_p300_features | pair: GATA +5.69 -> +2.14; ABC/rE2G within noise of the channel alone | channel models have plateaued at one run's resolution |

@@ -169,8 +169,9 @@ opposite tail as the arm's responsiveness scale (Report 3).
 
 Before running ABC, score a predicted activity track by its partial rank correlation with
 observed p300 given ATAC (`scripts/4.35.partial_corr_given_atac.py`). This measures what the
-prediction knows about p300 that ATAC does not already supply. It is a candidate screen and
-has not yet been validated against the benchmark.
+prediction knows about p300 that ATAC does not already supply. It is a candidate screen: it
+orders models with large differences correctly, and it missed the one small gain it has been
+tested on prospectively (below).
 
 ![](figures/fig25_partial_corr_explainer.png)
 
@@ -221,10 +222,14 @@ transferred ones on both. It does not explain everything. The in-cell model's pa
 and the other +0.083 (F-029). It controls for ATAC at the element only, not for neighbourhood
 sums, contact or distance.
 
-**First prospective test.** The ranking-loss models (`1.36`) were scored before their
-benchmark result: partial rho 0.271 (weight 2) and 0.265 (weight 10) against the MSE-only
-multi-cell model's 0.281, with rho with ATAC rising from 0.770 to 0.783 and 0.800. The screen
-predicts no downstream gain. The benchmark result will be added here.
+**First prospective test: the screen missed a real gain.** The ranking-loss models (`1.36`)
+were scored before their benchmark result: partial rho 0.271 (weight 2) and 0.265 (weight 10)
+against the MSE-only multi-cell model's 0.281, so the screen predicted no gain. Both gained.
+In ABC, weight 10 beat the MSE-only model by +0.0087 [+0.0006, +0.0179]; in ENCODE-rE2G,
+weights 2 and 10 beat it by +0.0143 [+0.0048, +0.0250] and +0.0173 [+0.0072, +0.0294]. The gain
+sits at the tested elements, where weight 10's partial rho rose from 0.266 to 0.295, and not
+over the candidate set as a whole. **A flat screen score does not rule out a downstream
+gain**; treat the screen as a way to rank large differences, not as a gate.
 
 ## Design a transfer evaluation to separate model failure from target difficulty
 

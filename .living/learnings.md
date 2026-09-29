@@ -1926,3 +1926,28 @@ run through that profile, not just ABC. The profile's `cluster:` line already ca
 `unset SLURM_CPUS_PER_TASK SLURM_TRES_PER_TASK`, which is dead code: `slurm: True` selects the
 built-in executor and the generic `cluster:` submission path is never used. Do not read that
 line as protection.
+
+## 2026-09-27: motif scanning and Sherlock gotchas
+
+- **memelite `fimo(..., return_counts=True)` sums over ALL sequences** (one number per motif), not
+  per sequence. Count per sequence from the hit tables (`sequence_name` is the row index).
+- **N bases score as hits.** One-hot N is an all-zero column, and a zero PWM score passes p < 1e-4
+  for many motifs: 94% of a first chr21 scan's 155M hits touched an N. Drop any hit covering an N;
+  the clean rate is ~200 per Mb per motif at p < 1e-4, two strands.
+- **Oak outage, 2026-09-24/25:** jobs hung after finishing (snakemake jobstep never exited),
+  files returned I/O errors, a conda env could not import `asyncio`. Stop, report to SRCC, and
+  rerun anything written during the outage rather than trusting it.
+- **Sherlock publishes rules for agents at `/etc/agents/AGENTS.md`**: 60 s minimum between polls,
+  heavy work in jobs not on login nodes, job I/O on `$SCRATCH`.
+- **The partial-correlation screen failed twice** (F-030 missed a real gain; F-031 predicted a gain
+  that did not exist). Use it to rank large differences only.
+
+## 2026-09-28: patching over ssh
+
+- **Never inline a Python patch in a double-quoted ssh command.** The local shell turns `\\t` into
+  `\t` and `\"` into `"`, so replacement anchors silently stop matching. Write the patch to a
+  file, scp it, run it with asserts on every anchor.
+- **Chain a patch and the sbatch it enables with `&&` or `set -e`.** A failed patch followed by `;`
+  still submitted two jobs, one of which would have written into the finished rank-10 model dir.
+- **Output dirs must carry every training variant.** 1.36 named its dir by rank weight only, so a
+  rank + channel run would have overwritten rank10; it now takes `TAG`.

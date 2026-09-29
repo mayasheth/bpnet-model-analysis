@@ -92,6 +92,35 @@ accessibility too steeply.
       recorded only in the June project's `config/input_data_gm12878_multimodal.json`; writing
       that file is worth doing so nobody has to correlate bigwigs to identify a model again.
 
+## The model under-uses TF information, 2026-09-28 (F-034, F-035)
+
+- [x] Deployable channel `assoc_noctcf` (F-036): +0.010 ABC, +0.022 rE2G over MSE-only, best
+      transferred model so far. Oracle channel + rank loss w=10: does not add.
+- [ ] Seed replicate of `assoc_noctcf` and of the oracle channel (their difference is F-020 size).
+- [x] **Teach the model to use the channel** (F-037), `1.38`, oracle weights: head / pair /
+      headpair all within noise of the channel alone; pair gives the smallest GATA error.
+  - [ ] Paired loss on the deployable `assoc_noctcf` channel (untested).
+- [ ] Later candidates:
+  - [ ] Channel content: weights as departure from the training-cell mean truth; split positive
+        and negative weights into two channels.
+  - [ ] Motif dropout / weight noise on the channel during training, and train on estimated
+        (ATAC-derived) weights to match deployment.
+- [ ] Seed replicate of the oracle channel model (F-035 is one run; ~6 more epochs than comparator).
+
+## TF identity is the missing signal, 2026-09-27 (F-030 to F-033)
+
+- [x] Ranking loss (F-030): weight 10 is best, about +0.01 AUPRC in ABC and rE2G.
+- [ ] Seed replicate of rank weight 10, to separate the gain from run-to-run noise (F-020).
+- [x] Neighbour graph (F-031): null in ABC, same-class and cross-class. Not tried in rE2G.
+- [x] Error anatomy and GATA oracle (F-032): GATA elements are about half the transfer gap.
+- [x] TF-activity recovery (F-033): GATA and CEBP recovered from ATAC; whole ranking moderate.
+- [x] Test 1 with oracle weights (F-035): rE2G +0.017, ABC +0.004; GATA error shrinks a third.
+- [x] Deployable estimator (F-034): learned estimators lose the cell-specific part; ATAC
+      association minus CTCF keeps it best.
+- [ ] finemo instead of FIMO, later: ChromBPNet (ATAC) vs BPNet (p300) finemo in the same cell
+      separates "important for accessibility" from "important for p300 beyond accessibility".
+- [ ] Leave-one-out Test 1 for the other four cell types (upstream metrics only; no CRISPR).
+
 ## Where the activity term loses, 2026-09-23 (F-028, F-029)
 
 - [x] **Oracle decomposition** (F-028). 80% of the transfer gap is tested-element ranking.
