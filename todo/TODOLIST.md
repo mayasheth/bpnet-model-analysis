@@ -96,7 +96,9 @@ accessibility too steeply.
 
 - [x] Deployable channel `assoc_noctcf` (F-036): +0.010 ABC, +0.022 rE2G over MSE-only, best
       transferred model so far. Oracle channel + rank loss w=10: does not add.
-- [ ] Seed replicate of `assoc_noctcf` and of the oracle channel (their difference is F-020 size).
+- [x] Seed replicates (F-038): run sd ~0.002 ABC, ~0.005 rE2G; channel +0.006 ABC, +0.012 rE2G.
+- [x] Frozen two-stage model (F-038): matches the end-to-end channel.
+- [ ] Corrected TF list (4.50 flagged + GC): needs 3 seeds to resolve its likely small gain.
 - [x] **Teach the model to use the channel** (F-037), `1.38`, oracle weights: head / pair /
       headpair all within noise of the channel alone; pair gives the smallest GATA error.
   - [ ] Paired loss on the deployable `assoc_noctcf` channel (untested).

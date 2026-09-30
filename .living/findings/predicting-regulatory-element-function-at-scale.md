@@ -1475,7 +1475,7 @@ deployable.
 | 2026-09-28 | `1.37` oracle; predict 45613275; ABC 45613278; CRISPR 45709851; bootstrap 45731270; rE2G 45616410, bootstrap 45709881; `4.41` 45732088 | K562 CRISPR (ABC and rE2G pair sets), K562 candidate regions | 2026_0824_H3K27ac_model; ENCODE_rE2G 2026_0923_p300_features | rE2G +0.0171, ABC +0.0036 over MSE-only; GATA residual +5.65 -> +3.15 | information helps; model under-uses it |
 
 ## F-036: The deployable TF-activity channel (ATAC association, CTCF removed) is the best transferred p300 model so far in both frameworks; adding the ranking loss to the oracle channel does not add
-**Status:** supported (one training run per model)
+**Status:** REVISED by F-038: seed-averaged, the channel gain is about +0.006 ABC and the assoc_noctcf vs oracle difference is noise
 **Claim:** Two follow-ups to F-035, same design and pair sets. `assoc_noctcf`: the channel built
 from each cell's own within-cell ATAC association (F-033), CTCF-family motifs set to 0, in
 training and at K562 prediction (`4.45 --weighting assoc_noctcf`, `1.37 WEIGHTING=assoc_noctcf`).
@@ -1560,3 +1560,48 @@ weights only; the paired loss on the deployable channel is untested.
 | Date | Run/Session | Dataset | Project | Result | Direction |
 |------|-------------|---------|---------|--------|-----------|
 | 2026-09-29 | `1.38` 45793888; predict 45826172/176/242; ABC 45826245; CRISPR 45842255; rE2G 45829844; bootstraps 45856314/5; `4.41` 45826253 | K562 CRISPR, K562 candidate regions | 2026_0824_H3K27ac_model; ENCODE_rE2G 2026_0923_p300_features | pair: GATA +5.69 -> +2.14; ABC/rE2G within noise of the channel alone | channel models have plateaued at one run's resolution |
+
+## F-038: Seed replicates put run-to-run noise at sd ~0.002 AUPRC in ABC and ~0.005 in rE2G; the TF-activity channel's real gain is about +0.006 ABC and +0.012-0.014 rE2G, and the frozen two-stage model matches it
+**Status:** established (three runs per model)
+**Claim:** Two extra trainings (`1.37 SEED=1,2`, `--seed`: torch, numpy and batch order; same data)
+of the MSE-only multi-cell model, the oracle channel and the assoc_noctcf channel, plus the frozen
+two-stage models (`1.39`, DNA-free 5,409-parameter correction on the original MSE-only model).
+One ABC pass and one rE2G pass; paired bootstrap with seed-averaged groups (`4.17`/`4.34 --group`:
+mean AUPRC of the three runs inside every draw).
+
+| | ABC runs (orig, s1, s2) | ABC mean, sd | rE2G runs | rE2G mean, sd |
+|---|---|---|---|---|
+| MSE-only | 0.4810, 0.4832, 0.4842 | 0.4828, 0.0017 | 0.5516, 0.5577, 0.5643 | 0.5579, 0.0063 |
+| oracle channel | 0.4845, 0.4853, 0.4885 | 0.4861, 0.0021 | 0.5687, 0.5747, 0.5722 | 0.5719, 0.0030 |
+| assoc_noctcf channel | 0.4910, 0.4880, 0.4872 | 0.4887, 0.0020 | 0.5735, 0.5706, 0.5642 | 0.5695, 0.0047 |
+
+| seed-averaged | ABC | rE2G |
+|---|---|---|
+| oracle - MSE-only | +0.0033 [-0.0029, +0.0112] | **+0.0140** [+0.0056, +0.0232] |
+| assoc_noctcf - MSE-only | **+0.0059** [+0.0001, +0.0132] | **+0.0116** [+0.0038, +0.0202] |
+| assoc_noctcf - oracle | +0.0026 [-0.0012, +0.0063] | -0.0024 [-0.0073, +0.0027] |
+| MSE-only - ATAC floor | +0.0148 [-0.0021, +0.0303] | +0.0144 [-0.0036, +0.0300] |
+| assoc_noctcf - ATAC floor | **+0.0207** [+0.0043, +0.0362] | **+0.0260** [+0.0068, +0.0414] |
+| assoc_noctcf - in-cell | **-0.0341** [-0.0484, -0.0196] | +0.0210 [-0.0078, +0.0497] |
+| two-stage oracle - its frozen base | **+0.0042** [+0.0003, +0.0086] | **+0.0146** [+0.0062, +0.0238] |
+| two-stage assoc_noctcf - its frozen base | +0.0027 [-0.0017, +0.0069] | **+0.0138** [+0.0068, +0.0222] |
+
+Same-configuration replicate differences reach +0.0032 (ABC) and +0.0126 (rE2G, resolvable on its
+own: seed 2 minus original MSE-only).
+**Implications:** **Single-run differences under about 0.005 ABC or 0.013 rE2G are not evidence.**
+The TF-activity channel's gain is real in rE2G in both weightings and marginal in ABC (+0.006,
+about a seventh of the 0.041 in-cell gap); F-036's "+0.010, beats the oracle" was the original
+assoc_noctcf run being the luckiest of three. The deployable and oracle weightings are
+indistinguishable. The frozen two-stage model, whose channel correction cannot see DNA, gains as
+much as the channel trained end to end, so the DNA-shortcut hypothesis does not explain the
+plateau. Every channel variant (F-035 to F-037) now sits in one band, and earlier single-run rank
+results (F-030, +0.0087 ABC) should be read with the same noise in mind. Deciding between
+candidates of this size needs at least three runs each.
+**Caveats:** Three runs per model; sd from three values is itself imprecise. The two-stage models
+were compared with their one frozen base, not seed-averaged.
+**Tags:** p300, seeds, run-to-run-variance, tf-activity, two-stage, abc, re2g, crispr-benchmark, k562
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-09-30 | training 45897299/321/357/363/369/503 (+45957358/360 after a GPU fault), 45903507/509; ABC 45897566; CRISPR 45998015; rE2G 45980539; bootstraps 46073940/42 | K562 CRISPR (ABC and rE2G pair sets) | 2026_0824_H3K27ac_model; ENCODE_rE2G 2026_0923_p300_features | channel +0.006 ABC, +0.012-0.014 rE2G seed-averaged; run sd 0.002 / 0.005 | resolves F-036; channel gain is small and real |
