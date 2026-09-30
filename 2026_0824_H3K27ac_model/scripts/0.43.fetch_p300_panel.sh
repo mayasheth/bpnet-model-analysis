@@ -25,8 +25,9 @@
 set -euo pipefail
 D=/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet
 P=$D/2026_0824_H3K27ac_model
-DATA=/oak/stanford/groups/engreitz/Users/sheth/Data/ENCODE
-MAN=$P/reference/p300_panel_manifest.tsv
+# DATA_ROOT and MANIFEST override the defaults, e.g. for the 2026-09-29 tissue download to $SCRATCH.
+DATA=${DATA_ROOT:-/oak/stanford/groups/engreitz/Users/sheth/Data/ENCODE}
+MAN=${MANIFEST:-$P/reference/p300_panel_manifest.tsv}
 cd "$P"; mkdir -p log
 
 i=${SLURM_ARRAY_TASK_ID:-1}

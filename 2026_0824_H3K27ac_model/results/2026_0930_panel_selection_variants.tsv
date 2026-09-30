@@ -1,0 +1,15 @@
+run	step	cell	gain	coverage	holdout_top10_covered	adds
+ATAC candidates, all families	0	current panel		203.86181290945402	0.6	
+ATAC candidates, all families	1	ovary	35.180604994375386	239.0424179038294	0.6	NR3C1 (+2), NR5A1 (+1), Pgr, NR6A1
+ATAC candidates, all families	2	transverse colon	26.301815579244476	265.3442334830739	0.6	KLF3, CDX1 (+3), CDX2 (+2), KLF5 (+17)
+ATAC candidates, all families	3	gastroesophageal sphincter	17.015883712328275	282.36011719540215	0.6	MEF2B (+3), ZNF384, ATF2 (+1), SRF
+ATAC candidates, all families	4	stomach	12.455866375316646	294.8159835707188	0.7	HOXA9, GATA2 (+5), HES7, Prdm14
+ATAC candidates, all families	5	tibial nerve	7.330808695939481	302.1467922666583	0.7	HLF (+1), CEBPA (+1), DBP (+1), CEBPG (+2)
+ATAC candidates, all families	6	SK-N-SH	5.340525555541888	307.48731782220017	0.7	MAFK (+1), NKX2-3 (+2), PAX3, JDP2 (+25)
+ATAC candidates, GC-rich/zinc-finger families removed	0	current panel		151.9467784172284	0.4	
+ATAC candidates, GC-rich/zinc-finger families removed	1	gastroesophageal sphincter	24.97854308697748	176.92532150420587	0.4	MEF2B (+3), CEBPG (+2), OTX2, NFIC::TLX1 (+2)
+ATAC candidates, GC-rich/zinc-finger families removed	2	ovary	15.678436390668907	192.60375789487478	0.4	NR5A1 (+1), NR6A1, NR3C1 (+2), Pgr
+ATAC candidates, GC-rich/zinc-finger families removed	3	transverse colon	14.256417956204643	206.86017585107942	0.4	CDX1 (+3), CDX2 (+2), HOXB9 (+8), TBP
+ATAC candidates, GC-rich/zinc-finger families removed	4	stomach	10.494272991357946	217.35444884243736	0.7	HOXA9, GATA2 (+5), HES7, CUX1 (+2)
+ATAC candidates, GC-rich/zinc-finger families removed	5	tibial nerve	6.689313346333364	224.04376218877073	0.8	HLF (+1), CEBPA (+1), DBP (+1), CEBPG (+2)
+ATAC candidates, GC-rich/zinc-finger families removed	6	SK-N-SH	4.838826869032118	228.88258905780285	0.8	MAFK (+1), NKX2-3 (+2), PAX3, JDP2 (+25)

@@ -1,0 +1,20 @@
+# ENCODE EP300 ChIP-seq for three tissues added to the panel candidates, selected 2026-09-29
+# (4.49 coverage: stomach carries GATA; colon CDX/HNF4A; ovary NR3C1/NR5A1/PGR). One biological
+# replicate each; each has two reprocessings of the same unfiltered BAM (2016-17 and 2020),
+# and the most recent is taken, as in p300_panel_manifest.tsv. Unfiltered, filtered locally.
+# Donor-matched ATAC (same ENTEx donor) exists for all three: stomach ENCSR851SBY,
+# transverse colon ENCSR668VCT, ovary ENCSR490MSG (Snyder lab, 101 bp, as the panel ATAC); again two
+# reprocessings of one replicate, the 2021 filtered BAM taken. Rows 7-12 added 2026-09-29.
+cell	assay	experiment	kind	accession	bio_replicate	size_gb
+stomach	EP300	ENCSR684NJD	bam	ENCFF007KYF	[1]	4.78
+stomach	EP300	ENCSR684NJD	peak	ENCFF099PQM	[1]	0.000
+transverse_colon	EP300	ENCSR429JTR	bam	ENCFF840WTK	[1]	3.09
+transverse_colon	EP300	ENCSR429JTR	peak	ENCFF754LGO	[1]	0.000
+ovary	EP300	ENCSR696LQU	bam	ENCFF998YRH	[1]	4.94
+ovary	EP300	ENCSR696LQU	peak	ENCFF917NDE	[1]	0.000
+stomach	ATAC	ENCSR851SBY	bam	ENCFF858TZP	[1]	5.99
+stomach	ATAC	ENCSR851SBY	peak	ENCFF430VEQ	[1]	0.000
+transverse_colon	ATAC	ENCSR668VCT	bam	ENCFF593YGT	[1]	5.75
+transverse_colon	ATAC	ENCSR668VCT	peak	ENCFF251CFX	[1]	0.000
+ovary	ATAC	ENCSR490MSG	bam	ENCFF743TDX	[1]	5.24
+ovary	ATAC	ENCSR490MSG	peak	ENCFF646EYO	[1]	0.000

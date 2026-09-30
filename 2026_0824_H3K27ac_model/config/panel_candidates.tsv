@@ -1,0 +1,20 @@
+cell	assay	output_type	accession	size	experiment
+K562	ATAC-seq	IDR thresholded peaks	ENCFF135AEX	3979733	ENCSR868FGK
+GM12878	ATAC-seq	IDR thresholded peaks	ENCFF620WFJ	4577528	ENCSR637XSC
+HepG2	ATAC-seq	IDR thresholded peaks	ENCFF609BSU	4632083	ENCSR291GJU
+A549	ATAC-seq	IDR thresholded peaks	ENCFF674RFR	4620847	ENCSR032RGS
+MCF-7	ATAC-seq	IDR thresholded peaks	ENCFF882OVP	3781193	ENCSR422SUG
+H1	DNase-seq	peaks	ENCFF454VLY	1252303	ENCSR951BNY
+HeLa-S3	DNase-seq	peaks	ENCFF024UJN	683595	ENCSR000EJT
+Ishikawa	DNase-seq	peaks	ENCFF227PZR	1370698	ENCSR000EIP
+SK-N-SH	ATAC-seq	IDR thresholded peaks	ENCFF195CXM	5269149	ENCSR182EZJ
+T47D	DNase-seq	peaks	ENCFF409CAK	1466216	ENCSR000ELS
+esophagus muscularis mucosa	ATAC-seq	IDR thresholded peaks	ENCFF272UWG	416684	ENCSR609GST
+gastroesophageal sphincter	ATAC-seq	IDR thresholded peaks	ENCFF580UXE	1519189	ENCSR260ZIV
+ovary	ATAC-seq	IDR thresholded peaks	ENCFF886FAD	3531058	ENCSR392UJM
+sigmoid colon	ATAC-seq	IDR thresholded peaks	ENCFF697MUB	1381456	ENCSR086OGH
+stomach	ATAC-seq	IDR thresholded peaks	ENCFF244DRQ	1913859	ENCSR337UIU
+suprapubic skin	DNase-seq	peaks	ENCFF780WOI	1464032	ENCSR709IYR
+tibial nerve	ATAC-seq	IDR thresholded peaks	ENCFF623GOH	645449	ENCSR831KAH
+transverse colon	ATAC-seq	IDR thresholded peaks	ENCFF609YMS	1830276	ENCSR386HAZ
+upper lobe of left lung	ATAC-seq	IDR thresholded peaks	ENCFF656MIU	3133485	ENCSR895SEG
