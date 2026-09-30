@@ -27,7 +27,7 @@ _ap = argparse.ArgumentParser()
 _ap.add_argument("--arms",
                  choices=("h3k27ac", "p300", "p300all", "accessibility", "dnaseinput",
                           "multitask", "slopefix", "p300fix", "multicell", "oracle",
-                          "rank", "nbr", "nbrx", "ranksweep", "gata", "motifact", "motifact2", "teach", "seeds"),
+                          "rank", "nbr", "nbrx", "ranksweep", "gata", "motifact", "motifact2", "teach", "seeds", "rna", "frag"),
                  default="h3k27ac",
                  help="Which activity target's arms to benchmark. The p300 set reuses the "
                       "same July floor and observed-H3K27ac ceiling, so the two "
@@ -433,7 +433,27 @@ SEEDS_ARMS = [a_ for a_ in MOTIFACT2_ARMS if "rank10_motifact" not in a_[0]] + [
     for m, lab, col in (("", "multi-cell, MSE only", "#238b45"),
                         ("_motifact_oracle", "oracle channel", "#d94801"),
                         ("_motifact_assoc_noctcf", "assoc_noctcf channel", "#fd8d3c"))
-    for n in (1, 2)]
+    for n in (1, 2)] + [
+    ("p300pred_multicell_holdK562_motifact_oracle_twostage", SEEDS_D,
+     "two-stage: frozen DNA+ATAC, oracle channel correction", "#6a51a3"),
+    ("p300pred_multicell_holdK562_motifact_assoc_noctcf_twostage", SEEDS_D,
+     "two-stage: frozen DNA+ATAC, assoc_noctcf channel correction", "#9e9ac8")]
+
+# RNA-based TF lists (4.54), three runs each; the seed arms ride along for seed-averaged pairs.
+RNA_D = f"{ABC}/2026_0930_p300_rna"
+RNA_ARMS = [x for x in SEEDS_ARMS if "twostage" not in x[0]] + [
+    (f"p300pred_multicell_holdK562_motifact_{w}{s_}", RNA_D, f"{lab}{' ' + s_[1:] if s_ else ''}", col)
+    for w, lab, col in (("rnafam", "TF list from RNA", "#3182bd"),
+                        ("rnaatac", "TF list from RNA + ATAC", "#6baed6"))
+    for s_ in ("", "_seed1", "_seed2")]
+
+# Fragment-size ATAC channels (1.40), 3 runs each; the MSE-only seed arms ride along.
+FRAG_D = f"{ABC}/2026_0930_p300_frag"
+FRAG_ARMS = [x for x in SEEDS_ARMS if "motifact" not in x[0]] + [
+    (f"p300pred_multicell_holdK562_{w}{s_}", FRAG_D, f"{lab}{' ' + s_[1:] if s_ else ''}", col)
+    for w, lab, col in (("flat5p", "flat 5' ATAC input", "#74c476"),
+                        ("frag5p", "5' ATAC + 4 fragment-size channels", "#006d2c"))
+    for s_ in ("", "_seed1", "_seed2")]
 
 if _a.arms == "motifact":
     ARMS = MOTIFACT_ARMS
@@ -443,6 +463,10 @@ elif _a.arms == "teach":
     ARMS = TEACH_ARMS
 elif _a.arms == "seeds":
     ARMS = SEEDS_ARMS
+elif _a.arms == "rna":
+    ARMS = RNA_ARMS
+elif _a.arms == "frag":
+    ARMS = FRAG_ARMS
 elif _a.arms == "gata":
     ARMS = GATA_ARMS
 elif _a.arms == "ranksweep":
@@ -483,7 +507,9 @@ TAG = {"h3k27ac": "predicted_activity", "p300": "p300_activity",
        "motifact": "p300_motifact",
        "motifact2": "p300_motifact2",
        "teach": "p300_teach",
-       "seeds": "p300_seeds"}[_a.arms]
+       "seeds": "p300_seeds",
+       "rna": "p300_rna",
+       "frag": "p300_frag"}[_a.arms]
 RUN = {"h3k27ac": "2026_0904_predicted_activity", "p300": "2026_0905_p300_activity",
        "p300all": "2026_0906_p300_all",
        "accessibility": "2026_0910_accessibility_activity",
@@ -501,7 +527,9 @@ RUN = {"h3k27ac": "2026_0904_predicted_activity", "p300": "2026_0905_p300_activi
        "motifact": "2026_0927_p300_motifact",
        "motifact2": "2026_0928_p300_motifact2",
        "teach": "2026_0928_p300_teach",
-       "seeds": "2026_0929_p300_seeds"}[_a.arms]
+       "seeds": "2026_0929_p300_seeds",
+       "rna": "2026_0930_p300_rna",
+       "frag": "2026_0930_p300_frag"}[_a.arms]
 
 BASELINES = [
     ("distToTSS",      "FALSE", "mean", "Inf", "TRUE",  "Distance to TSS",      "#c5cad7"),

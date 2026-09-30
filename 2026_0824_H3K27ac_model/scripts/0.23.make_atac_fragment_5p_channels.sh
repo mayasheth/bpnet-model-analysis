@@ -62,6 +62,12 @@ case "$CELL" in
     G=/oak/stanford/groups/engreitz/Users/sheth/Data/ENCODE/GM12878/ATAC
     BAMS=("$G/ENCFF440GRZ.bam" "$G/ENCFF962FMH.bam" "$G/ENCFF981FXV.bam")
     PFX="gm12878_" ;;
+  a549|hepg2|mcf7)
+    # p300 panel cells (2026-09-30): the filtered ENCODE ATAC BAMs 0.45 built their
+    # atac_5p tracks from, with the same +4/-5 shift, so `all` = data/p300_panel/<cell>_atac_5p.bw.
+    CD=$(case "$CELL" in a549) echo A549;; hepg2) echo HepG2;; mcf7) echo MCF-7;; esac)
+    BAMS=(/oak/stanford/groups/engreitz/Users/sheth/Data/ENCODE/$CD/ATAC/ENCFF*.bam)
+    PFX="${CELL}_" ;;
   *) echo "unknown CELL '$CELL'" >&2; exit 1 ;;
 esac
 PLUS_DELTA=${PLUS_DELTA:?set PLUS_DELTA from results/tn5_shift_calibration_${CELL}.txt}

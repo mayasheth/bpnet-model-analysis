@@ -39,7 +39,10 @@ a = ap.parse_args()
 half = a.in_window // 2
 reg = pd.read_csv(a.regions, sep="\t", header=None, usecols=[0, 1, 2],
                   names=["chr", "start", "end"])
-b = pyBigWig.open(a.accessibility_bw)
+# Comma-separated tracks are pooled into one statistic, because train_multimodal_bpnet.py
+# standardises all accessibility channels together with a single mean and sd.
+bws = [pyBigWig.open(t) for t in a.accessibility_bw.split(",") if t]
+b = bws[0]
 chroms = b.chroms()
 reg = reg[reg["chr"].isin(chroms)].reset_index(drop=True)
 
@@ -60,15 +63,17 @@ for i in idx:
     if s < 0 or e > chroms[row["chr"]]:
         skipped += 1
         continue
-    v = b.values(row["chr"], s, e, numpy=True)
-    if v is None:
+    vs = [bw_.values(row["chr"], s, e, numpy=True) for bw_ in bws]
+    if any(v is None for v in vs):
         skipped += 1
         continue
-    l = np.log1p(np.clip(np.nan_to_num(v, nan=0.0), 0, None))
-    n += l.size
-    tot += float(l.sum())
-    totsq += float((l ** 2).sum())
-b.close()
+    for v in vs:
+        l = np.log1p(np.clip(np.nan_to_num(v, nan=0.0), 0, None))
+        n += l.size
+        tot += float(l.sum())
+        totsq += float((l ** 2).sum())
+for bw_ in bws:
+    bw_.close()
 
 mean = tot / n
 std = float(np.sqrt(max(totsq / n - mean ** 2, 0.0)))

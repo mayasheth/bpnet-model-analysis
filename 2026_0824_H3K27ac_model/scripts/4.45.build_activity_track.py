@@ -37,7 +37,10 @@ import pyBigWig
 
 A = "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model"
 REC = f"{A}/results/2026_0926_tf_activity_recovery.motifs.tsv"
-WEIGHTS = {"oracle": (REC, "truth_{cell}", False), "assoc_noctcf": (REC, "within_{cell}", True)}
+RNAW = f"{A}/results/2026_0930_rna_tf_weights.motifs.tsv"
+WEIGHTS = {"oracle": (REC, "truth_{cell}", False), "assoc_noctcf": (REC, "within_{cell}", True),
+           # 4.54 (2026-09-30): TF expression, family maximum; and ATAC association + that
+           "rnafam": (RNAW, "rnafam_{cell}", False), "rnaatac": (RNAW, "rnaatac_{cell}", False)}
 CHROMS = [f"chr{i}" for i in range(1, 23)] + ["chrX", "chrY"]
 SCR = os.environ.get("SCRATCH", "/tmp")
 
@@ -51,7 +54,7 @@ os.makedirs(a.out_dir, exist_ok=True)
 
 path, col, drop_ctcf = WEIGHTS[a.weighting]
 W = pd.read_csv(path, sep="\t")
-w = W.set_index("motif")[col.format(cell=a.cell)]
+w = W.set_index("motif")[col.format(cell=a.cell)].fillna(0.0)   # unmapped motifs: no weight
 if drop_ctcf:
     is_ctcf = w.index.str.split(" ", n=1).str[1].str.upper().str.startswith("CTCF")
     print(f"CTCF-family motifs set to 0: {', '.join(w.index[is_ctcf])}", flush=True)

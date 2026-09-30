@@ -71,6 +71,23 @@ DATASETS = [
     ("ATAC_p300mcteachhead_powerlaw", f"{PRED}/predp300mc_multicell_holdK562_motifact_oracle_head.bw"),
     ("ATAC_p300mcteachpair_powerlaw", f"{PRED}/predp300mc_multicell_holdK562_motifact_oracle_pair.bw"),
     ("ATAC_p300mcteachheadpair_powerlaw", f"{PRED}/predp300mc_multicell_holdK562_motifact_oracle_headpair.bw"),
+    # fragment-size ATAC channels (1.40), added 2026-09-30
+    ("ATAC_p300mcflat5p_powerlaw", f"{PRED}/predp300mc_multicell_holdK562_flat5p.bw"),
+    ("ATAC_p300mcflat5pseed1_powerlaw", f"{PRED}/predp300mc_multicell_holdK562_flat5p_seed1.bw"),
+    ("ATAC_p300mcflat5pseed2_powerlaw", f"{PRED}/predp300mc_multicell_holdK562_flat5p_seed2.bw"),
+    ("ATAC_p300mcfrag5p_powerlaw", f"{PRED}/predp300mc_multicell_holdK562_frag5p.bw"),
+    ("ATAC_p300mcfrag5pseed1_powerlaw", f"{PRED}/predp300mc_multicell_holdK562_frag5p_seed1.bw"),
+    ("ATAC_p300mcfrag5pseed2_powerlaw", f"{PRED}/predp300mc_multicell_holdK562_frag5p_seed2.bw"),
+    # RNA-based TF lists (4.54), added 2026-09-30
+    ("ATAC_p300mcrnafam_powerlaw", f"{PRED}/predp300mc_multicell_holdK562_motifact_rnafam.bw"),
+    ("ATAC_p300mcrnafamseed1_powerlaw", f"{PRED}/predp300mc_multicell_holdK562_motifact_rnafam_seed1.bw"),
+    ("ATAC_p300mcrnafamseed2_powerlaw", f"{PRED}/predp300mc_multicell_holdK562_motifact_rnafam_seed2.bw"),
+    ("ATAC_p300mcrnaatac_powerlaw", f"{PRED}/predp300mc_multicell_holdK562_motifact_rnaatac.bw"),
+    ("ATAC_p300mcrnaatacseed1_powerlaw", f"{PRED}/predp300mc_multicell_holdK562_motifact_rnaatac_seed1.bw"),
+    ("ATAC_p300mcrnaatacseed2_powerlaw", f"{PRED}/predp300mc_multicell_holdK562_motifact_rnaatac_seed2.bw"),
+    # frozen two-stage models (1.39), added 2026-09-29
+    ("ATAC_p300mctwostageoracle_powerlaw", f"{PRED}/predp300mc_multicell_holdK562_motifact_oracle_twostage.bw"),
+    ("ATAC_p300mctwostagectcf_powerlaw", f"{PRED}/predp300mc_multicell_holdK562_motifact_assoc_noctcf_twostage.bw"),
     # seed replicates (1.37 SEED=1,2), added 2026-09-29
     ("ATAC_p300mcseed1_powerlaw", f"{PRED}/predp300mc_multicell_holdK562_seed1.bw"),
     ("ATAC_p300mcseed2_powerlaw", f"{PRED}/predp300mc_multicell_holdK562_seed2.bw"),

@@ -92,7 +92,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument("--results-dir", default="results/2026_0903_predicted_activity")
 ap.add_argument("--arms", choices=("h3k27ac", "p300", "p300transfer", "accessibility",
                                   "dnaseinput", "multitask", "accnorm", "residualtx",
-                                  "p300fix", "multicell", "oracle", "rank", "nbr", "nbrx", "ranksweep", "gata", "motifact", "motifact2", "teach", "seeds"),
+                                  "p300fix", "multicell", "oracle", "rank", "nbr", "nbrx", "ranksweep", "gata", "motifact", "motifact2", "teach", "seeds", "rna", "frag"),
                 default="h3k27ac",
                 help="Which target's predicted tracks to build arms for. p300 arms go in "
                      "their own results dir and config: re-stamping Peaks inside the "
@@ -318,13 +318,18 @@ MOTIFACT = ["multicell_holdK562_motifact_oracle"]
 MOTIFACT2 = ["multicell_holdK562_motifact_assoc_noctcf", "multicell_holdK562_rank10_motifact_oracle"]
 # Teaching the model to use the oracle channel (1.38, 2026-09-28): additive motif head, cross-cell
 # paired loss, both.
-# Seed replicates (1.37 SEED=1,2) of the MSE-only, oracle-channel and assoc_noctcf models.
-SEEDS = ['multicell_holdK562_seed1', 'multicell_holdK562_seed2', 'multicell_holdK562_motifact_oracle_seed1', 'multicell_holdK562_motifact_oracle_seed2', 'multicell_holdK562_motifact_assoc_noctcf_seed1', 'multicell_holdK562_motifact_assoc_noctcf_seed2']
+# Seed replicates (1.37 SEED=1,2) of the MSE-only, oracle-channel and assoc_noctcf models, plus
+# the frozen two-stage models (1.39), run in the same ABC pass to avoid a second driver.
+SEEDS = ['multicell_holdK562_motifact_oracle_twostage', 'multicell_holdK562_motifact_assoc_noctcf_twostage'] + ['multicell_holdK562_seed1', 'multicell_holdK562_seed2', 'multicell_holdK562_motifact_oracle_seed1', 'multicell_holdK562_motifact_oracle_seed2', 'multicell_holdK562_motifact_assoc_noctcf_seed1', 'multicell_holdK562_motifact_assoc_noctcf_seed2']
+# RNA-based TF lists (4.54 -> 4.45 rnafam / rnaatac), three runs each.
+RNA = ['multicell_holdK562_motifact_rnafam', 'multicell_holdK562_motifact_rnafam_seed1', 'multicell_holdK562_motifact_rnafam_seed2', 'multicell_holdK562_motifact_rnaatac', 'multicell_holdK562_motifact_rnaatac_seed1', 'multicell_holdK562_motifact_rnaatac_seed2']
+# Fragment-size ATAC channels (1.40): flat 5' comparator and 5-channel model, 3 runs each.
+FRAG = ['multicell_holdK562_flat5p', 'multicell_holdK562_flat5p_seed1', 'multicell_holdK562_flat5p_seed2', 'multicell_holdK562_frag5p', 'multicell_holdK562_frag5p_seed1', 'multicell_holdK562_frag5p_seed2']
 TEACH = ['multicell_holdK562_motifact_oracle_head', 'multicell_holdK562_motifact_oracle_pair', 'multicell_holdK562_motifact_oracle_headpair']
 
-if a.arms in ("motifact", "motifact2", "teach", "seeds"):
+if a.arms in ("motifact", "motifact2", "teach", "seeds", "rna", "frag"):
     for tag in {"motifact": MOTIFACT, "motifact2": MOTIFACT2, "teach": TEACH,
-                "seeds": SEEDS}[a.arms]:
+                "seeds": SEEDS, "rna": RNA, "frag": FRAG}[a.arms]:
         bw = f"{PRED}/predp300mc_{tag}.bw"
         if not os.path.exists(bw):
             missing.append(bw)
@@ -460,7 +465,9 @@ TAG = a.config_tag or {"h3k27ac": "predicted_activity", "p300": "p300_activity",
                        "motifact": "p300_motifact",
                        "motifact2": "p300_motifact2",
                        "teach": "p300_teach",
-                       "seeds": "p300_seeds"}[a.arms]
+                       "seeds": "p300_seeds",
+                       "rna": "p300_rna",
+                       "frag": "p300_frag"}[a.arms]
 out = f"{ABC}/config/mine/config_biosamples_{TAG}.tsv"
 with open(out, "w") as f:
     f.write("\t".join(COLS) + "\n")
