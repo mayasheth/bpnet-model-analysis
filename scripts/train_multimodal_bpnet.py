@@ -43,7 +43,7 @@ import pyBigWig
 import torch
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from multimodal_bpnet import MultiModalBPNet, PairedCellWindows
+from multimodal_bpnet import MultiModalBPNet, PairedCellWindows, TwoStageChannelModel
 
 NARROWPEAK_COLS = ["chr", "start", "end", "name", "score", "strand",
                    "signalValue", "pValue", "qValue", "summit"]
@@ -151,6 +151,11 @@ def parse_args():
     p.add_argument("--pair-n-val", type=int, default=5000)
     p.add_argument("--pair-batch", type=int, default=32,
                    help="Window pairs per training step (each costs two forward passes).")
+    p.add_argument("--base-model", default=None,
+                   help="Directory (containing fold*/) of a trained DNA + ATAC model to FREEZE. "
+                        "Trains only a DNA-free correction from the TF-activity channel and "
+                        "ATAC on top of it (TwoStageChannelModel). Needs the channel in every "
+                        "cell type; the fold is --fold-key.")
     p.add_argument("--seed", type=int, default=None,
                    help="Seed for torch, numpy and the batch sampler, for replicate runs. "
                         "Default None keeps the historical behaviour: sampler seed 42, torch "
@@ -607,6 +612,7 @@ def main():
         "pair_n_val": args.pair_n_val,
         "pair_batch": args.pair_batch,
         "seed": args.seed,
+        "base_model": args.base_model,
     }
     if args.seed is not None:
         torch.manual_seed(args.seed)
@@ -816,6 +822,8 @@ def main():
         pair_regions["val"].append(c_val_peaks)
         if args.motif_head and mot_bw is None:
             raise SystemExit(f"error: --motif-head needs a motif_activity_bw for {cell}")
+        if args.base_model and mot_bw is None:
+            raise SystemExit(f"error: --base-model needs a motif_activity_bw for {cell}")
 
         print(f"{tag}Loading negatives...")
         c_negs = load_negatives(ng_path, train_chroms)
@@ -1044,20 +1052,44 @@ def main():
               f"trunk sees {n_acc_channels} accessibility channel(s)")
 
     # Model
-    model = MultiModalBPNet(
-        n_filters=args.n_filters,
-        n_acc_filters=args.n_acc_filters,
-        n_acc_channels=n_acc_channels,
-        n_layers=args.n_layers,
-        n_outputs=n_outputs,
-        mode=args.mode,
-        count_loss_weight=args.count_loss_weight,
-        profile_loss_weight=args.profile_loss_weight,
-        gate_accessibility=args.gate_accessibility,
-        overprediction_weight=args.overprediction_weight,
-        name=model_prefix,
-        verbose=True
-    )
+    if args.base_model:
+        if args.motif_head or args.gate_accessibility:
+            raise SystemExit("error: --base-model is not combined with --motif-head or "
+                             "--gate-accessibility")
+        bdir = os.path.join(args.base_model, f"fold{args.fold_key}")
+        base = torch.load(os.path.join(bdir, "multimodal_bpnet.torch"), map_location="cpu",
+                          weights_only=False)
+        # The frozen model must be fed ATAC on the scale it was trained on: same panel, same
+        # peaks, so the per-cell statistics must match its own.
+        with open(os.path.join(bdir, "acc_normalization_stats.json")) as f_:
+            bstats = json.load(f_).get("per_cell_type", {})
+        for cell, st in acc_stats.items():
+            b_ = bstats.get(cell)
+            if b_ is None or abs(b_["acc_mean"] - st["acc_mean"]) > 1e-4 or \
+                    abs(b_["acc_std"] - st["acc_std"]) > 1e-4:
+                raise SystemExit(f"error: {cell}: ATAC statistics differ from the frozen "
+                                 f"model's ({b_} vs {st}); it was trained on other data")
+        assert base.n_acc_channels == n_acc_channels - 1, \
+            "frozen model must read every accessibility channel except the TF-activity one"
+        model = TwoStageChannelModel(base, name=model_prefix, verbose=True)
+        n_tr = sum(p_.numel() for p_ in model.parameters() if p_.requires_grad)
+        print(f"two-stage: frozen {bdir}; trainable correction {n_tr:,} parameters "
+              "(TF-activity channel + ATAC, no DNA)")
+    else:
+        model = MultiModalBPNet(
+            n_filters=args.n_filters,
+            n_acc_filters=args.n_acc_filters,
+            n_acc_channels=n_acc_channels,
+            n_layers=args.n_layers,
+            n_outputs=n_outputs,
+            mode=args.mode,
+            count_loss_weight=args.count_loss_weight,
+            profile_loss_weight=args.profile_loss_weight,
+            gate_accessibility=args.gate_accessibility,
+            overprediction_weight=args.overprediction_weight,
+            name=model_prefix,
+            verbose=True
+        )
     # Set as attributes rather than constructor arguments so the shared model class and
     # its regression gate are untouched; fit() reads them with getattr defaults.
     model.rank_loss_weight = args.rank_loss_weight
@@ -1088,7 +1120,8 @@ def main():
         f"trimming={model.trimming}, out_window should be {args.out_window}"
     )
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
+    optimizer = torch.optim.Adam([p_ for p_ in model.parameters() if p_.requires_grad],
+                                 lr=args.lr)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer, patience=5, factor=0.5
     )

@@ -29,7 +29,11 @@ ap.add_argument("--out-tsv", default=None,
                      "headline numbers are registerable in the numbers manifest instead of "
                      "being read off a log and hand-typed.")
 ap.add_argument("--seed", type=int, default=0)
+ap.add_argument("--group", action="append", default=[], metavar="NAME=A,B,...",
+                help="a replicate group: its AUPRC is the mean of its members' AUPRCs, computed "
+                     "within each bootstrap draw; NAME can then be used in --pair")
 a = ap.parse_args()
+GROUPS = {g_.split("=", 1)[0]: g_.split("=", 1)[1].split(",") for g_ in a.group}
 
 d = pd.read_csv(a.merged, sep="\t", low_memory=False,
                 usecols=["name", "measuredGeneSymbol", "Regulated", "pred_uid", "pred_value"])
@@ -42,7 +46,7 @@ score = d.pivot_table(index="pair", columns="pred_uid", values="pred_value", agg
 label = d.groupby("pair")["y"].max()
 score = score.loc[label.index]
 
-arms = sorted({x for p in a.pair for x in p})
+arms = sorted({m_ for x in {x for p in a.pair for x in p} for m_ in GROUPS.get(x, [x])})
 missing = [x for x in arms if x not in score.columns]
 if missing:
     raise SystemExit(f"arm(s) not in the merged table: {missing}\n"
@@ -84,6 +88,13 @@ for b in range(a.n_boot):
             yb = y[idx]
     for c in arms:
         boot[c][b] = auprc(yb, X[c][idx])
+
+# replicate groups: mean AUPRC over members, draw by draw
+for g_, mem in GROUPS.items():
+    obs[g_] = float(np.mean([obs[m_] for m_ in mem]))
+    boot[g_] = np.mean([boot[m_] for m_ in mem], axis=0)
+    print(f"group {g_}: " + ", ".join(f"{obs[m_]:.4f}" for m_ in mem)
+          + f"  -> mean {obs[g_]:.4f}, sd {np.std([obs[m_] for m_ in mem], ddof=1):.4f}")
 
 print(f"\npaired bootstrap, {a.n_boot:,} resamples of the pair set (same resample for every arm)")
 print(f"{'comparison':<62}{'delta':>9}{'95% CI':>22}{'sign kept':>11}")

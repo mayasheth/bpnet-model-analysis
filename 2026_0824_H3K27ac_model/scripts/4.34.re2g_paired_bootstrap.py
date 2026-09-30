@@ -36,7 +36,11 @@ ap.add_argument("--pair", nargs=2, action="append", required=True, metavar=("A",
 ap.add_argument("--n-boot", type=int, default=2000)
 ap.add_argument("--seed", type=int, default=0)
 ap.add_argument("--out-tsv", default=None)
+ap.add_argument("--group", action="append", default=[], metavar="NAME=A,B,...",
+                help="a replicate group: its AUPRC is the mean of its members' AUPRCs, computed "
+                     "within each bootstrap draw; NAME can then be used in --pair")
 a = ap.parse_args()
+GROUPS = {g_.split("=", 1)[0]: g_.split("=", 1)[1].split(",") for g_ in a.group}
 
 KEY = ["chr", "start", "end", "TargetGene"]
 MR = os.path.join(a.results_dir, "model_results")
@@ -46,7 +50,7 @@ def aupr(y, s):
     return statistic_aupr(np.asarray(y).astype(np.int64), np.asarray(s, dtype=float))
 
 
-models = sorted({m for pr in a.pair for m in pr})
+models = sorted({m_ for x in {m for pr in a.pair for m in pr} for m_ in GROUPS.get(x, [x])})
 reported = pd.read_csv(os.path.join(MR, "performance_across_models.tsv"), sep="\t")
 reported = dict(zip(reported["model"], reported["AUPRC"]))
 
@@ -93,6 +97,13 @@ for b in range(a.n_boot):
     yb = y[idx]
     for m in models:
         boot[m][b] = aupr(yb, w[m].values[idx])
+
+# replicate groups: mean AUPRC over members, draw by draw
+for g_, mem in GROUPS.items():
+    obs[g_] = float(np.mean([obs[m_] for m_ in mem]))
+    boot[g_] = np.mean([boot[m_] for m_ in mem], axis=0)
+    print(f"group {g_}: " + ", ".join(f"{obs[m_]:.4f}" for m_ in mem)
+          + f"  -> mean {obs[g_]:.4f}, sd {np.std([obs[m_] for m_ in mem], ddof=1):.4f}")
 
 rows = []
 print(f"\npaired bootstrap, {a.n_boot:,} resamples (same resample for every model)")

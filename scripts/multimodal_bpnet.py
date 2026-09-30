@@ -552,3 +552,64 @@ class MultiModalBPNet(torch.nn.Module):
                 break
 
         torch.save(self, f"{self.name}.final.torch")
+
+
+class TwoStageChannelModel(MultiModalBPNet):
+    """A FROZEN DNA + ATAC model plus a DNA-free correction from the TF-activity channel.
+
+    WHY. Within one training cell type the TF-activity channel says nothing the DNA does not:
+    it is the cell's motif hits times fixed per-cell weights. A model that sees both can explain
+    "CEBP sites have p300 in HepG2" from the DNA alone, the cheaper route, and then applies it in
+    K562 (the CEBP over-ranking of F-032). Here the DNA path is frozen first (a multi-cell model
+    trained without the channel), and the only trainable part never sees DNA: it reads the
+    channel and ATAC and adds to the frozen model's log counts. What it can learn is therefore
+    only what the channel adds beyond the frozen model's DNA + ATAC explanation, and since the
+    frozen model's DNA effects are shared across cell types, the per-cell leftovers are what the
+    channel has to explain.
+
+    Input is the usual multimodal tensor with the channel LAST: (N, 4 + n_acc + 1, L). The base
+    model reads everything but the channel. The correction reads [channel, first ATAC track]:
+    a 21 bp convolution, n_layers dilated residual convolutions (dilation 2..2^n_layers), mean
+    pooled over the counts window, and a zero-initialised linear output, so at the start the
+    model is exactly the frozen one. The profile head is the frozen model's.
+    """
+
+    def __init__(self, base, n_hidden=16, n_layers=6, name=None, verbose=True):
+        torch.nn.Module.__init__(self)
+        self.base = base
+        for p_ in self.base.parameters():
+            p_.requires_grad_(False)
+        for k in ("mode", "n_filters", "n_acc_filters", "n_outputs", "trimming",
+                  "count_loss_weight", "profile_loss_weight", "overprediction_weight"):
+            setattr(self, k, getattr(base, k, None))
+        self.n_layers = base.n_layers
+        self.name = name or "twostage"
+        self.corr_conv = torch.nn.Conv1d(2, n_hidden, kernel_size=21, padding=10)
+        self.corr_rconvs = torch.nn.ModuleList([
+            torch.nn.Conv1d(n_hidden, n_hidden, kernel_size=3, padding=2**i, dilation=2**i)
+            for i in range(1, n_layers + 1)])
+        self.corr_out = torch.nn.Linear(n_hidden, 1)
+        torch.nn.init.zeros_(self.corr_out.weight)
+        torch.nn.init.zeros_(self.corr_out.bias)
+        self.logger = Logger(
+            ["Epoch", "Iteration", "Training Time", "Validation Time",
+             "Training MNLL", "Training Count MSE",
+             "Validation MNLL", "Validation Profile Pearson",
+             "Validation Count Pearson", "Validation Count MSE", "Saved?"],
+            verbose=verbose)
+
+    def train(self, mode=True):
+        torch.nn.Module.train(self, mode)
+        self.base.eval()                     # frozen: never in training mode
+        return self
+
+    def forward(self, X):
+        start, end = self.trimming, X.shape[2] - self.trimming
+        mot, Xb = X[:, -1:, :], X[:, :-1, :]
+        with torch.no_grad():
+            y_profile, y_counts = self.base(Xb)
+        h = torch.relu(self.corr_conv(torch.cat([mot, X[:, 4:5, :]], dim=1)))
+        for conv in self.corr_rconvs:
+            h = h + torch.relu(conv(h))
+        corr = self.corr_out(h[:, :, start - 37:end + 37].mean(dim=2))
+        return y_profile, y_counts + corr.reshape(X.shape[0], 1)
