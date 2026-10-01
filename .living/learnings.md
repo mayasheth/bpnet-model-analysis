@@ -70,6 +70,8 @@ Append-only log of gotchas, surprises, and insights.
 
 **Tags**: slurm, bash, sherlock, buffering, submit-scripts, tooling
 
+**Propagated**: my-scripts-for-me/learnings/INBOX.md (2026-10-01)
+
 **mitigation_type**: convention
 
 **structural_mitigation_candidate**: Promoted to `.living/conventions.md` as mandatory items for new submit scripts in this repo.
@@ -105,6 +107,8 @@ Append-only log of gotchas, surprises, and insights.
 **Resolution**: Use `### [YYYY-MM-DD] Title` for decisions in this repo, matching the indexer rather than the template. Verified: index then reports the correct count. Upstream is a pinned submodule we do not edit, so this is a local convention.
 
 **Tags**: mycelium, tooling, index, decisions, template-mismatch, silent-failure
+
+**Propagated**: my-scripts-for-me/learnings/INBOX.md (2026-10-01)
 
 **mitigation_type**: convention
 
@@ -364,6 +368,8 @@ Silver lining worth keeping: failing loudly in 17 seconds is the correct failure
 
 **Tags**: guards, validation, testing, silent-failure, methodology, slurm
 
+**Propagated**: my-scripts-for-me/learnings/INBOX.md (2026-10-01)
+
 **mitigation_type**: convention
 
 **structural_mitigation_candidate**: Any new validation or guard must be exercised in both the pass and fail direction before it gates real work, a syntax check proves nothing about a branch that never runs. Cheapest form: invoke the entry point twice with deliberately good and bad inputs and confirm the message, which took ~2 minutes here versus five wasted jobs.
@@ -382,6 +388,8 @@ Silver lining worth keeping: failing loudly in 17 seconds is the correct failure
 
 **Tags**: patching, str-replace, guards, testing, silent-failure, tooling
 
+**Propagated**: my-scripts-for-me/learnings/INBOX.md (2026-10-01)
+
 **mitigation_type**: convention
 
 **structural_mitigation_candidate**: Never `str.replace` a short token when parameterizing patch text, use an unambiguous placeholder like `__MODELVAR__`, or better, write the block out per-file rather than templating it. And after any patch that rewrites string literals, grep for the literal across all touched files and confirm the count matches expectation; a syntax check cannot see this class of error.
@@ -399,6 +407,8 @@ Silver lining worth keeping: failing loudly in 17 seconds is the correct failure
 **Resolution**: The trainer now writes `training_complete.json` as its final action and both evaluators refuse folds without it. `1.7.backfill_training_complete.py` infers completion from the epoch log for folds trained before the marker existed, validated against ground truth, correctly flagging the preempted fold and passing the four that SLURM confirmed complete.
 
 **Tags**: slurm, owners, preemption, silent-failure, checkpoints, sherlock
+
+**Propagated**: my-scripts-for-me/learnings/INBOX.md (2026-10-01)
 
 **mitigation_type**: structural
 
@@ -909,6 +919,8 @@ invalidates the cache instead of silently serving stale vectors.
 
 **Tags**: tooling, reproducibility, report, numbers-manifest, caching, drift
 
+**Propagated**: my-scripts-for-me/learnings/INBOX.md (2026-10-01)
+
 **mitigation_type**: structural
 
 **structural_mitigation_candidate**: Shipped. Generalises to any analysis with a Quarto
@@ -1235,6 +1247,8 @@ while looking perfectly healthy.
 
 **Tags**: snakemake, abc, reuse, mtime, dry-run, gating, diagnosis
 
+**Propagated**: my-scripts-for-me/learnings/INBOX.md (2026-10-01)
+
 **mitigation_type**: process
 
 **structural_mitigation_candidate**: Run `snakemake -n -r` and read the stated reason before
@@ -1278,6 +1292,8 @@ files as the new driver's children.
 settled in seconds what four submissions had probed one hypothesis at a time.
 
 **Tags**: abc, snakemake, gating, diagnosis, orphaned-jobs, mtime, conda, process
+
+**Propagated**: my-scripts-for-me/learnings/INBOX.md (2026-10-01)
 
 **mitigation_type**: process
 
@@ -1629,6 +1645,8 @@ pipeline, and treating it as the latter would have thrown away hours of correct 
 
 **Tags**: abc, snakemake, orchestration, stall, sherlock, known-behaviour
 
+**Propagated**: my-scripts-for-me/learnings/INBOX.md (2026-10-01)
+
 **mitigation_type**: process
 
 **structural_mitigation_candidate**: For any long snakemake driver, define the downstream
@@ -1801,6 +1819,8 @@ stop the profile and the executor both setting cpu counts, not to retry the job.
 
 **Tags**: abc, snakemake, slurm, infrastructure, false-failure, benchmark
 
+**Propagated**: my-scripts-for-me/learnings/INBOX.md (2026-10-01)
+
 **mitigation_type**: process
 
 **structural_mitigation_candidate**: Have `4.19.wait_abc_arms.sh` report WHICH rules failed
@@ -1891,6 +1911,8 @@ yesterday's loss was caught too.
 
 ## A cluster SLURM upgrade broke every Snakemake rule job, and the fix lives outside the repo (2026-09-22)
 
+**Propagated**: my-scripts-for-me/learnings/INBOX.md (2026-10-01)
+
 Sherlock moved to **SLURM 25.11.8** between 2026-09-19 and 2026-09-22. Every ABC rule job then
 died before doing any work:
 
@@ -1929,6 +1951,8 @@ line as protection.
 
 ## 2026-09-27: motif scanning and Sherlock gotchas
 
+**Propagated**: my-scripts-for-me/learnings/INBOX.md (2026-10-01)
+
 - **memelite `fimo(..., return_counts=True)` sums over ALL sequences** (one number per motif), not
   per sequence. Count per sequence from the hit tables (`sequence_name` is the row index).
 - **N bases score as hits.** One-hot N is an all-zero column, and a zero PWM score passes p < 1e-4
@@ -1943,6 +1967,8 @@ line as protection.
   that did not exist). Use it to rank large differences only.
 
 ## 2026-09-28: patching over ssh
+
+**Propagated**: my-scripts-for-me/learnings/INBOX.md (2026-10-01)
 
 - **Never inline a Python patch in a double-quoted ssh command.** The local shell turns `\\t` into
   `\t` and `\"` into `"`, so replacement anchors silently stop matching. Write the patch to a
