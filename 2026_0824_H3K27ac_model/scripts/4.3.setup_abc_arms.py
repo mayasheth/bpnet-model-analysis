@@ -92,7 +92,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument("--results-dir", default="results/2026_0903_predicted_activity")
 ap.add_argument("--arms", choices=("h3k27ac", "p300", "p300transfer", "accessibility",
                                   "dnaseinput", "multitask", "accnorm", "residualtx",
-                                  "p300fix", "multicell", "oracle", "rank", "nbr", "nbrx", "ranksweep", "gata", "motifact", "motifact2", "teach", "seeds", "rna", "frag"),
+                                  "p300fix", "multicell", "oracle", "rank", "nbr", "nbrx", "ranksweep", "gata", "motifact", "motifact2", "teach", "seeds", "rna", "frag", "k27frag"),
                 default="h3k27ac",
                 help="Which target's predicted tracks to build arms for. p300 arms go in "
                      "their own results dir and config: re-stamping Peaks inside the "
@@ -334,6 +334,18 @@ if a.arms in ("motifact", "motifact2", "teach", "seeds", "rna", "frag"):
         if not os.path.exists(bw):
             missing.append(bw)
         add(f"p300pred_{tag}", ATAC, bw, "ATAC")
+# Transferred H3K27ac (GM12878 model -> K562) corrected with within-cell-ranked ATAC
+# fragment features, fitted in GM12878 (4.57); geomean with observed ATAC like pred_*.
+elif a.arms == "k27frag":
+    for tag in ("tx_repaint", "tx_base", "tx_frag", "tx_frag_gbm", "atac_frag", "tx_breadth", "tx_breadth_frag",
+                "obs_k27", "obs_p300", "obs_p300k27", "pred_p300k27", "pred_p300ch_k27",
+                "pred_p300_k27tx"):
+        bw = f"{PRED}/predk27frag_{tag}.bw"
+        if not os.path.exists(bw):
+            missing.append(bw)
+        add(f"k27frag_{tag}", ATAC, bw, "ATAC")
+    # observed p300 x H3K27ac with no ATAC term (4.58 obs_p300k27 as all of activity)
+    add("k27frag_obsonly_p300k27", f"{PRED}/predk27frag_obs_p300k27.bw", "", "ATAC")
 elif a.arms == "gata":
     for tag in GATA_ARMS:
         bw = f"{PRED}/predp300gata_{tag}.bw"
@@ -467,7 +479,8 @@ TAG = a.config_tag or {"h3k27ac": "predicted_activity", "p300": "p300_activity",
                        "teach": "p300_teach",
                        "seeds": "p300_seeds",
                        "rna": "p300_rna",
-                       "frag": "p300_frag"}[a.arms]
+                       "frag": "p300_frag",
+                       "k27frag": "k27frag_activity"}[a.arms]
 out = f"{ABC}/config/mine/config_biosamples_{TAG}.tsv"
 with open(out, "w") as f:
     f.write("\t".join(COLS) + "\n")

@@ -27,7 +27,7 @@ _ap = argparse.ArgumentParser()
 _ap.add_argument("--arms",
                  choices=("h3k27ac", "p300", "p300all", "accessibility", "dnaseinput",
                           "multitask", "slopefix", "p300fix", "multicell", "oracle",
-                          "rank", "nbr", "nbrx", "ranksweep", "gata", "motifact", "motifact2", "teach", "seeds", "rna", "frag"),
+                          "rank", "nbr", "nbrx", "ranksweep", "gata", "motifact", "motifact2", "teach", "seeds", "rna", "frag", "k27frag"),
                  default="h3k27ac",
                  help="Which activity target's arms to benchmark. The p300 set reuses the "
                       "same July floor and observed-H3K27ac ceiling, so the two "
@@ -455,6 +455,30 @@ FRAG_ARMS = [x for x in SEEDS_ARMS if "motifact" not in x[0]] + [
                         ("frag5p", "5' ATAC + 4 fragment-size channels", "#006d2c"))
     for s_ in ("", "_seed1", "_seed2")]
 
+# Transferred H3K27ac corrected with within-cell-ranked fragment features (4.57, F-039).
+K27FRAG_D = f"{ABC}/2026_0930_k27frag"
+K27FRAG_ARMS = [x for x in ARMS if x[0] in ("K562_ATAC_only", "K562_ATAC_H3K27ac_element",
+                                          "pred_k562_multimodal", "pred_gm12878_multimodal")] + [
+    ("k27frag_tx_repaint", K27FRAG_D, "GM12878 model -> K562, repainted (control)", "#fcbba1"),
+    ("k27frag_tx_base", K27FRAG_D, "+ recalibrated in GM12878, no fragments (control)", "#fb6a4a"),
+    ("k27frag_tx_frag", K27FRAG_D, "+ ranked fragment features (linear)", "#a50f15"),
+    ("k27frag_tx_frag_gbm", K27FRAG_D, "+ ranked fragment features (boosted trees)", "#67000d"),
+    ("k27frag_atac_frag", K27FRAG_D, "ATAC + fragment features, no sequence model", "#737373"),
+    ("k27frag_tx_breadth", K27FRAG_D, "+ ATAC within 1 kb, no fragment lengths (control)", "#fd8d3c"),
+    ("k27frag_tx_breadth_frag", K27FRAG_D, "+ ATAC within 1 kb + fragment features", "#7f2704"),
+    # 4.58: p300 and H3K27ac combined, observed (ceilings) and predicted (deployable)
+    ("k27frag_obs_k27", K27FRAG_D, "ATAC x observed H3K27ac (painted)", "#252525"),
+    ("k27frag_obs_p300", K27FRAG_D, "ATAC x observed p300 (painted)", "#3f007d"),
+    ("k27frag_obs_p300k27", K27FRAG_D, "ATAC x observed p300 x observed H3K27ac", "#000000"),
+    ("k27frag_obsonly_p300k27", K27FRAG_D, "observed p300 x observed H3K27ac, no ATAC", "#636363"),
+    ("k27frag_pred_p300k27", K27FRAG_D, "ATAC x predicted p300 x corrected predicted H3K27ac", "#54278f"),
+    ("k27frag_pred_p300ch_k27", K27FRAG_D, "same, p300 with TF-activity channel", "#807dba"),
+    ("k27frag_pred_p300_k27tx", K27FRAG_D, "ATAC x predicted p300 x uncorrected H3K27ac", "#bcbddc")]
+# predicted p300 alone, so the predicted combinations can be paired against it
+K27FRAG_ARMS += [x for x in SEEDS_ARMS if x[0] in ("p300pred_multicell_holdK562",
+                 "p300pred_multicell_holdK562_motifact_assoc_noctcf")]
+assert len(K27FRAG_ARMS) == 20, len(K27FRAG_ARMS)
+
 if _a.arms == "motifact":
     ARMS = MOTIFACT_ARMS
 elif _a.arms == "motifact2":
@@ -467,6 +491,8 @@ elif _a.arms == "rna":
     ARMS = RNA_ARMS
 elif _a.arms == "frag":
     ARMS = FRAG_ARMS
+elif _a.arms == "k27frag":
+    ARMS = K27FRAG_ARMS
 elif _a.arms == "gata":
     ARMS = GATA_ARMS
 elif _a.arms == "ranksweep":
@@ -509,7 +535,8 @@ TAG = {"h3k27ac": "predicted_activity", "p300": "p300_activity",
        "teach": "p300_teach",
        "seeds": "p300_seeds",
        "rna": "p300_rna",
-       "frag": "p300_frag"}[_a.arms]
+       "frag": "p300_frag",
+       "k27frag": "k27frag_activity"}[_a.arms]
 RUN = {"h3k27ac": "2026_0904_predicted_activity", "p300": "2026_0905_p300_activity",
        "p300all": "2026_0906_p300_all",
        "accessibility": "2026_0910_accessibility_activity",
@@ -529,7 +556,8 @@ RUN = {"h3k27ac": "2026_0904_predicted_activity", "p300": "2026_0905_p300_activi
        "teach": "2026_0928_p300_teach",
        "seeds": "2026_0929_p300_seeds",
        "rna": "2026_0930_p300_rna",
-       "frag": "2026_0930_p300_frag"}[_a.arms]
+       "frag": "2026_0930_p300_frag",
+       "k27frag": "2026_0930_k27frag"}[_a.arms]
 
 BASELINES = [
     ("distToTSS",      "FALSE", "mean", "Inf", "TRUE",  "Distance to TSS",      "#c5cad7"),

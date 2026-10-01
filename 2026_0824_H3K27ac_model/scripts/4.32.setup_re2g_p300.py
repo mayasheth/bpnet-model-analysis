@@ -95,6 +95,15 @@ DATASETS = [
     ("ATAC_p300mcmotifactseed2_powerlaw", f"{PRED}/predp300mc_multicell_holdK562_motifact_oracle_seed2.bw"),
     ("ATAC_p300mcmotifctcfseed1_powerlaw", f"{PRED}/predp300mc_multicell_holdK562_motifact_assoc_noctcf_seed1.bw"),
     ("ATAC_p300mcmotifctcfseed2_powerlaw", f"{PRED}/predp300mc_multicell_holdK562_motifact_assoc_noctcf_seed2.bw"),
+    # p300 + H3K27ac combined (4.58) and corrected transferred H3K27ac (4.57), added 2026-09-30.
+    # Observed tracks repainted over the candidates so all go through the same bigwig path.
+    ("ATAC_k27obspaint_powerlaw", f"{PRED}/predk27frag_obs_k27.bw"),
+    ("ATAC_p300obspaint_powerlaw", f"{PRED}/predk27frag_obs_p300.bw"),
+    ("ATAC_p300k27obs_powerlaw", f"{PRED}/predk27frag_obs_p300k27.bw"),
+    ("ATAC_p300k27pred_powerlaw", f"{PRED}/predk27frag_pred_p300k27.bw"),
+    ("ATAC_k27txrepaint_powerlaw", f"{PRED}/predk27frag_tx_repaint.bw"),
+    ("ATAC_k27txbase_powerlaw", f"{PRED}/predk27frag_tx_base.bw"),
+    ("ATAC_k27txbreadthfrag_powerlaw", f"{PRED}/predk27frag_tx_breadth_frag.bw"),
 ]
 FT_ATAC = "resources/feature_tables/ATAC_pl_all.tsv"
 FT_ACT = "resources/feature_tables/ATAC_H3K27ac_pl_all.tsv"

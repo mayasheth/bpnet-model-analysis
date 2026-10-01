@@ -1605,3 +1605,93 @@ were compared with their one frozen base, not seed-averaged.
 | Date | Run/Session | Dataset | Project | Result | Direction |
 |------|-------------|---------|---------|--------|-----------|
 | 2026-09-30 | training 45897299/321/357/363/369/503 (+45957358/360 after a GPU fault), 45903507/509; ABC 45897566; CRISPR 45998015; rE2G 45980539; bootstraps 46073940/42 | K562 CRISPR (ABC and rE2G pair sets) | 2026_0824_H3K27ac_model; ENCODE_rE2G 2026_0923_p300_features | channel +0.006 ABC, +0.012-0.014 rE2G seed-averaged; run sd 0.002 / 0.005 | resolves F-036; channel gain is small and real |
+
+## F-039: ATAC fragment features predict H3K27ac beyond ATAC three times as well as p300, with the opposite sign, mostly because H3K27ac-high elements sit in broad accessible domains; the weights carry between K562 and GM12878
+**Status:** supported (two cell types, one library each)
+**Claim:** 4.51's per-element fragment features (non-promoter candidates, >= 10 fragments;
+121,219 in K562, 124,613 in GM12878) scored against three targets after removing ATAC rank,
+rank^2, GC, CpG o/e and log TSS distance (`4.55`): p300 over the candidate region, H3K27ac over
+the region, and H3K27ac within +/- 1 kb of its centre (5' ChIP-seq bigwigs from the model inputs).
+
+| partial Spearman (K562 / GM12878) | p300 | H3K27ac region | H3K27ac +/- 1 kb |
+|---|---|---|---|
+| di_flank (300-450 bp, 150-600 bp out) | +0.03 / -0.06 | **+0.47 / +0.42** | +0.43 / +0.38 |
+| mono_flank (150-250 bp, 100-450 bp out) | +0.04 / -0.03 | **+0.42 / +0.33** | +0.31 / +0.20 |
+| flank_ratio | -0.12 / -0.11 | +0.31 / +0.34 | +0.19 / +0.20 |
+| short_frac | +0.13 / +0.11 | -0.27 / -0.34 | -0.16 / -0.21 |
+| nfr (< 120 bp at centre) | +0.19 / +0.13 | -0.16 / -0.27 | -0.06 / -0.15 |
+| positioning | -0.01 / -0.01 | -0.22 / -0.21 | -0.22 / -0.20 |
+| joint score, weights from the other cell | 0.224 / 0.162 | **0.521 / 0.476** | 0.454 / 0.397 |
+| joint score, in-cell weights | 0.248 / 0.179 | 0.533 / 0.484 | 0.468 / 0.407 |
+
+Sign agreement between the cells: 7 of 9 features for p300, 8 of 9 for H3K27ac. The ATAC-only
+Spearman is lower for H3K27ac (0.43 / 0.48 region) than for p300 (0.63 / 0.70). Residual p300
+and residual H3K27ac (+/- 1 kb) correlate +0.31 in K562 and +0.13 in GM12878.
+Average fragment profiles (`4.56`, fig35; 3,000 regions per group, top vs bottom residual
+quintile, candidate ATAC matched): the p300-high group has a taller, sharper central peak of
+short fragments (K562 249 vs 171 short fragments per region). The H3K27ac-high group has NO
+central peak: short and mono-nucleosome fragments are spread over +/- 1 kb, with short-fragment
+maxima near +/- 450 bp, while the H3K27ac-low group is one narrow isolated peak at the centre.
+Same in GM12878.
+**Implications:** **The fragment features mostly measure how accessibility is spread around
+the element, not nucleosome packing as such.** At the same ATAC over the candidate, H3K27ac is
+high where the candidate sits inside a broad accessible domain (neighbouring open sites and
+the nucleosomes between them) and low at a narrow isolated site; p300 is high where the
+central site itself is sharper and more open. The features are a large, cell-portable
+predictor of H3K27ac and a small one for p300. The joint score's weights, fitted in one cell, lose only 0.01 in the other,
+so at the element level, ranked within each cell, the signal is not library-specific between
+these two libraries. That contrasts with F-005, where per-base fragment-size input channels
+gained in-cell for H3K27ac and were null transferred; the difference may be the within-cell
+rank normalisation. For the p300 activity model the fragment channels (1.40) have less to add.
+For an H3K27ac target they could add a lot, if given as within-cell normalised features.
+**Caveats:** Partly mechanical: H3K27ac is a broad mark counted over the candidate, so a
+candidate inside a broad domain collects signal from its neighbours; ATAC within +/- 1 kb may
+explain much of it without fragment lengths (4.57 `tx_breadth` arm tests this). Only K562 and GM12878 have H3K27ac here, so it
+cannot be checked in MCF-7, where 4.51's p300 signs flipped. One ATAC library set per cell.
+Element-level association, not a benchmark result.
+**Tags:** h3k27ac, p300, nucleosome, fragment-length, atac, transfer, k562, gm12878
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-09-30 | 4.51 features (nucsig array); 4.55 job 46100582 | K562, GM12878 ATAC PE BAMs; H3K27ac and p300 5' bigwigs; union ABC candidates | 2026_0824_H3K27ac_model | joint partial rho H3K27ac 0.48-0.52 vs p300 0.16-0.22, weights transfer | nucleosome signal real for H3K27ac, small for p300 |
+
+## F-040: Nucleosome-length ATAC fragments are not longer next to H3K27ac-high or p300-high elements, even at the nucleosome adjacent to the peak; flanks of weak inactive peaks are ~2 bp longer
+**Status:** established (K562, three libraries, two window sizes)
+**Claim:** Hypothesis (Maya): flanking nucleosomes of acetylated elements give one-nucleosome
+ATAC fragments ~10-15 bp longer. K562 ATAC MACS2 peaks (q < 0.01, > 1 kb from a TSS, no other
+confident peak within 2 kb; 91,528) grouped by ATAC, H3K27ac (+/- 1 kb) or p300, and CTCF
+(motif within 100 bp + ChIP ENCFF216XRV); fragments counted only if they lie entirely in a flank
+(MACS2 bound + 50 bp out to 1 or 2 kb), from the three ENCSR868FGK libraries (`4.59`).
+
+| mean length of 140-260 bp fragments, 95% CI | whole 1 kb flank | nearest flank (50-150 bp out), 2 kb run |
+|---|---|---|
+| weak ATAC, H3K27ac low | 205.7 [205.5, 205.9] | 207.6 [207.1, 208.1] |
+| strong ATAC, H3K27ac low | 203.9 [203.6, 204.2] | 205.5 [204.5, 206.5] |
+| strong ATAC, H3K27ac high | 203.7 [203.6, 203.9] | 204.2 [203.7, 204.7] |
+| any ATAC, H3K27ac high | 204.0 [203.8, 204.1] | 204.7 [204.3, 205.1] |
+| CTCF-bound, H3K27ac low | 203.7 [203.5, 203.9] | 203.2 [202.6, 203.6] |
+
+The mono-nucleosome mode is 206-209 bp in every group; p300 groups give the same pattern. The
+two-nucleosome peak (392-409 bp) is too broad to resolve the repeat length (intervals ~10 bp).
+Flank GC differs by 0.01-0.03 between groups. The three libraries superimpose in every group
+(fig37). In the standard view (all fragments within +/- 1 kb, peak included) the groups differ
+strongly (CTCF: tallest sub-nucleosomal peak; weak peaks: most nucleosomal); with the peak
+excluded they nearly converge.
+**Implications:** **No support for longer nucleosomal fragments at active elements.** Matched on
+ATAC, H3K27ac-high flanks are 0.2 bp (whole flank) to 1.3 bp (nearest nucleosome) SHORTER than
+H3K27ac-low flanks, against a hypothesised +10-15 bp that intervals of +/- 0.5 bp would have
+resolved. The window was not too wide: the effect is absent at the adjacent nucleosome too. The
+category differences in standard fragment-length plots come from the peak itself (how open it
+is and what occupies it). Two small real effects: flanks of weak inactive peaks are ~2 bp longer
+at every distance, and CTCF-adjacent nucleosomes give the shortest fragments (203 bp), rising
+with distance, consistent with tightly phased nucleosomes next to CTCF.
+**Caveats:** K562 only. The outermost distance bin of each window is biased short (a fragment
+must end inside the window). ATAC measures Tn5 access to linkers, not nucleosome footprint
+directly; MNase-seq would test footprint length.
+**Tags:** h3k27ac, p300, nucleosome, fragment-length, atac, ctcf, k562, negative-result
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-10-01 | 4.59 jobs 46141966/67, 46143202/03, 46144822/23 | K562 ATAC PE BAMs (ENCFF077FBI, ENCFF128WZG, ENCFF534DCE); MACS2 peaks; H3K27ac, p300, CTCF ChIP | 2026_0824_H3K27ac_model | H3K27ac-high flanks 0.2-1.3 bp shorter, not 10-15 bp longer | hypothesis not supported |
