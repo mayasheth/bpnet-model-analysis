@@ -276,6 +276,39 @@ generate_motif_pairs(motif_dict)         # Generate all motif pair combinations
 
 ---
 
+## Project dashboard (generated, never hand-edited)
+
+Built by the `project-dashboard` skill (`~/.claude/skills/project-dashboard/`) from `.dashboard.json`:
+TODOLIST, `.living/findings`, learnings, the latest handover, the reports, git state and SLURM.
+`dashboard.html` is gitignored. After writing a finding, a TODO change, a report or a handover,
+refresh it from the Mac with `~/Documents/ep300-h3k27ac/update-dashboard.sh --no-open` (also mirrors
+reports and the latest handover). Fix the config or the skill's generator if a section looks wrong;
+don't add a parallel index file.
+
+---
+
+## H3K27ac model: benchmarking a new arm (`2026_0824_H3K27ac_model/`, "A")
+
+Read this instead of searching old transcripts after a compaction.
+
+- **Chain:** predicted bigwigs -> ABC (`A/scripts/4.3.setup_abc_arms.py`, `4.5.submit_abc.sh`)
+  -> CRISPR comparison (`4.6.setup_crispr_comparison.py --arms <family>`, `4.7`) and rE2G
+  (`4.32.setup_re2g_p300.py`, `4.33`) -> paired bootstraps (`4.17` for ABC/CRISPR, `4.34` for
+  rE2G; `--group` for seed-averaged). A new arm family needs entries in `4.3`, `4.6` and `4.32`.
+- **Template launcher:** `A/log/frag_downstream_launch.sh` chains all three with `afterok`.
+  Copy it rather than writing a new chain. rE2G drivers share a workdir, so only one runs at
+  a time (the launcher waits on `re2g_driver`).
+- **Every arm scores the identical region set.** `4.3` copies `Peaks/` from the July run after
+  the bigwigs exist (mtime order matters; see its docstring).
+- **Deciding:** judge a variant only by the CRISPR/ABC benchmark, seed-averaged over >= 3 runs,
+  against the matched comparator (e.g. `flat5p` for fragment arms, not the MSE coverage model).
+  Correlation and motif-level screens are not verdicts. A result is provisional until its
+  seeds and matched control are in.
+- **Labels:** report every arm as `input -> target | trained on | scored on | ATAC-only at
+  inference: y/n`. The deployment target is ATAC (+ sequence, optionally RNA) in an unseen cell.
+
+---
+
 ## SLURM partitions, pick deliberately
 
 **`engreitz` is the lab's own partition. Use it for everything that does not need a GPU.**

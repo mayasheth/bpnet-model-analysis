@@ -1,0 +1,13 @@
+{
+  "title": "EP300_BPNet",
+  "goal": "Predict enhancer activity from **ATAC + sequence** (RNA allowed) in an **unseen cell type**. The K562 CRISPR benchmark (ABC, rE2G), seed-averaged, is the trusted readout.",
+  "todo": "todo/TODOLIST.md",
+  "findings": [".living/findings/*.md"],
+  "learnings": ".living/learnings.md",
+  "handovers": ["2026_0824_H3K27ac_model/handovers/CURRENT*.md", "2026_0824_H3K27ac_model/HANDOVER-*.md"],
+  "handover_sections": ["State", "Next steps", "Key decisions", "Open questions"],
+  "reports": ["2026_0824_H3K27ac_model/report*.html", "2026_0824_H3K27ac_model/h3k27ac_model_report.html"],
+  "slurm": true,
+  "built_on": "Sherlock",
+  "extra_links": [{"label": "GitHub", "url": "https://github.com/mayasheth/bpnet-model-analysis"}]
+}
