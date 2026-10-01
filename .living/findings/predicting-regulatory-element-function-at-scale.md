@@ -1695,3 +1695,96 @@ directly; MNase-seq would test footprint length.
 | Date | Run/Session | Dataset | Project | Result | Direction |
 |------|-------------|---------|---------|--------|-----------|
 | 2026-10-01 | 4.59 jobs 46141966/67, 46143202/03, 46144822/23 | K562 ATAC PE BAMs (ENCFF077FBI, ENCFF128WZG, ENCFF534DCE); MACS2 peaks; H3K27ac, p300, CTCF ChIP | 2026_0824_H3K27ac_model | H3K27ac-high flanks 0.2-1.3 bp shorter, not 10-15 bp longer | hypothesis not supported |
+
+## F-041: TF lists from RNA do not beat the ATAC-derived TF list; RNA + ATAC ties it and RNA alone is worse
+**Status:** established (three runs per model)
+**Claim:** TF-activity channel weighted by RNA (4.54 -> 4.45; ENCODE Gingeras poly(A) RNA-seq, family
+maximum of log TPM) alone (`rnafam`) or z-summed with ATAC association (`rnaatac`), three training
+runs each (`1.37 SEED`), seed-averaged paired bootstrap against the F-038 groups.
+
+| seed-averaged | ABC | rE2G |
+|---|---|---|
+| rnaatac - MSE-only | +0.0058 [-0.0001, +0.0134] | **+0.0091** [+0.0020, +0.0178] |
+| rnaatac - assoc_noctcf (ATAC list) | -0.0001 [-0.0037, +0.0034] | -0.0025 [-0.0093, +0.0045] |
+| rnafam - MSE-only | +0.0014 [-0.0038, +0.0089] | +0.0027 [-0.0040, +0.0108] |
+| rnafam - assoc_noctcf | **-0.0045** [-0.0085, -0.0005] | **-0.0089** [-0.0136, -0.0039] |
+
+Means: ABC rnafam 0.4842, rnaatac 0.4886, assoc_noctcf 0.4887, MSE-only 0.4828; rE2G rnafam
+0.5606, rnaatac 0.5670, assoc_noctcf 0.5694.
+**Implications:** **In bulk ENCODE data, expression adds nothing to the ATAC-derived TF list,
+and expression alone is worse.** The motif-level proxy ranking (RNA 0.28, RNA + ATAC 0.41, ATAC
+0.44) predicted the order correctly this time. The DeepSCENIC-style per-TF factorised model
+(option 2) and the MotifCompendium remapping were conditional on RNA helping; deprioritise both.
+**Caveats:** Motif -> TF mapping by JASPAR name plus co-occurrence families, not MotifCompendium;
+bulk RNA from different ENCODE experiments than the ATAC.
+**Tags:** p300, tf-activity, rna, deepscenic, abc, re2g, crispr-benchmark, k562, negative-result
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-10-01 | training 46085027-39; ABC 46085041; CRISPR 46162345; rE2G 46157330; bootstraps 46200986, 46201552 | K562 CRISPR (ABC and rE2G pair sets) | 2026_0824_H3K27ac_model | rnaatac = assoc_noctcf; rnafam -0.005/-0.009 | RNA does not help |
+
+## F-042: Fragment-size ATAC input channels do not help the transferred p300 model (three runs)
+**Status:** established (three runs per model)
+**Claim:** Multi-cell p300 model with 5' ATAC insertions split into four fragment-size channels
+(sub <= 139, mono 140-329, di 330-620, poly >= 621 bp) plus total (`frag5p`), against the same
+model with total 5' insertions only (`flat5p`), three runs each (`1.40`).
+
+| seed-averaged | ABC | rE2G |
+|---|---|---|
+| frag5p - flat5p | -0.0046 [-0.0127, +0.0033] | -0.0098 [-0.0197, +0.0007] |
+| flat5p - MSE-only (coverage input) | +0.0041 [-0.0028, +0.0104] | +0.0027 [-0.0085, +0.0127] |
+
+Means: ABC flat5p 0.4869 (sd 0.0042), frag5p 0.4823; rE2G flat5p 0.5606 (sd 0.0151), frag5p 0.5508.
+**Implications:** **Fragment-size channels are null to slightly negative on transfer**, as F-005
+found for H3K27ac. Together with F-039/F-040, fragment-length structure does not carry
+deployable p300 signal. The 5' insertion input is at least as good as coverage. Close this line.
+**Caveats:** flat5p's rE2G runs vary widely (0.547-0.577).
+**Tags:** p300, fragment-length, input-channel, transfer, abc, re2g, crispr-benchmark, k562, negative-result
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-10-01 | channels 46088402/07/09; training 46088410-36; ABC 46150705; CRISPR 46171084; rE2G 46157330; bootstraps 46200988, 46201552 | K562 CRISPR | 2026_0824_H3K27ac_model | frag5p - flat5p -0.005 ABC, -0.010 rE2G | null |
+
+## F-043: Observed p300 x H3K27ac beats either mark in rE2G and, without ATAC, gives the best ABC activity term yet (0.591); correcting transferred H3K27ac with fragment features does not carry to the benchmark
+**Status:** supported (single runs; no-ATAC single-mark ABC controls running)
+**Claim:** All tracks painted over the July K562 candidates (4.57, 4.58). ABC (`k27frag` run,
+10,342 pairs) and rE2G (10,356 pairs).
+
+| observed | ABC with ATAC | ABC without ATAC | rE2G |
+|---|---|---|---|
+| H3K27ac | 0.5133 | pending | 0.6196 |
+| p300 | 0.5657 | pending | 0.6602 |
+| p300 x H3K27ac (sqrt of qnormed product) | 0.5519 | **0.5911** | **0.6718** |
+
+ABC: p300 x H3K27ac with ATAC - p300 -0.0138 [-0.0230, -0.0042]; without ATAC - with ATAC
++0.0392 [+0.0235, +0.0552]. rE2G: p300 x H3K27ac - p300 +0.0116 [-0.0031, +0.0262];
+- H3K27ac +0.0522 [+0.0312, +0.0738]. Painting costs 0.016 ABC / 0.007 rE2G for H3K27ac
+against the read-count arms, so compare within the painted set.
+
+Predicted, deployable: predicted p300 (MSE-only multi-cell) x corrected transferred H3K27ac -
+predicted p300 alone -0.0104 [-0.0208, +0.0008] ABC, -0.0071 [-0.0224, +0.0085] rE2G; with the
+assoc_noctcf p300 -0.0151 [-0.0247, -0.0053] ABC.
+
+Transferred H3K27ac correction (fitted in GM12878): ABC recalibration - repaint -0.0002,
++ fragment and +/- 1 kb ATAC features -0.0055 to -0.0072 (worse); rE2G recalibration + 0.0207
+[+0.0077, +0.0367] over repaint, fragments then -0.0074; the best corrected track (0.5411) only
+reaches rE2G's ATAC-only floor (0.5435), and the uncorrected one is below it (-0.0230).
+**Implications:** **Observed p300 and H3K27ac carry complementary activity information**: in
+rE2G the combination is the best observed activity term (+0.012 over p300, not yet resolved),
+and in ABC dropping ATAC from the combination gains +0.039. Whether that ABC gain comes from the
+combination or from removing ATAC needs the single-mark no-ATAC arms (running). The deployable
+version does not work: predicted H3K27ac transferred from GM12878 carries no information beyond
+ATAC (it is at or below the ATAC floor), so multiplying it into predicted p300 only adds noise.
+The element-level gains of the correction (Spearman 0.732 -> 0.787, F-039) did not reach the
+benchmark. A two-target model is worth building only if its H3K27ac head transfers far better
+than the GM12878 H3K27ac model does.
+**Caveats:** Single runs; the observed arms are ceilings, not deployable. p300 and H3K27ac weighted
+equally in the product; other weightings untested.
+**Tags:** p300, h3k27ac, activity-combination, abc, re2g, crispr-benchmark, k562
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-10-01 | 4.57 46105628; 4.58 46130383; ABC 46130384; CRISPR 46201297; rE2G 46157330; bootstraps 46200994, 46201552 | K562 CRISPR (ABC and rE2G pair sets) | 2026_0824_H3K27ac_model; ENCODE_rE2G 2026_0923_p300_features | obs p300 x H3K27ac no-ATAC ABC 0.591; rE2G 0.672; predicted combos below p300 alone | observed complementary; deployable not |

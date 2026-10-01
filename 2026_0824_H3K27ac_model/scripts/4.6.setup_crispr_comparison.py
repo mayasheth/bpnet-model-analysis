@@ -471,13 +471,15 @@ K27FRAG_ARMS = [x for x in ARMS if x[0] in ("K562_ATAC_only", "K562_ATAC_H3K27ac
     ("k27frag_obs_p300", K27FRAG_D, "ATAC x observed p300 (painted)", "#3f007d"),
     ("k27frag_obs_p300k27", K27FRAG_D, "ATAC x observed p300 x observed H3K27ac", "#000000"),
     ("k27frag_obsonly_p300k27", K27FRAG_D, "observed p300 x observed H3K27ac, no ATAC", "#636363"),
+    ("k27frag_obsonly_p300", K27FRAG_D, "observed p300 alone, no ATAC", "#6a51a3"),
+    ("k27frag_obsonly_k27", K27FRAG_D, "observed H3K27ac alone, no ATAC", "#969696"),
     ("k27frag_pred_p300k27", K27FRAG_D, "ATAC x predicted p300 x corrected predicted H3K27ac", "#54278f"),
     ("k27frag_pred_p300ch_k27", K27FRAG_D, "same, p300 with TF-activity channel", "#807dba"),
     ("k27frag_pred_p300_k27tx", K27FRAG_D, "ATAC x predicted p300 x uncorrected H3K27ac", "#bcbddc")]
 # predicted p300 alone, so the predicted combinations can be paired against it
 K27FRAG_ARMS += [x for x in SEEDS_ARMS if x[0] in ("p300pred_multicell_holdK562",
                  "p300pred_multicell_holdK562_motifact_assoc_noctcf")]
-assert len(K27FRAG_ARMS) == 20, len(K27FRAG_ARMS)
+assert len(K27FRAG_ARMS) == 22, len(K27FRAG_ARMS)
 
 if _a.arms == "motifact":
     ARMS = MOTIFACT_ARMS

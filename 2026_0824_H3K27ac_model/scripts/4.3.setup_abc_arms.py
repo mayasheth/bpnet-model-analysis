@@ -346,6 +346,9 @@ elif a.arms == "k27frag":
         add(f"k27frag_{tag}", ATAC, bw, "ATAC")
     # observed p300 x H3K27ac with no ATAC term (4.58 obs_p300k27 as all of activity)
     add("k27frag_obsonly_p300k27", f"{PRED}/predk27frag_obs_p300k27.bw", "", "ATAC")
+    # controls for the line above: each observed mark alone, no ATAC term
+    add("k27frag_obsonly_p300", f"{PRED}/predk27frag_obs_p300.bw", "", "ATAC")
+    add("k27frag_obsonly_k27", f"{PRED}/predk27frag_obs_k27.bw", "", "ATAC")
 elif a.arms == "gata":
     for tag in GATA_ARMS:
         bw = f"{PRED}/predp300gata_{tag}.bw"

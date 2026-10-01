@@ -1,0 +1,8 @@
+arm_a	arm_b	auprc_a	auprc_b	delta	ci_lo	ci_hi	sign_kept_frac	sign_kept_pct	n_pairs	n_regulated	n_boot
+k27frag_obsonly_p300k27.ABC.Score	k27frag_obsonly_p300.ABC.Score	0.591052	0.59092	0.000131	-0.018155	0.018324	0.5145	51.45	10342	466	2000
+k27frag_obsonly_p300k27.ABC.Score	k27frag_obsonly_k27.ABC.Score	0.591052	0.530547	0.060504	0.043662	0.079159	1.0	100.0	10342	466	2000
+k27frag_obsonly_p300.ABC.Score	k27frag_obs_p300.ABC.Score	0.59092	0.5657	0.025221	0.00738	0.042539	0.997	99.7	10342	466	2000
+k27frag_obsonly_k27.ABC.Score	k27frag_obs_k27.ABC.Score	0.530547	0.513345	0.017202	0.002249	0.031487	0.9895	98.95	10342	466	2000
+k27frag_obsonly_p300k27.ABC.Score	k27frag_obs_p300.ABC.Score	0.591052	0.5657	0.025352	0.009593	0.041491	0.9985	99.85	10342	466	2000
+k27frag_obs_p300k27.ABC.Score	k27frag_obs_p300.ABC.Score	0.551876	0.5657	-0.013824	-0.023026	-0.004226	0.9945	99.45	10342	466	2000
+k27frag_obsonly_p300.ABC.Score	k27frag_obsonly_k27.ABC.Score	0.59092	0.530547	0.060373	0.030973	0.089927	1.0	100.0	10342	466	2000
