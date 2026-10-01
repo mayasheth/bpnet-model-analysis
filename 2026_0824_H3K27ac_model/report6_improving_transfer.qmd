@@ -77,6 +77,8 @@ blockquote { border-left: 3px solid #ddd; margin-left: 0; padding-left: 1rem;
 - **Single training runs cannot separate these variants.** The same model trained three times varies with a standard deviation of 0.002 AUPRC in ABC and 0.005 in ENCODE-rE2G (Fig. 7). Every TF-track variant lies within that band of the others; the earlier single-run result that the ATAC-derived list beats the true list (+0.0065) fell to +0.0026 (not resolvable) with replicates.
 - **A TF list estimated from the target cell's own ATAC works as well as the true list read from p300.** Seed-averaged, the two differ by +0.0026 in ABC and -0.0024 in ENCODE-rE2G (Fig. 1). The ATAC estimate needs no p300 in the new cell and no comparison with the training cells, so it is deployable as is.
 - **Correlation gains do not become AUPRC gains, and the reverse also happens.** The 'pair' loss raises correlation beyond ATAC by +0.125 and neighbour re-ranking by +0.10 to +0.12 over 153,545 elements, with no resolvable ABC change; the ranking loss at weight 10 lowers it by 0.015 and gives the largest single-run ABC gain (+0.0087) (Fig. 1a, Fig. 3). Only the oracle re-rankings move both. Only the benchmark decides.
+- **Neither expression nor fragment length adds deployable signal.** A TF list from RNA ties the ATAC-derived list when combined with it and loses alone (-0.005 ABC, -0.009 ENCODE-rE2G, three runs each), and fragment-size input channels lose to the flat input (Fig. 12a). Fragment features predict H3K27ac at the element level, but through where accessibility lies rather than nucleosome length (Figs 10-11), and correcting transferred H3K27ac with them does not reach the benchmark (Fig. 12c).
+- **In ABC, the ATAC term costs observed marks AUPRC.** Observed p300 alone scores 0.591 against 0.566 as ATAC x p300, and H3K27ac 0.531 against 0.513; multiplying p300 by H3K27ac adds nothing in ABC, while in ENCODE-rE2G the combination is the best observed activity term (0.672 against 0.660 for p300, not resolved) (Fig. 12b).
 - **The panel lacks cell types where GATA is active.** Of 19 ENCODE samples with p300 ChIP-seq, only stomach shows GATA activity comparable to K562's (Fig. 8). Adding cell types is the one lever not yet tried that targets the error directly.
 
 ## Goals
@@ -432,6 +434,36 @@ sbatch -p engreitz,normal -c 2 --mem 24G -t 3:00:00 --wrap "pixi run -e multimod
 Source: `scripts/4.59.flank_fragment_lengths.py`.
 </details>
 
+## RNA TF lists and fragment channels do not help; observed p300 and H3K27ac do best without ATAC in ABC
+
+**Q:** Do TF lists from RNA, fragment-size input channels, or combining p300 with H3K27ac improve the K562 benchmark?
+
+**A:** RNA and fragment channels do not (best: RNA + ATAC TF list ties the ATAC list, -0.0001 ABC); among observed marks, removing ATAC from ABC's activity raises p300 from 0.566 to 0.591, and p300 x H3K27ac adds nothing in ABC but leads in ENCODE-rE2G (0.672 against 0.660); the deployable combination loses to predicted p300 alone (-0.010 ABC).
+
+![](figures/fig39_benchmark_round2.png)
+
+<details>
+<summary>Figure 12 legend</summary>
+
+**Figure 12 | Benchmark results for RNA TF lists, fragment channels and p300 x H3K27ac.** All arms on the K562 CRISPR benchmark (ABC: 10,342 element-gene pairs, 466 regulated; ENCODE-rE2G: 10,356 pairs, 471 regulated); paired bootstrap, 2,000 resamples of the pairs, 95% percentile intervals. **a**, Seed-averaged differences (mean AUPRC of three training runs inside every resample). RNA TF list: each motif weighted by the log TPM of its TF, maximum over its motif co-occurrence family (ENCODE Gingeras poly(A) RNA-seq, both replicates, five cell types; `scripts/4.54`); RNA + ATAC: z-sum of that and the ATAC-association weight (CTCF removed). ATAC TF list = the assoc_noctcf channel (Fig. 7). Fragment channels: 5' ATAC insertions split into sub (<= 139 bp), mono (140-329), di (330-620) and poly (>= 621) fragments plus total, against total 5' insertions only (flat 5'), both with the multi-cell architecture. **b**, Observed activity terms, each painted over the July K562 candidates from 5' ChIP-seq bigwigs (p300 ENCSR000EGE; H3K27ac, the H3K27ac-model targets) so all go through ABC's bigwig counting path. Light blue: ABC activity = geometric mean of ATAC and the mark (ABC's default); dark blue: the mark alone as activity; orange: ENCODE-rE2G retrained with the mark in its activity features (rE2G always includes ATAC features). p300 x H3K27ac = square root of the product of the two marks after mapping each to ABC's quantile reference. Dashed: ABC ATAC-only floor (0.468). ABC differences: p300 alone - ATAC x p300 +0.025 [+0.007, +0.043]; H3K27ac alone - ATAC x H3K27ac +0.017 [+0.002, +0.032]; p300 x H3K27ac alone - p300 alone +0.0001 [-0.018, +0.018]. ENCODE-rE2G: p300 x H3K27ac - p300 +0.012 [-0.003, +0.026]; - H3K27ac +0.052 [+0.031, +0.074]. Painting costs 0.016 (ABC) and 0.007 (rE2G) for H3K27ac against read-count arms, so compare within the painted set. **c**, Deployable arms (single runs). H3K27ac transferred from the GM12878 model, recalibrated with K562 ATAC and sequence composition using weights fitted in GM12878 on the K562 model's predictions there; then with fragment features and ATAC within 1 kb added (`scripts/4.57`). Predicted p300 (multi-cell, MSE-only) x corrected H3K27ac (`scripts/4.58`), against predicted p300 alone. Recalibration helps rE2G (+0.021) but only to its ATAC-only level (0.541 against 0.544). Sources: `results/2026_1001_{rna,frag,k27frag,k27frag_obsonly,re2g}_auprc_pairs.tsv`; F-041 to F-043.
+</details>
+
+**Method.**
+
+- Three training runs per TF-list and fragment-channel model; seed-averaged paired bootstrap (`scripts/4.17`, `scripts/4.34 --group`).
+- Observed and predicted p300 x H3K27ac tracks painted over the shared candidates (`scripts/4.58`).
+
+<details>
+<summary>Full methods &amp; code</summary>
+
+RNA weights: `scripts/4.54` (gene symbols from GENCODE v43; a heterodimer motif takes the lower of its partners' expression), then `scripts/4.45 --weighting rnafam|rnaatac` and `scripts/1.37 WEIGHTING=... SEED=0,1,2`. Fragment channels: `scripts/0.23` (5' insertions by fragment size) and `scripts/1.40 ARM=flat5p|frag5p SEED=0,1,2`. H3K27ac correction: `scripts/4.57` after the mirror prediction (K562 model applied to GM12878 candidates, `scripts/4.1`). Combinations: `scripts/4.58`. ABC: `scripts/4.3 --arms rna|frag|k27frag`, `scripts/4.5`; CRISPR: `scripts/4.6`, `scripts/4.7`; ENCODE-rE2G: `scripts/4.32 --stage-new`, `scripts/4.33`.
+
+```bash
+pixi run -e multimodal python scripts/5.4.plot_benchmark_round2.py
+```
+Source: `scripts/5.4.plot_benchmark_round2.py`.
+</details>
+
 ## Datasets
 
 | dataset | assay / system | source |
@@ -449,10 +481,9 @@ Source: `scripts/4.59.flank_fragment_lengths.py`.
 ## Open questions / next steps
 
 - Train with the three tissues added (stomach, transverse colon, ovary; data downloaded) and score transfer to K562. This is the one untried change that targets the GATA error directly.
-- TF lists from RNA (following DeepSCENIC, Partel et al. 2026, bioRxiv 2026.09.18.752607): each motif weighted by its TF's expression (family maximum), alone and added to ATAC association; three training runs each, benchmarks running (`scripts/4.54`). As motif-level proxies, RNA alone scores 0.28 against the truth and RNA + ATAC 0.41, below ATAC alone (0.44), but the benchmark decides.
-- A per-TF (factorised) version of the track: a per-TF binding output from the sequence trunk multiplied by a per-cell TF availability vector, following DeepSCENIC's parameterisation.
 - The corrected TF list (flagged motifs removed + GC) would need three runs to resolve the likely small gain; deprioritised until the panel is expanded.
-- Does combining p300 and H3K27ac help the benchmark? Observed p300 x observed H3K27ac x ATAC against each observed track alone in ABC and ENCODE-rE2G sets the ceiling for a model trained on both targets; the same combination of the deployable predicted p300 and corrected predicted H3K27ac tracks needs no new training (`scripts/4.58`).
+- Does dropping ATAC from ABC's activity term help the deployable predicted p300 as it helps observed p300 (+0.025)? Running, three runs each, with observed H3K4me1 with and without ATAC in ABC and in ENCODE-rE2G (F-044).
+- A two-target (p300 + H3K27ac) model is worth building only if its H3K27ac output transfers much better than the GM12878 H3K27ac model, which carries nothing beyond ATAC in K562.
 - The GATA error screen and the benchmark disagree for 'pair'. Would an error screen restricted to the 3,406 CRISPR-tested elements agree better with the benchmark?
 
 ## Methods
@@ -463,7 +494,7 @@ Source: `scripts/4.59.flank_fragment_lengths.py`.
 
 **ABC and benchmark.** `scripts/4.3` then `scripts/4.5` (shared candidate regions, re-stamped Peaks), `scripts/4.6` then `scripts/4.7`; paired bootstrap `scripts/4.17`. ENCODE-rE2G: `scripts/4.32 --stage-new`, `scripts/4.33`, paired bootstrap `scripts/4.34`, which adds CRISPR pairs outside every candidate back with score 0 as rE2G does.
 
-**Findings.** F-030 to F-040 in `.living/findings/predicting-regulatory-element-function-at-scale.md` record each result with its job IDs.
+**Findings.** F-030 to F-043 in `.living/findings/predicting-regulatory-element-function-at-scale.md` record each result with its job IDs.
 
 ### Regenerate
 

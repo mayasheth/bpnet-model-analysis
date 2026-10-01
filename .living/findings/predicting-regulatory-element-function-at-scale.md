@@ -1747,19 +1747,21 @@ deployable p300 signal. The 5' insertion input is at least as good as coverage. 
 |------|-------------|---------|---------|--------|-----------|
 | 2026-10-01 | channels 46088402/07/09; training 46088410-36; ABC 46150705; CRISPR 46171084; rE2G 46157330; bootstraps 46200988, 46201552 | K562 CRISPR | 2026_0824_H3K27ac_model | frag5p - flat5p -0.005 ABC, -0.010 rE2G | null |
 
-## F-043: Observed p300 x H3K27ac beats either mark in rE2G and, without ATAC, gives the best ABC activity term yet (0.591); correcting transferred H3K27ac with fragment features does not carry to the benchmark
-**Status:** supported (single runs; no-ATAC single-mark ABC controls running)
+## F-043: In ABC the ATAC term costs observed p300 0.025 and observed H3K27ac 0.017, and p300 x H3K27ac adds nothing over p300; in rE2G the combination leads (+0.012, unresolved); the deployable combination and the fragment correction of transferred H3K27ac do not help
+**Status:** supported (single runs)
 **Claim:** All tracks painted over the July K562 candidates (4.57, 4.58). ABC (`k27frag` run,
 10,342 pairs) and rE2G (10,356 pairs).
 
 | observed | ABC with ATAC | ABC without ATAC | rE2G |
 |---|---|---|---|
-| H3K27ac | 0.5133 | pending | 0.6196 |
-| p300 | 0.5657 | pending | 0.6602 |
+| H3K27ac | 0.5133 | 0.5305 | 0.6196 |
+| p300 | 0.5657 | **0.5909** | 0.6602 |
 | p300 x H3K27ac (sqrt of qnormed product) | 0.5519 | **0.5911** | **0.6718** |
 
 ABC: p300 x H3K27ac with ATAC - p300 -0.0138 [-0.0230, -0.0042]; without ATAC - with ATAC
-+0.0392 [+0.0235, +0.0552]. rE2G: p300 x H3K27ac - p300 +0.0116 [-0.0031, +0.0262];
++0.0392 [+0.0235, +0.0552]. No-ATAC controls: p300 alone - with ATAC +0.0252 [+0.0074, +0.0425];
+H3K27ac alone - with ATAC +0.0172 [+0.0022, +0.0315]; p300 x H3K27ac without ATAC - p300 without
+ATAC +0.0001 [-0.0182, +0.0183]. rE2G: p300 x H3K27ac - p300 +0.0116 [-0.0031, +0.0262];
 - H3K27ac +0.0522 [+0.0312, +0.0738]. Painting costs 0.016 ABC / 0.007 rE2G for H3K27ac
 against the read-count arms, so compare within the painted set.
 
@@ -1771,10 +1773,12 @@ Transferred H3K27ac correction (fitted in GM12878): ABC recalibration - repaint 
 + fragment and +/- 1 kb ATAC features -0.0055 to -0.0072 (worse); rE2G recalibration + 0.0207
 [+0.0077, +0.0367] over repaint, fragments then -0.0074; the best corrected track (0.5411) only
 reaches rE2G's ATAC-only floor (0.5435), and the uncorrected one is below it (-0.0230).
-**Implications:** **Observed p300 and H3K27ac carry complementary activity information**: in
-rE2G the combination is the best observed activity term (+0.012 over p300, not yet resolved),
-and in ABC dropping ATAC from the combination gains +0.039. Whether that ABC gain comes from the
-combination or from removing ATAC needs the single-mark no-ATAC arms (running). The deployable
+**Implications:** **In ABC the whole no-ATAC gain is from removing ATAC, not from combining
+marks**: observed p300 alone without ATAC (0.591) equals the combination, and the ATAC term in
+ABC's geometric mean costs both observed marks (+0.025 p300, +0.017 H3K27ac when dropped). In
+rE2G, which learns its own weights, the combination is the best observed activity term (+0.012
+over p300, not resolved). Dropping ATAC is a free change for the predicted arms too and is being
+tested (F-044). The deployable
 version does not work: predicted H3K27ac transferred from GM12878 carries no information beyond
 ATAC (it is at or below the ATAC floor), so multiplying it into predicted p300 only adds noise.
 The element-level gains of the correction (Spearman 0.732 -> 0.787, F-039) did not reach the

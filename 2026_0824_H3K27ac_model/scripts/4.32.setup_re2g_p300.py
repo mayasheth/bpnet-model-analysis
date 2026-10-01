@@ -104,6 +104,9 @@ DATASETS = [
     ("ATAC_k27txrepaint_powerlaw", f"{PRED}/predk27frag_tx_repaint.bw"),
     ("ATAC_k27txbase_powerlaw", f"{PRED}/predk27frag_tx_base.bw"),
     ("ATAC_k27txbreadthfrag_powerlaw", f"{PRED}/predk27frag_tx_breadth_frag.bw"),
+    # observed H3K4me1 in the activity slot, added 2026-10-01
+    ("ATAC_H3K4me1_powerlaw", ",".join(f"{DATA}/{x}.filtered.sorted.bam"
+                                       for x in ("ENCFF524BOJ", "ENCFF204MWI", "ENCFF665JSC"))),
 ]
 FT_ATAC = "resources/feature_tables/ATAC_pl_all.tsv"
 FT_ACT = "resources/feature_tables/ATAC_H3K27ac_pl_all.tsv"

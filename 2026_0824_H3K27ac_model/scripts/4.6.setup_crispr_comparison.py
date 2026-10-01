@@ -27,7 +27,7 @@ _ap = argparse.ArgumentParser()
 _ap.add_argument("--arms",
                  choices=("h3k27ac", "p300", "p300all", "accessibility", "dnaseinput",
                           "multitask", "slopefix", "p300fix", "multicell", "oracle",
-                          "rank", "nbr", "nbrx", "ranksweep", "gata", "motifact", "motifact2", "teach", "seeds", "rna", "frag", "k27frag"),
+                          "rank", "nbr", "nbrx", "ranksweep", "gata", "motifact", "motifact2", "teach", "seeds", "rna", "frag", "k27frag", "noatac"),
                  default="h3k27ac",
                  help="Which activity target's arms to benchmark. The p300 set reuses the "
                       "same July floor and observed-H3K27ac ceiling, so the two "
@@ -481,6 +481,28 @@ K27FRAG_ARMS += [x for x in SEEDS_ARMS if x[0] in ("p300pred_multicell_holdK562"
                  "p300pred_multicell_holdK562_motifact_assoc_noctcf")]
 assert len(K27FRAG_ARMS) == 22, len(K27FRAG_ARMS)
 
+# Activity without the ATAC term (F-043 follow-up) and observed H3K4me1; the geomean versions
+# of the same tracks ride along from their own runs for pairing.
+NOATAC_D = f"{ABC}/2026_1001_noatac"
+_seen, NOATAC_ARMS = set(), []
+for x in ARMS + P300_ARMS + SEEDS_ARMS:
+    if x[0] in ("K562_ATAC_only", "K562_ATAC_H3K27ac_element", "p300obs_k562",
+                "p300pred_multicell_holdK562", "p300pred_multicell_holdK562_seed1",
+                "p300pred_multicell_holdK562_seed2", "p300pred_multicell_holdK562_motifact_assoc_noctcf",
+                "p300pred_multicell_holdK562_motifact_assoc_noctcf_seed1",
+                "p300pred_multicell_holdK562_motifact_assoc_noctcf_seed2") and x[0] not in _seen:
+        _seen.add(x[0])
+        NOATAC_ARMS.append(x)
+NOATAC_ARMS += [(f"p300only_multicell_holdK562{m}{s_}", NOATAC_D, f"predicted p300 alone{lab}{s_}", col)
+                for m, lab, col in (("", "", "#74c476"), ("_motifact_assoc_noctcf", ", ATAC TF list", "#fd8d3c"))
+                for s_ in ("", "_seed1", "_seed2")] + [
+    ("k4me1obs_k562", NOATAC_D, "ATAC x observed H3K4me1", "#8c6bb1"),
+    ("k4me1only_k562", NOATAC_D, "observed H3K4me1 alone", "#bcbddc"),
+    ("k27obs_k562", NOATAC_D, "ATAC x observed H3K27ac (read counts)", "#525252"),
+    ("k27obsonly_k562", NOATAC_D, "observed H3K27ac alone (read counts)", "#969696"),
+    ("p300obsonly_k562", NOATAC_D, "observed p300 alone (read counts)", "#807dba")]
+assert len(NOATAC_ARMS) == 20, len(NOATAC_ARMS)
+
 if _a.arms == "motifact":
     ARMS = MOTIFACT_ARMS
 elif _a.arms == "motifact2":
@@ -495,6 +517,8 @@ elif _a.arms == "frag":
     ARMS = FRAG_ARMS
 elif _a.arms == "k27frag":
     ARMS = K27FRAG_ARMS
+elif _a.arms == "noatac":
+    ARMS = NOATAC_ARMS
 elif _a.arms == "gata":
     ARMS = GATA_ARMS
 elif _a.arms == "ranksweep":
@@ -538,7 +562,8 @@ TAG = {"h3k27ac": "predicted_activity", "p300": "p300_activity",
        "seeds": "p300_seeds",
        "rna": "p300_rna",
        "frag": "p300_frag",
-       "k27frag": "k27frag_activity"}[_a.arms]
+       "k27frag": "k27frag_activity",
+       "noatac": "noatac_activity"}[_a.arms]
 RUN = {"h3k27ac": "2026_0904_predicted_activity", "p300": "2026_0905_p300_activity",
        "p300all": "2026_0906_p300_all",
        "accessibility": "2026_0910_accessibility_activity",
@@ -559,7 +584,8 @@ RUN = {"h3k27ac": "2026_0904_predicted_activity", "p300": "2026_0905_p300_activi
        "seeds": "2026_0929_p300_seeds",
        "rna": "2026_0930_p300_rna",
        "frag": "2026_0930_p300_frag",
-       "k27frag": "2026_0930_k27frag"}[_a.arms]
+       "k27frag": "2026_0930_k27frag",
+       "noatac": "2026_1001_noatac"}[_a.arms]
 
 BASELINES = [
     ("distToTSS",      "FALSE", "mean", "Inf", "TRUE",  "Distance to TSS",      "#c5cad7"),

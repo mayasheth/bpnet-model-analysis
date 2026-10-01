@@ -92,7 +92,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument("--results-dir", default="results/2026_0903_predicted_activity")
 ap.add_argument("--arms", choices=("h3k27ac", "p300", "p300transfer", "accessibility",
                                   "dnaseinput", "multitask", "accnorm", "residualtx",
-                                  "p300fix", "multicell", "oracle", "rank", "nbr", "nbrx", "ranksweep", "gata", "motifact", "motifact2", "teach", "seeds", "rna", "frag", "k27frag"),
+                                  "p300fix", "multicell", "oracle", "rank", "nbr", "nbrx", "ranksweep", "gata", "motifact", "motifact2", "teach", "seeds", "rna", "frag", "k27frag", "noatac"),
                 default="h3k27ac",
                 help="Which target's predicted tracks to build arms for. p300 arms go in "
                      "their own results dir and config: re-stamping Peaks inside the "
@@ -336,6 +336,27 @@ if a.arms in ("motifact", "motifact2", "teach", "seeds", "rna", "frag"):
         add(f"p300pred_{tag}", ATAC, bw, "ATAC")
 # Transferred H3K27ac (GM12878 model -> K562) corrected with within-cell-ranked ATAC
 # fragment features, fitted in GM12878 (4.57); geomean with observed ATAC like pred_*.
+# F-043 found that in ABC the ATAC term COSTS observed p300 0.025 and observed H3K27ac 0.017.
+# NOATAC: the deployable predicted p300 models as all of activity, and observed marks (read
+# counts) with and without ATAC, adding K562 H3K4me1 (ENCFF524BOJ, ENCFF204MWI, ENCFF665JSC).
+elif a.arms == "noatac":
+    for tag in ("multicell_holdK562", "multicell_holdK562_seed1", "multicell_holdK562_seed2",
+                "multicell_holdK562_motifact_assoc_noctcf", "multicell_holdK562_motifact_assoc_noctcf_seed1",
+                "multicell_holdK562_motifact_assoc_noctcf_seed2"):
+        bw = f"{PRED}/predp300mc_{tag}.bw"
+        if not os.path.exists(bw):
+            missing.append(bw)
+        add(f"p300only_{tag}", bw, "", "ATAC")
+    K4ME1 = ",".join(f"{DATA}/{x}.filtered.sorted.bam" for x in ("ENCFF524BOJ", "ENCFF204MWI", "ENCFF665JSC"))
+    K27_OBS = ",".join(f"{DATA}/{x}.se.filtered.sorted.bam" for x in ("ENCFF790GFL", "ENCFF817HMW"))
+    for b in (K4ME1 + "," + K27_OBS).split(","):
+        if not os.path.exists(b):
+            missing.append(b)
+    add("k4me1obs_k562", ATAC, K4ME1, "ATAC")
+    add("k4me1only_k562", K4ME1, "", "ATAC")
+    add("k27obs_k562", ATAC, K27_OBS, "ATAC")
+    add("k27obsonly_k562", K27_OBS, "", "ATAC")
+    add("p300obsonly_k562", P300_OBS, "", "ATAC")
 elif a.arms == "k27frag":
     for tag in ("tx_repaint", "tx_base", "tx_frag", "tx_frag_gbm", "atac_frag", "tx_breadth", "tx_breadth_frag",
                 "obs_k27", "obs_p300", "obs_p300k27", "pred_p300k27", "pred_p300ch_k27",
@@ -483,7 +504,8 @@ TAG = a.config_tag or {"h3k27ac": "predicted_activity", "p300": "p300_activity",
                        "seeds": "p300_seeds",
                        "rna": "p300_rna",
                        "frag": "p300_frag",
-                       "k27frag": "k27frag_activity"}[a.arms]
+                       "k27frag": "k27frag_activity",
+                       "noatac": "noatac_activity"}[a.arms]
 out = f"{ABC}/config/mine/config_biosamples_{TAG}.tsv"
 with open(out, "w") as f:
     f.write("\t".join(COLS) + "\n")
