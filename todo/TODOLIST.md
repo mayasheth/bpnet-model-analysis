@@ -109,6 +109,21 @@ accessibility too steeply.
         (ATAC-derived) weights to match deployment.
 - [ ] Seed replicate of the oracle channel model (F-035 is one run; ~6 more epochs than comparator).
 
+## Nucleosome arrangement predicts H3K27ac, 2026-09-30 (F-039)
+
+- [x] Fragment features vs H3K27ac (4.55): joint partial rho 0.48-0.52 beyond ATAC (p300
+      0.16-0.22), opposite sign to p300, weights carry K562 <-> GM12878 losing 0.01.
+- [x] Profiles (4.56, fig35): the signal is mostly WHERE accessibility lies (H3K27ac-high = broad
+      domain, low = one sharp isolated peak), not nucleosome packing.
+- [~] H3K27ac correction (4.57, fitted in GM12878, applied to K562): element Spearman 0.732 ->
+      0.787 (in-cell 0.791), mostly recalibration; ATAC +/- 1 kb matches fragments. ABC, CRISPR
+      and rE2G done 2026-09-30; bootstraps running (k27_boot, re2g_boot). Write F-043.
+- [~] p300 x H3K27ac combined (4.58): observed ceiling and predicted (no training) arms in ABC and
+      rE2G; same bootstraps. If observed combo beats both singles -> two-head model (see
+      multi-head item below).
+- [x] Flank fragment length (4.59, F-040): no +10-15 bp at H3K27ac-high or p300-high flanks, even
+      at the adjacent nucleosome. Closed.
+
 ## TF identity is the missing signal, 2026-09-27 (F-030 to F-033)
 
 - [x] Ranking loss (F-030): weight 10 is best, about +0.01 AUPRC in ABC and rE2G.

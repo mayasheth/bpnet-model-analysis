@@ -360,6 +360,78 @@ pixi run -e multimodal python scripts/4.51.nucleosome_signature.py analyze
 Source: `scripts/5.3.plot_tf_activity_report_figures.py`, section "fig 34".
 </details>
 
+## At matched accessibility, H3K27ac-high elements sit in broad accessible domains, while p300-high elements have a sharper open centre
+
+**Q:** Do the same fragment features predict H3K27ac beyond ATAC, and what do the fragments look like at elements with more p300 or more H3K27ac than their ATAC predicts?
+
+**A:** The joint fragment score predicts H3K27ac beyond ATAC about three times as well as p300 (partial Spearman 0.52 against 0.22 in K562, 0.48 against 0.16 in GM12878, weights from the other cell), with the opposite sign: H3K27ac-high elements have their accessibility spread over +/- 1 kb, H3K27ac-low elements are one narrow central peak, and p300-high elements have a taller central peak.
+
+![](figures/fig35_nucleosome_profiles_k562.png)
+
+![](figures/fig35_nucleosome_profiles_gm12878.png)
+
+<details>
+<summary>Figure 10 legend</summary>
+
+**Figure 10 | ATAC fragment profiles at elements with more or less p300 or H3K27ac than accessibility predicts. Top, K562; bottom, GM12878.** In each cell, non-promoter ABC candidates with at least 10 fragments (121,219 in K562, 124,613 in GM12878) were ranked by the residual of observed p300 (upper row of each figure, purple) or observed H3K27ac over the candidate (lower row, orange) after removing ATAC over the candidate (rank, rank squared), GC, CpG observed/expected and log distance to TSS. 3,000 regions were sampled from the top 20% (solid) and bottom 20% (dashed) of each residual; mean ATAC percentile over the candidate is 0.46-0.51 in every group, so the groups are matched on accessibility. Paired-end ATAC fragments with MAPQ >= 30 and midpoint within 1 kb of the centre, per region. **a**, Fragment-length distribution for midpoints within 450 bp; grey lines at one (147 bp) and two (294 bp) nucleosomes. **b**, Midpoints of short fragments (< 120 bp, nucleosome-free DNA), 20 bp bins. **c**, Midpoints of one-nucleosome fragments (150-250 bp). p300-high elements have a taller central peak of short fragments (K562 249 against 171 short fragments per region; in GM12878 the centres match and the p300-low group has more distant fragments). H3K27ac-high elements have no central peak: short and nucleosome fragments spread over +/- 1 kb with short-fragment maxima near +/- 450 bp, while H3K27ac-low elements are one narrow central peak. The fragment features therefore measure mainly how accessibility is spread around the element. In the same regions the joint score of the nine fragment features (least-squares weights fitted in the other cell) gives partial Spearman 0.521 (K562) and 0.476 (GM12878) with H3K27ac over the candidate, 0.454 and 0.397 with H3K27ac within 1 kb of the centre, and 0.224 and 0.162 with p300; in-cell weights add at most 0.012. Eight of nine features have the same sign in both cells for H3K27ac, seven of nine for p300. Only K562 and GM12878 have H3K27ac ChIP-seq in this project. Source: `results/2026_0930_nucleosome_vs_h3k27ac.*` (`scripts/4.55`) and `results/2026_0930_nucleosome_profiles.tsv.gz` (`scripts/4.56`); F-039.
+</details>
+
+**Method.**
+
+- Fragment features from `scripts/4.51`; residuals and partial correlations for p300 and H3K27ac, `scripts/4.55`.
+- Profiles of top and bottom residual quintiles from the ATAC BAMs, `scripts/4.56`.
+
+<details>
+<summary>Full methods &amp; code</summary>
+
+Targets are 5' ChIP-seq bigwigs (plus and minus strands) summed over the candidate: p300 as in Fig. 9; H3K27ac from the model training targets (`data/h3k27ac_5p_*.bw`, `data/gm12878_h3k27ac_5p_*.bw`), over the candidate and within 1 kb of its centre. The joint score is an ordinary least-squares fit of the target residual on the nine rank-transformed, residualised features. Sampling uses a fixed seed (0). The fragment scan reads the same BAMs as Fig. 9.
+
+A benchmark test of the ranked features is running (`scripts/4.57`): the transferred H3K27ac prediction (GM12878 model applied to K562) corrected with ATAC, composition, ATAC within 1 kb and the fragment features, with weights fitted in GM12878 on the K562 model's prediction there. At the element level in K562 it raises Spearman with observed H3K27ac from 0.732 to 0.787 (the in-cell K562 model reaches 0.791), but recalibration with ATAC and composition alone gives 0.774, and ATAC within 1 kb matches the fragment features. ABC and CRISPR results are pending.
+
+```bash
+sbatch scripts/4.55.submit_nucleosome_vs_h3k27ac.sh
+pixi run -e multimodal python scripts/4.56.nucleosome_profiles.py
+```
+Source: `scripts/4.56.nucleosome_profiles.py`.
+</details>
+
+## Nucleosome-length fragments in the flanks are not longer next to H3K27ac-high elements, even at the adjacent nucleosome
+
+**Q:** Are one-nucleosome ATAC fragments in the flanks of H3K27ac-high (or p300-high) peaks ~10-15 bp longer than in the flanks of inactive peaks, as expected if acetylated nucleosomes protect or are spaced by more DNA?
+
+**A:** No: matched on ATAC, H3K27ac-high flanks are 0.2 bp (whole 1 kb flank) to 1.3 bp (adjacent nucleosome) shorter than H3K27ac-low flanks, with 95% intervals of about +/- 0.5 bp; the only consistent differences are ~2 bp longer fragments next to weak inactive peaks and the shortest fragments (203 bp) next to CTCF.
+
+![](figures/fig36_flank_fragment_lengths_w1000.png)
+
+![](figures/fig38_flank_length_by_distance_w2000.png)
+
+![](figures/fig37_fragment_lengths_by_library_all_w1000.png)
+
+![](figures/fig37_fragment_lengths_by_library_flank_w1000.png)
+
+<details>
+<summary>Figure 11 legend</summary>
+
+**Figure 11 | ATAC fragment lengths in the flanks of isolated K562 peaks, by H3K27ac, p300 and CTCF.** Peaks: K562 ATAC MACS2 calls from the July ABC run, one row per distinct peak, -log10 q >= 2, more than 1 kb from a GENCODE v43 TSS and with no other confident peak within 2 kb of either bound (91,528 peaks; 62,537 at 3 kb isolation for the 2 kb window). Classification among these peaks: ATAC = 5' ATAC over summit +/- 250 bp (strong = top third, weak = bottom third); H3K27ac = 5' ChIP over summit +/- 1 kb; p300 = 5' ChIP over summit +/- 250 bp (low = bottom 40%, high = top 20%); CTCF-bound = FIMO CTCF motif (MA0139.2, MA1929.2 or MA1930.2, -log10 p >= 5) within 100 bp of the summit and CTCF ChIP-seq (ENCFF216XRV) reads within 250 bp in the top quarter; all other groups are CTCF-free (no motif, ChIP below median). Up to 4,000 peaks sampled per group (1,145-4,000). Fragments: proper pairs, MAPQ >= 30, not duplicates, from the three ENCSR868FGK libraries. **Top (fig36, 1 kb flanks)**: fragments lying entirely between the MACS2 bound + 50 bp and 1 kb out. **a**, length distribution per group (upper row grouped by H3K27ac, lower by p300); **b**, one-nucleosome peak and **c**, two-nucleosome peak, each normalised within the window; **d**, one-nucleosome length per group, mode of the smoothed histogram in 130-260 bp (dark) and mean of 140-260 bp fragments (grey), 95% intervals from 300 bootstrap resamples of peaks. **Second (fig38, 2 kb flanks)**: **a**, mean length of 140-260 bp fragments against the distance of the fragment's inner end from the peak bound, with 95% intervals; **b**, length distribution in the nearest bin (50-150 bp out). The outermost bin is biased short because a fragment must end inside the window. Nearest bin: strong ATAC, H3K27ac low 205.5 [204.5, 206.5] against H3K27ac high 204.2 [203.7, 204.7]; weak ATAC, H3K27ac low 207.6 [207.1, 208.1]; CTCF-bound 203.2 [202.6, 203.6], rising to 206.8 at 1-1.5 kb. Flank GC 0.41-0.45 in every group. **Third and fourth (fig37)**: per-library fragment-length density in the style of report 1 Fig. 5 (5 bp bins, sub 1-99 bp and mono 180-247 bp shaded), all fragments with midpoint within the peak +/- 1 kb (third) and flank-only fragments (fourth). The three libraries superimpose in every group; the groups differ in the standard view and nearly converge once the peak is excluded, so those differences come from the peak itself. Source: `results/2026_0930_flank_fragment_lengths_w{1000,2000}.*` from `scripts/4.59`; F-040.
+</details>
+
+**Method.**
+
+- Isolated non-promoter K562 ATAC peaks grouped by ATAC, H3K27ac or p300 and CTCF.
+- Lengths of fragments lying entirely in the flanks, overall and by distance from the peak; bootstrap over peaks.
+
+<details>
+<summary>Full methods &amp; code</summary>
+
+The hypothesis predicts a shift of the one-nucleosome peak (more DNA protected per nucleosome) or of the two-nucleosome peak (longer linkers). The two-nucleosome peak is too broad to resolve the repeat length (intervals about 10 bp), so the test rests on the one-nucleosome peak, whose mean is resolved to about +/- 0.5 bp. Because H3K27ac sits mostly on the nucleosomes next to the open site, lengths are also reported by distance from the peak bound (50-150, 150-300, 300-500, 500-750, 750-1000, 1000-1500 and 1500-2000 bp); the effect is absent in the nearest bin. ATAC fragment length reflects where Tn5 can cut in the linkers rather than the nucleosome footprint itself; MNase-seq would test the footprint directly.
+
+```bash
+sbatch -p engreitz,normal -c 2 --mem 24G -t 3:00:00 --wrap "pixi run -e multimodal python scripts/4.59.flank_fragment_lengths.py --window 1000 --isolation 2000 --out-prefix results/2026_0930_flank_fragment_lengths_w1000"
+sbatch -p engreitz,normal -c 2 --mem 24G -t 3:00:00 --wrap "pixi run -e multimodal python scripts/4.59.flank_fragment_lengths.py --window 2000 --isolation 3000 --out-prefix results/2026_0930_flank_fragment_lengths_w2000"
+```
+Source: `scripts/4.59.flank_fragment_lengths.py`.
+</details>
+
 ## Datasets
 
 | dataset | assay / system | source |
@@ -367,6 +439,7 @@ Source: `scripts/5.3.plot_tf_activity_report_figures.py`, section "fig 34".
 | K562 CRISPR benchmark | CRISPRi element-gene pairs in K562, the ENCODE-rE2G training set; 10,342 pairs (466 regulated) in ABC, 10,356 (471) in ENCODE-rE2G | Gschwind et al. 2023 (ENCODE-rE2G); scored with EngreitzLab/CRISPR_comparison |
 | p300 ChIP-seq, training panel and K562 | ENCODE EP300 ChIP-seq | K562 ENCSR000EGE; A549 ENCSR686BQM; HepG2 ENCSR000EDV; MCF-7 ENCSR000BTR; GM12878 peaks ENCFF926AKK |
 | ATAC-seq, same cell types | ENCODE ATAC-seq, paired-end, Snyder lab | K562 ENCSR868FGK; A549 ENCSR032RGS; HepG2 ENCSR291GJU; MCF-7 ENCSR422SUG; GM12878 ENCFF440GRZ, ENCFF962FMH, ENCFF981FXV |
+| H3K27ac and CTCF ChIP-seq, K562 and GM12878 | ENCODE ChIP-seq; H3K27ac as the H3K27ac-model training targets (5' bigwigs); K562 CTCF ENCFF216XRV | used in Figs 10-11 |
 | motif matrices | JASPAR 2024 CORE vertebrates, non-redundant (879 matrices) | Rauluseviciute et al. 2024, Nucleic Acids Res |
 | motif hits | FIMO, p < 1e-4, both strands; hits on N bases dropped | memelite implementation of FIMO (Grant et al. 2011) |
 | enhancer-gene models | ABC (Fulco et al. 2019; Nasser et al. 2021); ENCODE-rE2G (Gschwind et al. 2023) | EngreitzLab repositories, versions under `ABC_working` and `ENCODE_rE2G` |
@@ -379,6 +452,7 @@ Source: `scripts/5.3.plot_tf_activity_report_figures.py`, section "fig 34".
 - TF lists from RNA (following DeepSCENIC, Partel et al. 2026, bioRxiv 2026.09.18.752607): each motif weighted by its TF's expression (family maximum), alone and added to ATAC association; three training runs each, benchmarks running (`scripts/4.54`). As motif-level proxies, RNA alone scores 0.28 against the truth and RNA + ATAC 0.41, below ATAC alone (0.44), but the benchmark decides.
 - A per-TF (factorised) version of the track: a per-TF binding output from the sequence trunk multiplied by a per-cell TF availability vector, following DeepSCENIC's parameterisation.
 - The corrected TF list (flagged motifs removed + GC) would need three runs to resolve the likely small gain; deprioritised until the panel is expanded.
+- Does combining p300 and H3K27ac help the benchmark? Observed p300 x observed H3K27ac x ATAC against each observed track alone in ABC and ENCODE-rE2G sets the ceiling for a model trained on both targets; the same combination of the deployable predicted p300 and corrected predicted H3K27ac tracks needs no new training (`scripts/4.58`).
 - The GATA error screen and the benchmark disagree for 'pair'. Would an error screen restricted to the 3,406 CRISPR-tested elements agree better with the benchmark?
 
 ## Methods
@@ -389,7 +463,7 @@ Source: `scripts/5.3.plot_tf_activity_report_figures.py`, section "fig 34".
 
 **ABC and benchmark.** `scripts/4.3` then `scripts/4.5` (shared candidate regions, re-stamped Peaks), `scripts/4.6` then `scripts/4.7`; paired bootstrap `scripts/4.17`. ENCODE-rE2G: `scripts/4.32 --stage-new`, `scripts/4.33`, paired bootstrap `scripts/4.34`, which adds CRISPR pairs outside every candidate back with score 0 as rE2G does.
 
-**Findings.** F-030 to F-038 in `.living/findings/predicting-regulatory-element-function-at-scale.md` record each result with its job IDs.
+**Findings.** F-030 to F-040 in `.living/findings/predicting-regulatory-element-function-at-scale.md` record each result with its job IDs.
 
 ### Regenerate
 
