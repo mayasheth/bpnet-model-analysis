@@ -59,11 +59,26 @@ for cell in ("A549", "HepG2", "MCF-7"):
         "negatives": NEG,
     }
 
+# ENCODE tissues added 2026-10-01 (reference/p300_tissue_manifest.tsv; tracks from 0.45 with
+# DATA_ROOT=$SCRATCH/p300_tissues). Opt-in, so config/p300_panel.json keeps its five cells.
+TISSUES = ("stomach", "transverse_colon", "ovary")
+
 ap = argparse.ArgumentParser()
 ap.add_argument("--out", default=f"{D}/2026_0824_H3K27ac_model/config/p300_panel.json")
+ap.add_argument("--with-tissues", action="store_true",
+                help="add the three ENCODE tissues; use with --out config/p300_panel_tissues.json")
 ap.add_argument("--allow-missing", action="store_true",
                 help="write the file even if tracks are absent, for a dry run")
 a = ap.parse_args()
+if a.with_tissues:
+    for t in TISSUES:
+        PANEL[t] = {
+            "peaks": f"{PANEL_DIR}/{t}_ep300_peaks.narrowPeak",
+            "signal_plus_bw": f"{PANEL_DIR}/{t}_ep300_5p_plus.bw",
+            "signal_minus_bw": f"{PANEL_DIR}/{t}_ep300_5p_minus.bw",
+            "accessibility_bw": f"{PANEL_DIR}/{t}_atac.bw",
+            "negatives": NEG,
+        }
 
 missing = [(c, k, v) for c, spec in PANEL.items() for k, v in spec.items()
            if not os.path.exists(v)]

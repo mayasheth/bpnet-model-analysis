@@ -1882,3 +1882,36 @@ elements.
 | Date | Run/Session | Dataset | Project | Result | Direction |
 |------|-------------|---------|---------|--------|-----------|
 | 2026-10-01 | 0.47 46238895; 4.60 46239127 | ENCODE H3K4me1, ATAC, p300 in K562, GM12878, HepG2, A549, MCF-7 | 2026_0824_H3K27ac_model | H3K4me1 residual rep rho 0.70-0.97, p300 partial 0.24-0.54, cross-cell 0.43-0.65, LOO 0.16-0.27 | signal beyond ATAC, shared across cells |
+
+## F-046: Adding three ENCODE tissues (stomach, transverse colon, ovary) to multi-cell p300 training does not help K562 (+0.0015, three runs)
+**Status:** supported (3 runs per arm)
+**Claim:** 1.41: the hold-out-K562 MSE-only multi-cell model, identical to 1.37 WEIGHTING=none
+except for the panel, now seven training cell types (four lines + three tissues; 46,828 training
+peaks). Tissue EP300 is 76 bp PE, built read 1 only (0.45); tissue ATAC 91-106M filtered reads,
+EP300 enrichment at own peaks 11.7-12.7x on chr8, level with A549 / HepG2 (12.2-12.4x). ABC
+(`tissue` run, 10,342 pairs, 466 regulated), activity = geomean with observed ATAC (F-044).
+
+| arm (mean of 3 runs) | AUPRC | runs |
+|---|---|---|
+| multi-cell, MSE only, 4 lines (`mse`) | 0.4828 | 0.4810, 0.4832, 0.4842 |
+| + 3 tissues (`tissue`) | 0.4843 | 0.4856, 0.4793, 0.4881 |
+| assoc_noctcf TF channel (`ctcf`) | 0.4887 | 0.4910, 0.4880, 0.4872 |
+| ATAC only | 0.4680 | |
+
+tissue - mse +0.0015 [-0.0077, +0.0104] (sign kept 64%); tissue - ctcf -0.0044 [-0.0162,
++0.0061]; tissue - ATAC only +0.0163 [-0.0034, +0.0348]; mse - ATAC only +0.0148 [-0.0021, +0.0303].
+**Implications:** More and more TF-diverse training cell types do not move K562, including the one
+tissue with GATA activity (stomach, 4.49/4.52). The run-to-run spread with tissues (sd 0.0045) is
+larger than the effect. With F-034 to F-038 and F-041, panel composition joins the TF-list and
+channel variants that plateau within run noise near 0.483-0.489, about 0.015-0.02 above ATAC
+alone. Stop adding cell types to this panel.
+**Caveats:** One biological replicate per tissue and fewer peaks (3.4-5.3k training peaks each);
+tissues are mixed cell populations, so their GATA signal may come from a minor cell type. Only
+the MSE-only model was trained on the tissue panel; the TF-channel model was not. ABC only, no
+rE2G.
+**Tags:** p300, multi-cell, panel, tissues, transfer, abc, crispr-benchmark, k562
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-10-02 | 0.45 46270676; 1.41 46270680-82; preds 46286321/22/41; ABC 46286343; CRISPR 46286345; bootstrap 46286348 (`log/tissue_launch.sh`, `log/tissue_score_launch.sh`) | ENCODE EP300 + ATAC stomach, transverse colon, ovary; K562 CRISPR | 2026_0824_H3K27ac_model | tissue 0.4843 vs mse 0.4828, +0.0015 [-0.0077, +0.0104] | null |

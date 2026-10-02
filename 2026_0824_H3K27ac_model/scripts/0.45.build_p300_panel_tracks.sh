@@ -32,13 +32,19 @@
 # (`atac.bw`); the 5' track is built because it costs one extra genomecov and the H3K27ac
 # line uses that form.
 #
+# PAIRED-END EP300 (the 2026-09-29 tissues: ENCODE4, 76 bp PE) keeps READ 1 ONLY (-f 64), one
+# 5' end per fragment, so it matches the single-end EP300 of every other panel cell. This is
+# the project's convention for PE targets (0.15's r1 variant; Settled in todo/TODOLIST.md).
+# Single-end BAMs are untouched by this branch.
+#
 # Usage: sbatch 0.45.build_p300_panel_tracks.sh          # array over the three new cells
 #        CELLS=K562 sbatch --array=1 0.45...             # rebuild one, for the control
+#        DATA_ROOT=$SCRATCH/p300_tissues CELLS=stomach,transverse_colon,ovary sbatch 0.45...
 set -euo pipefail
 export PYTHONUNBUFFERED=1
 D=/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet
 P=$D/2026_0824_H3K27ac_model
-DATA=/oak/stanford/groups/engreitz/Users/sheth/Data/ENCODE
+DATA=${DATA_ROOT:-/oak/stanford/groups/engreitz/Users/sheth/Data/ENCODE}
 export PATH="$D/.pixi/envs/multimodal/bin:$PATH"
 CHR=/oak/stanford/groups/engreitz/Users/sheth/hg38_resources/GRCh38.main.chrom.sizes
 OUT="$P/data/p300_panel"; mkdir -p "$OUT" "$P/log"
@@ -69,7 +75,9 @@ FILT=()
 for b in "${EP_BAMS[@]}"; do
     o="$WORK/$(basename "${b%.bam}").filt.bam"
     # -F 1804: unmapped, mate-unmapped, secondary, QC-fail, duplicate. -q 30: unique.
-    samtools view -@ 4 -b -F 1804 -q 30 "$b" | samtools sort -@ 4 -T "$WORK/st" -o "$o" -
+    npe=$( (samtools view "$b" 2>/dev/null || true) | awk 'NR>1000{exit} and($2,1){p++} END{print p+0}')
+    R1=(); [[ "$npe" -gt 500 ]] && { R1=(-f 64); echo "  $(basename "$b") is paired-end: read 1 only"; }
+    samtools view -@ 4 -b ${R1[@]+"${R1[@]}"} -F 1804 -q 30 "$b" | samtools sort -@ 4 -T "$WORK/st" -o "$o" -
     FILT+=("$o")
     echo "  filtered $(basename "$b") -> $(samtools view -c -@ 4 "$o") reads"
 done

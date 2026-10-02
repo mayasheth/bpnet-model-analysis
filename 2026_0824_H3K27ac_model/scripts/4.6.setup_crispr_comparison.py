@@ -27,7 +27,7 @@ _ap = argparse.ArgumentParser()
 _ap.add_argument("--arms",
                  choices=("h3k27ac", "p300", "p300all", "accessibility", "dnaseinput",
                           "multitask", "slopefix", "p300fix", "multicell", "oracle",
-                          "rank", "nbr", "nbrx", "ranksweep", "gata", "motifact", "motifact2", "teach", "seeds", "rna", "frag", "k27frag", "noatac"),
+                          "rank", "nbr", "nbrx", "ranksweep", "gata", "motifact", "motifact2", "teach", "seeds", "rna", "frag", "k27frag", "noatac", "tissue"),
                  default="h3k27ac",
                  help="Which activity target's arms to benchmark. The p300 set reuses the "
                       "same July floor and observed-H3K27ac ceiling, so the two "
@@ -503,6 +503,13 @@ NOATAC_ARMS += [(f"p300only_multicell_holdK562{m}{s_}", NOATAC_D, f"predicted p3
     ("p300obsonly_k562", NOATAC_D, "observed p300 alone (read counts)", "#807dba")]
 assert len(NOATAC_ARMS) == 20, len(NOATAC_ARMS)
 
+# Multi-cell MSE-only model trained with three ENCODE tissues added (1.41), 3 runs; the MSE-only
+# and assoc_noctcf seed arms ride along from their own run for seed-averaged pairs.
+TISSUE_D = f"{ABC}/2026_1002_p300_tissue"
+TISSUE_ARMS = [x for x in SEEDS_ARMS if "twostage" not in x[0] and "oracle" not in x[0]] + [
+    (f"p300pred_multicell_tissues_holdK562{s_}", TISSUE_D, f"multi-cell + 3 tissues{' ' + s_[1:] if s_ else ''}", "#08519c")
+    for s_ in ("", "_seed1", "_seed2")]
+
 if _a.arms == "motifact":
     ARMS = MOTIFACT_ARMS
 elif _a.arms == "motifact2":
@@ -519,6 +526,8 @@ elif _a.arms == "k27frag":
     ARMS = K27FRAG_ARMS
 elif _a.arms == "noatac":
     ARMS = NOATAC_ARMS
+elif _a.arms == "tissue":
+    ARMS = TISSUE_ARMS
 elif _a.arms == "gata":
     ARMS = GATA_ARMS
 elif _a.arms == "ranksweep":
@@ -563,7 +572,8 @@ TAG = {"h3k27ac": "predicted_activity", "p300": "p300_activity",
        "rna": "p300_rna",
        "frag": "p300_frag",
        "k27frag": "k27frag_activity",
-       "noatac": "noatac_activity"}[_a.arms]
+       "noatac": "noatac_activity",
+       "tissue": "p300_tissue"}[_a.arms]
 RUN = {"h3k27ac": "2026_0904_predicted_activity", "p300": "2026_0905_p300_activity",
        "p300all": "2026_0906_p300_all",
        "accessibility": "2026_0910_accessibility_activity",
@@ -585,7 +595,8 @@ RUN = {"h3k27ac": "2026_0904_predicted_activity", "p300": "2026_0905_p300_activi
        "rna": "2026_0930_p300_rna",
        "frag": "2026_0930_p300_frag",
        "k27frag": "2026_0930_k27frag",
-       "noatac": "2026_1001_noatac"}[_a.arms]
+       "noatac": "2026_1001_noatac",
+       "tissue": "2026_1002_p300_tissue"}[_a.arms]
 
 BASELINES = [
     ("distToTSS",      "FALSE", "mean", "Inf", "TRUE",  "Distance to TSS",      "#c5cad7"),

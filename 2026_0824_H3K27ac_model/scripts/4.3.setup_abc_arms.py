@@ -92,7 +92,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument("--results-dir", default="results/2026_0903_predicted_activity")
 ap.add_argument("--arms", choices=("h3k27ac", "p300", "p300transfer", "accessibility",
                                   "dnaseinput", "multitask", "accnorm", "residualtx",
-                                  "p300fix", "multicell", "oracle", "rank", "nbr", "nbrx", "ranksweep", "gata", "motifact", "motifact2", "teach", "seeds", "rna", "frag", "k27frag", "noatac"),
+                                  "p300fix", "multicell", "oracle", "rank", "nbr", "nbrx", "ranksweep", "gata", "motifact", "motifact2", "teach", "seeds", "rna", "frag", "k27frag", "noatac", "tissue"),
                 default="h3k27ac",
                 help="Which target's predicted tracks to build arms for. p300 arms go in "
                      "their own results dir and config: re-stamping Peaks inside the "
@@ -325,11 +325,13 @@ SEEDS = ['multicell_holdK562_motifact_oracle_twostage', 'multicell_holdK562_moti
 RNA = ['multicell_holdK562_motifact_rnafam', 'multicell_holdK562_motifact_rnafam_seed1', 'multicell_holdK562_motifact_rnafam_seed2', 'multicell_holdK562_motifact_rnaatac', 'multicell_holdK562_motifact_rnaatac_seed1', 'multicell_holdK562_motifact_rnaatac_seed2']
 # Fragment-size ATAC channels (1.40): flat 5' comparator and 5-channel model, 3 runs each.
 FRAG = ['multicell_holdK562_flat5p', 'multicell_holdK562_flat5p_seed1', 'multicell_holdK562_flat5p_seed2', 'multicell_holdK562_frag5p', 'multicell_holdK562_frag5p_seed1', 'multicell_holdK562_frag5p_seed2']
+# Multi-cell MSE-only model trained with the three ENCODE tissues added (1.41), 3 runs.
+TISSUE = ['multicell_tissues_holdK562', 'multicell_tissues_holdK562_seed1', 'multicell_tissues_holdK562_seed2']
 TEACH = ['multicell_holdK562_motifact_oracle_head', 'multicell_holdK562_motifact_oracle_pair', 'multicell_holdK562_motifact_oracle_headpair']
 
-if a.arms in ("motifact", "motifact2", "teach", "seeds", "rna", "frag"):
+if a.arms in ("motifact", "motifact2", "teach", "seeds", "rna", "frag", "tissue"):
     for tag in {"motifact": MOTIFACT, "motifact2": MOTIFACT2, "teach": TEACH,
-                "seeds": SEEDS, "rna": RNA, "frag": FRAG}[a.arms]:
+                "seeds": SEEDS, "rna": RNA, "frag": FRAG, "tissue": TISSUE}[a.arms]:
         bw = f"{PRED}/predp300mc_{tag}.bw"
         if not os.path.exists(bw):
             missing.append(bw)
@@ -505,7 +507,8 @@ TAG = a.config_tag or {"h3k27ac": "predicted_activity", "p300": "p300_activity",
                        "rna": "p300_rna",
                        "frag": "p300_frag",
                        "k27frag": "k27frag_activity",
-                       "noatac": "noatac_activity"}[a.arms]
+                       "noatac": "noatac_activity",
+                       "tissue": "p300_tissue"}[a.arms]
 out = f"{ABC}/config/mine/config_biosamples_{TAG}.tsv"
 with open(out, "w") as f:
     f.write("\t".join(COLS) + "\n")

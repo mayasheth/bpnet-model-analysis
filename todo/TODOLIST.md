@@ -6,8 +6,6 @@ from todo/TODOLIST.md"; the old file is kept as `todo/TODOLIST.pre-standard.md`.
 
 ## Now
 <!-- At most 5 items actually being worked on this week. -->
-- [ ] P1 Add the tissue p300/ATAC panel (stomach, transverse colon, ovary) to multi-cell training; score on K562, 3 runs #data (F-038)
-  - stomach is the only candidate with GATA activity (4.49/4.52); data `$SCRATCH/p300_tissues`, `reference/p300_tissue_manifest.tsv`
 
 ## Next
 <!-- Ordered: top item is the next thing to start. -->
@@ -78,6 +76,7 @@ from todo/TODOLIST.md"; the old file is kept as `todo/TODOLIST.pre-standard.md`.
 - TF-channel and TF-list variants plateau within run noise; no further estimators, teaching losses, seed replicates, finemo TF lists or leave-one-out Test 1 (F-034 to F-038, F-041; Maya, 2026-10-01)
 - RNA TF lists do not beat the ATAC-derived list; per-TF factorised model and MotifCompendium remap dropped (F-041)
 - Neighbour-graph re-ranking is null in ABC (F-031)
+- Panel composition is null: adding three ENCODE tissues (incl. GATA-active stomach) +0.0015 [-0.0077, +0.0104]; no more cell types (F-046)
 - Fragment-size input channels are null on transfer; do not combine, replicate or retry (F-005, F-042)
 - Flank nucleosome fragments are not longer at active elements (F-040)
 - Correcting transferred H3K27ac with fragment features does not reach the benchmark (F-043)
@@ -97,6 +96,7 @@ from todo/TODOLIST.md"; the old file is kept as `todo/TODOLIST.pre-standard.md`.
 
 ## Done
 <!-- Last two weeks only; older items live in git and findings. -->
+- [x] P1 Tissue p300/ATAC panel in multi-cell training, 3 runs: null, +0.0015 (F-046)
 - [x] P1 rE2G with ATAC + observed H3K4me1 at E and P as separate features (F-044)
 - [x] P1 Measure H3K4me1 beyond ATAC in five cells and across cells (`4.60`, F-045)
 - [x] P1 Benchmark predicted p300 without the ATAC term and observed H3K4me1 in ABC and rE2G (F-044)
