@@ -107,7 +107,15 @@ DATASETS = [
     # observed H3K4me1 in the activity slot, added 2026-10-01
     ("ATAC_H3K4me1_powerlaw", ",".join(f"{DATA}/{x}.filtered.sorted.bam"
                                        for x in ("ENCFF524BOJ", "ENCFF204MWI", "ENCFF665JSC"))),
+    # ATAC features plus observed H3K4me1 at E and at P as two separate features, through
+    # external_features_config (4.61), added 2026-10-01
+    ("ATAC_H3K4me1sep_powerlaw", ""),
 ]
+# Datasets with features beyond the pipeline's own: name -> (feature table, external features
+# config). The tables and configs are written by 4.61.
+EXTERNAL = {"ATAC_H3K4me1sep_powerlaw": (
+    "config/mine/feature_tables/ATAC_H3K4me1sep_pl_all.tsv",
+    f"{E2G}/config/mine/external_features_K562_H3K4me1.tsv")}
 FT_ATAC = "resources/feature_tables/ATAC_pl_all.tsv"
 FT_ACT = "resources/feature_tables/ATAC_H3K27ac_pl_all.tsv"
 
@@ -126,6 +134,13 @@ inputs = set(ATAC.split(","))
 for _, act in DATASETS:
     inputs.update(x for x in act.split(",") if x)
 inputs.update((f"{E2G}/{FT_ATAC}", f"{E2G}/{FT_ACT}", JULY_PEAKS))
+for ft, efc in EXTERNAL.values():
+    inputs.update((f"{E2G}/{ft}", efc))
+    if not os.path.exists(efc):
+        continue
+    with open(efc) as fh:
+        hdr = fh.readline().rstrip("\n").split("\t")
+        inputs.update(line.rstrip("\n").split("\t")[hdr.index("source_file")] for line in fh if line.strip())
 missing = [x for x in inputs if not os.path.exists(x)]
 if missing:
     raise SystemExit("missing inputs:\n  " + "\n  ".join(sorted(set(missing))))
@@ -141,7 +156,8 @@ with open(ds_path, "w") as f:
     for name, act in DATASETS:
         r = dict.fromkeys(cols, "")
         r.update(biosample=name, crispr_cell_type="K562", ATAC=ATAC, H3K27ac=act,
-                 default_accessibility_feature="ATAC")
+                 default_accessibility_feature="ATAC",
+                 external_features_config=EXTERNAL.get(name, ("", ""))[1])
         f.write("\t".join(r[c] for c in cols) + "\n")
 print("wrote", ds_path)
 
@@ -153,7 +169,8 @@ with open(md_path, "w") as f:
     f.write("\t".join(["model", "dataset", "crispr_dataset", "feature_table", "polynomial",
                        "override_params"]) + "\n")
     for name, act in DATASETS:
-        f.write("\t".join([f"{name}_all", name, "training", FT_ACT if act else FT_ATAC,
+        ft = EXTERNAL[name][0] if name in EXTERNAL else (FT_ACT if act else FT_ATAC)
+        f.write("\t".join([f"{name}_all", name, "training", ft,
                            "False", ""]) + "\n")
 print("wrote", md_path)
 

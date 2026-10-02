@@ -6,13 +6,6 @@ from todo/TODOLIST.md"; the old file is kept as `todo/TODOLIST.pre-standard.md`.
 
 ## Now
 <!-- At most 5 items actually being worked on this week. -->
-- [ ] P1 Read out the no-ATAC and H3K4me1 benchmark and write F-044 #benchmark (F-043)
-  - ABC half done: `2026_0824_H3K27ac_model/results/2026_1001_noatac_auprc_pairs.tsv`; rE2G 46228392 -> `re2g_k4_boot` 46228394 pending
-  - launcher `2026_0824_H3K27ac_model/log/noatac_launch.sh`
-- [ ] P1 Process the H3K4me1 panel: filter the BAMs, build 5' bigwigs and the training panel #data
-  - `0.47` array 46238895 -> `data/h3k4me1_panel/`; filtered new-cell BAMs stay in `$SCRATCH/h3k4me1/<cell>/`
-- [ ] P1 Measure H3K4me1 beyond ATAC in the five cells and its cross-cell consistency, before training #h3k4me1
-  - `4.60` job 46239127, after 46238895 -> `results/2026_1001_h3k4me1_beyond_atac.*`
 - [ ] P1 Add the tissue p300/ATAC panel (stomach, transverse colon, ovary) to multi-cell training; score on K562, 3 runs #data (F-038)
   - stomach is the only candidate with GATA activity (4.49/4.52); data `$SCRATCH/p300_tissues`, `reference/p300_tissue_manifest.tsv`
 
@@ -20,7 +13,7 @@ from todo/TODOLIST.md"; the old file is kept as `todo/TODOLIST.pre-standard.md`.
 <!-- Ordered: top item is the next thing to start. -->
 - [ ] P2 Train H3K4me1 models (in-cell K562, GM12878 -> K562, multi-cell holding out K562) if the beyond-ATAC check shows signal #h3k4me1
   - bar is high: observed K562 H3K4me1 in ABC is no better than ATAC alone and 0.060 below observed H3K27ac (F-044)
-- [ ] P2 Add H3K4me1 as a separate rE2G feature (`external_features_config`) beside ATAC and p300 #benchmark
+  - beyond-ATAC gate passed (F-045), but observed H3K4me1 as separate rE2G features adds only +0.020 [+0.006, +0.031] over ATAC (F-044): Maya to decide
 - [ ] P3 Build a two-target model (p300 + H3K27ac heads) only if an H3K27ac head would transfer beyond ATAC #model (F-043)
 - [ ] P3 Run the rE2G promoter-feature ablation (drop `normalizedH3K27ac_prom`, `combinedActivity_prom`) #benchmark (F-029)
 
@@ -104,6 +97,10 @@ from todo/TODOLIST.md"; the old file is kept as `todo/TODOLIST.pre-standard.md`.
 
 ## Done
 <!-- Last two weeks only; older items live in git and findings. -->
+- [x] P1 rE2G with ATAC + observed H3K4me1 at E and P as separate features (F-044)
+- [x] P1 Measure H3K4me1 beyond ATAC in five cells and across cells (`4.60`, F-045)
+- [x] P1 Benchmark predicted p300 without the ATAC term and observed H3K4me1 in ABC and rE2G (F-044)
+- [x] P1 Build H3K4me1 5' tracks for the five panel cells (`0.47`, `data/h3k4me1_panel/`)
 - [x] P1 Benchmark observed and predicted p300 x H3K27ac, with no-ATAC controls (F-043)
 - [x] P1 Benchmark fragment-size ATAC channels, 3 runs (F-042)
 - [x] P1 Benchmark RNA TF lists, 3 runs (F-041)

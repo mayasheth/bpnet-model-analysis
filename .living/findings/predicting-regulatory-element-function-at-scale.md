@@ -1792,3 +1792,93 @@ equally in the product; other weightings untested.
 | Date | Run/Session | Dataset | Project | Result | Direction |
 |------|-------------|---------|---------|--------|-----------|
 | 2026-10-01 | 4.57 46105628; 4.58 46130383; ABC 46130384; CRISPR 46201297; rE2G 46157330; bootstraps 46200994, 46201552 | K562 CRISPR (ABC and rE2G pair sets) | 2026_0824_H3K27ac_model; ENCODE_rE2G 2026_0923_p300_features | obs p300 x H3K27ac no-ATAC ABC 0.591; rE2G 0.672; predicted combos below p300 alone | observed complementary; deployable not |
+
+## F-044: Predicted p300 needs ABC's ATAC term (dropping it costs 0.021, the opposite of observed p300); observed H3K4me1 is no substitute for H3K27ac in ABC or rE2G
+**Status:** supported (predicted arms 3 seeds; observed arms single runs)
+**Claim:** ABC (`noatac` run, 10,342 pairs, 466 regulated), seed-averaged over 3 runs for the
+predicted arms; rE2G on the shared July candidate set (10,356 pairs, 471 regulated).
+
+| activity term (ABC) | with ATAC | without ATAC | without - with |
+|---|---|---|---|
+| predicted p300, MSE multi-cell (mean of 3) | 0.4828 | 0.4613 | -0.0215 [-0.0383, -0.0047] |
+| predicted p300, `assoc_noctcf` (mean of 3) | 0.4887 | 0.4750 | -0.0137 [-0.0311, +0.0024] |
+| observed p300 | 0.5673 | 0.5895 | +0.0222 [+0.0040, +0.0393] |
+| observed H3K27ac | 0.5167 | 0.5383 | +0.0216 [+0.0057, +0.0372] |
+| observed H3K4me1 | 0.4572 | 0.4053 | -0.0519 [-0.0799, -0.0229] |
+
+ATAC only 0.4680. Predicted p300 without ATAC - ATAC only -0.0067 [-0.0336, +0.0202]. Observed
+H3K4me1 with ATAC - ATAC only -0.0108 [-0.0382, +0.0168]; - observed H3K27ac -0.0595
+[-0.0873, -0.0317].
+
+rE2G, H3K4me1 in the H3K27ac slot (all 14 ATAC + H3K27ac features computed from H3K4me1):
+0.5681; - ATAC only (0.5434) +0.0247 [-0.0053, +0.0498]; - H3K27ac (0.6266) -0.0585
+[-0.0953, -0.0239]; - observed p300 (0.6660) -0.0979 [-0.1307, -0.0640].
+
+rE2G, H3K4me1 as two EXTRA features beside the 10 ATAC-only features (`ATAC_H3K4me1sep_powerlaw`,
+4.61; enhancer and promoter H3K4me1, nothing else changed): 0.5638; - ATAC only +0.0204
+[+0.0061, +0.0310] (sign kept 99.6%); - H3K4me1 swap -0.0042 [-0.0248, +0.0173]; - H3K27ac
+-0.0628 [-0.0919, -0.0331]; - observed p300 -0.1021 [-0.1307, -0.0730]. Full-model
+coefficients: H3K4me1 at E +0.28, at P -0.24 (ATAC at E +0.30, at P -1.39).
+**Implications:** Removing ATAC from ABC's activity term helps only an activity track that
+carries information ATAC does not. Observed p300 and H3K27ac gain about 0.022 each (F-043
+replicated in a fresh run); predicted p300 loses 0.014 to 0.021, and without ATAC it falls to
+the ATAC-only floor. So the predicted track's ranking is mostly ATAC re-encoded (as 4.35
+measured), and ABC's geometric mean with real ATAC is what keeps it above the floor. Keep the
+ATAC term for every deployable arm; no no-ATAC re-scoring.
+Observed K562 H3K4me1 is a poor activity term: in ABC it adds nothing over ATAC and alone is
+0.063 below it; in rE2G, where it is weighted freely, it adds a resolved +0.020 over ATAC as two
+separate features, the same as swapping it in for H3K27ac, and stays 0.063 below H3K27ac. It
+cannot replace H3K27ac, and the most an H3K4me1 feature is worth on this benchmark is ~0.02. This sets a high bar for training H3K4me1 models (the
+observed mark is the ceiling for any prediction of it).
+**Caveats:** Observed arms single runs. rE2G has no model with H3K27ac AND H3K4me1, so whether
+H3K4me1 adds anything once H3K27ac is present is untested (irrelevant to deployment, where
+neither is measured). rE2G coefficients are on its own feature scaling; compare signs, not sizes.
+**Tags:** p300, h3k4me1, h3k27ac, activity-term, abc, re2g, crispr-benchmark, k562
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-10-01 | ABC 46228377; CRISPR 46228383; bootstrap 46228386; rE2G 46228392; bootstrap 46228394 (`log/noatac_launch.sh`); separate features 4.61 46240698, rE2G 46246447, bootstrap 46246449 (`log/k4sep_launch.sh`) | K562 CRISPR (ABC and rE2G pair sets) | 2026_0824_H3K27ac_model; ENCODE_rE2G 2026_0923_p300_features | predicted p300 no-ATAC -0.021 ABC; H3K4me1 ABC 0.457 vs ATAC 0.468; rE2G swap 0.568, separate 0.564 vs ATAC 0.543, H3K27ac 0.627 | ATAC term needed for predicted; H3K4me1 weak |
+
+## F-045: Most of H3K4me1 is not ATAC, the remainder is reproducible, shared across cells and tracks p300 more than H3K27ac does; other cells' H3K4me1 predicts a held-out cell's p300 nearly as well as other cells' p300
+**Status:** supported (one analysis, five cells)
+**Claim:** `4.60` over 4.43's union candidate set, each cell's own non-promoter regions
+(122,645 to 126,762 per cell). All partial Spearman, controls = ATAC rank + rank^2, GC, CpG o/e,
+log distance to TSS. H3K4me1 from `0.47` (stranded 5', +/- 250 bp and +/- 1 kb).
+
+| cell | rho with ATAC | R2 on controls | replicate rho of residual | partial rho with p300 | H3K27ac partial rho with p300 |
+|---|---|---|---|---|---|
+| K562 | 0.447 | 0.333 | 0.700 | 0.542 | 0.376 |
+| GM12878 | 0.483 | 0.266 | 0.809 | 0.272 | 0.156 |
+| HepG2 | 0.482 | 0.380 | 0.920 | 0.244 | - |
+| A549 | 0.456 | 0.415 | 0.868 | 0.352 | - |
+| MCF-7 | 0.453 | 0.300 | 0.856 | 0.424 | - |
+
+(+/- 250 bp window; +/- 1 kb is within 0.05 everywhere, with higher replicate rho, 0.80-0.97.)
+
+Across cells, over regions in both: H3K4me1 residuals correlate 0.43-0.65 (500 bp; 0.47-0.68 at
+1 kb), against 0.17-0.35 for p300 residuals and 0.37-0.56 for raw ATAC rank. Leave-one-cell-out:
+the mean H3K4me1 residual of the other four cells has partial rho with the held-out cell's p300
+residual 0.160-0.271 (500 bp), against 0.243-0.370 for the other four cells' p300; equal in A549
+(0.271 vs 0.264) and MCF-7 (0.249 vs 0.248).
+**Implications:** H3K4me1 passes the pre-training gate: 58-73% of its rank variance is beyond
+ATAC and composition, that part is reproducible (0.70-0.97 between replicates), and it tracks p300
+beyond ATAC more strongly than H3K27ac does in both cells that have H3K27ac. It is also the most
+cell-shared of the signals measured, which is what a model trained on four cells needs to
+transfer. But the shared part is, by construction, not what makes regulation cell-specific, and
+the benchmark already says observed K562 H3K4me1 adds nothing over ATAC in ABC and cannot
+replace H3K27ac in rE2G (F-044). So a well-transferring H3K4me1 model would predict something
+with a low benchmark ceiling. The separate-feature rE2G arm (F-044) then
+showed observed H3K4me1 adds +0.020 [+0.006, +0.031] over ATAC: real but small, and the ceiling
+for any predicted H3K4me1.
+**Caveats:** No input-control normalisation, and composition controls cover GC and CpG only:
+part of the cross-cell agreement could be shared ChIP background (mappability, copy number in
+cancer lines) rather than biology. Replicate agreement cannot separate the two. Promoters
+excluded throughout. Partial correlations over all candidates, not over the CRISPR-tested
+elements.
+**Tags:** h3k4me1, p300, h3k27ac, beyond-atac, cross-cell, transfer, panel
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-10-01 | 0.47 46238895; 4.60 46239127 | ENCODE H3K4me1, ATAC, p300 in K562, GM12878, HepG2, A549, MCF-7 | 2026_0824_H3K27ac_model | H3K4me1 residual rep rho 0.70-0.97, p300 partial 0.24-0.54, cross-cell 0.43-0.65, LOO 0.16-0.27 | signal beyond ATAC, shared across cells |
