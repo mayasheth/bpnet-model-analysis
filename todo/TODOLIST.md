@@ -6,6 +6,20 @@ from todo/TODOLIST.md"; the old file is kept as `todo/TODOLIST.pre-standard.md`.
 
 ## Now
 <!-- At most 5 items actually being worked on this week. -->
+- [x] P1 Baseline scE2G training run on Xu K562 multiome #sce2g
+  - driver 46428971 (2026-10-03): CRISPR AUPRC multiome_powerlaw_n6 0.628 [0.575, 0.672], scATAC_powerlaw 0.579 [0.524, 0.623], distance 0.414 [0.363, 0.461]; 10.4% of CRISPR elements missing; `$SCRATCH/sce2g_runs/2026_1002_k562_xu/performance_across_models.tsv`
+  - needed: #118 `source_path` fix (local branch `local-with-pr118`), `--rerun-triggers mtime`, and no empty `external_features_config` column (R NA bug)
+- [x] P1 Feature B: published-method TF footprints (TOBIAS, PRINT) as scE2G features #sce2g: CLOSED, null on CRISPR
+  - both pass ChIP (GATA1 0.674 TOBIAS / 0.605 PRINT within accessibility deciles) and the p300 gate (~0.1 beyond motif), neither moves AUPRC: TOBIAS -0.0036 [-0.0090, +0.0019], PRINT -0.0020 [-0.0061, +0.0026] vs baseline (F-048 to F-051)
+  - reopen only with a footprint several times stronger against p300 (seq2PRINT trained on this sample); the ABC-activity version is the item below
+  - homemade footprints (`scripts/1.1`, `1.2`) fail on GATA1 (F-047); BINDetect per-motif means are GC-biased
+- [x] P1 Feature A: peak-TF Kendall (`scripts/5.0`, `5.1`), gate vs p300 #sce2g: considered and DEFERRED 2026-10-04, too weak for scE2G
+  - strict gate (beyond ATAC, motif count, permuted-TF and any-TF controls) 0.015 [0.009, 0.019], + ENCODE ATAC 0.028 [0.022, 0.034]; a fifth of the footprint signal that was null on CRISPR (F-052)
+  - reopen only in a heterogeneous multiome sample (K562 has little TF expression variation across cells)
+- [x] P1 Footprints inside the ABC activity term (`scripts/4.3`, `4.4`) #sce2g: CLOSED 2026-10-04, null on CRISPR
+  - lam 1: TOBIAS +0.0036 [-0.0052, +0.0123], PRINT +0.0052 [-0.0030, +0.0136] vs baseline; lam 4 worse, -0.0120 [-0.0205, -0.0044] vs lam 1 (F-053)
+  - reopen only if the PRINT lam 1 point estimate replicates in a second sample or cell
+- [ ] P2 Decide the next direction now that multiome TF evidence (A, B, B-in-ABC) is null: e.g. observed p300 as a scE2G ceiling, or back to the H3K4me1 item in Next #sce2g (Maya)
 
 ## Next
 <!-- Ordered: top item is the next thing to start. -->

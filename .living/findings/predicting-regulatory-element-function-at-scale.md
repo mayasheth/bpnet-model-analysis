@@ -1915,3 +1915,249 @@ rE2G.
 | Date | Run/Session | Dataset | Project | Result | Direction |
 |------|-------------|---------|---------|--------|-----------|
 | 2026-10-02 | 0.45 46270676; 1.41 46270680-82; preds 46286321/22/41; ABC 46286343; CRISPR 46286345; bootstrap 46286348 (`log/tissue_launch.sh`, `log/tissue_score_launch.sh`) | ENCODE EP300 + ATAC stomach, transverse colon, ovary; K562 CRISPR | 2026_0824_H3K27ac_model | tissue 0.4843 vs mse 0.4828, +0.0015 [-0.0077, +0.0104] | null |
+
+## F-047: Simple bias-corrected footprints from Xu K562 multiome pseudobulk detect CTCF binding but not GATA1, and their motif ranking is dominated by GC-rich motifs
+**Status:** supported (one dataset, one scoring method)
+**Claim:** `2026_1002_sce2g_tf_activity/scripts/1.1` (TOBIAS/HINT-style: core vs 30 bp flanks,
+canonical 8-mer Tn5 bias from pooled insertions in 200 bp bins with >= 20 insertions) over all
+4.44 FIMO hits with >= 10 insertions (172,082,584 hits; Xu pseudobulk, chr1 alone 30.6M fragments).
+`1.2` validation, AUROC of the footprint score for ChIP-bound vs unbound hits WITHIN deciles of
+the hit's insertion count:
+
+| motif | ChIP | hits | bound | AUROC, insertions | AUROC, FS within decile | top decile |
+|---|---|---|---|---|---|---|
+| CTCF (MA0139.2) | CTCF ENCFF519CXF | 313,773 | 40,537 | 0.892 | 0.694 | 0.754 |
+| GATA1 (MA0035.5) | GATA1 (K562_GATA1_BPNet peaks) | 67,741 | 270 | 0.982 | 0.419 | 0.413 |
+| GATA1::TAL1 (MA0140.3) | GATA1 | 184,480 | 2,157 | 0.986 | 0.497 | 0.495 |
+
+Mean FS per motif (hits with >= 50 insertions, 782 motifs): top 20 are GC/CpG-rich (TCFL5,
+ZBTB33, KLF15, TFDP1, ETS, E2F8, NRF1); CTCF ranks 166, GATA1 765, GATA1::TAL1 533, and the
+liver factor HNF1A (not expressed in K562) ranks 94.
+**Implications:** The score is a real footprint for a long-residence factor (CTCF) but carries
+no binding information for GATA, the factor family behind about half the transfer gap (F-032),
+and the motif ranking shows residual sequence bias. In this form it cannot supply the missing
+element-level GATA evidence; it was not gated against p300 or put into scE2G.
+**Caveats:** Crude bias model (8-mer, estimated on accessible DNA rather than naked DNA, so
+accessibility-linked composition leaks in). GATA1 ChIP set is small (4,603 peaks). A learned
+Tn5 bias model and multiscale footprints (PRINT / scPrinter) are untested; GATA footprints are
+weak in ATAC generally, so a better model may still fail for GATA.
+**Tags:** footprinting, atac, multiome, tn5-bias, gata, ctcf, k562, sce2g
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-10-02 | 1.1 bias 46346748, score 46346750; 1.2 46349267 | Xu K562 multiome fragments; K562 CTCF and GATA1 ChIP | 2026_1002_sce2g_tf_activity | CTCF AUROC 0.69 within accessibility deciles; GATA1 0.42-0.50; GC-rich motifs top the ranking | footprints fail for GATA |
+
+## F-048: TOBIAS footprints on Xu K562 pseudobulk detect GATA1 binding beyond accessibility (AUROC 0.67), unlike the homemade score, but its per-motif ranking keeps the GC-rich bias
+**Status:** supported (one dataset, one method)
+**Claim:** TOBIAS 0.17.5 (`2026_1002_sce2g_tf_activity/scripts/2.2`: ATACorrect `--read_shift 0 0`
+on the 2.1 insertion BAM -> ScoreBigwig -> BINDetect, 879 JASPAR 2024 motifs) over scE2G's
+155,134 candidate regions. `2.3` validation, same test as F-047: AUROC of the TOBIAS footprint
+score for ChIP-bound vs unbound sites WITHIN deciles of accessibility (uncorrected insertions in
+the site centre +/- 100 bp), 95% interval from 200 within-decile site bootstraps:
+
+| motif | ChIP | sites | bound | AUROC, insertions | AUROC, score within decile | F-047 homemade |
+|---|---|---|---|---|---|---|
+| CTCF (MA0139.2) | CTCF ENCFF519CXF | 83,492 | 28,726 | 0.777 | 0.752 [0.748, 0.756] | 0.694 |
+| GATA1 (MA0035.5) | GATA1 (K562_GATA1_BPNet peaks) | 14,903 | 263 | 0.953 | 0.674 [0.636, 0.702] | 0.419 |
+| GATA1::TAL1 (MA0140.3) | GATA1 | 42,262 | 2,165 | 0.954 | 0.674 [0.660, 0.687] | 0.497 |
+
+BINDetect's bound call covers 82% / 91% of ChIP-bound GATA1 / GATA1::TAL1 sites vs 9% / 14% of
+unbound ones. Mean footprint score per motif (879 motifs): top 20 are again GC/CpG-rich (KLF15,
+ZBED4, ETS, NRF1, ZBTB33, SP); CTCF ranks 77, GATA1::TAL1 274, GATA1 534, below HNF4A (516).
+**Implications:** A published bias model recovers site-level GATA evidence that the homemade
+score lacked, so feature B is viable at the site level: aggregate per element (e.g. max or sum
+of GATA/TAL1/NFE2 site scores) and take it to the beyond-ATAC p300 gate. Do not use
+per-motif mean scores (BINDetect's ranking) as TF activity: they are composition-biased.
+**Caveats:** Site sets differ from F-047 (TOBIAS's own motif scan inside candidate regions vs
+4.44 genome-wide FIMO hits with >= 10 insertions), so the comparison is not hit-matched. GATA1
+ChIP set is small (263 bound sites in the MA0035.5 test). Accessibility deciles use a 200 bp
+window; residual within-decile accessibility could still contribute. scPrinter untested.
+**Tags:** footprinting, atac, multiome, tn5-bias, tobias, gata, ctcf, k562, sce2g
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-10-02 | 2.1 insertion BAM 46354090/46356012; 2.2 TOBIAS 46373951; 2.3 46380940 | Xu K562 multiome fragments; scE2G candidate regions; K562 CTCF and GATA1 ChIP | 2026_1002_sce2g_tf_activity | GATA1 0.674 [0.636, 0.702], GATA1::TAL1 0.674 [0.660, 0.687], CTCF 0.752 within accessibility deciles; GC-rich motifs top per-motif ranking | footprints work for GATA at site level |
+
+## F-049: Per-element TOBIAS footprints of erythroid TFs track observed K562 p300 beyond ATAC and beyond motif presence (partial rho 0.09-0.10); feature B passes its gate
+**Status:** supported (one cell, one dataset; gate only, not yet in scE2G)
+**Claim:** `2026_1002_sce2g_tf_activity/scripts/2.4` over scE2G's 135,965 non-promoter candidate
+elements (Xu run), features from the F-048 TOBIAS sites. Partial Spearman with observed K562 p300
+(ENCSR000EGE, +/- 250 bp), 95% intervals from 200 element bootstraps. Controls Z = Xu ATAC
+(+ square), GC, CpG o/e, log distance to TSS; the sensitivity run adds ENCODE K562 ATAC (+ square)
+to soak up Xu pseudobulk noise.
+
+TEST 2, elements containing the motif, footprint max beyond Z + motif count + motif strength:
+
+| motif set | elements | Z = Xu ATAC | Z + ENCODE ATAC |
+|---|---|---|---|
+| erythroid (GATA1, GATA1::TAL1, NFE2, MAF::NFE2, TAL1::TCF3) | 85,720 | 0.086 [0.080, 0.092] | 0.104 [0.098, 0.110] |
+| GATA1::TAL1 | 32,914 | 0.096 [0.083, 0.104] | 0.116 [0.104, 0.126] |
+| NFE2 | 28,477 | 0.067 [0.055, 0.079] | 0.092 [0.080, 0.105] |
+| GATA1 | 12,743 | 0.007 [-0.010, 0.025] | 0.032 [0.015, 0.050] |
+| HNF4A (control, not expressed) | 33,124 | 0.031 [0.020, 0.042] | 0.019 [0.009, 0.031] |
+| CTCF (control) | 52,898 | -0.004 [-0.014, 0.005] | -0.044 [-0.054, -0.035] |
+
+TEST 1, all elements (no site = lowest rank), Z + ENCODE ATAC: erythroid fp_sum 0.120
+[0.113, 0.125], erythroid motif count alone 0.102 [0.098, 0.107], TF-agnostic max footprint
+0.020 [0.014, 0.025]. With Xu ATAC alone in Z, ENCODE ATAC itself adds 0.248 [0.242, 0.254]:
+the Xu pseudobulk ATAC is noisy, and a second ATAC measurement is worth more than any footprint.
+**Implications:** Feature B passes: the erythroid footprint carries p300 information that neither
+ATAC nor motif presence gives, about 0.085 above the non-expressed-TF control, roughly a quarter
+of observed H3K27ac's 0.376 (F-045, different region set). Take erythroid fp_sum / fp_max into
+scE2G as external features against the baseline. CTCF footprints point the other way (insulator
+sites carry less p300), so keep them separate rather than in a pooled score.
+**Caveats:** Gate is correlation with p300, not CRISPR: the scE2G paired bootstrap decides. One
+cell; the erythroid motif set is chosen with K562 knowledge, so a transfer version needs
+expression-weighted motif sets. The HNF4A control is not zero, so part of each motif's effect is
+generic footprint shape. Single TOBIAS run, default parameters.
+**Tags:** footprinting, tobias, p300, beyond-atac, gate, gata, nfe2, k562, sce2g
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-10-03 | 2.4 46419803 (Z = Xu ATAC), 46420329 (`--z-encode-atac`) | TOBIAS sites (F-048), scE2G candidates, K562 p300 ENCSR000EGE, ENCODE K562 ATAC | 2026_1002_sce2g_tf_activity | erythroid footprint beyond motif 0.086 [0.080, 0.092] / 0.104 [0.098, 0.110]; HNF4A control 0.031 / 0.019 | supports feature B |
+
+## F-050: TOBIAS erythroid footprints as scE2G features do not improve K562 CRISPR AUPRC (-0.004 [-0.009, +0.002]), despite passing the p300 gate
+**Status:** supported (one cell, one footprint method, one model family)
+**Claim:** scE2G `multiome_powerlaw_n6` (v3 features) retrained on the Xu K562 run with the
+F-049 element features added as external features (`scripts/4.0`, `4.1`; results
+`$SCRATCH/sce2g_runs/2026_1003_k562_xu_featB_tobias`). Paired bootstrap (`scripts/4.2`, 2,000
+resamples of the 10,342 CRISPR pairs incl. the 1,075 with no candidate element at score 0; 466
+positives) of held-out-chromosome predictions:
+
+| model | AUPRC [95% CI] | vs baseline |
+|---|---|---|
+| baseline (retrained; predictions identical to the first baseline run) | 0.632 [0.587, 0.677] | |
+| + erythroid motif count | 0.630 [0.585, 0.675] | -0.0022 [-0.0037, -0.0007] |
+| + motif count + erythroid TOBIAS footprint sum | 0.628 [0.582, 0.674] | -0.0036 [-0.0090, +0.0019] |
+
+Footprint beyond motif count: -0.0014 [-0.0067, +0.0040]. The model does use the footprint
+(coefficient +0.30, with the motif count turning to -0.22), and ARC.E2G.Score's coefficient
+falls from 1.73 to 1.59, so the footprint mostly re-expresses what ARC-E2G already carries.
+scE2G's own table reports 0.629 / 0.626 / 0.625 (a bootstrap mean, so ~0.003 lower).
+**Implications:** Passing the p300 gate (partial rho ~0.1, F-049) was not enough to move CRISPR
+AUPRC: an element feature that small, layered on ARC-E2G (which already contains ABC activity
+and Kendall), is below what 466 positives can detect, if it helps at all. Feature B in this form
+is closed for TOBIAS; the PRINT version gets the same test before closing the footprint line.
+Reopen only with a feature whose beyond-ATAC p300 partial is several times larger, or as an
+input to the activity term itself (ABC activity) rather than an additive scE2G feature.
+**Caveats:** One model family (multiome v3, logistic, 6 features); the erythroid motif set is
+chosen with K562 knowledge; features enter linearly and unscaled; the CRISPR set's positives are
+concentrated in a few loci, so element-level gains elsewhere would not show.
+**Tags:** footprinting, tobias, sce2g, crispr, external-features, null, k562
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-10-03 | setup 46441027; driver 46443820; bootstrap 46450290 | Xu K562 multiome, K562 CRISPR ensemble benchmark | 2026_1002_sce2g_tf_activity | fp model - baseline -0.0036 [-0.0090, +0.0019]; fp - motif -0.0014 [-0.0067, +0.0040] | null for feature B (TOBIAS) |
+
+## F-051: PRINT (scPrinter) footprints beat TOBIAS on CTCF ChIP but not GATA, pass the p300 gate, and are also null as scE2G features (-0.002 [-0.006, +0.003]); feature B is closed
+**Status:** supported (one cell, pretrained PRINT TFBS model, same sites as TOBIAS)
+**Claim:** PRINT TF binding scores (`2026_1002_sce2g_tf_activity/scripts/3.1`; pretrained
+`TFBS_model_py.pt`, hg38 v2 Tn5 bias, scE2G's 7,821 filtered Xu cells as one pseudobulk) at the
+304,473 BINDetect sites of the seven 2.4 motifs, each scored at its 10 bp centre on its strand
+with motif score fixed at 1 (footprint only). Same tests as F-048 to F-050, via `--score print`:
+
+| test | PRINT | TOBIAS |
+|---|---|---|
+| ChIP AUROC within accessibility deciles, CTCF | 0.851 [0.848, 0.854] | 0.752 [0.748, 0.756] |
+| GATA1 | 0.605 [0.573, 0.644] | 0.674 [0.636, 0.702] |
+| GATA1::TAL1 | 0.564 [0.549, 0.576] | 0.674 [0.660, 0.687] |
+| p300 partial, erythroid fp beyond motif, Z = Xu ATAC | 0.111 [0.104, 0.117] | 0.086 [0.080, 0.092] |
+| same, Z + ENCODE ATAC | 0.126 [0.119, 0.132] | 0.104 [0.098, 0.110] |
+| HNF4A control (Xu / + ENCODE) | 0.052 / 0.053 | 0.031 / 0.019 |
+| scE2G CRISPR AUPRC, fp model - baseline | -0.0020 [-0.0061, +0.0026] | -0.0036 [-0.0090, +0.0019] |
+| fp model - motif-count model | +0.0002 [-0.0040, +0.0046] | -0.0014 [-0.0067, +0.0040] |
+
+PRINT fp model - TOBIAS fp model: +0.0016 [-0.0026, +0.0062] (paired bootstrap, `4.2`, 10,342
+pairs, 466 positives). Footprint coefficient +0.36, motif count -0.27, ARC.E2G.Score 1.69.
+**Implications:** Two published footprinting methods give the same answer: erythroid footprints
+carry ~0.1 partial rho of p300 beyond ATAC and motif presence (of which ~0.06-0.08 is above the
+non-expressed-TF control), and none of it moves CRISPR AUPRC once ARC-E2G is in the model.
+Feature B (element-level footprints as additive scE2G features) is closed. Reopen only with
+(1) a footprint signal several times larger against p300 (e.g. seq2PRINT, trained on this
+sample), or (2) footprints entering the activity term itself (ABC activity = ATAC x footprint
+weight) rather than as a separate feature.
+**Caveats:** Pretrained PRINT model, not seq2PRINT; motif set chosen with K562 knowledge; one
+model family; the first full PRINT run lost three of four shards to scPrinter's in-memory
+(backed=False) result handling and one Bus error, rerun in backed mode (identical scores on the
+2,000-site check).
+**Tags:** footprinting, scprinter, print, tobias, sce2g, crispr, p300, null, k562
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-10-04 | 3.1 arrays 46428901 (shard 1), 46470149-51; 2.3 46480634; 2.4 46480635/6; scE2G 46481346; 4.2 46487342 | Xu K562 multiome, K562 CTCF/GATA1 ChIP, K562 p300, K562 CRISPR | 2026_1002_sce2g_tf_activity | PRINT fp - baseline -0.0020 [-0.0061, +0.0026]; gate 0.126 [0.119, 0.132] | null; feature B closed |
+
+## F-052: Peak-TF Kendall (feature A) carries almost no p300 information beyond ATAC and generic peak covariation (partial rho 0.015-0.028); not taken to scE2G
+**Status:** supported (one cell, one dataset, binarised ATAC)
+**Claim:** `2026_1002_sce2g_tf_activity/scripts/5.1` over scE2G's Kendall ATAC matrix (157,587 peaks
+x 7,821 Xu cells, binarised; exported by `5.0`) and log1p(CP10k) RNA of the 348 motif TFs detected
+in >= 5% of cells. Kendall tau-b per peak x TF (rank-sum form, matches scipy to 1.6e-9); 4.44 FIMO
+hits assign 10.9M peak-TF pairs. Element features = max over overlapping Kendall peaks (96.7% of
+the 155,134 candidates). Gate as 2.4: partial Spearman with K562 p300 (ENCSR000EGE), 135,932
+non-promoter elements, 200 element bootstraps.
+
+| feature / test | Z = Xu ATAC | Z + ENCODE ATAC |
+|---|---|---|
+| kA_max (max tau over TFs with a motif) | 0.042 [0.037, 0.047] | 0.069 [0.064, 0.075] |
+| kA_max_perm (motif -> TF labels permuted) | 0.029 [0.024, 0.035] | 0.050 [0.045, 0.056] |
+| kA_any_max (max tau over all 348 TFs) | 0.048 [0.042, 0.053] | 0.074 [0.068, 0.079] |
+| kA_ery_max (GATA1, TAL1, NFE2, KLF1) | 0.022 [0.016, 0.027] | 0.037 [0.032, 0.043] |
+| TEST 2, kA_max beyond Z + n_tf | 0.035 [0.031, 0.040] | 0.060 [0.056, 0.066] |
+| TEST 2, + perm + any (strict) | 0.015 [0.009, 0.019] | 0.028 [0.022, 0.034] |
+
+Tau is small throughout (median 0.010, max 0.175 over 1M random peak-TF pairs).
+**Implications:** Most of the peak-TF Kendall signal is generic: a peak that co-varies with any TF
+(or with the wrong TF for its motifs) carries nearly as much p300 information as one that co-varies
+with its own motif's TF. The motif-specific part, 0.015-0.028, is a fifth to a quarter of the
+footprint signal (~0.1, F-049/F-051) that already failed to move CRISPR AUPRC, so feature A does not
+get a scE2G run. K562 is a cell line with little TF expression variation across cells; the feature
+may behave differently in a heterogeneous sample.
+**Caveats:** Binarised ATAC (counts > 1 are 20% of non-zeros); one detection threshold (5%); the
+perm control is one permutation; no metacell smoothing, which scE2G's Kendall also does not use.
+**Tags:** kendall, multiome, tf-expression, p300, beyond-atac, gate, null, k562, sce2g
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-10-04 | 5.0 srun 46503422; 5.1 46503952 (Z = Xu ATAC), 46503953 (`--z-encode-atac`) | Xu K562 multiome ATAC + RNA, 4.44 FIMO hits, K562 p300 | 2026_1002_sce2g_tf_activity | strict gate 0.015 [0.009, 0.019] / 0.028 [0.022, 0.034] | weak; feature A not taken to scE2G |
+
+## F-053: Footprints inside the ABC activity term do not improve scE2G CRISPR AUPRC; mild weighting is within noise (+0.004 to +0.005) and strong weighting hurts (-0.012 [-0.021, -0.004] vs mild)
+**Status:** supported (one cell, two footprint methods, two weights)
+**Claim:** `2026_1002_sce2g_tf_activity/scripts/4.3`, `4.4`: element activity reweighted as
+ATAC x (1 + lam x q), q = percentile of the element's erythroid footprint sum (TOBIAS or PRINT,
+F-049/F-051 element tables; 0 without an erythroid site, 61% of elements have one), ABC renormalised
+per gene, and ARC-E2G recomputed (ARC = ABC x exp(21.5 x Kendall) in scE2G's output, R^2 1.0000).
+Each model is the multiome v3 n6 set with ARC.E2G.Score swapped for the footprint-weighted score.
+Run `$SCRATCH/sce2g_runs/2026_1004b_k562_xu_abcfp`; paired bootstrap (`4.2`, 2,000 resamples,
+10,342 CRISPR pairs, 466 positives) of held-out-chromosome predictions:
+
+| model | AUPRC [95% CI] | vs baseline |
+|---|---|---|
+| baseline n6 (ARC-E2G) | 0.632 [0.587, 0.677] | |
+| TOBIAS, lam 1 | 0.635 [0.590, 0.681] | +0.0036 [-0.0052, +0.0123] |
+| PRINT, lam 1 | 0.637 [0.591, 0.681] | +0.0052 [-0.0030, +0.0136] |
+| TOBIAS, lam 4 | 0.623 [0.576, 0.670] | -0.0084 [-0.0243, +0.0069] |
+| PRINT, lam 4 | 0.625 [0.578, 0.671] | -0.0062 [-0.0221, +0.0095] |
+
+TOBIAS lam 4 - lam 1: -0.0120 [-0.0205, -0.0044]; PRINT lam 1 - TOBIAS lam 1: +0.0016 [-0.0022,
++0.0058]. The weighted score's coefficient falls from 1.73 (ARC-E2G) to 1.57-1.59 at lam 1 and
+1.19-1.22 at lam 4.
+**Implications:** Moving footprints from an extra feature (F-050/F-051) into the activity term
+changes the sign of the point estimate but not the answer: no weight tested moves CRISPR AUPRC
+beyond noise, and stronger weighting degrades the activity term. With feature A deferred (F-052),
+element-level TF evidence from this multiome sample (footprints, peak-TF Kendall) does not improve
+scE2G on the K562 benchmark. The lam 1 PRINT point estimate (+0.005) is the only lead, and it would
+need replication (another sample or cell) before it counts.
+**Caveats:** Two weights, chosen before the run, not tuned; the erythroid motif set uses K562
+knowledge; the first run of this design (`2026_1004_k562_xu_abcfp`) is invalid because all four
+models shared one feature name (see learnings 2026-10-04); one model family.
+**Tags:** footprinting, abc, activity, tobias, print, sce2g, crispr, null, k562
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-10-04 | setup 46515688; driver 46515759; bootstrap 46515762 | Xu K562 multiome, TOBIAS/PRINT element footprints, K562 CRISPR | 2026_1002_sce2g_tf_activity | lam 1 +0.004 / +0.005 (CIs span 0); lam 4 -0.008 / -0.006; lam 4 - lam 1 -0.012 [-0.021, -0.004] | null; footprint line closed |

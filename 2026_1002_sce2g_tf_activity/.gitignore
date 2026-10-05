@@ -1,0 +1,5 @@
+# per-element tables (12-14 MB each); the summary tables beside them are tracked
+results/*.element_features.tsv.gz
+# local build of the vendored MOODS sdist
+vendor/*/build/
+vendor/*/*.egg-info/

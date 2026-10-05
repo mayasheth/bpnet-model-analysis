@@ -1,0 +1,3 @@
+model	dataset	ABC_directory	feature_table	polynomial	override_params
+multiome_powerlaw_n6	K562_Xu_pl		/oak/stanford/groups/engreitz/Users/sheth/scE2G_temp/scE2G_main/models/multiome_powerlaw_v3/feature_table.tsv	False	
+scATAC_powerlaw	K562_Xu_pl		/oak/stanford/groups/engreitz/Users/sheth/scE2G_temp/scE2G_main/models/scATAC_powerlaw_v3/feature_table.tsv	False	

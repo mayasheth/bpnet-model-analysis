@@ -1,0 +1,21 @@
+{
+ "bedtools": "bedtools",
+ "bioframe": "bioframe",
+ "dna_features_viewer": "dna-features-viewer",
+ "gffutils": "gffutils",
+ "htslib": "htslib",
+ "macs3": "macs3",
+ "moods": "moods-python",
+ "ncls": "ncls",
+ "pairix": "pypairix",
+ "pybedtools": "pybedtools",
+ "pybigtools": "pybigtools",
+ "pybigwig": "pybigwig",
+ "pyfaidx": "pyfaidx",
+ "pyranges": "pyranges",
+ "pysam": "pysam",
+ "pyvcf3": "pyvcf3",
+ "samtools": "samtools",
+ "snapatac2": "snapatac2",
+ "sorted_nearest": "sorted-nearest"
+}

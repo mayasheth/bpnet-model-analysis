@@ -1977,3 +1977,46 @@ line as protection.
   still submitted two jobs, one of which would have written into the finished rank-10 model dir.
 - **Output dirs must carry every training variant.** 1.36 named its dir by rank weight only, so a
   rank + channel run would have overwritten rank10; it now takes `TAG`.
+
+## 2026-10-01: rE2G external features and paired-end tissue ChIP
+
+- **Every rE2G driver re-runs all datasets.** 4.32 rewrites `config_datasets_K562_p300.tsv`, and
+  `format_external_features_config` takes it as input, so all 44 datasets re-run (~4 h) even when
+  one dataset is new. Chain a new driver after any running one AND its bootstrap: the new driver
+  rewrites the trained-model outputs the bootstrap reads.
+- **rE2G external features:** the config's columns are `input_col source_col aggregate_function
+  join_by source_file` (the README says `feature`; the R script filters on `input_col`). A
+  `join_by TargetGene` source must have one row per gene, or the left join duplicates pairs.
+  `add_external_features` on 10M pairs OOMs at its 8 GB default; the profile's retries (memory
+  doubles) recover it.
+- **ENCODE4 tissue EP300 BAMs are paired-end (76 bp)**, unlike the single-end panel EP300. 0.45
+  now keeps read 1 only for PE EP300; check `paired` on the first records of any new ChIP BAM.
+- **Never `pkill -f` a pattern over ssh**: the pattern is in the remote shell's own command line,
+  so pkill kills that shell (ssh exit 255).
+
+## 2026-10-02: scE2G main training workflow and SLURM gotchas
+
+- **scE2G `main` (7cb2af7) `Snakefile_training` does not build its DAG**: `SCRIPTS_DIR` undefined
+  (used by `compute_kendall.smk` since #111) and `config_training.yaml` lacks
+  `RNA_matrix_filtered` / `max_cell_count`. Fixed in EngreitzLab/scE2G#116 (branch
+  `fix-snakefile-training`); CI covers only the apply workflow.
+- **A Snakemake driver that builds conda envs needs memory**: at 8 GB the scE2G driver sat at
+  7.3 GB RSS for 38 min building `encode_re2g.yml`; give drivers 32 GB on a first run.
+- **`sbatch` copies the script at submit time.** Editing a submit script does not change queued
+  jobs; cancel and resubmit.
+- **`pysam.sort -@ 4 -m 2G` needs > 8 GB** (chr1 insertion BAM OOMed); request 32 GB.
+- **Homemade footprints are not a substitute for a published method** (F-047): an 8-mer bias
+  model left GC/CpG motifs on top and found no GATA signal. Use TOBIAS or scPrinter.
+
+## 2026-10-04: scE2G feature names and ABC output precision
+
+- **scE2G feature names must be unique across the models of one run.** The run builds one shared
+  feature table keyed by the feature-table `feature` column, so four models that each mapped a
+  different `input_col` to the same name `ARCfp` all trained on one column (identical coefficients,
+  byte-identical `training_predictions.tsv`). `4.4` now refuses to set up such a run. Check
+  `model_coefficients.tsv` differs across models before reading a bootstrap.
+- **scE2G's ABC outputs carry 2-3 significant digits** (`ABC.Score.Numerator` 4.5e-05), so do not
+  rebuild denominators from numerator / score. Reweighting activity only needs ABC: ABC_fp =
+  ABC x w x sum_g(ABC) / sum_g(ABC x w). ARC-E2G = ABC x exp(21.5 x Kendall) exactly in this run.
+- **Kendall tau-b against a binary x is a Mann-Whitney U on y's midranks**, so all peak x TF taus
+  come from one sparse product (`5.1`; matches scipy to 1e-9).

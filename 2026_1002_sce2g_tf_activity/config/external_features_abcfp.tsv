@@ -1,0 +1,5 @@
+input_col	source_col	aggregate_function	join_by	source_file
+ARCfp_tobias_l1	ARCfp_tobias_l1	mean	overlap	/scratch/users/shethm/sce2g_external/abcfp_pairs.tsv.gz
+ARCfp_tobias_l4	ARCfp_tobias_l4	mean	overlap	/scratch/users/shethm/sce2g_external/abcfp_pairs.tsv.gz
+ARCfp_print_l1	ARCfp_print_l1	mean	overlap	/scratch/users/shethm/sce2g_external/abcfp_pairs.tsv.gz
+ARCfp_print_l4	ARCfp_print_l4	mean	overlap	/scratch/users/shethm/sce2g_external/abcfp_pairs.tsv.gz

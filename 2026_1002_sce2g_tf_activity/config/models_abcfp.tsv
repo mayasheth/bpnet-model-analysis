@@ -1,0 +1,6 @@
+model	dataset	ABC_directory	feature_table	polynomial	override_params
+multiome_powerlaw_n6	K562_Xu_pl		/oak/stanford/groups/engreitz/Users/sheth/scE2G_temp/scE2G_main/models/multiome_powerlaw_v3/feature_table.tsv	False	
+multiome_n6_arcfp_tobias_l1	K562_Xu_pl		/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_1002_sce2g_tf_activity/config/models_abcfp/multiome_n6_arcfp_tobias_l1/feature_table.tsv	False	
+multiome_n6_arcfp_tobias_l4	K562_Xu_pl		/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_1002_sce2g_tf_activity/config/models_abcfp/multiome_n6_arcfp_tobias_l4/feature_table.tsv	False	
+multiome_n6_arcfp_print_l1	K562_Xu_pl		/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_1002_sce2g_tf_activity/config/models_abcfp/multiome_n6_arcfp_print_l1/feature_table.tsv	False	
+multiome_n6_arcfp_print_l4	K562_Xu_pl		/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_1002_sce2g_tf_activity/config/models_abcfp/multiome_n6_arcfp_print_l4/feature_table.tsv	False	

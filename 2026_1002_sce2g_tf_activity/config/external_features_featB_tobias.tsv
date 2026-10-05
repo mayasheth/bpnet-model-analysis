@@ -1,0 +1,3 @@
+input_col	source_col	aggregate_function	join_by	source_file
+erythroid_n	erythroid_n	max	overlap	/scratch/users/shethm/sce2g_external/featB_tobias_pairs.tsv.gz
+erythroid_fp_sum	erythroid_fp_sum	max	overlap	/scratch/users/shethm/sce2g_external/featB_tobias_pairs.tsv.gz

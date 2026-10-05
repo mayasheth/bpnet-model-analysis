@@ -1,0 +1,3 @@
+MOODS-python-1.9.4.1: PyPI sdist with setup.py's -march=native changed to -march=x86-64-v2, so the
+wheel runs on every Sherlock node type (a native build from a newer node crashed with "Illegal
+instruction" on Broadwell). Installed into the scprinter pixi env by path. 2026-10-02.

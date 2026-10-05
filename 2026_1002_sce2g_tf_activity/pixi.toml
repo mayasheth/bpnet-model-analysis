@@ -1,0 +1,72 @@
+[workspace]
+name = "sce2g-tf-activity"
+channels = ["conda-forge", "bioconda"]
+platforms = ["linux-64"]
+# bioconda packages that satisfy PyPI requirements (see bioconda_pypi_map.json)
+conda-pypi-map = { "bioconda" = "bioconda_pypi_map.json" }
+
+# Sherlock runs CentOS 7 (glibc 2.17). torch comes from the PyTorch cu118 wheel index, the recipe
+# that works for the repo's `multimodal` env (torch 2.6.0+cu118).
+[system-requirements]
+linux = "3.10"
+libc = { family = "glibc", version = "2.17" }
+
+# TOBIAS (Bentsen et al. 2020): ATACorrect -> ScoreBigwig -> BINDetect on a pseudobulk BAM.
+[feature.tobias.dependencies]
+python = "3.10.*"
+tobias = "*"
+samtools = ">=1.13"
+bedtools = ">=2.30.0"
+
+# scPrinter / PRINT (Hu et al. 2025): multiscale footprints with a learned Tn5 bias model and
+# footprint-based TF binding scores, from fragments.
+[feature.scprinter.system-requirements]
+linux = "3.10"
+libc = { family = "glibc", version = "2.17" }
+cuda = "12.0"
+
+[feature.scprinter.activation]
+env = { CONDA_OVERRIDE_CUDA = "12.0", SCPRINTER_DATA = "/scratch/users/shethm/scprinter_cache" }
+
+[feature.scprinter.dependencies]
+python = "3.11.*"
+numpy = ">=1.24,<2"
+pandas = ">=2.0"
+scipy = "*"
+h5py = "*"
+pybigwig = "*"
+pyfaidx = "*"
+pysam = "*"
+bedtools = ">=2.30.0"
+pybedtools = "*"
+anndata = ">0.8.0"
+scanpy = ">=1.9"
+polars = "*"
+pooch = "*"
+macs3 = "*"
+# scPrinter's pip dependencies taken from conda where possible: on glibc 2.17 several have no
+# compatible wheel and would build from source (wandb needs Go, MOODS a C++ compiler)
+wandb = "*"
+shap = "*"
+# snapatac2 from bioconda (PyPI builds it from Rust); 2.8.0 is the last build for py3.11 with numpy<2
+snapatac2 = "2.8.0.*"
+pybigtools = "*"  # PyPI has only an sdist (Rust)
+bioframe = "*"
+pyranges = "*"
+biopython = "*"
+gffutils = "*"
+logomaker = "*"
+plotly = "*"
+adjusttext = "*"
+dna_features_viewer = "*"
+cxx-compiler = "*"
+
+[feature.scprinter.pypi-dependencies]
+# vendored with -march=x86-64-v2; upstream builds -march=native (see vendor/README)
+moods-python = { path = "vendor/MOODS-python-1.9.4.1" }
+torch = { version = ">=2.0.0,<3", index = "https://download.pytorch.org/whl/cu118" }
+scprinter = { git = "https://github.com/buenrostrolab/scPrinter.git" }
+
+[environments]
+tobias = { features = ["tobias"], no-default-feature = true }
+scprinter = { features = ["scprinter"], no-default-feature = true }

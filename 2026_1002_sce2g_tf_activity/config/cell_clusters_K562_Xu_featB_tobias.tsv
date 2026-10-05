@@ -1,0 +1,2 @@
+cluster	rna_matrix_file	atac_frag_file	HiC_file	HiC_type	HiC_resolution	alt_TSS	alt_genes	external_features_config
+K562_Xu_pl	/oak/stanford/groups/engreitz/Projects/scE2G/data/K562_260122/K562_Xu/rna_count_matrix.csv.gz	/oak/stanford/groups/engreitz/Projects/scE2G/data/K562_260122/K562_Xu/atac_fragments.tsv.gz						/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_1002_sce2g_tf_activity/config/external_features_featB_tobias.tsv
