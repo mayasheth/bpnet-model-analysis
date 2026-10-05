@@ -70,7 +70,7 @@ Append-only log of gotchas, surprises, and insights.
 
 **Tags**: slurm, bash, sherlock, buffering, submit-scripts, tooling
 
-**Propagated**: my-scripts-for-me/learnings/INBOX.md (2026-10-01)
+**Propagated**: my-scripts-for-me/learnings/sherlock.md (2026-10-01)
 
 **mitigation_type**: convention
 
@@ -108,7 +108,7 @@ Append-only log of gotchas, surprises, and insights.
 
 **Tags**: mycelium, tooling, index, decisions, template-mismatch, silent-failure
 
-**Propagated**: my-scripts-for-me/learnings/INBOX.md (2026-10-01)
+**Propagated**: my-scripts-for-me/learnings/mycelium.md (2026-10-01)
 
 **mitigation_type**: convention
 
@@ -368,7 +368,7 @@ Silver lining worth keeping: failing loudly in 17 seconds is the correct failure
 
 **Tags**: guards, validation, testing, silent-failure, methodology, slurm
 
-**Propagated**: my-scripts-for-me/learnings/INBOX.md (2026-10-01)
+**Propagated**: my-scripts-for-me/learnings/claude-workflow.md (2026-10-01)
 
 **mitigation_type**: convention
 
@@ -388,7 +388,7 @@ Silver lining worth keeping: failing loudly in 17 seconds is the correct failure
 
 **Tags**: patching, str-replace, guards, testing, silent-failure, tooling
 
-**Propagated**: my-scripts-for-me/learnings/INBOX.md (2026-10-01)
+**Propagated**: my-scripts-for-me/learnings/claude-workflow.md (2026-10-01)
 
 **mitigation_type**: convention
 
@@ -408,7 +408,7 @@ Silver lining worth keeping: failing loudly in 17 seconds is the correct failure
 
 **Tags**: slurm, owners, preemption, silent-failure, checkpoints, sherlock
 
-**Propagated**: my-scripts-for-me/learnings/INBOX.md (2026-10-01)
+**Propagated**: my-scripts-for-me/learnings/sherlock.md (2026-10-01)
 
 **mitigation_type**: structural
 
@@ -919,7 +919,7 @@ invalidates the cache instead of silently serving stale vectors.
 
 **Tags**: tooling, reproducibility, report, numbers-manifest, caching, drift
 
-**Propagated**: my-scripts-for-me/learnings/INBOX.md (2026-10-01)
+**Propagated**: my-scripts-for-me/learnings/reporting.md (2026-10-01)
 
 **mitigation_type**: structural
 
@@ -1247,7 +1247,7 @@ while looking perfectly healthy.
 
 **Tags**: snakemake, abc, reuse, mtime, dry-run, gating, diagnosis
 
-**Propagated**: my-scripts-for-me/learnings/INBOX.md (2026-10-01)
+**Propagated**: my-scripts-for-me/learnings/snakemake.md (2026-10-01)
 
 **mitigation_type**: process
 
@@ -1293,7 +1293,7 @@ settled in seconds what four submissions had probed one hypothesis at a time.
 
 **Tags**: abc, snakemake, gating, diagnosis, orphaned-jobs, mtime, conda, process
 
-**Propagated**: my-scripts-for-me/learnings/INBOX.md (2026-10-01)
+**Propagated**: my-scripts-for-me/learnings/snakemake.md (2026-10-01)
 
 **mitigation_type**: process
 
@@ -1645,7 +1645,7 @@ pipeline, and treating it as the latter would have thrown away hours of correct 
 
 **Tags**: abc, snakemake, orchestration, stall, sherlock, known-behaviour
 
-**Propagated**: my-scripts-for-me/learnings/INBOX.md (2026-10-01)
+**Propagated**: my-scripts-for-me/learnings/snakemake.md (2026-10-01)
 
 **mitigation_type**: process
 
@@ -1819,7 +1819,7 @@ stop the profile and the executor both setting cpu counts, not to retry the job.
 
 **Tags**: abc, snakemake, slurm, infrastructure, false-failure, benchmark
 
-**Propagated**: my-scripts-for-me/learnings/INBOX.md (2026-10-01)
+**Propagated**: my-scripts-for-me/learnings/snakemake.md (2026-10-01)
 
 **mitigation_type**: process
 
@@ -1911,7 +1911,7 @@ yesterday's loss was caught too.
 
 ## A cluster SLURM upgrade broke every Snakemake rule job, and the fix lives outside the repo (2026-09-22)
 
-**Propagated**: my-scripts-for-me/learnings/INBOX.md (2026-10-01)
+**Propagated**: my-scripts-for-me/learnings/snakemake.md (2026-10-01)
 
 Sherlock moved to **SLURM 25.11.8** between 2026-09-19 and 2026-09-22. Every ABC rule job then
 died before doing any work:
@@ -1951,7 +1951,7 @@ line as protection.
 
 ## 2026-09-27: motif scanning and Sherlock gotchas
 
-**Propagated**: my-scripts-for-me/learnings/INBOX.md (2026-10-01)
+**Propagated**: my-scripts-for-me/learnings/genomics-tools.md (memelite bullets; the rest is covered by the sherlock-agent-rules memory or stays here) (2026-10-01)
 
 - **memelite `fimo(..., return_counts=True)` sums over ALL sequences** (one number per motif), not
   per sequence. Count per sequence from the hit tables (`sequence_name` is the row index).
@@ -1968,7 +1968,7 @@ line as protection.
 
 ## 2026-09-28: patching over ssh
 
-**Propagated**: my-scripts-for-me/learnings/INBOX.md (2026-10-01)
+**Propagated**: my-scripts-for-me/learnings/claude-workflow.md (2026-10-01)
 
 - **Never inline a Python patch in a double-quoted ssh command.** The local shell turns `\\t` into
   `\t` and `\"` into `"`, so replacement anchors silently stop matching. Write the patch to a

@@ -1,0 +1,7 @@
+model	dataset	ABC_directory	feature_table	polynomial	override_params
+multiome_powerlaw_n6	K562_Xu_pl		/oak/stanford/groups/engreitz/Users/sheth/scE2G_temp/scE2G_main/models/multiome_powerlaw_v3/feature_table.tsv	False	
+multiome_n6_plus_ctcf_fp	K562_Xu_pl		/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_1002_sce2g_tf_activity/config/models_corr/multiome_n6_plus_ctcf_fp/feature_table.tsv	False	
+multiome_n6_plus_ctcf_n	K562_Xu_pl		/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_1002_sce2g_tf_activity/config/models_corr/multiome_n6_plus_ctcf_n/feature_table.tsv	False	
+multiome_n6_plus_gc	K562_Xu_pl		/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_1002_sce2g_tf_activity/config/models_corr/multiome_n6_plus_gc/feature_table.tsv	False	
+multiome_n6_plus_fp_pct	K562_Xu_pl		/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_1002_sce2g_tf_activity/config/models_corr/multiome_n6_plus_fp_pct/feature_table.tsv	False	
+multiome_n6_corr_all	K562_Xu_pl		/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_1002_sce2g_tf_activity/config/models_corr/multiome_n6_corr_all/feature_table.tsv	False	

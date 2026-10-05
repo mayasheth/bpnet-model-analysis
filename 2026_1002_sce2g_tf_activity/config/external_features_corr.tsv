@@ -1,0 +1,5 @@
+input_col	source_col	aggregate_function	join_by	source_file
+ctcf_fp_print	ctcf_fp_print	max	overlap	/scratch/users/shethm/sce2g_external/corr_pairs.tsv.gz
+ctcf_n	ctcf_n	max	overlap	/scratch/users/shethm/sce2g_external/corr_pairs.tsv.gz
+fp_pct1	fp_pct1	max	overlap	/scratch/users/shethm/sce2g_external/corr_pairs.tsv.gz
+gc	gc	mean	overlap	/scratch/users/shethm/sce2g_external/corr_pairs.tsv.gz

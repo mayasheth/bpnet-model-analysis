@@ -2126,7 +2126,7 @@ perm control is one permutation; no metacell smoothing, which scE2G's Kendall al
 | 2026-10-04 | 5.0 srun 46503422; 5.1 46503952 (Z = Xu ATAC), 46503953 (`--z-encode-atac`) | Xu K562 multiome ATAC + RNA, 4.44 FIMO hits, K562 p300 | 2026_1002_sce2g_tf_activity | strict gate 0.015 [0.009, 0.019] / 0.028 [0.022, 0.034] | weak; feature A not taken to scE2G |
 
 ## F-053: Footprints inside the ABC activity term do not improve scE2G CRISPR AUPRC; mild weighting is within noise (+0.004 to +0.005) and strong weighting hurts (-0.012 [-0.021, -0.004] vs mild)
-**Status:** supported (one cell, two footprint methods, two weights)
+**Status:** provisional (2026-10-04): 4.3's per-gene renormalisation treated the self-promoter's ABC = 1 as an element share, a per-gene scaling error; rerun with the exact reweighting (`scripts/abc_reweight.py`, `4.9`) in `$SCRATCH/sce2g_runs/2026_1004_k562_xu_activity`; this entry is updated when it finishes
 **Claim:** `2026_1002_sce2g_tf_activity/scripts/4.3`, `4.4`: element activity reweighted as
 ATAC x (1 + lam x q), q = percentile of the element's erythroid footprint sum (TOBIAS or PRINT,
 F-049/F-051 element tables; 0 without an erythroid site, 61% of elements have one), ABC renormalised

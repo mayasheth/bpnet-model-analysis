@@ -1,0 +1,7 @@
+multiome_n6_arcp300geo	ARCp300geo	ARCp300geo	mean	ARC-E2G, activity sqrt(ATAC x observed p300)	ARC.E2G.Score
+multiome_n6_arcp300only	ARCp300only	ARCp300only	mean	ARC-E2G, activity observed p300	ARC.E2G.Score
+multiome_n6_plus_p300	p300obs	p300_obs	max	observed K562 p300 at E	
+multiome_n6_arcfp_tobias_l1	ARCfp_tobias_l1	ARCfp_tobias_l1	mean	ARC-E2G, activity x (1 + 1 x tobias footprint pct)	ARC.E2G.Score
+multiome_n6_arcfp_tobias_l4	ARCfp_tobias_l4	ARCfp_tobias_l4	mean	ARC-E2G, activity x (1 + 4 x tobias footprint pct)	ARC.E2G.Score
+multiome_n6_arcfp_print_l1	ARCfp_print_l1	ARCfp_print_l1	mean	ARC-E2G, activity x (1 + 1 x print footprint pct)	ARC.E2G.Score
+multiome_n6_arcfp_print_l4	ARCfp_print_l4	ARCfp_print_l4	mean	ARC-E2G, activity x (1 + 4 x print footprint pct)	ARC.E2G.Score

@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Footprints inside the ABC activity term: footprint-weighted ABC and ARC-E2G scores per E-G pair.
+"""SUPERSEDED by 4.9 + abc_reweight.py (2026-10-04): the per-gene factor below treats the self-promoter's
+ABC = 1 as an element share; scE2G sets it to 1 outside the normalisation. Kept for the F-053 first run.
+
+Footprints inside the ABC activity term: footprint-weighted ABC and ARC-E2G scores per E-G pair.
 
 Activity of element e becomes activity_e * w_e with w_e = 1 + lam * q_e, where q_e is the
 percentile rank of the element's erythroid footprint sum (2.4 element table, TOBIAS or PRINT)

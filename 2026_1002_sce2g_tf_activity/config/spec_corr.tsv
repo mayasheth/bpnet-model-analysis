@@ -1,0 +1,7 @@
+multiome_n6_plus_ctcf_fp	ctcfFpPrint	ctcf_fp_print	max	PRINT CTCF footprint max in E
+multiome_n6_plus_ctcf_n	ctcfMotifN	ctcf_n	max	CTCF motif sites in E
+multiome_n6_plus_gc	elementGC	gc	mean	GC fraction of E
+multiome_n6_plus_fp_pct	eryFpPct1	fp_pct1	max	1 + PRINT erythroid footprint percentile in E
+multiome_n6_corr_all	ctcfFpPrint	ctcf_fp_print	max	PRINT CTCF footprint max in E
+multiome_n6_corr_all	elementGC	gc	mean	GC fraction of E
+multiome_n6_corr_all	eryFpPct1	fp_pct1	max	1 + PRINT erythroid footprint percentile in E
