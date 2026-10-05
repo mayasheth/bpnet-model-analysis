@@ -2125,39 +2125,137 @@ perm control is one permutation; no metacell smoothing, which scE2G's Kendall al
 |------|-------------|---------|---------|--------|-----------|
 | 2026-10-04 | 5.0 srun 46503422; 5.1 46503952 (Z = Xu ATAC), 46503953 (`--z-encode-atac`) | Xu K562 multiome ATAC + RNA, 4.44 FIMO hits, K562 p300 | 2026_1002_sce2g_tf_activity | strict gate 0.015 [0.009, 0.019] / 0.028 [0.022, 0.034] | weak; feature A not taken to scE2G |
 
-## F-053: Footprints inside the ABC activity term do not improve scE2G CRISPR AUPRC; mild weighting is within noise (+0.004 to +0.005) and strong weighting hurts (-0.012 [-0.021, -0.004] vs mild)
-**Status:** provisional (2026-10-04): 4.3's per-gene renormalisation treated the self-promoter's ABC = 1 as an element share, a per-gene scaling error; rerun with the exact reweighting (`scripts/abc_reweight.py`, `4.9`) in `$SCRATCH/sce2g_runs/2026_1004_k562_xu_activity`; this entry is updated when it finishes
-**Claim:** `2026_1002_sce2g_tf_activity/scripts/4.3`, `4.4`: element activity reweighted as
-ATAC x (1 + lam x q), q = percentile of the element's erythroid footprint sum (TOBIAS or PRINT,
-F-049/F-051 element tables; 0 without an erythroid site, 61% of elements have one), ABC renormalised
-per gene, and ARC-E2G recomputed (ARC = ABC x exp(21.5 x Kendall) in scE2G's output, R^2 1.0000).
-Each model is the multiome v3 n6 set with ARC.E2G.Score swapped for the footprint-weighted score.
-Run `$SCRATCH/sce2g_runs/2026_1004b_k562_xu_abcfp`; paired bootstrap (`4.2`, 2,000 resamples,
-10,342 CRISPR pairs, 466 positives) of held-out-chromosome predictions:
+## F-053: Footprints inside the ABC activity term do not improve scE2G CRISPR AUPRC (weight 1: +0.001; weight 4: -0.010 to -0.011)
+**Status:** supported (one cell, two footprint methods, two weights; exact reweighting)
+**Claim:** Element activity reweighted as ATAC x (1 + lam x q), q = percentile of the element's
+erythroid footprint sum (TOBIAS or PRINT, F-049/F-051 tables; 0 without an erythroid site, 61% of
+elements have one). ABC recomputed exactly (`scripts/abc_reweight.py`, `4.9`): scE2G sets the
+self-promoter's ABC to 1 and every other pair to num / sum(num) over the gene's candidates (self
+included), so non-self ABC values are shares and the self share is 1 - sum(non-self ABC); ARC-E2G =
+ABC x exp(21.5 x Kendall) in this run (R^2 1.0000), so it takes the same factor. Each model = the
+multiome v3 n6 set with ARC.E2G.Score swapped for the reweighted score (`4.8`, `config/spec_activity.tsv`;
+run `$SCRATCH/sce2g_runs/2026_1004_k562_xu_activity`). Paired bootstrap (`4.2`, 2,000 resamples, 10,342
+pairs, 466 positives) vs baseline 0.632 [0.587, 0.677]:
 
-| model | AUPRC [95% CI] | vs baseline |
+| model | AUPRC | vs baseline |
 |---|---|---|
-| baseline n6 (ARC-E2G) | 0.632 [0.587, 0.677] | |
-| TOBIAS, lam 1 | 0.635 [0.590, 0.681] | +0.0036 [-0.0052, +0.0123] |
-| PRINT, lam 1 | 0.637 [0.591, 0.681] | +0.0052 [-0.0030, +0.0136] |
-| TOBIAS, lam 4 | 0.623 [0.576, 0.670] | -0.0084 [-0.0243, +0.0069] |
-| PRINT, lam 4 | 0.625 [0.578, 0.671] | -0.0062 [-0.0221, +0.0095] |
+| TOBIAS, lam 1 | 0.633 | +0.0011 [-0.0063, +0.0087] |
+| PRINT, lam 1 | 0.633 | +0.0013 [-0.0061, +0.0088] |
+| TOBIAS, lam 4 | 0.622 | -0.0098 [-0.0239, +0.0038] |
+| PRINT, lam 4 | 0.620 | -0.0114 [-0.0260, +0.0023] |
 
-TOBIAS lam 4 - lam 1: -0.0120 [-0.0205, -0.0044]; PRINT lam 1 - TOBIAS lam 1: +0.0016 [-0.0022,
-+0.0058]. The weighted score's coefficient falls from 1.73 (ARC-E2G) to 1.57-1.59 at lam 1 and
-1.19-1.22 at lam 4.
-**Implications:** Moving footprints from an extra feature (F-050/F-051) into the activity term
-changes the sign of the point estimate but not the answer: no weight tested moves CRISPR AUPRC
-beyond noise, and stronger weighting degrades the activity term. With feature A deferred (F-052),
-element-level TF evidence from this multiome sample (footprints, peak-TF Kendall) does not improve
-scE2G on the K562 benchmark. The lam 1 PRINT point estimate (+0.005) is the only lead, and it would
-need replication (another sample or cell) before it counts.
-**Caveats:** Two weights, chosen before the run, not tuned; the erythroid motif set uses K562
-knowledge; the first run of this design (`2026_1004_k562_xu_abcfp`) is invalid because all four
-models shared one feature name (see learnings 2026-10-04); one model family.
+PRINT lam 1 - TOBIAS lam 1: +0.0002 [-0.0032, +0.0037]. The first run of this design (approximate
+per-gene factor, `4.3`, `2026_1004b_k562_xu_abcfp`) gave +0.0036 / +0.0052 at lam 1 and -0.0084 /
+-0.0062 at lam 4; part of the lam 1 point estimate was the normalisation error. An earlier run
+(`2026_1004_k562_xu_abcfp`) is invalid (all models shared one feature name).
+**Implications:** Moving footprints from an extra feature (F-050/F-051) into the activity term does
+not help: weight 1 is flat and stronger weighting degrades the activity term. Together with F-052,
+element-level erythroid binding evidence from this multiome sample does not improve scE2G on the
+K562 benchmark, while observed p300 does (+0.056, F-056): the footprint does not capture the part
+of p300 that matters (F-054).
+**Caveats:** Two weights, chosen before the run; the erythroid motif set uses K562 knowledge; genes with
+more than one self-promoter candidate (1,672 extra rows) take the larger weight for all of them; one model family.
 **Tags:** footprinting, abc, activity, tobias, print, sce2g, crispr, null, k562
 
 ### Evidence Ledger
 | Date | Run/Session | Dataset | Project | Result | Direction |
 |------|-------------|---------|---------|--------|-----------|
-| 2026-10-04 | setup 46515688; driver 46515759; bootstrap 46515762 | Xu K562 multiome, TOBIAS/PRINT element footprints, K562 CRISPR | 2026_1002_sce2g_tf_activity | lam 1 +0.004 / +0.005 (CIs span 0); lam 4 -0.008 / -0.006; lam 4 - lam 1 -0.012 [-0.021, -0.004] | null; footprint line closed |
+| 2026-10-04 | setup 46515688; driver 46515759; bootstrap 46515762 (approximate factor, superseded) | Xu K562 multiome, TOBIAS/PRINT footprints, K562 CRISPR | 2026_1002_sce2g_tf_activity | lam 1 +0.004 / +0.005; lam 4 -0.008 / -0.006 | superseded |
+| 2026-10-05 | pairs 46556651; setup 46556652; driver 46556653; bootstrap 46556654 (exact) | same | 2026_1002_sce2g_tf_activity | lam 1 +0.0011 / +0.0013; lam 4 -0.0098 / -0.0114 | null; footprint line closed |
+
+## F-054: Why element TF evidence does not move scE2G: motif sites are near-universal at tested elements, the footprint's residual CRISPR signal is a sixth of observed p300's, and the log feature transform turns zero-inflated sums into a site indicator; GC and CTCF carry larger residual signal
+**Status:** supported (one cell, in-sample diagnostics on the benchmark pairs)
+**Claim:** `2026_1002_sce2g_tf_activity/scripts/6.1` over the 9,267 CRISPR pairs with a candidate
+element (429 regulated, 297 genes), held-out-chromosome predictions of the baseline n6 model and the
+F-050/F-051/F-053 variants; element features = max over overlapping candidates (2.4 tables).
+- Coverage: 75.7% of the 3,539 CRISPR elements carry an erythroid site; 78.3% of regulated vs 71.7%
+  of not-regulated pairs. Motif presence barely separates them.
+- The footprint-p300 link holds on the tested elements (partial rho beyond Xu + ENCODE ATAC, GC,
+  motif count: TOBIAS 0.066 [0.029, 0.098], PRINT 0.086 [0.050, 0.121]; 2,679 elements).
+- Information beyond the baseline (logistic coefficient of the feature's percentile added to
+  logit(baseline score), 500 pair bootstraps): observed p300 3.21 [2.56, 3.92], p300 beyond ATAC
+  2.95 [2.30, 3.56], TOBIAS footprint 0.54 [0.05, 1.01], PRINT 0.48 [0.02, 0.92], erythroid motif
+  count 0.40 [-0.06, 0.86], element GC -1.16 [-1.64, -0.70], CTCF motif count -1.45 [-2.05, -0.89].
+- Rank shifts: the footprint-feature models raise regulated pairs with a site by 0.27 percentile
+  points but lower not-regulated pairs with one by 0.67, and raise not-regulated pairs WITHOUT a
+  site by 1.66: scE2G's log(|x| + 0.01) transform makes a raw sum that is 0 at 39% of elements a
+  site / no-site step, and the motif-count coefficient (-0.22) turns it against site-bearing pairs.
+  Footprint-weighted activity (F-053 run) raises not-regulated site-bearing pairs (+0.56) more than
+  regulated ones (+0.38).
+**Implications:** Activity is not saturated (observed p300 carries a large residual signal), but
+the footprint captures about a sixth of it, below what 429 positives resolve. Two systematic
+corrections stand out: GC-rich elements and CTCF sites are over-predicted by the ATAC-based
+activity. Tested in F-055. Feature engineering matters: zero-inflated features need a transform
+without a step at 0.
+**Caveats:** In-sample diagnostics on the benchmark pairs (2 parameters per fit); bootstrap over
+pairs, while positives cluster by gene; distance strata are small (56-168 regulated pairs).
+**Tags:** sce2g, error-analysis, footprinting, gc, ctcf, crispr, k562
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-10-04 | 6.1 srun 46554084 | scE2G predictions (featB, abcfp runs), 2.4 element tables, K562 CRISPR | 2026_1002_sce2g_tf_activity | p300 residual 3.21 vs footprint 0.48-0.54; GC -1.16, CTCF -1.45 | explains the nulls; points to GC and CTCF |
+
+## F-055: Element GC content and CTCF sites as scE2G features improve K562 CRISPR AUPRC (+0.014 and +0.008; together with the footprint percentile +0.015), the first gains in the TF-evidence line; selected on the same benchmark, so provisional
+**Status:** provisional (one cell; features chosen from F-054's in-sample error analysis on these pairs)
+**Claim:** scE2G multiome n6 (v3) plus one or more element features (`scripts/4.7`, `4.8`, spec
+`config/spec_corr.tsv`; run `$SCRATCH/sce2g_runs/2026_1004_k562_xu_corr`), paired bootstrap (`4.2`,
+2,000 resamples, 10,342 pairs, 466 positives) vs the baseline 0.632 [0.587, 0.677]:
+
+| added feature(s) | AUPRC | vs baseline | coefficient |
+|---|---|---|---|
+| element GC (+/- 250 bp) | 0.646 | +0.0139 [+0.0069, +0.0206] | -2.10 |
+| PRINT CTCF footprint max | 0.640 | +0.0085 [+0.0017, +0.0154] | -0.19 |
+| CTCF motif count | 0.640 | +0.0083 [+0.0013, +0.0153] | -0.15 |
+| 1 + PRINT erythroid footprint percentile | 0.630 | -0.0017 [-0.0040, +0.0005] | +0.41 |
+| GC + CTCF footprint + footprint percentile | 0.647 | +0.0151 [+0.0069, +0.0238] | -1.61, -0.15, +0.16 |
+
+CTCF footprint minus CTCF motif count: +0.0001 [-0.0012, +0.0015]. ARC-E2G's coefficient rises
+(1.73 -> 1.76-1.83) when GC or CTCF is added, i.e. they remove elements ARC-E2G over-ranks.
+**Implications:** The ATAC-based activity term over-ranks GC-rich (CpG-island-like) elements and
+CTCF sites; correcting for both gains +0.015. CTCF presence is enough; the footprint adds nothing.
+The erythroid footprint stays null even without the zero step. Both features are deployable
+(sequence and motif only) and transfer to any cell.
+**Caveats:** The features were picked by looking at residuals on this benchmark, so the gains carry
+selection bias despite held-out-chromosome training; confirm on independent pairs (another CRISPR
+set or cell) or with a pre-registered rE2G test. GC is not a promoter proxy: only 133 benchmark pairs
+have a promoter element (none regulated), and among non-promoter elements GC raises AUPRC 0.686 ->
+0.700, with gains in every distance bin (6.1 rerun). One training run.
+**Tags:** sce2g, gc, ctcf, crispr, external-features, k562, provisional
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-10-04 | pairs 46555507; setup 46555508; driver 46555509; bootstrap 46555510 | Xu K562 multiome, K562 CRISPR | 2026_1002_sce2g_tf_activity | GC +0.0139 [+0.0069, +0.0206]; CTCF +0.008; all +0.0151 | first positive; provisional |
+
+## F-056: Observed K562 p300 raises scE2G CRISPR AUPRC by +0.056 to +0.060 whether it enters the ABC activity term or is added as a feature; the gain comes mostly from demoting accessible elements without erythroid motifs
+**Status:** supported (one cell; observed p300 is an upper bound, not deployable)
+**Claim:** Run `$SCRATCH/sce2g_runs/2026_1004_k562_xu_activity` (`scripts/4.9`, `4.8`; exact ABC
+reweighting as F-053). Observed p300 = ENCSR000EGE both strands, element midpoint +/- 250 bp
+(2.4 table), pseudocount 2 (1st percentile of positive values). Paired bootstrap vs baseline 0.632:
+
+| model | AUPRC | vs baseline |
+|---|---|---|
+| ARC-E2G recomputed with activity sqrt(ATAC x p300) | 0.688 | +0.0562 [+0.0393, +0.0736] |
+| ARC-E2G recomputed with activity p300 | 0.687 | +0.0548 [+0.0310, +0.0798] |
+| n6 + element p300 as a feature (ARC-E2G kept) | 0.691 | +0.0596 [+0.0417, +0.0782] |
+
+p300 alone - sqrt(ATAC x p300): -0.0014 [-0.0110, +0.0086]. By distance (6.1, non-paired AUPRC,
+feature model vs baseline): < 10 kb 0.908 vs 0.863, 10-50 kb 0.754 vs 0.683, 50-100 kb 0.765 vs
+0.701, > 100 kb 0.427 vs 0.344. Rank shifts (feature model): not-regulated pairs whose element has no
+erythroid site drop 2.96 percentile points while regulated ones rise 0.99; at site-bearing elements
+regulated and not-regulated pairs move alike (+1.09 each).
+**Implications:** Element activity is far from saturated in scE2G: an activity measurement as good
+as p300 is worth about +0.06 AUPRC, and the deployable corrections found so far (GC + CTCF, F-055)
+reach a quarter of that. What p300 adds is mostly recognising accessible elements that are NOT
+active, and those mostly lack erythroid motifs, which is why erythroid footprints (F-050, F-053)
+capture little of it. The target for a deployable activity term is "open but inactive", not
+"bound by the master regulator".
+**Caveats:** Observed p300 in the same cell; one model family; ENCODE p300 and the Xu multiome are
+different K562 samples.
+**Tags:** sce2g, p300, ceiling, activity, crispr, k562
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-10-05 | pairs 46556651; setup 46556652; driver 46556653; bootstrap 46556654; 6.1 rerun | Xu K562 multiome, K562 p300 ENCSR000EGE, K562 CRISPR | 2026_1002_sce2g_tf_activity | +0.056 to +0.060; gain from demoting no-site not-regulated pairs | ceiling for any activity evidence |

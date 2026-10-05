@@ -7,6 +7,7 @@
     fig42  footprint p300 gate per motif, TOBIAS and PRINT, two sets of controls
     fig43  footprints inside the ABC activity term: a  AUPRC change by weight  b  activity coefficient
     fig44  peak-TF Kendall (feature A): a  each feature beyond ATAC  b  kA_max beyond added controls
+    fig45  error analysis (6.1): a  CRISPR information beyond the baseline score  b  rank shifts
 
 Inputs are the A2 summary tables (`2026_1002_sce2g_tf_activity/results/`). Model coefficients come
 from the scE2G runs on $SCRATCH and are copied once into results/2026_1004_sce2g_coefficients.tsv.
@@ -65,12 +66,14 @@ kend1 = {z: tsv(f"2026_1004_featA_peak_tf_kendall{'.z_encode_atac' if z else ''}
          for z in (False, True)}
 bt = tsv("2026_1003_featB_tobias_paired_bootstrap.tsv").set_index("comparison")
 bp = tsv("2026_1004_featB_print_paired_bootstrap.tsv").set_index("comparison")
-ba = tsv("2026_1004b_abcfp_paired_bootstrap.tsv").set_index("comparison")
+bx = tsv("2026_1004_activity_paired_bootstrap.tsv").set_index("comparison")   # exact reweight + p300 ceiling
+bc = tsv("2026_1004_corr_paired_bootstrap.tsv").set_index("comparison")       # systematic corrections
+GREEN, OCHRE = "#429130", "#9b740a"
 B = "multiome_powerlaw_n6"
 T = "multiome_n6_arcfp"
 
 # ---------------------------------------------------------------- fig40 headline
-fig, ax = plt.subplots(1, 2, figsize=(12.5, 4.2), gridspec_kw={"width_ratios": [1, 1.15], "wspace": 0.95})
+fig, ax = plt.subplots(1, 2, figsize=(13, 5.6), gridspec_kw={"width_ratios": [1, 1.2], "wspace": 1.0})
 rows = [("TOBIAS erythroid footprint", lambda z: gate[("tobias", z)].loc["erythroid"]),
         ("PRINT erythroid footprint", lambda z: gate[("print", z)].loc["erythroid"]),
         ("peak-TF Kendall (feature A)", lambda z: kend[z].iloc[-1]),
@@ -92,10 +95,16 @@ ax[0].legend(frameon=False, fontsize=7, loc="upper left", bbox_to_anchor=(0, -0.
 rows = [("+ erythroid motif count", bt.loc[f"multiome_n6_ery_motif - {B}"], BLUE),
         ("+ motif count + TOBIAS footprint", bt.loc[f"multiome_n6_ery_fp - {B}"], BLUE),
         ("+ motif count + PRINT footprint", bp.loc[f"multiome_n6_ery_fp - {B}"], BLUE),
-        ("activity x TOBIAS footprint, weight 1", ba.loc[f"{T}_tobias_l1 - {B}"], RED),
-        ("activity x PRINT footprint, weight 1", ba.loc[f"{T}_print_l1 - {B}"], RED),
-        ("activity x TOBIAS footprint, weight 4", ba.loc[f"{T}_tobias_l4 - {B}"], RED),
-        ("activity x PRINT footprint, weight 4", ba.loc[f"{T}_print_l4 - {B}"], RED)]
+        ("activity x TOBIAS footprint, weight 1", bx.loc[f"{T}_tobias_l1 - {B}"], RED),
+        ("activity x PRINT footprint, weight 1", bx.loc[f"{T}_print_l1 - {B}"], RED),
+        ("activity x TOBIAS footprint, weight 4", bx.loc[f"{T}_tobias_l4 - {B}"], RED),
+        ("activity x PRINT footprint, weight 4", bx.loc[f"{T}_print_l4 - {B}"], RED),
+        ("+ element GC", bc.loc[f"multiome_n6_plus_gc - {B}"], GREEN),
+        ("+ CTCF motif count", bc.loc[f"multiome_n6_plus_ctcf_n - {B}"], GREEN),
+        ("+ GC + CTCF footprint + footprint pct", bc.loc[f"multiome_n6_corr_all - {B}"], GREEN),
+        ("+ observed p300 (ceiling)", bx.loc[f"multiome_n6_plus_p300 - {B}"], OCHRE),
+        ("activity sqrt(ATAC x p300) (ceiling)", bx.loc[f"multiome_n6_arcp300geo - {B}"], OCHRE),
+        ("activity p300 (ceiling)", bx.loc[f"multiome_n6_arcp300only - {B}"], OCHRE)]
 y = np.arange(len(rows))[::-1]
 for yi, (_, r, col) in zip(y, rows):
     ci_dot(ax[1], r["estimate"], yi, r["ci_lo"], r["ci_hi"], col)
@@ -104,7 +113,8 @@ ax[1].set_yticks(y)
 ax[1].set_yticklabels([r[0] for r in rows])
 ax[1].set_xlabel(f"CRISPR AUPRC minus baseline ({bt.loc[B, 'estimate']:.3f}), 95% CI")
 ax[1].set_title("b  scE2G on the K562 CRISPR benchmark", loc="left")
-ax[1].text(0, -0.17, "blue: extra feature    red: inside the ABC activity term", transform=ax[1].transAxes,
+ax[1].text(0, -0.12, "blue: TF evidence as a feature   red: footprint inside the ABC activity term\n"
+           "green: sequence corrections   ochre: observed K562 p300 (not deployable)", transform=ax[1].transAxes,
            ha="left", va="top", fontsize=7)
 ax[1].xaxis.set_major_locator(MaxNLocator(6))
 save(fig, "fig40_tf_evidence_headline")
@@ -151,9 +161,13 @@ save(fig, "fig42_footprint_p300_gate")
 
 # ---------------------------------------------------------------- fig43 footprints in ABC activity
 cf = f"{A2}/2026_1004_sce2g_coefficients.tsv"
-if not os.path.exists(cf):
+if True:  # rebuilt every run from $SCRATCH; the committed copy is the record
     rec = []
-    for run, models in (("2026_1004b_k562_xu_abcfp", [B] + [f"{T}_{s}_l{l}" for s in ("tobias", "print") for l in (1, 4)]),
+    act = [B] + [f"{T}_{s}_l{l}" for s in ("tobias", "print") for l in (1, 4)]
+    corr = ["multiome_n6_plus_gc", "multiome_n6_plus_ctcf_fp", "multiome_n6_plus_ctcf_n", "multiome_n6_plus_fp_pct", "multiome_n6_corr_all"]
+    for run, models in (("2026_1004_k562_xu_activity", act + ["multiome_n6_arcp300geo", "multiome_n6_arcp300only", "multiome_n6_plus_p300"]),
+                        ("2026_1004_k562_xu_corr", corr),
+                        ("2026_1004b_k562_xu_abcfp", act),
                         ("2026_1003_k562_xu_featB_tobias", ["multiome_n6_ery_motif", "multiome_n6_ery_fp"]),
                         ("2026_1004_k562_xu_featB_print", ["multiome_n6_ery_fp"])):
         for m in models:
@@ -163,13 +177,13 @@ if not os.path.exists(cf):
     pd.concat(rec).to_csv(cf, sep="\t", index=False)
     print(f"wrote {cf}")
 C = pd.read_csv(cf, sep="\t")
-ab = C[C["run"] == "2026_1004b_k562_xu_abcfp"]
+ab = C[C["run"] == "2026_1004_k562_xu_activity"]
 fig, ax = plt.subplots(1, 2, figsize=(9, 3.4), gridspec_kw={"wspace": 0.4})
 for off, s, col in ((-0.06, "tobias", BLUE), (0.06, "print", RED)):
     xs, est, lo, hi, co = [0], [0.0], [0.0], [0.0], []
     co.append(ab.loc[(ab["model"] == B) & (ab["feature"] == "ARC.E2G.Score"), "coefficient"].item())
     for l in (1, 4):
-        r = ba.loc[f"{T}_{s}_l{l} - {B}"]
+        r = bx.loc[f"{T}_{s}_l{l} - {B}"]
         xs.append(l); est.append(r["estimate"]); lo.append(r["ci_lo"]); hi.append(r["ci_hi"])
         co.append(ab.loc[(ab["model"] == f"{T}_{s}_l{l}") & ab["feature"].str.startswith("ARCfp"), "coefficient"].item())
     xs = np.array(xs, float) + off
@@ -212,3 +226,37 @@ for j in (0, 1):
     ax[j].set_xlabel("Partial Spearman with K562 p300 (95% CI)")
 ax[0].legend(frameon=False, fontsize=7, loc="upper left", bbox_to_anchor=(0, -0.16), ncol=2)
 save(fig, "fig44_peak_tf_kendall")
+
+# ---------------------------------------------------------------- fig45 error analysis
+EA = f"{A2}/2026_1004_sce2g_tf_error_analysis"
+R3 = pd.read_csv(f"{EA}.residual.tsv", sep="\t").set_index("feature")
+S4 = pd.read_csv(f"{EA}.rank_shift.tsv", sep="\t")
+feats = [("p300", "observed p300"), ("p300_beyond_atac", "observed p300 beyond ATAC"), ("fp_tobias", "TOBIAS erythroid footprint"),
+         ("fp_print", "PRINT erythroid footprint"), ("erythroid_n", "erythroid motif count"), ("atac_xu", "Xu ATAC"),
+         ("gc", "element GC"), ("CTCF_n", "CTCF motif count")]
+fig, ax = plt.subplots(1, 2, figsize=(13, 4.0), gridspec_kw={"width_ratios": [1, 1.5], "wspace": 0.6})
+y = np.arange(len(feats))[::-1]
+for yi, (f, lab) in zip(y, feats):
+    r = R3.loc[f]
+    ci_dot(ax[0], r["coef_pct_beyond_baseline"], yi, r["ci_lo"], r["ci_hi"], OCHRE if f.startswith("p300") else (GREEN if f in ("gc", "CTCF_n") else BLUE))
+ax[0].axvline(0, color="black", lw=0.7)
+ax[0].set_yticks(y)
+ax[0].set_yticklabels([f[1] for f in feats])
+ax[0].set_xlabel("Logistic coefficient beyond the baseline score (95% CI)")
+ax[0].set_title("a  CRISPR information the baseline lacks", loc="left", fontsize=9)
+mods = [("+ TOBIAS footprint", "footprint\nfeature"), ("activity x TOBIAS, w1 (exact)", "footprint x\nactivity"),
+        ("+ GC + CTCF + footprint pct", "GC + CTCF\n+ fp pct"), ("+ observed p300", "observed\np300")]
+strata = ["erythroid site", "no site"]
+xpos = np.arange(len(mods) * len(strata))
+w = 0.38
+for k, (lab, col) in enumerate((("regulated", RED), ("not regulated", GREY))):
+    v = [100 * S4.loc[(S4["model"] == m) & (S4["stratum"] == st), f"shift_{'regulated' if k == 0 else 'not_regulated'}"].item()
+         for m, _ in mods for st in strata]
+    ax[1].bar(xpos + (k - 0.5) * w, v, w, color=col, label=lab)
+ax[1].axhline(0, color="black", lw=0.7)
+ax[1].set_xticks(xpos)
+ax[1].set_xticklabels([f"{d}\n{'site' if st == 'erythroid site' else 'no site'}" for _, d in mods for st in strata], fontsize=7)
+ax[1].set_ylabel("Mean change in percentile rank\nvs baseline (points)")
+ax[1].set_title("b  which pairs each model moves", loc="left", fontsize=9)
+ax[1].legend(frameon=False, fontsize=7, loc="upper left")
+save(fig, "fig45_sce2g_error_analysis")

@@ -48,9 +48,18 @@ MODELS = {
     "activity x PRINT, w1": ("2026_1004b_k562_xu_abcfp", "multiome_n6_arcfp_print_l1"),
     "activity x TOBIAS, w4": ("2026_1004b_k562_xu_abcfp", "multiome_n6_arcfp_tobias_l4"),
     "activity x PRINT, w4": ("2026_1004b_k562_xu_abcfp", "multiome_n6_arcfp_print_l4"),
-    "+ observed p300": ("2026_1004_k562_xu_p300ceil", "multiome_n6_plus_p300"),
-    "activity sqrt(ATAC x p300)": ("2026_1004_k562_xu_p300ceil", "multiome_n6_arcp300geo"),
-    "activity p300": ("2026_1004_k562_xu_p300ceil", "multiome_n6_arcp300only"),
+    "activity x TOBIAS, w1 (exact)": ("2026_1004_k562_xu_activity", "multiome_n6_arcfp_tobias_l1"),
+    "activity x PRINT, w1 (exact)": ("2026_1004_k562_xu_activity", "multiome_n6_arcfp_print_l1"),
+    "activity x TOBIAS, w4 (exact)": ("2026_1004_k562_xu_activity", "multiome_n6_arcfp_tobias_l4"),
+    "activity x PRINT, w4 (exact)": ("2026_1004_k562_xu_activity", "multiome_n6_arcfp_print_l4"),
+    "+ observed p300": ("2026_1004_k562_xu_activity", "multiome_n6_plus_p300"),
+    "activity sqrt(ATAC x p300)": ("2026_1004_k562_xu_activity", "multiome_n6_arcp300geo"),
+    "activity p300": ("2026_1004_k562_xu_activity", "multiome_n6_arcp300only"),
+    "+ GC": ("2026_1004_k562_xu_corr", "multiome_n6_plus_gc"),
+    "+ CTCF footprint": ("2026_1004_k562_xu_corr", "multiome_n6_plus_ctcf_fp"),
+    "+ CTCF motif count": ("2026_1004_k562_xu_corr", "multiome_n6_plus_ctcf_n"),
+    "+ footprint pct": ("2026_1004_k562_xu_corr", "multiome_n6_plus_fp_pct"),
+    "+ GC + CTCF + footprint pct": ("2026_1004_k562_xu_corr", "multiome_n6_corr_all"),
 }
 D = None
 for lab, (run, m) in MODELS.items():
@@ -68,7 +77,7 @@ print(f"{len(D):,} pairs, {D['y'].sum()} regulated, {D.loc[D['y'], 'TargetGene']
       f"models: {labs}", flush=True)
 
 # ---------------------------------------------------------------- element features
-FEAT = ["p300", "atac_xu", "atac_encode", "gc", "erythroid_n", "erythroid_fp_sum", "CTCF_n"]
+FEAT = ["p300", "atac_xu", "atac_encode", "gc", "prom", "erythroid_n", "erythroid_fp_sum", "CTCF_n"]
 E = {}
 for src, f in (("tobias", "2026_1003_footprint_p300_gate.element_features.tsv.gz"),
                ("print", "2026_1003_footprint_p300_gate.print.element_features.tsv.gz")):
@@ -78,6 +87,7 @@ U["fp_print"] = E["print"]["erythroid_fp_sum"].values
 assert (E["print"][["chr", "start", "end"]].values == U[["chr", "start", "end"]].values).all()
 U = U.rename(columns={"erythroid_fp_sum": "fp_tobias"})
 cols = FEAT[:-3] + ["erythroid_n", "fp_tobias", "fp_print", "CTCF_n"]
+U["prom"] = U["prom"].astype(str).str.lower().eq("true").astype(float)
 el = D[["chr", "start", "end"]].drop_duplicates().reset_index(drop=True)
 vals = np.full((len(el), len(cols)), np.nan)
 for c, g in el.groupby("chr"):
@@ -186,8 +196,11 @@ rows = []
 for b in D["dbin"].cat.categories:
     g = D[D["dbin"] == b]
     rows.append(dict(distance=str(b), n=len(g), n_reg=int(g["y"].sum()), **{m: auprc(g[m].values, g["y"].values) for m in labs}))
+for cls, sel in (("promoter element", D["prom"] == 1), ("non-promoter element", D["prom"] == 0)):
+    g = D[sel]
+    rows.append(dict(distance=cls, n=len(g), n_reg=int(g["y"].sum()), **{m: auprc(g[m].values, g["y"].values) for m in labs}))
 A5 = pd.DataFrame(rows)
-print("\n=== AUPRC by distance bin ===\n" + A5.round(3).to_string(index=False), flush=True)
+print("\n=== AUPRC by distance bin and element class ===\n" + A5.round(3).to_string(index=False), flush=True)
 
 for name, t in (("coverage", cov), ("gate_crispr_elements", G2), ("residual", R3), ("rank_shift", S4), ("auprc_by_distance", A5)):
     t.to_csv(f"{a.out_prefix}.{name}.tsv", sep="\t", index=False)

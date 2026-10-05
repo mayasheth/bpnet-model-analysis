@@ -16,13 +16,20 @@ from todo/TODOLIST.md"; the old file is kept as `todo/TODOLIST.pre-standard.md`.
 - [x] P1 Feature A: peak-TF Kendall (`scripts/5.0`, `5.1`), gate vs p300 #sce2g: considered and DEFERRED 2026-10-04, too weak for scE2G
   - strict gate (beyond ATAC, motif count, permuted-TF and any-TF controls) 0.015 [0.009, 0.019], + ENCODE ATAC 0.028 [0.022, 0.034]; a fifth of the footprint signal that was null on CRISPR (F-052)
   - reopen only in a heterogeneous multiome sample (K562 has little TF expression variation across cells)
-- [x] P1 Footprints inside the ABC activity term (`scripts/4.3`, `4.4`) #sce2g: CLOSED 2026-10-04, null on CRISPR
-  - lam 1: TOBIAS +0.0036 [-0.0052, +0.0123], PRINT +0.0052 [-0.0030, +0.0136] vs baseline; lam 4 worse, -0.0120 [-0.0205, -0.0044] vs lam 1 (F-053)
+- [x] P1 Footprints inside the ABC activity term (`scripts/4.9`, exact reweighting) #sce2g: CLOSED 2026-10-05, null on CRISPR
+  - lam 1: TOBIAS +0.0011 [-0.0063, +0.0087], PRINT +0.0013 [-0.0061, +0.0088]; lam 4 -0.010 / -0.011 (F-053)
   - reopen only if the PRINT lam 1 point estimate replicates in a second sample or cell
+- [ ] P1 Confirm the GC / CTCF gains (F-055) on pairs they were not chosen on: check GC within non-promoter elements, then ENCODE-rE2G with GC + CTCF features (pre-registered), and another CRISPR set if one exists #sce2g
+- [x] P1 Observed-p300 ceiling and exact-reweight rerun of footprints in ABC #sce2g: observed p300 +0.056 to +0.060 (F-056); footprints in ABC null, lam 1 +0.001 (F-053, exact)
+- [ ] P2 Find deployable evidence for "accessible but inactive" elements, the part of the p300 ceiling (F-056) that matters: e.g. predicted p300 from the in-cell / multi-cell models as a scE2G feature, more sequence composition terms #sce2g
 - [ ] P2 Decide the next direction now that multiome TF evidence (A, B, B-in-ABC) is null: e.g. observed p300 as a scE2G ceiling, or back to the H3K4me1 item in Next #sce2g (Maya)
 
 ## Next
 <!-- Ordered: top item is the next thing to start. -->
+- [ ] P1 Corgi idea 1: multi-cell p300 model that predicts the change from the training-cell mean; start after the scE2G ceiling / corrections runs (`2026_1004_k562_xu_corr`, `_activity`) #model
+  - inputs: mean p300 over the training cells + target ATAC minus mean training ATAC; loss on log p300 minus the mean; deployable (mean from training cells only). Differs from F-023 (residual vs ATAC). From Aksu & Vingron 2026, Nat Commun (Corgi+). Judge by seed-averaged ABC/rE2G vs the matched MSE-only model
+- [ ] P1 Corgi idea 2: RNA TF list weighted by expression z-score across the panel + K562 instead of log TPM (`4.54` -> `4.45`, 3 seeds); after idea 1 is submitted #model
+  - Corgi's per-cell TF importance tracks expression z-score (39-68% of variance); the log-TPM list was null (F-041). Same weighting could replace the hand-picked erythroid motif set in scE2G
 - [ ] P2 Train H3K4me1 models (in-cell K562, GM12878 -> K562, multi-cell holding out K562) if the beyond-ATAC check shows signal #h3k4me1
   - bar is high: observed K562 H3K4me1 in ABC is no better than ATAC alone and 0.060 below observed H3K27ac (F-044)
   - beyond-ATAC gate passed (F-045), but observed H3K4me1 as separate rE2G features adds only +0.020 [+0.006, +0.031] over ATAC (F-044): Maya to decide
