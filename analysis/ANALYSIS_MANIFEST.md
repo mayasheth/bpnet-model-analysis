@@ -298,3 +298,30 @@ less sequence signal to attribute here than for p300. Also unresolved: the profi
 fits fragment-extended coverage with MNLL, which expects multinomial read counts - a
 possible fundamental mismatch, not just a weighting problem. And whether counting only
 the FLANKING windows (excluding the nucleosome-free center) improves the target.
+
+---
+
+### sce2g-tf-activity
+
+```yaml
+name: sce2g-tf-activity
+path: 2026_1002_sce2g_tf_activity/
+status: active
+created: 2026-10-02
+last_updated: 2026-10-09
+datasets: [xu-k562-multiome, k562-crispr-benchmark, encsr000ege-p300-chipseq, five-cell-panel-atac-p300, ucsc-cpgislandext]
+algorithms: [sce2g, tobias, scprinter-print, sce2g-replica-8.0]
+parent_analysis: h3k27ac-k562-models
+key_findings:
+  - Element TF evidence (TOBIAS / PRINT footprints, peak-TF Kendall) tracks p300 beyond ATAC but does not move scE2G CRISPR AUPRC (F-047 to F-053).
+  - Observed K562 p300 would add +0.056 to +0.060; predicted p300 (+0.001) and features chosen against p300 (+0.005) recover none of it (F-056 to F-058).
+  - Features selected against CRISPR inside nested chromosome CV (CGI distance, GATA cluster, IKZF2) add about +0.021 out of sample and +0.036 [+0.022, +0.049] in the pre-registered scE2G run (F-059).
+  - CGI distance tracks p300 beyond ATAC in 4 of 5 cells; its K562 gain is the far range (cell-dependent) and about half is beyond gene density (F-060 to F-062).
+report: 2026_0824_H3K27ac_model/report7_tf_evidence_multiome.html
+tags: [sce2g, crispr-benchmark, k562, multiome, footprints, feature-discovery, cpg-island]
+```
+
+scE2G (single-cell enhancer-gene model) evaluations of activity features on the K562 CRISPR
+benchmark, using the Xu K562 multiome run. Plans in `plans/` (7: p300 feature screen; 8: CRISPR
+feature discovery). Report 7 (Parts B and C) lives in the H3K27ac analysis directory with the other
+numbered reports; its Part C figures come from `2026_0824_H3K27ac_model/scripts/5.6`.

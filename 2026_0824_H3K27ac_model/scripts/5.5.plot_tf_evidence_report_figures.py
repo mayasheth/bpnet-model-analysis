@@ -68,12 +68,14 @@ bt = tsv("2026_1003_featB_tobias_paired_bootstrap.tsv").set_index("comparison")
 bp = tsv("2026_1004_featB_print_paired_bootstrap.tsv").set_index("comparison")
 bx = tsv("2026_1004_activity_paired_bootstrap.tsv").set_index("comparison")   # exact reweight + p300 ceiling
 bc = tsv("2026_1004_corr_paired_bootstrap.tsv").set_index("comparison")       # systematic corrections
-GREEN, OCHRE = "#429130", "#9b740a"
+bpp = tsv("2026_1005_predp300_paired_bootstrap.tsv").set_index("comparison")  # predicted p300 (F-057)
+bd = tsv("2026_1007_discovery_paired_bootstrap.tsv").set_index("comparison")  # chosen against CRISPR (F-059)
+GREEN, OCHRE, PURPLE = "#429130", "#9b740a", "#792374"
 B = "multiome_powerlaw_n6"
 T = "multiome_n6_arcfp"
 
 # ---------------------------------------------------------------- fig40 headline
-fig, ax = plt.subplots(1, 2, figsize=(13, 5.6), gridspec_kw={"width_ratios": [1, 1.2], "wspace": 1.0})
+fig, ax = plt.subplots(1, 2, figsize=(13, 6.4), gridspec_kw={"width_ratios": [1, 1.2], "wspace": 1.0})
 rows = [("TOBIAS erythroid footprint", lambda z: gate[("tobias", z)].loc["erythroid"]),
         ("PRINT erythroid footprint", lambda z: gate[("print", z)].loc["erythroid"]),
         ("peak-TF Kendall (feature A)", lambda z: kend[z].iloc[-1]),
@@ -102,6 +104,9 @@ rows = [("+ erythroid motif count", bt.loc[f"multiome_n6_ery_motif - {B}"], BLUE
         ("+ element GC", bc.loc[f"multiome_n6_plus_gc - {B}"], GREEN),
         ("+ CTCF motif count", bc.loc[f"multiome_n6_plus_ctcf_n - {B}"], GREEN),
         ("+ GC + CTCF footprint + footprint pct", bc.loc[f"multiome_n6_corr_all - {B}"], GREEN),
+        ("+ predicted p300, multi-cell model", bpp.loc[f"multiome_n6_plus_predp300mc - {B}"], TEAL),
+        ("+ CGI distance (chosen against CRISPR)", bd.loc[f"multiome_n6_cgi - {B}"], PURPLE),
+        ("+ CGI distance + GATA + IKZF2 (pre-registered)", bd.loc[f"multiome_n6_disc3 - {B}"], PURPLE),
         ("+ observed p300 (ceiling)", bx.loc[f"multiome_n6_plus_p300 - {B}"], OCHRE),
         ("activity sqrt(ATAC x p300) (ceiling)", bx.loc[f"multiome_n6_arcp300geo - {B}"], OCHRE),
         ("activity p300 (ceiling)", bx.loc[f"multiome_n6_arcp300only - {B}"], OCHRE)]
@@ -114,7 +119,8 @@ ax[1].set_yticklabels([r[0] for r in rows])
 ax[1].set_xlabel(f"CRISPR AUPRC minus baseline ({bt.loc[B, 'estimate']:.3f}), 95% CI")
 ax[1].set_title("b  scE2G on the K562 CRISPR benchmark", loc="left")
 ax[1].text(0, -0.12, "blue: TF evidence as a feature   red: footprint inside the ABC activity term\n"
-           "green: sequence corrections   ochre: observed K562 p300 (not deployable)", transform=ax[1].transAxes,
+           "green: sequence corrections   teal: predicted p300   purple: features selected against CRISPR\n"
+           "ochre: observed K562 p300 (not deployable)", transform=ax[1].transAxes,
            ha="left", va="top", fontsize=7)
 ax[1].xaxis.set_major_locator(MaxNLocator(6))
 save(fig, "fig40_tf_evidence_headline")

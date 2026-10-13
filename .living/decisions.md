@@ -1606,3 +1606,149 @@ thinner ones. Order below reflects that.
 - (open; now in TODO or Settled) **A downstream benchmark in a second cell type.** CRISPR data exists only for K562, so
       the terminal metric can only test the transfer direction that already fails. MPRA or
       eQTL data in a second cell type would be worth more right now than another model.
+
+### [2026-10-05] Pre-register the ENCODE-rE2G test of the GC and CTCF corrections (F-055)
+
+**Context**: F-055 found element GC (+0.0139 [+0.0069, +0.0206]) and CTCF motif count
+(+0.0083 [+0.0013, +0.0153]) improve scE2G on the K562 CRISPR benchmark, but F-054 chose both
+from residuals on those same pairs. Before believing them, test them in a model that played no
+part in the choice: ENCODE-rE2G with ENCODE bulk K562 ATAC on the July candidate regions
+(`2026_0824_H3K27ac_model/scripts/4.62`, `4.32`, launcher `log/gcctcf_launch.sh`). This entry is
+written before the run.
+
+**Decision**: Same feature definitions as scE2G (GC of midpoint +/- 250 bp; JASPAR MA0139.2 sites at
+p < 1e-4 by TOBIAS's scan), added to the 10 ATAC-only rE2G features, `_all` feature tables, rE2G's
+own chromosome CV, paired bootstrap `4.34` (2,000 resamples).
+- **Primary**: `ATAC_GCCTCF` - `ATAC`. PASS if the 95% interval excludes 0 on the positive side
+  AND both coefficients are negative in the full model, as in scE2G. Anything else is a FAIL.
+- **Secondary, descriptive only**: `ATAC_GC` - `ATAC`; `ATAC_CTCF` - `ATAC`;
+  `ATAC_H3K27ac_GCCTCF` - `ATAC_H3K27ac` (expected smaller: if GC and CTCF stand in for "open but
+  inactive", observed H3K27ac already carries it); `ATAC_GCCTCF` - `ATAC_H3K27ac` (share of the
+  gap to observed H3K27ac).
+
+**Alternatives considered**:
+- Another CRISPR set: none in hand (K562 is the only benchmark, Settled 2026-10-01); still the
+  only test free of the selection, and the question stays open for Maya.
+- Re-pick features in rE2G by its own error analysis: rejected, it repeats the selection.
+
+**Rationale**: A different model family, ATAC sample and candidate set, with the comparison and
+pass rule fixed in advance, removes the freedom to choose features or comparisons after seeing the
+result.
+
+**Consequences**: The test shares about 470 positives with F-055, so a PASS shows the gain
+transfers across model families, not that it is free of selection on these pairs. On PASS, keep
+GC + CTCF as candidate scE2G defaults pending another CRISPR set. On FAIL, F-055 stays a
+scE2G-on-Xu result and is not adopted.
+
+**Tags**: pre-registration, re2g, gc, ctcf, crispr-benchmark, k562, sce2g
+
+### [2026-10-05] Pre-register the scE2G confirmation of the p300 feature screen (7.2)
+
+**Context**: The 7.2 screen (`A2/plans/7_feature_screen.md`) ranked ~1,800 deployable element
+features against observed K562 p300 beyond Xu ATAC, distance, promoter, mappability, GC and CpG,
+over 155,134 Xu elements, without CRISPR labels. One feature passed the shortlist rule: the share of
+Xu insertions from fragments < 100 bp (partial rho 0.19 [0.18, 0.20] on replication chromosomes).
+Out-of-fold gradient-boosted trees recover 0.25-0.26 of the residual rank variance (elastic net
+0.10-0.12). Written before the scE2G run.
+
+**Decision**: One scE2G run (`scripts/7.3`, `config/spec_screen.tsv`, `log/screen_launch.sh`),
+paired bootstrap `4.2` (2,000 resamples). Arms: n6 + GC (reference, the F-055 arm); n6 + GC +
+short-fragment share; n6 + GC + composite (1 + percentile of the out-of-fold tree prediction).
+- PASS for an arm if its paired interval vs n6 + GC lies above 0. Two arms, no multiplicity
+  correction; both are reported whatever the outcome.
+- Descriptive: each arm vs n6; observed p300 (F-056 run) vs the composite arm, the share of the
+  ceiling reached.
+
+**Alternatives considered**:
+- Add the 5 strongest non-passing features (GATA motifs ~0.12): rejected, the rule was fixed
+  before reading the output and the erythroid footprint at 0.116 was null on CRISPR.
+
+**Rationale**: Features chosen without CRISPR labels and tested once against a fixed rule carry no
+selection on the benchmark; the GC reference carries F-055's selection, so gains are read on top
+of it.
+
+**Consequences**: On PASS, the arm's feature becomes a candidate scE2G default pending another
+cell. The composite is fitted on K562 p300, so outside K562 it is a transferred model; a PASS for it
+is a K562 result. On FAIL, p300-beyond-ATAC is not a usable proxy for this benchmark at the
+recovered strength, and the screen line stops.
+
+**Tags**: pre-registration, sce2g, feature-screen, fragments, crispr-benchmark, k562
+
+### [2026-10-07] Pre-register the scE2G confirmation of the nested CRISPR feature discovery (plan 8, Phase 4)
+
+**Context**: `A2/plans/8_crispr_feature_discovery.md`. Feature selection inside nested chromosome CV
+(`scripts/8.3`; 5 outer chromosome groups; base = n6 with ARC split into ABC + exp(Kendall), 0.627)
+gained +0.027 [+0.011, +0.042] (forward selection) and +0.023 [+0.011, +0.034] (CpG-island family) on
+held-out chromosomes. Both beat all 100 runs of a null that shuffles candidate vectors within TSS-distance
+bins (null max +0.002 / +0.004; `8.4`, `8.5`). The within-gene label shuffle was rejected as a null
+(Maya: 218 of 429 positives in genes it cannot change; it moves positives distal). With log TSS distance
+in the base the gains held (+0.032, +0.025) with the same picks. Picked in >= 4 of 5 outer folds:
+log distance to the nearest CpG island (5/5), GATA motif cluster GATA6 / Gata3 / TRPS1 (5/5), IKZF2 motif
+(4/5). Written before the run.
+
+**Decision**: One scE2G run (`scripts/8.6`, `config/spec_discovery.tsv`, `log/discovery_launch.sh`),
+features as 1 + percentile over all Xu elements, paired bootstrap `4.2` (2,000 resamples).
+- **Primary**: n6 + the three features vs n6. PASS if the paired interval lies above 0. Predicted gain
+  from the nested estimate: about +0.02 over n6 (the split base sits 0.006 below n6).
+- Secondary, descriptive: n6 + CpG-island distance alone; n6 + GC (F-055 arm); n6 + GC + the three, vs
+  n6 and vs n6 + GC (are GC and CpG-island distance the same signal?).
+
+**Alternatives considered**:
+- Adopt the nested estimate without a pipeline run: rejected, the official run checks the features
+  survive scE2G's own joins and encodings.
+- Include the L1 model (~100 terms): rejected, its terms are not stable across folds.
+
+**Rationale**: Features were chosen without seeing the held-out chromosomes they were scored on, and
+the null measures what searching the library yields by chance; the official run is the deployable form.
+
+**Consequences**: The run reuses the K562 CRISPR pairs, so a PASS confirms the pipeline form of an honest
+internal estimate, not an independent replication; a second CRISPR set or cell is still the external test.
+On PASS, the three features become candidate scE2G defaults. On FAIL, investigate the difference between
+the replica and pipeline joins before concluding.
+
+**Tags**: pre-registration, sce2g, feature-discovery, nested-cv, cpg-island, gata, crispr-benchmark, k562
+
+### [2026-10-12] Pre-register the eQTL transfer test of the F-059 features in unseen immune cell types (plan 9)
+
+**Context**: F-059's three features (log distance to the nearest CGI, GATA cluster, IKZF2 motif) were
+chosen and confirmed on the K562 CRISPR benchmark only; F-060 to F-062 suggest CGI distance may
+transfer only in part. Maya (2026-10-12): use the eQTL benchmark (eQTLEnrichment, eQTL Catalogue v7
+fine-mapped, fine-grained cell-type matching, every other cell type dropped), all clusters, both
+readouts; no features computed across co-analysed cell types. Written before any cluster is scored.
+
+**Decision**: `2026_1002_sce2g_tf_activity/scripts/9.0` -> `9.1` (array, one task per biosample) -> `9.2`.
+- Arms, each scE2G's logistic regression fitted on all K562 CRISPR pairs (2026_1007 discovery run
+  table): n6; n6 + CGI distance; n6 + the three. Applied to the 31 biosamples of
+  `config_predictions_hd_fine.tsv` (scE2G multiome_powerlaw_v3 cluster predictions), new features
+  as 1 + percentile over each cluster's own elements. GATA and IKZF2 counts from the genome-wide FIMO
+  scan (4.44) for training and application alike (not BINDetect, which clusters lack).
+- Scores on scE2G's quantile scale with the TPM >= 1 rule, as run_e2g_cv.py; eQTLs PIP >= 0.5,
+  distal noncoding, gene universe, as eQTLEnrichment; counts pooled over matched pairs.
+- Readouts: R1 enrichment at linking recall 0.10; R2 mean enrichment over recall 0.02-0.20 (0.9 x
+  the n6 maximum if n6 does not reach 0.20). Paired bootstrap over eGenes, 1,000 resamples.
+- **Primary**: n6 + the three vs n6, pooled over all matched pairs except K562. PASS if both
+  intervals lie above 0; PARTIAL if one does; WORSE if either lies below 0; otherwise FAIL.
+- Secondary: n6 + CGI distance vs n6, same rule. Descriptive: per sample (PBMC, BMMC22, GM12878),
+  per eQTL cell type, K562 alone (in-sample), the published v3 scores, K562 LOCO AUPRC of the FIMO
+  version.
+
+**Alternatives considered**:
+- Rerun scE2G per cluster: rejected; the saved predictions carry every n6 feature, so rescoring
+  offline is exact for these arms and costs minutes.
+- Normalise the new features across clusters: rejected (Maya), predictions must not depend on
+  which other cell types are analysed.
+
+**Rationale**: eQTLs in cell types the model was not trained on are the only available test
+outside K562; the pipeline's own definitions keep the numbers comparable to the scE2G paper's.
+
+**Consequences**: PASS -> the three (or CGI distance, if only it passes) become candidate scE2G
+defaults, pending a CRISPR set in a second cell. FAIL or WORSE -> the F-059 gain is K562-specific;
+record it and stop adding K562-selected features without a transfer check.
+
+**Tags**: pre-registration, sce2g, eqtl, transfer, cpg-island, gata, ikzf2, immune
+
+**Amendment [2026-10-12], before any cluster was scored**: the FIMO scan has no IKZF2 site (MA2326.1
+is 6 bp wide; a perfect match has p ~ 2.4e-4, above the scan's 1e-4 cutoff), so IKZF2 is counted as
+exact consensus matches (AGGAAG / CTTCCT) within the element midpoint +/- 250 bp, for training and
+application alike. GATA stays on FIMO (Spearman 0.957 with the BINDetect counts over Xu elements).
+The arms are refitted with this definition; everything else as above.

@@ -19,9 +19,40 @@ from todo/TODOLIST.md"; the old file is kept as `todo/TODOLIST.pre-standard.md`.
 - [x] P1 Footprints inside the ABC activity term (`scripts/4.9`, exact reweighting) #sce2g: CLOSED 2026-10-05, null on CRISPR
   - lam 1: TOBIAS +0.0011 [-0.0063, +0.0087], PRINT +0.0013 [-0.0061, +0.0088]; lam 4 -0.010 / -0.011 (F-053)
   - reopen only if the PRINT lam 1 point estimate replicates in a second sample or cell
-- [ ] P1 Confirm the GC / CTCF gains (F-055) on pairs they were not chosen on: check GC within non-promoter elements, then ENCODE-rE2G with GC + CTCF features (pre-registered), and another CRISPR set if one exists #sce2g
+- [ ] P1 Confirm the GC / CTCF gains (F-055) on pairs they were not chosen on: ENCODE-rE2G with GC + CTCF features (pre-registered), and another CRISPR set if one exists #sce2g
+  - done: GC within non-promoter elements, AUPRC 0.686 -> 0.700 (F-055 caveats, 6.1 rerun)
+  - rE2G test considered and DEFERRED 2026-10-05 (Maya: stay on scE2G evals); driver 46625263 cancelled mid-run. Built and ready: `4.62` features (153,360 July elements, 41% with a CTCF site), 4 arms in `4.32`, `log/gcctcf_launch.sh`. Reopen with `log/gcctcf_launch.sh` minus the features job; the driver needs `--rerun-incomplete` after the cancel
+  - pass rule fixed in decision [2026-10-05]: ATAC_GCCTCF - ATAC interval above 0 and both coefficients negative; shares ~470 positives with F-055, so a pass shows transfer across model families, not freedom from selection
+  - 2026-10-08: in scE2G, GC adds nothing once CpG-island distance and the motif features are in (F-059); an rE2G rerun should test CpG-island distance alongside GC
 - [x] P1 Observed-p300 ceiling and exact-reweight rerun of footprints in ABC #sce2g: observed p300 +0.056 to +0.060 (F-056); footprints in ABC null, lam 1 +0.001 (F-053, exact)
-- [ ] P2 Find deployable evidence for "accessible but inactive" elements, the part of the p300 ceiling (F-056) that matters: e.g. predicted p300 from the in-cell / multi-cell models as a scE2G feature, more sequence composition terms #sce2g
+- [ ] P1 Find deployable evidence for "accessible but inactive" elements, the part of the p300 ceiling (F-056) that matters: e.g. predicted p300 from the in-cell / multi-cell models as a scE2G feature, more sequence composition terms #sce2g
+  - predicted p300 CLOSED 2026-10-05, null (F-057): multi-cell (deployable) +0.0012 [-0.0056, +0.0081], in-cell +0.0092 [+0.0008, +0.0180], ENCODE-ATAC control -0.0049; observed p300 is +0.058 above the deployable arm. Reopen only with a p300 model whose in-cell version clears ~+0.03 in scE2G
+  - next candidate source: the feature screen below
+- [x] P1 Feature screen on observed p300 beyond Xu ATAC, then one pre-registered scE2G run (`A2/plans/7_feature_screen.md`, `scripts/7.0`-`7.3`) #sce2g: CLOSED 2026-10-05, fails the rule (F-058)
+  - p300: short-fragment share partial rho 0.19 [0.18, 0.20]; trees recover 0.25 of p300 beyond ATAC + composition
+  - CRISPR vs n6 + GC: short-fragment share +0.0054 [-0.0001, +0.0109], composite -0.0011 [-0.0018, -0.0004]
+  - reopen only with a second cell or CRISPR set (for the short-fragment share), or a selection target closer to CRISPR than p300
+- [x] P1 Direct CRISPR feature discovery with selection inside nested chromosome CV + within-gene label-permutation null (`A2/plans/8_crispr_feature_discovery.md`) #sce2g: DONE 2026-10-08, pre-registered PASS (F-059)
+  - Phase 0 done 2026-10-06: offline replica `scripts/8.0` matches scE2G AUPRC within 0.0005 for 4 models (per-pair scores within 0.04; compare models within the replica)
+  - 8.1 (2026-10-06): ARC split into ABC + exp(Kendall) is within 0.004 of n6 [-0.015, +0.006]; ARC keeps Kendall's sign (log ARC = log ABC + w tau), exp(tau) matches; base for Phase 2
+  - Phase 1 done: `scripts/8.2`, 564 candidates in 12 families (528 motif clusters), `$SCRATCH/crispr_discovery/`
+  - Phase 2 done (`scripts/8.3`, job 46825675): nested gain vs base 0.627: forward +0.027 [+0.011, +0.042], family +0.023 [+0.011, +0.034], L1 +0.024 [+0.000, +0.049], trees +0.008; consistent picks: CpG-island log distance 5/5, GATA6 motif cluster 5/5, IKZF2 motif 4/5; families alone: CpG island +0.023, composition +0.017, rest within +/-0.006, all motifs -0.034
+  - Phase 3: within-gene label shuffle INVALID (Maya, 2026-10-06: 218 of 429 positives in genes it cannot change; moves positives distal, median 28 -> 45 kb); replaced by shuffling candidate vectors within TSS-distance bins (`8.4`, array 46836062, `8.5` -> `results/2026_1006_nested_null.tsv`)
+  - null result: forward +0.027 vs null max +0.002, family (CpG island) +0.023 vs max +0.004, composition family +0.017 vs max +0.003; all p = 1/101; base unchanged in every null run
+  - distance control (46913125, `8.3 --base-logdist`): gains hold, forward +0.032 [+0.015, +0.048], CpG-island family +0.025; same picks: CpG-island log distance 5/5, GATA cluster (GATA6/Gata3/TRPS1) 5/5, IKZF2 4/5; all three raise the regulated rate (GATA site 0.043 -> 0.111)
+  - promoter-side CpG (Maya's idea, `8.7`, replica LOCO, hypothesis fixed in the docstring): null; CGI-island promoter overlap +0.001 [-0.004, +0.006], 3 promoter features -0.004 [-0.010, +0.003], on top of the 3 element features +0.005 [-0.003, +0.013]; CGI promoters slightly MORE often regulated (0.049 vs 0.043), opposite of the hypothesis
+  - Phase 4 PASS (decisions [2026-10-07]; `8.6`, driver 47016567 after the Oak-outage SIGBUS of 46915679, bootstrap 47016570 -> `results/2026_1007_discovery_paired_bootstrap.tsv`): n6 + the three vs n6 +0.036 [+0.022, +0.049] (0.632 -> 0.668); CpG-island distance alone +0.024 [+0.014, +0.033]; GC adds nothing on top of the three (+0.036 either way); in-sample, so quote the nested ~+0.021 over n6 as expected gain
+- [x] P1 External test of the three F-059 features (CpG-island log distance, GATA cluster, IKZF2) as scE2G defaults #sce2g: DONE 2026-10-12, pre-registered FAIL (F-063)
+  - eQTL transfer (plan 9, `9.0`-`9.2`, decisions [2026-10-12]): 62 matched immune pairs, the three R1 -0.34 [-1.15, +0.11], R2 +0.11 [-0.18, +0.43]; CGI alone WORSE (R1 -0.56 [-1.14, -0.13]); no gain on K562's own eQTLs either. Not adopted; reopen only with a CRISPR set in a second cell showing a gain
+- [x] P1 Positive control for the eQTL transfer benchmark #sce2g: DONE 2026-10-13 (F-064): scATAC - multiome R1 -2.63 [-3.48, -1.79], R2 -1.72 [-2.27, -1.12] for -0.049 AUPRC on CRISPR; F-063's upper bounds exclude the gain F-059 predicts
+  - [x] activity-only control (F-065, 2026-10-13): ARC-E2G -> ABC moves R2 only -0.35 [-0.47, -0.20] (R1 -0.40 [-0.78, +0.01]); the scATAC drop is mostly RNA; F-063 is inconclusive for activity effects of F-059's size, not a refutation
+- [ ] P1 Find a transfer benchmark that weighs element activity: a CRISPR set in a second cell, or an eQTL readout restricted to expressed genes / elements where the activity term decides the ranking (calibrate with the ABC arm, F-065) #sce2g (Maya)
+- [ ] P2 Plan 9 eQTL rescoring as a cheap screen for K562-CRISPR-selected features: catches harm (CGI alone lowers R1) and RNA-side effects, but cannot confirm activity gains below about 0.05 AUPRC (F-065) #sce2g
+  - the GATA term is likely erythroid-specific; a non-erythroid cell tests whether CpG-island distance alone carries over
+  - label-free proxy done 2026-10-09 (`8.8`, F-060, Maya's idea): CGI distance tracks p300 beyond ATAC in K562 +0.233 and 3 of 4 other cells (pre-set rule: shared; MCF-7 +0.059 below half); the shared part is the near end (nearest decile under-acetylated relative to ATAC in all five, and depleted for regulated K562 pairs, 0.026 vs 0.031-0.060)
+  - [x] near-CGI encoding (`8.9`, F-061, 2026-10-09): nearest-decile flag keeps 23% of the gain, +0.005 [-0.001, +0.012] vs +0.023 [+0.014, +0.033]; keep the percentile encoding for the external test and report by cell, since the far-end trend that carries the gain is cell-dependent (F-060)
+  - [x] gene-density control (`8.10`, F-062, 2026-10-09): CGI distance keeps 57% of its gain on top of gene density, +0.013 [+0.005, +0.022]; gene density adds nothing once CGI distance is in. No need to carry it into the external test
+  - report 7 Part C (Figs 12-15) records F-057 to F-062 (2026-10-09)
 - [ ] P2 Decide the next direction now that multiome TF evidence (A, B, B-in-ABC) is null: e.g. observed p300 as a scE2G ceiling, or back to the H3K4me1 item in Next #sce2g (Maya)
 
 ## Next
@@ -83,6 +114,8 @@ from todo/TODOLIST.md"; the old file is kept as `todo/TODOLIST.pre-standard.md`.
 
 ## Waiting
 <!-- Blocked on a job, a person or data. Say on what. -->
+- [ ] Review of [EngreitzLab/scE2G#118](https://github.com/EngreitzLab/scE2G/pull/118) (`source_path` fix), requested 2026-10-03; run on `local-with-pr118` until merged (on reviewer)
+- [ ] Is there a second CRISPR set (other cell type or held-out K562 screens) to confirm GC / CTCF on? (Maya)
 
 ## Inbox
 <!-- Untriaged: questions, ideas, links. One line each, dated. -->

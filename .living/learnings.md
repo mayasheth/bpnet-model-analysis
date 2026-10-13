@@ -2020,3 +2020,25 @@ line as protection.
   ABC x w x sum_g(ABC) / sum_g(ABC x w). ARC-E2G = ABC x exp(21.5 x Kendall) exactly in this run.
 - **Kendall tau-b against a binary x is a Mann-Whitney U on y's midranks**, so all peak x TF taus
   come from one sparse product (`5.1`; matches scipy to 1e-9).
+
+## 2026-10-07: nulls for feature selection on the CRISPR benchmark
+
+- **A within-gene label shuffle is not a null for this benchmark.** 935 of 2,055 genes have one tested
+  pair and some have all pairs positive, so 218 of 429 positives keep their real labels; and it moves
+  positives distal (median 28 -> 45 kb), so the base collapses (0.63 -> 0.41). Maya caught both.
+- **Shuffle the features, not the labels:** permute whole candidate vectors among pairs within
+  TSS-distance bins (`2026_1002_sce2g_tf_activity/scripts/8.3 --feature-perm-seed`). Labels and base stay
+  fixed (check the base AUPRC is identical in every null run), and the null gain is the optimism of the
+  search. 73 pairs lack a TSS and stay unshuffled (none positive).
+- **scE2G takes log(|x| + 0.01) of every feature**, so a signed feature folds: Kendall is negative at 30%
+  of pairs. ARC itself uses tau signed and linear (log ARC = log ABC + w tau), so feed exp(tau); encode
+  other new features as 1 + percentile.
+
+## 2026-10-09: joining new covariates to the CRISPR pairs
+
+- **CRISPR pair coordinates are CRISPR element coordinates, not Xu element coordinates.** A merge on
+  chr/start/end silently misses. Map each CRISPR element to the overlapping Xu element with the highest
+  Xu ATAC, no overlap -> 1.0, as `2026_1002_sce2g_tf_activity/scripts/8.2` does (copied in `8.10`), and
+  assert the mapped CGI percentile equals `candidates.tsv.gz`'s value for every pair.
+- **`$SCRATCH/crispr_discovery/candidates.tsv.gz` stores every feature as 1 + percentile** over all Xu
+  elements, not raw values; raw distances are in `$SCRATCH/feature_screen/library.elements.tsv.gz`.

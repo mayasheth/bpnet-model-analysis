@@ -2259,3 +2259,366 @@ different K562 samples.
 | Date | Run/Session | Dataset | Project | Result | Direction |
 |------|-------------|---------|---------|--------|-----------|
 | 2026-10-05 | pairs 46556651; setup 46556652; driver 46556653; bootstrap 46556654; 6.1 rerun | Xu K562 multiome, K562 p300 ENCSR000EGE, K562 CRISPR | 2026_1002_sce2g_tf_activity | +0.056 to +0.060; gain from demoting no-site not-regulated pairs | ceiling for any activity evidence |
+
+## F-057: Predicted p300 as a scE2G feature recovers almost none of the observed-p300 ceiling: the deployable multi-cell model adds +0.001, the in-cell K562 model +0.009, against +0.06 for observed p300
+**Status:** supported (one cell; one training run; predicted tracks painted on the July ENCODE candidates)
+**Claim:** Run `$SCRATCH/sce2g_runs/2026_1005_k562_xu_predp300` (`scripts/4.10`, `4.8`, spec
+`config/spec_predp300.tsv`, launcher `log/predp300_launch.sh`). Element value = mean of the painted
+predicted track over the Xu element; tracks cover 75.6% of the 155,134 Xu elements, the rest read 0.
+Paired bootstrap (`4.2`, 2,000 resamples, 9,267 + 1,075 missing pairs, 466 positives) vs baseline
+multiome n6 0.632 [0.587, 0.677]:
+
+| added to n6 | AUPRC | vs baseline |
+|---|---|---|
+| predicted p300, multi-cell, K562 held out (mean of 3 seeds; deployable) | 0.633 | +0.0012 [-0.0056, +0.0081] |
+| predicted p300, in-cell K562 model (not deployable) | 0.641 | +0.0092 [+0.0008, +0.0180] |
+| ENCODE K562 ATAC at E (control: the predicted tracks' input) | 0.627 | -0.0049 [-0.0092, -0.0005] |
+| ARC-E2G recomputed with activity sqrt(ATAC x predicted p300, multi-cell) | 0.631 | -0.0006 [-0.0133, +0.0125] |
+
+Multi-cell minus ENCODE-ATAC arm +0.0061 [-0.0004, +0.0131]; in-cell minus ENCODE-ATAC arm +0.0141
+[+0.0054, +0.0235]; observed p300 (F-056 run, `--extra`) minus multi-cell +0.0585 [+0.0409, +0.0766].
+Over all Xu elements, rank correlation with observed p300: ENCODE ATAC 0.658, in-cell 0.600,
+multi-cell 0.536 (uncovered elements at 0 included); seeds agree at 0.994.
+**Implications:** The deployable prediction captures about 2% of what observed p300 is worth in
+scE2G (+0.001 of +0.06), and even the model trained on K562 p300 itself reaches 15%. Whatever lets
+observed p300 demote "open but inactive" elements (F-056) is not learned by these ATAC + sequence
+models. Re-running inference on Xu ATAC or over every Xu element is not worth it: the in-cell model,
+trained on K562 p300 itself, puts this model family's ceiling near +0.01, and the deployable arm sits
+at +0.001 with the same coverage. ENCODE ATAC alone hurts slightly, so the predicted tracks' small
+edge over it does not come from the second ATAC sample.
+**Caveats:** 24% of Xu elements fall outside the painted candidates and read 0 (a step after scE2G's
+log transform); the in-cell arm gains despite the same gap, so the gap does not explain the null.
+One run per arm; one cell.
+**Tags:** sce2g, p300, predicted-p300, activity, crispr, k562, null
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-10-05 | pairs 46629821; setup 46629822; driver 46629823; bootstrap 46629824 | Xu K562 multiome, predicted p300 tracks (1.x multi-cell, in-cell), K562 CRISPR | 2026_1002_sce2g_tf_activity | multi-cell +0.0012; in-cell +0.0092; ENCODE ATAC -0.0049 | null for the deployable prediction |
+
+## F-058: A label-free screen of ~1,800 deployable element features against observed p300 finds signal (trees recover 0.25 of p300 beyond ATAC + composition) that does not carry to CRISPR: both pre-registered scE2G arms fail
+**Status:** supported (one cell, one training run; pre-registered in decisions [2026-10-05], second entry)
+**Claim:** Screen `2026_1002_sce2g_tf_activity/scripts/7.1`, `7.2` (plan `plans/7_feature_screen.md`, job
+46637717): 155,134 Xu elements, 1,801 features from sequence, JASPAR motifs, UCSC conservation /
+repeats / CpG islands, Xu fragments and cells. Target = observed K562 p300 rank residualised on Xu
+ATAC (+ square), log distance to TSS, promoter, mappability, GC, CpG o/e; discovery odd autosomes,
+replication even + X; no CRISPR label. Shortlist (rule fixed beforehand): only the share of Xu
+insertions from fragments < 100 bp, partial rho 0.19 [0.18, 0.20] on replication. Out-of-fold
+gradient-boosted trees recover 0.25 / 0.26 of the residual rank variance (elastic net 0.10 / 0.12).
+GATA-family motifs 0.11-0.13; erythroid PRINT footprint 0.116. Before mappability entered Z it was
+the top hit (0.32, chr21-22 smoke test).
+
+scE2G confirmation (`7.3`, `config/spec_screen.tsv`, run `$SCRATCH/sce2g_runs/2026_1005_k562_xu_screen`;
+paired bootstrap `4.2`, 2,000 resamples, 9,267 + 1,075 missing pairs, 466 positives):
+
+| model | AUPRC | vs n6 + GC |
+|---|---|---|
+| n6 | 0.632 | -0.0139 [-0.0206, -0.0069] |
+| n6 + GC (reference; reproduces F-055) | 0.646 | |
+| n6 + GC + short-fragment share | 0.651 | +0.0054 [-0.0001, +0.0109] (FAIL) |
+| n6 + GC + composite (1 + percentile) | 0.645 | -0.0011 [-0.0018, -0.0004] (FAIL) |
+
+Observed p300 (F-056 run) minus the composite arm +0.0468 [+0.0297, +0.0656].
+**Implications:** Recovering a quarter of p300's residual over the genome buys nothing on the CRISPR
+pairs, so the p300 variation these features predict is not the variation that separates regulated
+from not-regulated pairs (F-056: demoting accessible elements without erythroid sites). Observed p300
+beyond ATAC is not a usable selection target for scE2G features at this strength; the screen line
+stops (decision consequence). The short-fragment share is the one near-miss (+0.005); it is not
+adopted, and would need a second cell or CRISPR set to reopen.
+**Caveats:** One run per arm; the composite is fitted on K562 p300 (out-of-fold by chromosome half);
+lasso stability selected 473 features at >= 0.8, so the 0.15 bar did the filtering.
+**Tags:** sce2g, feature-screen, p300, fragments, gc, crispr, k562, pre-registered, null
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-10-05 | screen 46637717; pairs 46652239; setup 46652240; driver 46652248; bootstrap 46652251 | Xu K562 multiome, K562 p300 ENCSR000EGE, UCSC hg38, K562 CRISPR | 2026_1002_sce2g_tf_activity | p300 R2 0.25; CRISPR fragshort +0.0054 [-0.0001, +0.0109], composite -0.0011 | fails pre-registered rule; screen line closed |
+
+## F-059: Three features chosen against CRISPR inside nested chromosome CV (log distance to nearest CpG island, GATA motif cluster, IKZF2 motif) raise scE2G K562 AUPRC by +0.036 [+0.022, +0.049] in the pre-registered official run (PASS), above the nested out-of-sample estimate of about +0.021 over n6
+**Status:** supported, pre-registered PASS (one cell; one CRISPR set; selection nested inside chromosome CV; Phase 4 pre-registered in decisions [2026-10-07])
+**Claim:** Plan `2026_1002_sce2g_tf_activity/plans/8_crispr_feature_discovery.md`; data
+`$SCRATCH/crispr_discovery/`. Selection runs against the K562 CRISPR labels directly (p300 dropped as
+a gate after F-050, F-058).
+
+- Replica (`scripts/8.0`): Python logistic regression on log(|x| + 0.01) with LOCO predictions matches
+  the scE2G pipeline AUPRC within 0.0005 for 4 models (per-pair scores within 0.04), so models are
+  compared within the replica.
+- ARC split (`8.1`, Maya's idea; `results/2026_1006_arc_decomposition.tsv`): ABC + exp(Kendall) 0.627,
+  -0.004 [-0.015, +0.006] vs n6 0.632; this is the base for selection. ABC alone -0.050, Kendall alone
+  -0.043.
+- Candidates (`8.2`): 564 label-free features in 12 families (528 motif clusters), 1 + percentile
+  over all Xu elements.
+- Nested selection (`8.3`, job 46825675; 5 outer chromosome groups, selection inside each training
+  fold), held-out gain vs base:
+
+| procedure | gain vs base 0.627 | null max (100) |
+|---|---|---|
+| forward selection (<= 5 features) | +0.027 [+0.011, +0.042] | +0.002 |
+| family: CpG island | +0.023 [+0.011, +0.034] | +0.005 |
+| family: composition | +0.017 [+0.006, +0.027] | +0.003 |
+| L1 | +0.024 [+0.000, +0.049] | -0.019 |
+| trees on residual | +0.008 | |
+| family: all motifs | -0.034 [-0.058, -0.010] | -0.041 |
+
+  Other families within +/-0.006. Picks in >= 4 of 5 outer folds: log distance to the nearest CpG
+  island (5/5), GATA motif cluster GATA6 / Gata3 / TRPS1 (5/5), IKZF2 motif (4/5).
+- Null (`8.4`, array 46836062; `8.5` -> `results/2026_1006_nested_null.tsv`): candidate vectors
+  shuffled within TSS-distance bins, whole procedure rerun; forward, CpG-island and composition gains
+  beat all 100 (p = 1/101). The within-gene label shuffle was rejected as a null (Maya: 218 of 429
+  positives sit in genes it cannot change; it moves positives distal, median 28 -> 45 kb); archived in
+  `labelshuffle_within_gene_INVALID/`.
+- Distance control (`8.3 --base-logdist`, job 46913125): with log TSS distance in the base, forward
+  +0.032 [+0.015, +0.048], CpG-island family +0.025, same three picks. All three raise the regulated
+  rate (GATA site 0.043 -> 0.111).
+- Promoter CpG (`8.7`, Maya's idea, hypothesis fixed in the docstring; `results/2026_1007_promoter_cpg.tsv`):
+  null. Promoter CGI overlap +0.001 [-0.004, +0.006]; 3 promoter features -0.004 [-0.010, +0.003];
+  on top of the 3 element features +0.005 [-0.003, +0.013]. CGI promoters are slightly more often
+  regulated (0.049 vs 0.043), opposite to the hypothesis.
+- Phase 4, official scE2G run (`8.6`, `config/spec_discovery.tsv`, run
+  `$SCRATCH/sce2g_runs/2026_1007_k562_xu_discovery`; paired bootstrap `4.2`, 2,000 resamples ->
+  `results/2026_1007_discovery_paired_bootstrap.tsv`). Predicted: about +0.02 over n6 (nested);
+  replica LOCO with features chosen on these pairs gives +0.038 [+0.024, +0.052] (optimistic).
+
+Phase 4 result (driver 47016567, bootstrap 47016570; 2,000 resamples; 9,267 pairs, 466 positives + 1,075 missing pairs at score 0):
+
+| model | AUPRC | vs n6 | vs n6 + GC |
+|---|---|---|---|
+| n6 | 0.632 [0.587, 0.677] | | |
+| n6 + CpG-island distance | 0.655 | +0.024 [+0.014, +0.033] | |
+| n6 + GC (reproduces F-055) | 0.646 | +0.014 [+0.007, +0.021] | |
+| **n6 + the three (primary)** | **0.668** | **+0.036 [+0.022, +0.049] (PASS)** | +0.022 [+0.011, +0.033] |
+| n6 + GC + the three | 0.667 | +0.036 [+0.022, +0.049] | +0.022 [+0.011, +0.032] |
+
+The official gain matches the replica's in-sample LOCO (+0.038) rather than the nested estimate
+(+0.027 over the split base 0.627, so about +0.021 over n6, the pre-registered prediction); the run
+reuses the pairs the features were chosen on, so +0.036 includes that optimism and about +0.021 is
+the number to quote as expected gain.
+
+**Implications:** Selecting against CRISPR directly, with selection inside the CV, finds what the p300 route (F-050, F-057, F-058) did not: element features that survive scE2G's own joins and encodings and add +0.02 to +0.036 AUPRC (out-of-sample to in-sample). CpG-island distance alone carries two thirds of it (+0.024) and absorbs GC: GC adds nothing on top of the three (+0.036 either way), so F-055's GC gain is a weaker proxy for the same CpG-island signal. The GATA cluster and IKZF2 pick out erythroid sites, the same axis F-056 found observed p300 uses to demote accessible elements without them. The three are candidate scE2G defaults for K562; adopting them needs an external test (second CRISPR set or cell), since the GATA term is likely cell-specific. Promoter CpG is closed (null).
+**Caveats:** Every estimate here, nested or official, uses the same ~470 K562 regulated pairs; the
+nested CV removes selection bias within this benchmark but is not an external test. The null shuffles
+features, not labels, so it asks whether these candidates beat random vectors with the same distance
+structure; added noise costs AUPRC (null means below 0), so beating the null is a lower bar than a
+gain above 0, and the PASS rule uses the latter. One run per arm; one cell.
+**Tags:** sce2g, feature-discovery, nested-cv, cpg-island, gata, crispr, k562, pre-registered
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-10-07/08 | nested 46825675; null 46836062; distance control 46913125; pairs 46915676; setup 46915678; driver 46915679 (died in Oak outage) -> 47016567; bootstrap 47016570 | Xu K562 multiome, UCSC hg38, JASPAR, K562 CRISPR | 2026_1002_sce2g_tf_activity | nested forward +0.027 [+0.011, +0.042]; official n6 + 3 vs n6 +0.036 [+0.022, +0.049] | pre-registered PASS; candidate defaults pending external test |
+
+## F-060: Elements nearest a CpG island carry less p300 than their ATAC predicts in all five panel cells; distance to the nearest CGI correlates with p300 beyond ATAC in K562 (+0.23) and three of four other cells (pre-set rule: shared)
+**Status:** supported (label-free proxy for F-059 in other cells; one analysis; reading fixed in the `8.8` docstring before the run)
+**Claim:** `2026_1002_sce2g_tf_activity/scripts/8.8` (job 47118658; `results/2026_1009_cgi_activity_panel.partial.tsv`,
+`.deciles.tsv`), Maya's idea. 4.60's union set and caches, each cell's own non-promoter candidates
+(122,645-126,762). Partial Spearman of log distance to the nearest UCSC CGI (as 7.1 / 8.2) with each
+mark; Z1 = ATAC percentile + square + log TSS distance; Z2 = Z1 + GC + CpG o/e; 1 Mb block bootstrap.
+
+| cell | p300, Z1 | p300, Z2 | H3K27ac 500 bp, Z1 | H3K4me1 500 bp, Z1 | raw rho with ATAC |
+|---|---|---|---|---|---|
+| K562 | +0.233 [+0.217, +0.249] | +0.067 [+0.051, +0.084] | +0.144 [+0.130, +0.158] | +0.196 | -0.186 |
+| GM12878 | +0.148 [+0.135, +0.159] | +0.047 [+0.035, +0.058] | -0.005 [-0.020, +0.009] | -0.014 | -0.148 |
+| HepG2 | +0.162 [+0.147, +0.175] | +0.020 [+0.009, +0.030] | - | +0.193 | -0.161 |
+| A549 | +0.265 [+0.250, +0.279] | +0.051 [+0.041, +0.062] | - | +0.255 | -0.155 |
+| MCF-7 | +0.059 [+0.045, +0.074] | +0.021 [+0.009, +0.035] | - | +0.122 | -0.114 |
+
+Pre-set reading: K562 check PASS; transfer 3/4 (GM12878, HepG2, A549 at >= half of K562 with
+interval above 0; MCF-7 below half) -> shared. Shape (mean Z1 p300 residual by CGI-distance decile):
+the nearest decile is negative in every cell (-0.06 to -0.15 percentile units); beyond it the residual
+rises steadily in K562, HepG2 and A549 but is flat in MCF-7 and turns down at the far end in GM12878
+(H3K27ac and H3K4me1 there are inverted-U, -0.07 / -0.11 in the farthest decile). On the K562 CRISPR
+pairs (9,267, `$SCRATCH/crispr_discovery/candidates.tsv.gz`), the nearest CGI-distance decile is
+regulated at 0.026 against 0.031-0.060 in the other nine.
+**Implications:** The part of the F-059 CGI-distance feature that looks general is the near end:
+accessible elements next to a CpG island are over-ranked by ATAC relative to p300 in all five cells,
+and that is also where the K562 CRISPR pairs are depleted. This supports trying CGI distance outside
+K562, ideally encoded to emphasise proximity (e.g. a near-CGI indicator or capped distance) rather
+than the monotone percentile, since the far-end trend differs by cell. Most of the correlation is
+shared with local GC / CpG o/e (Z2 keeps 12-36% of Z1 for p300), consistent with F-059's finding that
+GC adds nothing on top of CGI distance. H3K27ac does not follow p300 in GM12878, so the shared effect
+is clearest for p300.
+**Caveats:** A proxy: shared mechanism, not shared CRISPR gain (F-058: p300 patterns need not carry to
+CRISPR); a CRISPR set in a second cell is still the test. Near-CGI non-promoter elements may include
+unannotated or alternative promoters (only GENCODE TSS +/- 250 bp removed). Intervals do not refit
+the residualisation per resample, so are slightly narrow. H3K27ac only in two cells.
+**Tags:** sce2g, cpg-island, p300, h3k27ac, h3k4me1, cross-cell, beyond-atac, label-free
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-10-09 | 8.8 job 47118658 | 5-cell panel (ENCODE ATAC, p300, H3K27ac K562/GM12878, H3K4me1), UCSC cpgIslandExt, K562 CRISPR pairs | 2026_1002_sce2g_tf_activity | p300 partial K562 +0.233, GM12878 +0.148, HepG2 +0.162, A549 +0.265, MCF-7 +0.059 | supports CGI distance as cell-general (near end) |
+
+## F-061: Flagging only the near end of CpG-island distance keeps 23% of its K562 CRISPR gain; most of the gain comes from the graded far range, the part F-060 found cell-dependent
+**Status:** supported (replica LOCO; reading fixed in the `8.9` docstring before the run)
+**Claim:** `2026_1002_sce2g_tf_activity/scripts/8.9` (job 47122912, `results/2026_1009_near_cgi_encoding.tsv`), on the
+8.0 replica of the 2026_1007 discovery run (9,267 pairs, 429 regulated + 1,075 missing, 37 regulated;
+paired bootstrap 2,000). Thresholds are percentiles over all 155,134 Xu elements: 10th = 418 bp,
+20th = 2,914 bp, median 18,412 bp from the element midpoint to the nearest CGI midpoint.
+
+| added to n6 | AUPRC | vs n6 | vs n6 + pct |
+|---|---|---|---|
+| pct (F-059 encoding) | 0.655 | +0.023 [+0.014, +0.033] | |
+| near10, nearest-decile flag (primary) | 0.637 | +0.005 [-0.001, +0.012] | -0.018 [-0.026, -0.010] |
+| near20 | 0.635 | +0.004 [-0.002, +0.010] | -0.020 |
+| cap10 | 0.632 | +0.001 [-0.005, +0.007] | -0.023 |
+| cap20 | 0.638 | +0.007 [-0.000, +0.015] | -0.017 |
+| near10 + GATA + IKZF2 | 0.655 | +0.023 [+0.012, +0.034] | |
+| pct + GATA + IKZF2 (Phase 4 set) | 0.670 | +0.038 [+0.024, +0.052] | |
+
+Pre-set reading: near10 keeps 23% of pct's gain (< 75%) -> keep pct. The nearest decile holds 8.6%
+of pairs, regulated at 0.028 against 0.048.
+**Implications:** The K562 CRISPR gain from CGI distance is mostly the graded "farther is better"
+trend beyond the first few kb, not the near-CGI depletion that F-060 found in all five cells. In F-060
+that far-end trend held for p300 in K562, HepG2 and A549 but was flat in MCF-7 and reversed in
+GM12878, so expect the feature to transfer to some cells and not others; the external test should
+keep pct and report by cell. Distance to the nearest CGI is also a proxy for local gene density
+(CGIs mark most promoters), which n6 covers only through `numTSSEnhGene` / `numCandidateEnhGene`;
+whether the far-end gain is gene density rather than activity is untested.
+**Caveats:** In-sample (pct was chosen on these pairs, F-059); the encodings are compared on the
+same pairs, so only the primary comparison is read. One cell.
+**Tags:** sce2g, cpg-island, encoding, crispr, k562, replica
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-10-09 | 8.9 job 47122912 | K562 CRISPR pairs (2026_1007 discovery run tables), UCSC cpgIslandExt | 2026_1002_sce2g_tf_activity | near10 +0.005 vs pct +0.023 (23%) | keep pct; far range carries the gain |
+
+## F-062: About half of CpG-island distance's K562 CRISPR gain is beyond local gene density: +0.013 [+0.005, +0.022] on top of gene density, 57% of its gain without it
+**Status:** supported (replica LOCO; reading fixed in the `8.10` docstring before the run)
+**Claim:** `2026_1002_sce2g_tf_activity/scripts/8.10` (job 47156133; first submission 47155951 stopped at its own guard
+because CRISPR element coordinates are not Xu element coordinates; fixed by 8.2's mapping, verified
+pair by pair against 8.2's CGI percentile), `results/2026_1009_gene_density_control.tsv`. 8.0 replica
+of the 2026_1007 discovery run (9,267 pairs, 429 regulated + 1,075 missing, 37 regulated; paired
+bootstrap 2,000). G = log distance to the nearest TSS of any gene + gene TSSs within +/- 500 kb
+(GENCODE v43, 20,531 genes; median 10, IQR 6-17), each 1 + percentile over the 155,134 Xu elements.
+Over Xu elements CGI distance has Spearman 0.589 with nearest-TSS distance, -0.373 with gene count.
+
+| model | vs | AUPRC difference |
+|---|---|---|
+| n6 + G | n6 | +0.009 [+0.003, +0.014] |
+| n6 + CGI distance | n6 | +0.023 [+0.014, +0.033] |
+| n6 + G + CGI distance | n6 + G | +0.013 [+0.005, +0.022] |
+| n6 + the three | n6 | +0.038 [+0.024, +0.052] |
+| n6 + G + the three | n6 + G | +0.028 [+0.016, +0.040] |
+| n6 + G + the three | n6 + the three | -0.002 [-0.003, +0.000] |
+
+Pre-set reading: CGI distance keeps 57% (>= 50%, interval above 0) -> survives gene density.
+**Implications:** Gene density explains part of what CGI distance adds (about 43%), and adds nothing
+once CGI distance is in, so CGI distance subsumes it. The rest is a CGI-specific signal; with F-061,
+it is the graded far range, which F-060 found cell-dependent for p300. The external test (F-059)
+should keep CGI distance as is; G need not be carried.
+**Caveats:** In-sample pairs; one gene-density definition (two covariates, +/- 500 kb). One cell.
+**Tags:** sce2g, cpg-island, gene-density, crispr, k562, replica
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-10-09 | 8.10 job 47156133 | K562 CRISPR pairs (2026_1007 run tables), GENCODE v43 TSSs, UCSC cpgIslandExt | 2026_1002_sce2g_tf_activity | CGI distance on top of G +0.013 [+0.005, +0.022] (57%) | survives gene density |
+
+## F-063: The F-059 features do not transfer to eQTLs in unseen immune cell types: pre-registered test FAILS (the three) and is WORSE (CGI distance alone), and neither helps even on K562's own eQTLs
+**Status:** supported (pre-registered, decisions [2026-10-12] with its IKZF2 amendment; one eQTL resource)
+**Claim:** Plan 9 (`2026_1002_sce2g_tf_activity/scripts/9.0`-`9.2`; prep 47583089, clusters 47583844, gather 47583918;
+`results/2026_1012_eqtl_transfer.readouts.tsv`, `.primary_curves.tsv`). eQTL Catalogue v7 fine-mapped
+eQTLs (PIP >= 0.5, distal noncoding, gene universe) in the eQTLEnrichment fine-grained matching: 32
+scE2G multiome clusters (PBMC, BMMC22, GM12878, K562), 64 matched (cluster, eQTL cell type) pairs,
+6,424 eGenes, 9.75 M distal noncoding 1000G SNPs. Each arm is scE2G's logistic regression fitted on
+all K562 CRISPR pairs and applied to each cluster's saved predictions; new features as 1 + percentile
+over that cluster's own elements (GATA from the FIMO scan, IKZF2 exact consensus; on K562 LOCO the
+three give +0.037 against +0.038 with BINDetect counts). Checks passed: the quantile + TPM >= 1 rule
+reproduces scE2G's qnorm (Spearman > 0.9999999) and the refitted n6 reproduces the published v3
+scores (primary R1 difference -0.012 [-0.031, +0.013]).
+
+| primary: 62 pairs, all except K562 | R1 enrichment at recall 0.10 | R2 mean enrichment, recall 0.02-0.20 |
+|---|---|---|
+| n6 | 24.08 | 19.93 |
+| + the three, vs n6 | -0.34 [-1.15, +0.11] | +0.11 [-0.18, +0.43] -> FAIL |
+| + CGI distance, vs n6 | -0.56 [-1.14, -0.13] | -0.04 [-0.24, +0.23] -> WORSE |
+
+Paired bootstrap over eGenes (1,000). By sample, R1 for the three: PBMC -0.67 [-1.58, +0.33],
+BMMC22 -0.37 [-1.08, +0.22], GM12878 -0.22 [-2.71, +1.03]. K562 (training cell; eQTL cell types blood
+and spleen): R1 -0.66 [-1.37, +0.14] (three), -0.49 [-1.37, +0.08] (CGI). Per cell type, three of
+about 19 show R2 intervals above 0 for the three (T_CD8_pos +0.94, T_CD4_pos_naive +4.32 on 210
+pairs, monocyte_CD16_pos +2.19 on 892), consistent with chance across cell types.
+**Implications:** The F-059 gain (+0.021 out of sample, +0.036 in-sample on K562 CRISPR) does not
+appear in eQTL enrichment anywhere, including K562's own blood eQTLs, and the intervals rule out a
+gain above about 0.5% (R1) to 2% (R2) of baseline enrichment in unseen cells. Per the pre-registered
+consequence, the F-059 features are K562-CRISPR-specific and do not become scE2G defaults; features
+selected on the K562 CRISPR benchmark need a transfer check before they count. The eQTL rescoring
+(plan 9) is that check, at minutes per arm.
+**Caveats:** eQTL enrichment and CRISPR AUPRC measure different things; whether this benchmark can
+detect an activity-term change of +0.02 AUPRC at all is unknown without a positive control (e.g.
+scATAC vs multiome scE2G, about -0.05 AUPRC on CRISPR). eQTL cell types are matched to clusters by
+name, several coarse (blood, T).
+**Revised 2026-10-13 (F-065):** the activity-only control shows this benchmark moves only -0.35 (R2) for a -0.05 AUPRC activity-term change, so the predicted effect of the three here is about +0.15 (R2), inside the interval. The pre-registered verdict stands (FAIL: no interval above 0), but "K562-specific" is not supported; the test is underpowered for activity effects of this size. CGI alone lowering R1 (-0.56 [-1.14, -0.13]) still stands.
+**Tags:** sce2g, eqtl, transfer, pre-registered, cpg-island, gata, ikzf2, immune, null
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-10-12 | prep 47583089; clusters 47583844; gather 47583918 | eQTL Catalogue v7 fine-mapped, scE2G 2025_0318_all_clusters (32), K562 CRISPR (training) | 2026_1002_sce2g_tf_activity | three: R1 -0.34 [-1.15, +0.11], R2 +0.11 [-0.18, +0.43]; CGI: R1 -0.56 [-1.14, -0.13] | pre-registered FAIL / WORSE |
+
+## F-064: The eQTL benchmark resolves a CRISPR-scale change: scATAC-only scE2G loses -2.6 enrichment at recall 0.10 against multiome, so F-063's null rules out the gain F-059 predicts
+**Status:** supported (positive control for F-063; one comparison; RNA differs between the arms)
+**Claim:** `2026_1002_sce2g_tf_activity/scripts/9.3` (array 47663675) adds the published scE2G scATAC predictions
+(`scATAC_powerlaw_v3`, the files eQTLEnrichment used) as an arm; their E2G.Score on the quantile scale
+reproduces their qnorm with no TPM rule (Spearman 1.0). `9.2 --extra-arms scatac_published` (job 47664774;
+first gather 47663677 stopped at its merge check: rows differing only in pip collapse at 6 significant
+figures; F-063's numbers are unchanged), `results/2026_1013_eqtl_positive_control.readouts.tsv`.
+
+| scATAC minus multiome n6 | R1 enrichment at recall 0.10 | R2 mean enrichment, recall 0.02-0.20 |
+|---|---|---|
+| primary, 62 pairs (n6 24.08 / 19.93) | -2.63 [-3.48, -1.79] | -1.72 [-2.27, -1.12] |
+| PBMC, 23 pairs | -4.04 [-5.18, -2.68] | -2.42 [-3.28, -1.55] |
+| BMMC22, 38 pairs | -2.07 [-2.89, -1.37] | -1.50 [-2.06, -0.91] |
+| GM12878 | -0.93 [-3.83, +2.56] | -0.34 [-2.66, +1.86] |
+| K562 (blood, spleen) | +2.28 [+0.50, +4.43] | not reached (max recall 0.184) |
+
+The old eQTLEnrichment run (2025_0322 fine-grained, all matches incl. K562) gives -2.4 (R1), the same
+direction and size. On K562 CRISPR the two models differ by -0.049 AUPRC (0.628 vs 0.579).
+**Implications:** The benchmark is not too coarse for activity-scale changes: -0.05 AUPRC appears as
+about -11% (R1) and -9% (R2) enrichment with intervals far from 0. Scaled linearly, the F-059 features'
+out-of-sample +0.021 AUPRC predicts about +1.1 (R1) and +0.7 (R2); F-063's upper bounds are +0.11 and
++0.43, so the K562 CRISPR gain is not just too small to see.
+**Caveats:** scATAC vs multiome also removes RNA (Kendall in ARC-E2G and the TPM >= 1 gene filter), and
+eQTL eGenes are expressed by definition, so part of this drop may come from the gene filter rather than
+the activity term; an activity-only control (n6 with ARC-E2G replaced by ABC, -0.050 AUPRC on K562
+CRISPR, `8.1`) would separate the two. The K562 scATAC file comes from a different run (2025_0208) from
+the K562 multiome one, which may explain its opposite sign. Linear scaling is an assumption.
+**Revised 2026-10-13 (F-065):** the caveat held: an activity-only change of the same CRISPR size (ARC-E2G -> ABC) moves the benchmark a seventh as much, so most of the scATAC drop is the RNA side; the implication that F-063 rules out the predicted gain is withdrawn.
+**Tags:** sce2g, eqtl, positive-control, transfer, scatac, multiome, benchmark-sensitivity
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-10-13 | 9.3 array 47663675; gather 47664774 | eQTL Catalogue v7 fine-mapped, scE2G scATAC and multiome cluster predictions (32) | 2026_1002_sce2g_tf_activity | scATAC - multiome R1 -2.63 [-3.48, -1.79], R2 -1.72 [-2.27, -1.12] | benchmark sensitive; supports F-063 |
+
+## F-065: eQTL enrichment barely registers an activity-term change: replacing ARC-E2G with ABC (-0.050 AUPRC on K562 CRISPR) costs -1.7% of mean enrichment, a fifth of what dropping RNA costs, so the eQTL benchmark cannot test activity features of F-059's size
+**Status:** supported (activity-only positive control; one eQTL resource; one activity swap)
+**Claim:** Arm `n6_abc` = n6 with ARC-E2G replaced by ABC.Score (8.1's "ABC only", K562 replica LOCO
+0.582, -0.0495 vs n6), added to `2026_1002_sce2g_tf_activity/scripts/9.0` and rescored with `9.1`/`9.2` (prep
+47672720, clusters 47672721, gather 47672734; `results/2026_1013_eqtl_activity_control.*`, which also
+reproduce every F-063 and F-064 number). Primary, 62 matched immune pairs, vs n6 (24.08 / 19.93):
+
+| arm | CRISPR AUPRC vs n6 (K562) | R1 enrichment at recall 0.10 | R2 mean enrichment, recall 0.02-0.20 |
+|---|---|---|---|
+| ARC-E2G -> ABC (activity only) | -0.050 | -0.40 [-0.78, +0.01] | -0.35 [-0.47, -0.20] |
+| scATAC-only scE2G (F-064, also drops RNA) | -0.049 | -2.63 [-3.48, -1.79] | -1.72 [-2.27, -1.12] |
+| + the three (F-063) | +0.021 out of sample | -0.34 [-1.15, +0.11] | +0.11 [-0.18, +0.43] |
+| + CGI distance (F-063) | +0.023 in replica | -0.56 [-1.14, -0.13] | -0.04 [-0.24, +0.23] |
+
+ABC by sample, R2: PBMC -0.28 [-0.47, -0.14], BMMC22 -0.30 [-0.46, -0.14], GM12878 -0.74 [-1.76, +0.09].
+**Implications:** Per 0.01 AUPRC of activity-term change, R2 moves about 0.07 (1.7% of baseline per
+0.05); the RNA side (expression filter, Kendall) moves it about five times more. Scaled this way, the
+three features' out-of-sample +0.021 predicts about +0.15 (R2), inside F-063's interval, so F-063 cannot
+separate a real transfer of that size from none. Testing activity features in unseen cells needs a
+benchmark that weighs element activity: a CRISPR set in a second cell, or eQTL readouts restricted to
+elements of expressed genes where the activity term decides the ranking. R2 is the more sensitive
+readout for activity (interval half-width 0.13 for ABC against 0.30 for the three).
+**Caveats:** One activity swap as calibration, and linear scaling; the three change element ranking
+more unevenly than ABC does (wider interval), so their power is lower still.
+**Tags:** sce2g, eqtl, positive-control, activity, benchmark-sensitivity, transfer
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-10-13 | prep 47672720; clusters 47672721; gather 47672734 | eQTL Catalogue v7 fine-mapped, scE2G cluster predictions (32), K562 CRISPR (training) | 2026_1002_sce2g_tf_activity | ABC swap R2 -0.35 [-0.47, -0.20] for -0.050 AUPRC | benchmark weakly sensitive to activity; F-063 inconclusive |
