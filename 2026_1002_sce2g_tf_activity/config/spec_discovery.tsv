@@ -1,0 +1,9 @@
+multiome_n6_disc3	cgiLogDist	cgi_logdist_p1	max	1 + pct log distance to nearest CpG island	
+multiome_n6_disc3	gataN	gata_n_p1	max	1 + pct GATA cluster sites at E	
+multiome_n6_disc3	ikzf2N	ikzf2_n_p1	max	1 + pct IKZF2 sites at E	
+multiome_n6_cgi	cgiLogDist	cgi_logdist_p1	max	1 + pct log distance to nearest CpG island	
+multiome_n6_gc	elementGC	gc	mean	GC fraction of E	
+multiome_n6_gc_disc3	elementGC	gc	mean	GC fraction of E	
+multiome_n6_gc_disc3	cgiLogDist	cgi_logdist_p1	max	1 + pct log distance to nearest CpG island	
+multiome_n6_gc_disc3	gataN	gata_n_p1	max	1 + pct GATA cluster sites at E	
+multiome_n6_gc_disc3	ikzf2N	ikzf2_n_p1	max	1 + pct IKZF2 sites at E	

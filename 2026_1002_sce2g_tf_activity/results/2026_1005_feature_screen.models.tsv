@@ -1,0 +1,3 @@
+train	test	r2_trees	r2_elasticnet	enet_nonzero
+discovery	replication	0.26049353866419467	0.1188888271452051	1743
+replication	discovery	0.24522959393581545	0.10392864199531682	1712

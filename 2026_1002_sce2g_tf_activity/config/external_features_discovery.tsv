@@ -1,0 +1,5 @@
+input_col	source_col	aggregate_function	join_by	source_file
+cgi_logdist_p1	cgi_logdist_p1	max	overlap	/scratch/users/shethm/sce2g_external/discovery_pairs.tsv.gz
+gata_n_p1	gata_n_p1	max	overlap	/scratch/users/shethm/sce2g_external/discovery_pairs.tsv.gz
+gc	gc	mean	overlap	/scratch/users/shethm/sce2g_external/discovery_pairs.tsv.gz
+ikzf2_n_p1	ikzf2_n_p1	max	overlap	/scratch/users/shethm/sce2g_external/discovery_pairs.tsv.gz

@@ -1,0 +1,6 @@
+model	dataset	ABC_directory	feature_table	polynomial	override_params
+multiome_powerlaw_n6	K562_Xu_pl		/oak/stanford/groups/engreitz/Users/sheth/scE2G_temp/scE2G_main/models/multiome_powerlaw_v3/feature_table.tsv	False	
+multiome_n6_plus_predp300mc	K562_Xu_pl		/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_1002_sce2g_tf_activity/config/models_predp300/multiome_n6_plus_predp300mc/feature_table.tsv	False	
+multiome_n6_plus_predp300ic	K562_Xu_pl		/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_1002_sce2g_tf_activity/config/models_predp300/multiome_n6_plus_predp300ic/feature_table.tsv	False	
+multiome_n6_plus_atacenc	K562_Xu_pl		/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_1002_sce2g_tf_activity/config/models_predp300/multiome_n6_plus_atacenc/feature_table.tsv	False	
+multiome_n6_arcpredp300geo	K562_Xu_pl		/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_1002_sce2g_tf_activity/config/models_predp300/multiome_n6_arcpredp300geo/feature_table.tsv	False	

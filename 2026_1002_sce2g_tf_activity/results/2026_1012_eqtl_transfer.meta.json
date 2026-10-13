@@ -1,0 +1,6 @@
+{
+ "rmax": 0.2,
+ "n6_max_recall_primary": 0.22596650466530066,
+ "n_genes": 6424,
+ "n_boot": 1000
+}

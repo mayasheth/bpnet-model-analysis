@@ -1,0 +1,647 @@
+procedure	outer_group	chosen
+forward	0	cgi_log_dist
+forward	0	motif:GATA6_MA1104.3+2
+forward	0	motif:IKZF2_MA2326.1
+forward	0	motif:MAFK_MA0496.4
+forward	0	motif:IKZF1_MA1508.2
+forward	1	cgi_log_dist
+forward	1	ins_centre_frac
+forward	1	motif:GATA6_MA1104.3+2
+forward	1	motif:IKZF2_MA2326.1
+forward	1	motif:HSF1_MA0486.2+1
+forward	2	cgi_log_dist
+forward	2	motif:GATA6_MA1104.3+2
+forward	2	width
+forward	2	motif:ZFP14_MA1972.1
+forward	2	screen_composite
+forward	3	cgi_log_dist
+forward	3	motif:GATA6_MA1104.3+2
+forward	3	motif:POU4F2_MA0683.2
+forward	3	motif:CTCF_MA0139.2
+forward	3	motif:IKZF2_MA2326.1
+forward	4	cgi_log_dist
+forward	4	ins_centre_frac
+forward	4	motif:GATA6_MA1104.3+2
+forward	4	motif:IKZF2_MA2326.1
+forward	4	motif:Wt1_MA1627.2
+l1	0	width
+l1	0	motif:GATA6_MA1104.3+2
+l1	0	motif:STAT3_MA0144.3
+l1	0	motif:Stat4_MA0518.2+1
+l1	0	cpg_oe x logABC
+l1	0	dinuc_pc2 x logABC
+l1	0	repeat_line_frac x logABC
+l1	0	repeat_simple_repeat_frac x logABC
+l1	0	width x logABC
+l1	0	frag_mean_log2_len x logABC
+l1	0	ref_ctcf_fp_print x logABC
+l1	0	motif:Arx_MA0874.2+1 x logABC
+l1	0	motif:BCL6B_MA0731.1 x logABC
+l1	0	motif:CREB3L1_MA0839.2 x logABC
+l1	0	motif:CTCF_MA1929.2 x logABC
+l1	0	motif:DPRX_MA1480.2 x logABC
+l1	0	motif:Dmbx1_MA0883.2 x logABC
+l1	0	motif:ELF3_MA0640.3+1 x logABC
+l1	0	motif:ELF4_MA0641.1 x logABC
+l1	0	motif:ELK1HOXB13_MA1932.2 x logABC
+l1	0	motif:ERFFOXI1_MA1935.2 x logABC
+l1	0	motif:ERFFOXO1_MA1936.2 x logABC
+l1	0	motif:ESR1_MA0112.4 x logABC
+l1	0	motif:ETV4_MA0764.4+5 x logABC
+l1	0	motif:ETV5HOXA2_MA1948.2 x logABC
+l1	0	motif:FEZF2_MA2341.1 x logABC
+l1	0	motif:FLI1FOXI1_MA1950.2 x logABC
+l1	0	motif:FOSJUN_MA1126.2 x logABC
+l1	0	motif:FOXC2_MA0846.2+1 x logABC
+l1	0	motif:FOXD1_MA0031.2+2 x logABC
+l1	0	motif:Foxj2_MA0614.1 x logABC
+l1	0	motif:GATA1TAL1_MA0140.3 x logABC
+l1	0	motif:GATA6_MA1104.3+2 x logABC
+l1	0	motif:Gli2_MA0734.4 x logABC
+l1	0	motif:HIC2_MA0738.2 x logABC
+l1	0	motif:HNF1A_MA0046.3+1 x logABC
+l1	0	motif:HSF1_MA0486.2+1 x logABC
+l1	0	motif:IKZF2_MA2326.1 x logABC
+l1	0	motif:INSM1_MA0155.1 x logABC
+l1	0	motif:IRF7_MA0772.2 x logABC
+l1	0	motif:MAFK_MA0496.4 x logABC
+l1	0	motif:MEIS2_MA0774.1 x logABC
+l1	0	motif:MSANTD3_MA1523.2 x logABC
+l1	0	motif:MTF1_MA0863.1 x logABC
+l1	0	motif:MYB_MA0100.4 x logABC
+l1	0	motif:Mafg_MA0659.4 x logABC
+l1	0	motif:NKX2-5_MA0063.3 x logABC
+l1	0	motif:OSR1_MA1542.2 x logABC
+l1	0	motif:PAX6_MA0069.1 x logABC
+l1	0	motif:PBX2_MA1113.3+1 x logABC
+l1	0	motif:PLAGL2_MA1548.2 x logABC
+l1	0	motif:POU4F2_MA0683.2 x logABC
+l1	0	motif:POU5F1_MA1115.2 x logABC
+l1	0	motif:RARA_MA0729.1 x logABC
+l1	0	motif:RORA_MA0072.2 x logABC
+l1	0	motif:RREB1_MA0073.2 x logABC
+l1	0	motif:Rarg_MA0860.1 x logABC
+l1	0	motif:SMAD2_MA1964.2 x logABC
+l1	0	motif:SOX12_MA1561.2 x logABC
+l1	0	motif:SPIC_MA0687.2 x logABC
+l1	0	motif:STAT3_MA0144.3 x logABC
+l1	0	motif:Sox11_MA0869.3 x logABC
+l1	0	motif:TBX19_MA0804.2+1 x logABC
+l1	0	motif:TEAD4_MA0809.3 x logABC
+l1	0	motif:TFAP2A_MA0810.2 x logABC
+l1	0	motif:TFDP1_MA1122.2 x logABC
+l1	0	motif:TP73_MA0861.2 x logABC
+l1	0	motif:USF1_MA0093.4 x logABC
+l1	0	motif:Wt1_MA1627.2 x logABC
+l1	0	motif:ZBTB14_MA1650.2 x logABC
+l1	0	motif:ZFP14_MA1972.1 x logABC
+l1	0	motif:ZFP42_MA1651.2 x logABC
+l1	0	motif:ZIC1_MA0696.1+1 x logABC
+l1	0	motif:ZNF136_MA1588.1 x logABC
+l1	0	motif:ZNF382_MA1594.1 x logABC
+l1	0	motif:ZNF652_MA1657.2 x logABC
+l1	0	motif:ZNF675_MA1714.2 x logABC
+l1	0	motif:ZNF701_MA1987.2 x logABC
+l1	0	motif:ZNF707_MA1715.1 x logABC
+l1	0	motif:ZSCAN31_MA1722.2 x logABC
+l1	0	motif:Zfp961_MA2126.1 x logABC
+l1	0	motif:Zic1Zic2_MA1628.2+1 x logABC
+l1	0	motif:Znf423_MA0116.1 x logABC
+l1	0	cgi_log_dist x tau
+l1	0	mappability x tau
+l1	0	ref_ctcf_fp_print x tau
+l1	0	motif:ARNTHIF1A_MA0259.2 x tau
+l1	0	motif:ATF2_MA1632.2 x tau
+l1	0	motif:BARX2_MA1471.2 x tau
+l1	0	motif:CTCF_MA0139.2 x tau
+l1	0	motif:GATA4_MA0482.3+1 x tau
+l1	0	motif:KLF13_MA0657.2 x tau
+l1	0	motif:KLF3_MA1516.2 x tau
+l1	0	motif:MAFK_MA0496.4 x tau
+l1	0	motif:Mecom_MA0029.2 x tau
+l1	0	motif:NFATC3_MA0625.3+1 x tau
+l1	0	motif:NR2F1_MA1537.2+1 x tau
+l1	0	motif:PHOX2B_MA0681.3 x tau
+l1	0	motif:TEAD1_MA0090.4 x tau
+l1	0	motif:ZNF692_MA1986.2 x tau
+l1	0	C=0.03
+l1	1	cgi_log_dist
+l1	1	width
+l1	1	ins_centre_frac
+l1	1	motif:GATA6_MA1104.3+2
+l1	1	motif:MYF6_MA0667.1
+l1	1	cpg_oe x logABC
+l1	1	at_run_max x logABC
+l1	1	polyAT5_n x logABC
+l1	1	dinuc_pc3 x logABC
+l1	1	repeat_dna_frac x logABC
+l1	1	repeat_simple_repeat_frac x logABC
+l1	1	cgi_log_dist x logABC
+l1	1	width x logABC
+l1	1	frag_short_frac x logABC
+l1	1	frag_mean_log2_len x logABC
+l1	1	ins_centre_frac x logABC
+l1	1	neigh_n50k x logABC
+l1	1	ref_ctcf_fp_print x logABC
+l1	1	motif:CREB3L1_MA0839.2 x logABC
+l1	1	motif:CTCF_MA1929.2 x logABC
+l1	1	motif:DPRX_MA1480.2 x logABC
+l1	1	motif:Dmrt1_MA1603.2 x logABC
+l1	1	motif:Dux_MA0611.3 x logABC
+l1	1	motif:EGR4_MA0733.2 x logABC
+l1	1	motif:ELF2_MA1483.3 x logABC
+l1	1	motif:ELF4_MA0641.1 x logABC
+l1	1	motif:ELK1HOXA1_MA1931.1 x logABC
+l1	1	motif:ERFHOXB13_MA1937.2 x logABC
+l1	1	motif:ETV4_MA0764.4+5 x logABC
+l1	1	motif:FEZF2_MA2341.1 x logABC
+l1	1	motif:FOXB1_MA0845.1 x logABC
+l1	1	motif:FOXD1_MA0031.2+2 x logABC
+l1	1	motif:FOXE1_MA1487.3 x logABC
+l1	1	motif:FOXP2_MA0593.2 x logABC
+l1	1	motif:Foxj2_MA0614.1 x logABC
+l1	1	motif:Foxq1_MA0040.2 x logABC
+l1	1	motif:GATA6_MA1104.3+2 x logABC
+l1	1	motif:HEY2_MA0649.2+3 x logABC
+l1	1	motif:HLF_MA0043.4 x logABC
+l1	1	motif:HNF1A_MA0046.3+1 x logABC
+l1	1	motif:HNF4A_MA1494.2 x logABC
+l1	1	motif:HOXB4_MA1499.2+2 x logABC
+l1	1	motif:HOXD3_MA0912.2 x logABC
+l1	1	motif:HSF1_MA0486.2+1 x logABC
+l1	1	motif:Hand1Tcf3_MA0092.2 x logABC
+l1	1	motif:Hoxd13_MA0909.4 x logABC
+l1	1	motif:IKZF2_MA2326.1 x logABC
+l1	1	motif:INSM1_MA0155.1 x logABC
+l1	1	motif:ISL2_MA0914.2 x logABC
+l1	1	motif:KLF3_MA1516.2 x logABC
+l1	1	motif:KLF5_MA0599.1+4 x logABC
+l1	1	motif:MAFK_MA0496.4 x logABC
+l1	1	motif:MSANTD3_MA1523.2 x logABC
+l1	1	motif:MTF1_MA0863.1 x logABC
+l1	1	motif:MYB_MA0100.4 x logABC
+l1	1	motif:NFATC3_MA0625.3+1 x logABC
+l1	1	motif:NHLH1_MA0048.3 x logABC
+l1	1	motif:NKX2-5_MA0063.3 x logABC
+l1	1	motif:NR1D1_MA1531.2 x logABC
+l1	1	motif:Nr1h3Rxra_MA0494.2 x logABC
+l1	1	motif:OSR1_MA1542.2 x logABC
+l1	1	motif:PLAGL2_MA1548.2 x logABC
+l1	1	motif:POU2F1SOX2_MA1962.1 x logABC
+l1	1	motif:POU4F2_MA0683.2 x logABC
+l1	1	motif:POU5F1_MA1115.2 x logABC
+l1	1	motif:Prdm15_MA1616.2 x logABC
+l1	1	motif:Ptf1A_MA1620.2 x logABC
+l1	1	motif:RELA_MA0107.1 x logABC
+l1	1	motif:RUNX3_MA0684.3 x logABC
+l1	1	motif:Rarg_MA0860.1 x logABC
+l1	1	motif:SIX2_MA1119.2 x logABC
+l1	1	motif:SMAD2_MA1964.2 x logABC
+l1	1	motif:SOX14_MA1562.2 x logABC
+l1	1	motif:SPIC_MA0687.2 x logABC
+l1	1	motif:Sox6_MA0515.1 x logABC
+l1	1	motif:TAL1TCF3_MA0091.2 x logABC
+l1	1	motif:TBP_MA0108.3 x logABC
+l1	1	motif:TBX19_MA0804.2+1 x logABC
+l1	1	motif:TBX5_MA0807.1 x logABC
+l1	1	motif:TEAD4_MA0809.3 x logABC
+l1	1	motif:TFAP2A_MA0810.2 x logABC
+l1	1	motif:TFAP2C_MA0814.3+1 x logABC
+l1	1	motif:TFAP4ETV1_MA1966.2 x logABC
+l1	1	motif:THAP1_MA0597.3 x logABC
+l1	1	motif:THRB_MA1575.2 x logABC
+l1	1	motif:TP73_MA0861.2 x logABC
+l1	1	motif:Wt1_MA1627.2 x logABC
+l1	1	motif:ZBTB14_MA1650.2 x logABC
+l1	1	motif:ZBTB7B_MA0694.2 x logABC
+l1	1	motif:ZIM3_MA1709.2 x logABC
+l1	1	motif:ZNF324_MA1977.2 x logABC
+l1	1	motif:ZNF675_MA1714.2 x logABC
+l1	1	motif:ZNF85_MA1720.2 x logABC
+l1	1	motif:Zic1Zic2_MA1628.2+1 x logABC
+l1	1	motif:Znf423_MA0116.1 x logABC
+l1	1	repeat_simple_repeat_frac x tau
+l1	1	cgi_log_dist x tau
+l1	1	mappability x tau
+l1	1	motif:ARNTHIF1A_MA0259.2 x tau
+l1	1	motif:CEBPG_MA1636.2+1 x tau
+l1	1	motif:CTCF_MA0139.2 x tau
+l1	1	motif:DUXA_MA0884.2 x tau
+l1	1	motif:FOXO1ELF1_MA1953.2 x tau
+l1	1	motif:FOXO1ELK1_MA1954.2 x tau
+l1	1	motif:GATA5_MA0766.3 x tau
+l1	1	motif:IKZF2_MA2326.1 x tau
+l1	1	motif:Msgn1_MA1524.3 x tau
+l1	1	motif:NR2F1_MA1537.2+1 x tau
+l1	1	motif:Nr2e1_MA0676.1 x tau
+l1	1	motif:SOX21_MA0866.1 x tau
+l1	1	motif:ZNF675_MA1714.2 x tau
+l1	1	C=0.03
+l1	2	cgi_log_dist
+l1	2	width
+l1	2	cpg_oe x logABC
+l1	2	repeat_line_frac x logABC
+l1	2	repeat_simple_repeat_frac x logABC
+l1	2	cgi_log_dist x logABC
+l1	2	width x logABC
+l1	2	frag_short_frac x logABC
+l1	2	neigh_n50k x logABC
+l1	2	ref_ctcf_fp_print x logABC
+l1	2	motif:ATOH7_MA1468.1 x logABC
+l1	2	motif:Arx_MA0874.2+1 x logABC
+l1	2	motif:BCL11A_MA2324.1 x logABC
+l1	2	motif:CTCF_MA1930.2 x logABC
+l1	2	motif:Dlx5_MA1476.3+2 x logABC
+l1	2	motif:Dux_MA0611.3 x logABC
+l1	2	motif:EGR4_MA0733.2 x logABC
+l1	2	motif:ELF4_MA0641.1 x logABC
+l1	2	motif:ERFHOXB13_MA1937.2 x logABC
+l1	2	motif:ESR1_MA0112.4 x logABC
+l1	2	motif:ESR2_MA0258.2 x logABC
+l1	2	motif:FEZF2_MA2341.1 x logABC
+l1	2	motif:FOXB1_MA0845.1 x logABC
+l1	2	motif:FOXP2_MA0593.2 x logABC
+l1	2	motif:Foxj2_MA0614.1 x logABC
+l1	2	motif:GATA1TAL1_MA0140.3 x logABC
+l1	2	motif:GATA6_MA1104.3+2 x logABC
+l1	2	motif:GCM2_MA0767.2 x logABC
+l1	2	motif:HNF1A_MA0046.3+1 x logABC
+l1	2	motif:HNF4A_MA1494.2 x logABC
+l1	2	motif:HOXB4_MA1499.2+2 x logABC
+l1	2	motif:HSF1_MA0486.2+1 x logABC
+l1	2	motif:IKZF2_MA2326.1 x logABC
+l1	2	motif:INSM1_MA0155.1 x logABC
+l1	2	motif:ISL2_MA0914.2 x logABC
+l1	2	motif:MAFK_MA0496.4 x logABC
+l1	2	motif:MEIS2_MA0774.1 x logABC
+l1	2	motif:MYB_MA0100.4 x logABC
+l1	2	motif:NFATC3_MA0625.3+1 x logABC
+l1	2	motif:NFYB_MA0502.3 x logABC
+l1	2	motif:NKX2-5_MA0063.3 x logABC
+l1	2	motif:NR2F1_MA0017.3 x logABC
+l1	2	motif:Nr5A2_MA0505.3 x logABC
+l1	2	motif:OLIG3_MA0827.1+3 x logABC
+l1	2	motif:PLAGL2_MA1548.2 x logABC
+l1	2	motif:POU4F1_MA0790.2+1 x logABC
+l1	2	motif:POU4F2_MA0683.2 x logABC
+l1	2	motif:POU5F1_MA1115.2 x logABC
+l1	2	motif:Ptf1A_MA1620.2 x logABC
+l1	2	motif:RARG_MA1553.2+1 x logABC
+l1	2	motif:RBPJ_MA1116.2 x logABC
+l1	2	motif:RREB1_MA0073.2 x logABC
+l1	2	motif:Rarg_MA0860.1 x logABC
+l1	2	motif:SMAD2_MA1964.2 x logABC
+l1	2	motif:SOX14_MA1562.2 x logABC
+l1	2	motif:SOX15_MA1152.2+3 x logABC
+l1	2	motif:Sox1_MA0870.1 x logABC
+l1	2	motif:Sox6_MA0515.1 x logABC
+l1	2	motif:TAL1TCF3_MA0091.2 x logABC
+l1	2	motif:TBX19_MA0804.2+1 x logABC
+l1	2	motif:TEAD4_MA0809.3 x logABC
+l1	2	motif:TFAP2A_MA0810.2 x logABC
+l1	2	motif:TFAP2C_MA0814.3+1 x logABC
+l1	2	motif:TFAP4FLI1_MA1967.2 x logABC
+l1	2	motif:TFDP1_MA1122.2 x logABC
+l1	2	motif:TFE3_MA0831.3+1 x logABC
+l1	2	motif:THAP1_MA0597.3 x logABC
+l1	2	motif:THRB_MA1575.2 x logABC
+l1	2	motif:TP73_MA0861.2 x logABC
+l1	2	motif:Wt1_MA1627.2 x logABC
+l1	2	motif:ZBTB12_MA1649.2 x logABC
+l1	2	motif:ZBTB26_MA1579.2 x logABC
+l1	2	motif:ZFP14_MA1972.1 x logABC
+l1	2	motif:ZNF135_MA1587.1 x logABC
+l1	2	motif:ZNF189_MA1725.2 x logABC
+l1	2	motif:ZNF211_MA1974.2 x logABC
+l1	2	motif:ZNF324_MA1977.2 x logABC
+l1	2	motif:ZNF410_MA0752.2 x logABC
+l1	2	motif:ZNF669_MA1985.1 x logABC
+l1	2	motif:ZNF85_MA1720.2 x logABC
+l1	2	motif:ZNF8_MA1718.1 x logABC
+l1	2	motif:ZSCAN16_MA2100.1 x logABC
+l1	2	motif:ZSCAN31_MA1722.2 x logABC
+l1	2	motif:Zfx_MA0146.3 x logABC
+l1	2	motif:Znf423_MA0116.1 x logABC
+l1	2	cgi_log_dist x tau
+l1	2	mappability x tau
+l1	2	motif:Ar_MA0007.4+2 x tau
+l1	2	motif:CTCF_MA0139.2 x tau
+l1	2	motif:DUXA_MA0884.2 x tau
+l1	2	motif:Dux_MA0611.3 x tau
+l1	2	motif:Erg_MA0474.4+1 x tau
+l1	2	motif:GATA5_MA0766.3 x tau
+l1	2	motif:Msgn1_MA1524.3 x tau
+l1	2	motif:NFATC3_MA0625.3+1 x tau
+l1	2	motif:NR2F1_MA1537.2+1 x tau
+l1	2	motif:Nr5A2_MA0505.3 x tau
+l1	2	motif:PHOX2B_MA0681.3 x tau
+l1	2	motif:SOX15_MA1152.2+3 x tau
+l1	2	motif:TFAP2C_MA0524.3+1 x tau
+l1	2	motif:ZNF214_MA1975.2 x tau
+l1	2	motif:ZNF675_MA1714.2 x tau
+l1	2	C=0.03
+l1	3	cgi_log_dist
+l1	3	width
+l1	3	cpg_oe x logABC
+l1	3	phylop_frac_gt2 x logABC
+l1	3	repeat_line_frac x logABC
+l1	3	cgi_log_dist x logABC
+l1	3	width x logABC
+l1	3	frag_short_frac x logABC
+l1	3	ins_centre_frac x logABC
+l1	3	neigh_n50k x logABC
+l1	3	ref_ctcf_fp_print x logABC
+l1	3	motif:Arx_MA0874.2+1 x logABC
+l1	3	motif:Atoh1_MA1467.3+1 x logABC
+l1	3	motif:CTCF_MA0139.2 x logABC
+l1	3	motif:Dmrt1_MA1603.2 x logABC
+l1	3	motif:Dux_MA0611.3 x logABC
+l1	3	motif:EGR4_MA0733.2 x logABC
+l1	3	motif:ELF4_MA0641.1 x logABC
+l1	3	motif:ERFFOXO1_MA1936.2 x logABC
+l1	3	motif:ERFHOXB13_MA1937.2 x logABC
+l1	3	motif:ESR1_MA0112.4 x logABC
+l1	3	motif:ETS1_MA0098.4+2 x logABC
+l1	3	motif:ETV4_MA0764.4+5 x logABC
+l1	3	motif:ETV5FOXO1_MA1947.2 x logABC
+l1	3	motif:FOSJUN_MA1126.2 x logABC
+l1	3	motif:FOXB1_MA0845.1 x logABC
+l1	3	motif:FOXC2_MA0846.2+1 x logABC
+l1	3	motif:FOXE1_MA1487.3 x logABC
+l1	3	motif:FOXS1_MA2118.1+14 x logABC
+l1	3	motif:Foxj2_MA0614.1 x logABC
+l1	3	motif:GATA1TAL1_MA0140.3 x logABC
+l1	3	motif:GATA6_MA1104.3+2 x logABC
+l1	3	motif:HNF1A_MA0046.3+1 x logABC
+l1	3	motif:Hic1_MA0739.2 x logABC
+l1	3	motif:IKZF2_MA2326.1 x logABC
+l1	3	motif:INSM1_MA0155.1 x logABC
+l1	3	motif:KLF2_MA1515.2+1 x logABC
+l1	3	motif:KLF3_MA1516.2 x logABC
+l1	3	motif:MAFK_MA0496.4 x logABC
+l1	3	motif:MYB_MA0100.4 x logABC
+l1	3	motif:MYF6_MA0667.1 x logABC
+l1	3	motif:NFATC3_MA0625.3+1 x logABC
+l1	3	motif:NHLH1_MA0048.3 x logABC
+l1	3	motif:NKX2-5_MA0063.3 x logABC
+l1	3	motif:Nfat5_MA0606.3 x logABC
+l1	3	motif:OSR2_MA1646.2 x logABC
+l1	3	motif:PLAGL2_MA1548.2 x logABC
+l1	3	motif:POU2F1SOX2_MA1962.1 x logABC
+l1	3	motif:POU4F2_MA0683.2 x logABC
+l1	3	motif:POU5F1_MA1115.2 x logABC
+l1	3	motif:PRDM1_MA0508.4 x logABC
+l1	3	motif:RELA_MA0107.1 x logABC
+l1	3	motif:RUNX2_MA0511.2 x logABC
+l1	3	motif:Rarg_MA0860.1 x logABC
+l1	3	motif:SNAI3_MA1559.2+1 x logABC
+l1	3	motif:SOX9_MA0077.2 x logABC
+l1	3	motif:STAT3_MA0144.3 x logABC
+l1	3	motif:Sox6_MA0515.1 x logABC
+l1	3	motif:TAL1TCF3_MA0091.2 x logABC
+l1	3	motif:TBX19_MA0804.2+1 x logABC
+l1	3	motif:TEAD4_MA0809.3 x logABC
+l1	3	motif:TFAP2A_MA0810.2 x logABC
+l1	3	motif:TFAP2B_MA0813.1+2 x logABC
+l1	3	motif:THAP1_MA0597.3 x logABC
+l1	3	motif:THRB_MA1575.2 x logABC
+l1	3	motif:TP73_MA0861.2 x logABC
+l1	3	motif:Wt1_MA1627.2 x logABC
+l1	3	motif:ZBTB14_MA1650.2 x logABC
+l1	3	motif:ZBTB18_MA0698.2 x logABC
+l1	3	motif:ZBTB7B_MA0694.2 x logABC
+l1	3	motif:ZFP42_MA1651.2 x logABC
+l1	3	motif:ZIM3_MA1709.2 x logABC
+l1	3	motif:ZKSCAN3_MA1973.2 x logABC
+l1	3	motif:ZNF136_MA1588.1 x logABC
+l1	3	motif:ZNF189_MA1725.2 x logABC
+l1	3	motif:ZNF214_MA1975.2 x logABC
+l1	3	motif:ZNF282_MA1154.2 x logABC
+l1	3	motif:ZNF324_MA1977.2 x logABC
+l1	3	motif:ZNF382_MA1594.1 x logABC
+l1	3	motif:ZNF574_MA1982.2 x logABC
+l1	3	motif:ZNF680_MA1729.2 x logABC
+l1	3	motif:ZNF684_MA1600.2 x logABC
+l1	3	motif:ZNF85_MA1720.2 x logABC
+l1	3	motif:ZSCAN31_MA1722.2 x logABC
+l1	3	motif:Znf423_MA0116.1 x logABC
+l1	3	cpg_oe x tau
+l1	3	cpg_n x tau
+l1	3	cgi_log_dist x tau
+l1	3	mappability x tau
+l1	3	screen_composite x tau
+l1	3	motif:CTCF_MA0139.2 x tau
+l1	3	motif:ESR1_MA0112.4 x tau
+l1	3	motif:FOXJ2ELF1_MA1952.2 x tau
+l1	3	motif:FOXO1ELF1_MA1953.2 x tau
+l1	3	motif:HOXB4_MA1499.2+2 x tau
+l1	3	motif:Hmx3_MA0898.2+1 x tau
+l1	3	motif:IKZF2_MA2326.1 x tau
+l1	3	motif:Msgn1_MA1524.3 x tau
+l1	3	motif:RXRAVDR_MA0074.1 x tau
+l1	3	motif:SOX15_MA1152.2+3 x tau
+l1	3	motif:Six4_MA2001.2 x tau
+l1	3	C=0.03
+l1	4	width
+l1	4	ins_centre_frac
+l1	4	motif:Erg_MA0474.4+1
+l1	4	motif:GATA1TAL1_MA0140.3
+l1	4	motif:GATA6_MA1104.3+2
+l1	4	cpg_oe x logABC
+l1	4	cgi_log_dist x logABC
+l1	4	width x logABC
+l1	4	frag_mean_log2_len x logABC
+l1	4	ins_centre_frac x logABC
+l1	4	neigh_n50k x logABC
+l1	4	ref_ctcf_fp_print x logABC
+l1	4	motif:Arid5a_MA0602.2 x logABC
+l1	4	motif:Arx_MA0874.2+1 x logABC
+l1	4	motif:BCL11A_MA2324.1 x logABC
+l1	4	motif:CTCF_MA1929.2 x logABC
+l1	4	motif:DPRX_MA1480.2 x logABC
+l1	4	motif:Dmrt1_MA1603.2 x logABC
+l1	4	motif:Dux_MA0611.3 x logABC
+l1	4	motif:EGR4_MA0733.2 x logABC
+l1	4	motif:ELF3_MA0640.3+1 x logABC
+l1	4	motif:ELF4_MA0641.1 x logABC
+l1	4	motif:ERFHOXB13_MA1937.2 x logABC
+l1	4	motif:ETV5FOXO1_MA1947.2 x logABC
+l1	4	motif:Elf5_MA0136.4 x logABC
+l1	4	motif:FEZF2_MA2341.1 x logABC
+l1	4	motif:FOSJUN_MA1126.2 x logABC
+l1	4	motif:FOXB1_MA0845.1 x logABC
+l1	4	motif:FOXP2_MA0593.2 x logABC
+l1	4	motif:Foxj2_MA0614.1 x logABC
+l1	4	motif:Foxq1_MA0040.2 x logABC
+l1	4	motif:GATA1TAL1_MA0140.3 x logABC
+l1	4	motif:GATA6_MA1104.3+2 x logABC
+l1	4	motif:GFI1_MA0038.3 x logABC
+l1	4	motif:HES6_MA1493.1 x logABC
+l1	4	motif:HNF1A_MA0046.3+1 x logABC
+l1	4	motif:HNF4A_MA1494.2 x logABC
+l1	4	motif:HSF1_MA0486.2+1 x logABC
+l1	4	motif:IKZF2_MA2326.1 x logABC
+l1	4	motif:INSM1_MA0155.1 x logABC
+l1	4	motif:Irf1_MA0050.4 x logABC
+l1	4	motif:LIN54_MA0619.2 x logABC
+l1	4	motif:MAFK_MA0496.4 x logABC
+l1	4	motif:MAFNFE2_MA0501.2+2 x logABC
+l1	4	motif:MEIS2_MA0774.1 x logABC
+l1	4	motif:MGAEVX1_MA1960.2 x logABC
+l1	4	motif:MSANTD3_MA1523.2 x logABC
+l1	4	motif:MTF1_MA0863.1 x logABC
+l1	4	motif:MXI1_MA1108.3 x logABC
+l1	4	motif:MYB_MA0100.4 x logABC
+l1	4	motif:MZF1_MA0056.3 x logABC
+l1	4	motif:Mafg_MA0659.4 x logABC
+l1	4	motif:NFATC3_MA0625.3+1 x logABC
+l1	4	motif:NFYB_MA0502.3 x logABC
+l1	4	motif:NKX2-5_MA0063.3 x logABC
+l1	4	motif:Nfat5_MA0606.3 x logABC
+l1	4	motif:Nfatc2_MA0152.3 x logABC
+l1	4	motif:Nr1h3Rxra_MA0494.2 x logABC
+l1	4	motif:Nr5A2_MA0505.3 x logABC
+l1	4	motif:PAX9_MA0781.2+1 x logABC
+l1	4	motif:PBX2_MA1113.3+1 x logABC
+l1	4	motif:PLAGL2_MA1548.2 x logABC
+l1	4	motif:POU4F1_MA0790.2+1 x logABC
+l1	4	motif:POU4F2_MA0683.2 x logABC
+l1	4	motif:POU5F1_MA1115.2 x logABC
+l1	4	motif:PROP1_MA0715.1 x logABC
+l1	4	motif:Pax7_MA0680.3 x logABC
+l1	4	motif:RELB_MA1117.2 x logABC
+l1	4	motif:RORC_MA1151.2 x logABC
+l1	4	motif:RUNX2_MA0511.2 x logABC
+l1	4	motif:RUNX3_MA0684.3 x logABC
+l1	4	motif:Rarg_MA0860.1 x logABC
+l1	4	motif:SMAD2_MA1964.2 x logABC
+l1	4	motif:SOX9_MA0077.2 x logABC
+l1	4	motif:Sox11_MA0869.3 x logABC
+l1	4	motif:Sox6_MA0515.1 x logABC
+l1	4	motif:TAL1TCF3_MA0091.2 x logABC
+l1	4	motif:TBP_MA0108.3 x logABC
+l1	4	motif:TBX19_MA0804.2+1 x logABC
+l1	4	motif:TBX5_MA0807.1 x logABC
+l1	4	motif:TEAD4_MA0809.3 x logABC
+l1	4	motif:TFAP2A_MA0810.2 x logABC
+l1	4	motif:TFAP4ETV1_MA1966.2 x logABC
+l1	4	motif:TFAP4_MA1570.1 x logABC
+l1	4	motif:THAP1_MA0597.3 x logABC
+l1	4	motif:THRB_MA1575.2 x logABC
+l1	4	motif:TP73_MA0861.2 x logABC
+l1	4	motif:Wt1_MA1627.2 x logABC
+l1	4	motif:ZBTB18_MA0698.2 x logABC
+l1	4	motif:ZBTB26_MA1579.2 x logABC
+l1	4	motif:ZBTB7B_MA0694.2 x logABC
+l1	4	motif:ZFP42_MA1651.2 x logABC
+l1	4	motif:ZNF136_MA1588.1 x logABC
+l1	4	motif:ZNF189_MA1725.2 x logABC
+l1	4	motif:ZNF214_MA1975.2 x logABC
+l1	4	motif:ZNF324_MA1977.2 x logABC
+l1	4	motif:ZNF382_MA1594.1 x logABC
+l1	4	motif:ZNF410_MA0752.2 x logABC
+l1	4	motif:ZNF549_MA1728.2 x logABC
+l1	4	motif:ZNF558_MA2335.1 x logABC
+l1	4	motif:ZNF574_MA1982.2 x logABC
+l1	4	motif:ZNF680_MA1729.2 x logABC
+l1	4	motif:ZNF701_MA1987.2 x logABC
+l1	4	motif:ZNF85_MA1720.2 x logABC
+l1	4	motif:ZSCAN31_MA1722.2 x logABC
+l1	4	motif:Zfp961_MA2126.1 x logABC
+l1	4	motif:Znf423_MA0116.1 x logABC
+l1	4	repeat_simple_repeat_frac x tau
+l1	4	cgi_log_dist x tau
+l1	4	mappability x tau
+l1	4	motif:ARNTHIF1A_MA0259.2 x tau
+l1	4	motif:BCL6_MA0463.3 x tau
+l1	4	motif:CEBPG_MA1636.2+1 x tau
+l1	4	motif:CTCF_MA0139.2 x tau
+l1	4	motif:DPRX_MA1480.2 x tau
+l1	4	motif:ETV5HOXA2_MA1948.2 x tau
+l1	4	motif:Erg_MA0474.4+1 x tau
+l1	4	motif:FOSL2_MA0478.2 x tau
+l1	4	motif:FOXO1ELK1_MA1954.2 x tau
+l1	4	motif:GATA5_MA0766.3 x tau
+l1	4	motif:HOXB4_MA1499.2+2 x tau
+l1	4	motif:ISL2_MA0914.2 x tau
+l1	4	motif:KLF13_MA0657.2 x tau
+l1	4	motif:NR2F1_MA1537.2+1 x tau
+l1	4	motif:Nr2e1_MA0676.1 x tau
+l1	4	motif:Nr5A2_MA0505.3 x tau
+l1	4	motif:PHOX2B_MA0681.3 x tau
+l1	4	motif:RELA_MA0107.1 x tau
+l1	4	motif:SOX21_MA0866.1 x tau
+l1	4	motif:TEAD4_MA0809.3 x tau
+l1	4	motif:ZNF214_MA1975.2 x tau
+l1	4	motif:ZNF675_MA1714.2 x tau
+l1	4	C=0.03
+family	0	cpg_island
+family	0	per_family:accessibility:-0.0025
+family	0	per_family:cells:-0.0020
+family	0	per_family:composition:+0.0169
+family	0	per_family:conservation:-0.0011
+family	0	per_family:cpg_island:+0.0223
+family	0	per_family:footprints:+0.0034
+family	0	per_family:fragments:+0.0022
+family	0	per_family:motifs:-0.0309
+family	0	per_family:neighbourhood:+0.0050
+family	0	per_family:p300_composite:-0.0003
+family	0	per_family:repeats:+0.0004
+family	0	per_family:shape:+0.0064
+family	1	cpg_island
+family	1	per_family:accessibility:-0.0043
+family	1	per_family:cells:-0.0023
+family	1	per_family:composition:+0.0227
+family	1	per_family:conservation:-0.0002
+family	1	per_family:cpg_island:+0.0323
+family	1	per_family:footprints:+0.0057
+family	1	per_family:fragments:+0.0163
+family	1	per_family:motifs:-0.0494
+family	1	per_family:neighbourhood:-0.0106
+family	1	per_family:p300_composite:+0.0020
+family	1	per_family:repeats:+0.0053
+family	1	per_family:shape:+0.0117
+family	2	cpg_island
+family	2	per_family:accessibility:+0.0009
+family	2	per_family:cells:-0.0018
+family	2	per_family:composition:+0.0169
+family	2	per_family:conservation:-0.0059
+family	2	per_family:cpg_island:+0.0275
+family	2	per_family:footprints:+0.0057
+family	2	per_family:fragments:+0.0030
+family	2	per_family:motifs:-0.0384
+family	2	per_family:neighbourhood:-0.0096
+family	2	per_family:p300_composite:+0.0045
+family	2	per_family:repeats:+0.0048
+family	2	per_family:shape:+0.0068
+family	3	cpg_island
+family	3	per_family:accessibility:-0.0047
+family	3	per_family:cells:-0.0008
+family	3	per_family:composition:+0.0203
+family	3	per_family:conservation:-0.0007
+family	3	per_family:cpg_island:+0.0240
+family	3	per_family:footprints:+0.0056
+family	3	per_family:fragments:+0.0008
+family	3	per_family:motifs:-0.0527
+family	3	per_family:neighbourhood:-0.0151
+family	3	per_family:p300_composite:+0.0059
+family	3	per_family:repeats:+0.0050
+family	3	per_family:shape:+0.0040
+family	4	cpg_island
+family	4	per_family:accessibility:-0.0041
+family	4	per_family:cells:-0.0020
+family	4	per_family:composition:+0.0201
+family	4	per_family:conservation:-0.0035
+family	4	per_family:cpg_island:+0.0240
+family	4	per_family:footprints:-0.0016
+family	4	per_family:fragments:+0.0074
+family	4	per_family:motifs:-0.0458
+family	4	per_family:neighbourhood:-0.0106
+family	4	per_family:p300_composite:+0.0004
+family	4	per_family:repeats:+0.0036
+family	4	per_family:shape:+0.0058
+trees	0	iters=173
+trees	1	iters=163
+trees	2	iters=194
+trees	3	iters=106
+trees	4	iters=131

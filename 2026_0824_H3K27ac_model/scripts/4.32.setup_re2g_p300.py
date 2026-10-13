@@ -110,12 +110,21 @@ DATASETS = [
     # ATAC features plus observed H3K4me1 at E and at P as two separate features, through
     # external_features_config (4.61), added 2026-10-01
     ("ATAC_H3K4me1sep_powerlaw", ""),
+    # element GC and CTCF motif count as extra features (4.62), the pre-registered test of
+    # F-055, added 2026-10-05
+    ("ATAC_GC_powerlaw", ""),
+    ("ATAC_CTCF_powerlaw", ""),
+    ("ATAC_GCCTCF_powerlaw", ""),
+    ("ATAC_H3K27ac_GCCTCF_powerlaw", H3K27AC_OBS),
 ]
 # Datasets with features beyond the pipeline's own: name -> (feature table, external features
-# config). The tables and configs are written by 4.61.
+# config). The tables and configs are written by 4.61 and 4.62.
 EXTERNAL = {"ATAC_H3K4me1sep_powerlaw": (
     "config/mine/feature_tables/ATAC_H3K4me1sep_pl_all.tsv",
     f"{E2G}/config/mine/external_features_K562_H3K4me1.tsv")}
+EXTERNAL.update({f"{x}_powerlaw": (f"config/mine/feature_tables/{x}_pl_all.tsv",
+                                   f"{E2G}/config/mine/external_features_K562_GCCTCF.tsv")
+                 for x in ("ATAC_GC", "ATAC_CTCF", "ATAC_GCCTCF", "ATAC_H3K27ac_GCCTCF")})
 FT_ATAC = "resources/feature_tables/ATAC_pl_all.tsv"
 FT_ACT = "resources/feature_tables/ATAC_H3K27ac_pl_all.tsv"
 

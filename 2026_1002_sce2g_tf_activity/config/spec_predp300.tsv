@@ -1,0 +1,4 @@
+multiome_n6_plus_predp300mc	predP300mc	predp300mc	max	predicted p300 at E, multi-cell K562 held out, mean of 3 seeds	
+multiome_n6_plus_predp300ic	predP300ic	predp300ic	max	predicted p300 at E, in-cell K562 model	
+multiome_n6_plus_atacenc	atacEncodeE	atac_encode	max	ENCODE K562 ATAC at E (control)	
+multiome_n6_arcpredp300geo	ARCpredp300geo	ARCpredp300geo	mean	ARC-E2G, activity sqrt(ATAC x predicted p300)	ARC.E2G.Score

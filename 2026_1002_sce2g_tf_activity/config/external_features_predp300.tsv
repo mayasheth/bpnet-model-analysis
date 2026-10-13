@@ -1,0 +1,5 @@
+input_col	source_col	aggregate_function	join_by	source_file
+ARCpredp300geo	ARCpredp300geo	mean	overlap	/scratch/users/shethm/sce2g_external/predp300_pairs.tsv.gz
+atac_encode	atac_encode	max	overlap	/scratch/users/shethm/sce2g_external/predp300_pairs.tsv.gz
+predp300ic	predp300ic	max	overlap	/scratch/users/shethm/sce2g_external/predp300_pairs.tsv.gz
+predp300mc	predp300mc	max	overlap	/scratch/users/shethm/sce2g_external/predp300_pairs.tsv.gz

@@ -1,0 +1,10 @@
+feature	input_col	second_input	aggregate_function	fill_value	nice_name
+numTSSEnhGene	numTSSEnhGene	NA	max	0	# TSSs between E and P
+normalizedATAC_prom	normalized_atac_prom	NA	mean	0	ATAC signal at P
+numNearbyEnhancers	numNearbyEnhancers	NA	max	0	# peaks within 5Kb of E
+ubiqExpressed	is_ubiquitous_uniform	NA	max	0	Ubiquitous expression
+numCandidateEnhGene	numCandidateEnhGene	NA	max	0	# peaks between E and P
+ARC.E2G.Score	ARC.E2G.Score	NA	mean	0	ARC-E2G score
+cgiLogDist	cgi_logdist_p1	NA	max	0	1 + pct log distance to nearest CpG island
+gataN	gata_n_p1	NA	max	0	1 + pct GATA cluster sites at E
+ikzf2N	ikzf2_n_p1	NA	max	0	1 + pct IKZF2 sites at E

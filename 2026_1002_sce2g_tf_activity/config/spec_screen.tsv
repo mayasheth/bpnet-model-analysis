@@ -1,0 +1,5 @@
+multiome_n6_gc	elementGC	gc	mean	GC fraction of E	
+multiome_n6_gc_fragshort	elementGC	gc	mean	GC fraction of E	
+multiome_n6_gc_fragshort	fragShortFrac	frag_short_frac	mean	share of Xu insertions from fragments < 100 bp at E	
+multiome_n6_gc_composite	elementGC	gc	mean	GC fraction of E	
+multiome_n6_gc_composite	screenComp1	screen_comp1	mean	1 + percentile of the 7.2 p300 screen composite	

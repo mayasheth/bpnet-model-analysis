@@ -1,0 +1,4 @@
+input_col	source_col	aggregate_function	join_by	source_file
+frag_short_frac	frag_short_frac	mean	overlap	/scratch/users/shethm/sce2g_external/screen_pairs.tsv.gz
+gc	gc	mean	overlap	/scratch/users/shethm/sce2g_external/screen_pairs.tsv.gz
+screen_comp1	screen_comp1	mean	overlap	/scratch/users/shethm/sce2g_external/screen_pairs.tsv.gz
