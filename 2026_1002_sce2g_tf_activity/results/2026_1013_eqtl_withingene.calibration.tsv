@@ -1,0 +1,5 @@
+readout	test_arm	n6	abc_vs_n6	abc_lo	abc_hi	predicted_gain	test_halfwidth	ratio	verdict
+E1	n6_three	0.11345	-0.0001952	-0.0022778	0.0021312	8.1982e-05	0.0036628	0.022382	not calibrated (ABC interval not below 0)
+E1	n6_cgi	0.11345	-0.0001952	-0.0022778	0.0021312	8.979e-05	0.003001	0.02992	not calibrated (ABC interval not below 0)
+E2	n6_three	0.37761	0.00069127	-0.0026886	0.0039717	0.00029033	0.0067576	0.042964	not calibrated (ABC interval not below 0)
+E2	n6_cgi	0.37761	0.00069127	-0.0026886	0.0039717	0.00031799	0.0049225	0.064598	not calibrated (ABC interval not below 0)

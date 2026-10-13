@@ -2622,3 +2622,35 @@ more unevenly than ABC does (wider interval), so their power is lower still.
 | Date | Run/Session | Dataset | Project | Result | Direction |
 |------|-------------|---------|---------|--------|-----------|
 | 2026-10-13 | prep 47672720; clusters 47672721; gather 47672734 | eQTL Catalogue v7 fine-mapped, scE2G cluster predictions (32), K562 CRISPR (training) | 2026_1002_sce2g_tf_activity | ABC swap R2 -0.35 [-0.47, -0.20] for -0.050 AUPRC | benchmark weakly sensitive to activity; F-063 inconclusive |
+
+## F-066: Within expressed genes, eQTL positives cannot calibrate an activity change: ARC-E2G -> ABC (-0.050 AUPRC on K562 CRISPR) leaves both within-gene readouts unchanged, so eQTLs cannot test F-059's features
+**Status:** supported (pre-registered calibration, decisions [2026-10-13] plan 10; test arms stayed blinded)
+**Claim:** `2026_1002_sce2g_tf_activity/scripts/10.1`, `10.2` (test 47687097, clusters 47687538, gather
+47687541; `results/2026_1013_eqtl_withingene.calibration.tsv`). Candidates = each eGene's
+non-promoter scE2G pairs within 1 Mb, TPM >= 1; positive = element holds its PIP >= 0.5 eQTL. Primary
+(62 matched immune pairs, 1,544,521 candidates, 9,058 positives):
+
+| readout | n6 | ARC-E2G -> ABC vs n6 | half-width, the three (blinded) | verdict |
+|---|---|---|---|---|
+| E1 pooled AUPRC | 0.1135 | -0.0002 [-0.0023, +0.0021] | 0.0037 | not calibrated |
+| E2 within-gene AP | 0.3776 | +0.0007 [-0.0027, +0.0040] | 0.0068 | not calibrated |
+
+Not a scoring fault (`10.3`, srun 47689219): n6 beats distance alone (E1 0.114 vs 0.088, E2 0.378 vs
+0.307) and random (0.006 / 0.040), but n6 and ABC rank one gene's candidates almost alike (median
+within-gene Spearman 0.994, same top element in 89% of genes). Positives sit near the TSS (median
+22 kb vs 433 kb for all candidates) and at the top of both arms (median quantile 0.994). On K562's own
+eQTLs ABC scores higher than n6 (E1 0.091 vs 0.082) and distance alone higher still (0.108), the
+reverse of K562 CRISPR.
+**Implications:** Fine-mapped eQTLs label the proximal, top-ranked element of a gene, where activity
+models agree; the CRISPR-scale activity difference lives among elements eQTLs do not label. Per the
+pre-registration, eQTLs cannot test activity features of F-059's size; only a CRISPR set in a
+second cell can (this conflicts with the Settled "K562 CRISPR is the only benchmark" rule, Maya's
+call). n6_three and n6_cgi stay blinded; F-063 stays inconclusive.
+**Caveats:** One activity swap as calibration; a narrower distance window could weigh activity
+more, but would be a new, unregistered readout.
+**Tags:** sce2g, eqtl, calibration, activity, within-gene, benchmark-sensitivity, transfer
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-10-13 | clusters 47687538 (+test 47687097); gather 47687541; diag 47689219 | eQTL Catalogue v7 fine-mapped, scE2G cluster predictions (32) | 2026_1002_sce2g_tf_activity | ABC swap E1 -0.0002 [-0.0023, +0.0021], E2 +0.0007 [-0.0027, +0.0040] | eQTLs cannot calibrate activity; second-cell CRISPR needed |

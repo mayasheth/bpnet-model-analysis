@@ -1752,3 +1752,51 @@ is 6 bp wide; a perfect match has p ~ 2.4e-4, above the scan's 1e-4 cutoff), so 
 exact consensus matches (AGGAAG / CTTCCT) within the element midpoint +/- 250 bp, for training and
 application alike. GATA stays on FIMO (Spearman 0.957 with the BINDetect counts over Xu elements).
 The arms are refitted with this definition; everything else as above.
+
+### [2026-10-13] Pre-register an expressed-gene, within-gene eQTL readout and its activity calibration (plan 10)
+
+**Context**: F-065: plan 9's enrichment readouts move only -0.35 (R2) when ARC-E2G is swapped for ABC
+(-0.050 AUPRC on K562 CRISPR), so they cannot test activity features of F-059's size; most of their
+signal is the RNA side (expression filter). Maya (2026-10-13): try an eQTL readout restricted to
+expressed genes, where the activity term decides the ranking, and calibrate it with the `n6_abc` arm.
+Written before any cluster is scored for it.
+
+**Decision**: `2026_1002_sce2g_tf_activity/scripts/10.1` (array, one task per biosample, plan 9's arms
+and models.json unchanged) -> `10.2`.
+- Candidates, per matched (biosample, eQTL cell type) pair: the cluster's scE2G pairs whose gene is
+  in the gene universe with pseudobulk TPM >= 1, element class not promoter, distance <= 1 Mb.
+- Positive: a candidate whose element contains a PIP >= 0.5 distal noncoding eQTL (plan 9's variant
+  table) for that gene in that cell type. Only eGenes with at least one positive candidate enter, so
+  the candidate set is the same for every arm (all arms share the cluster's elements).
+- Scores: each arm's quantile as in 9.1 (TPM rule moot, all genes expressed).
+- Readouts: E1 pooled AUPRC over all candidates of a group (the CRISPR benchmark's form); E2 mean
+  over (pair, eGene) of the within-gene average precision (ranking among one gene's elements only).
+  Paired bootstrap over eGenes, 1,000 resamples, as 9.2. Groups as 9.2; primary = all matched
+  pairs except K562.
+- **Calibration, read first, with n6_three and n6_cgi blinded** (10.2 `--blind` writes only their
+  interval half-widths h): a readout is calibrated if (a) n6_abc - n6 has its interval below 0 and
+  (b) the predicted gain of the three, 0.42 x |n6_abc - n6| (0.021 / 0.050 AUPRC, linear scaling as
+  F-065), is >= 1.43 h_three (80% power at two-sided 0.05). If (a) holds and 0.42 x |n6_abc - n6| >= h_three
+  only (about 50% power), the readout is weak: report to Maya, who decides whether to unblind.
+- **Primary, only on calibrated readouts**: n6_three vs n6, primary group. PASS if every calibrated
+  readout's interval lies above 0; WORSE if any lies below 0; otherwise FAIL. Secondary: n6_cgi
+  (0.46 x), same rule. Descriptive: K562 alone (in-sample), per sample, v3_published.
+
+**Alternatives considered**:
+- Restrict plan 9's enrichment to expressed eGenes: rejected; enrichment counts variant locations
+  in elements against background SNPs, so the gene term barely enters and the activity term only
+  moves elements across a threshold.
+- Count eGenes with no positive candidate (variant outside every element) as all-negative genes:
+  rejected; their elements are not more likely negative than any other.
+
+**Rationale**: within an expressed gene's candidate elements, the RNA terms are constant and the
+ranking is distance, contact and activity, the part F-059's features change. Calibrating against an
+activity-only swap of known CRISPR size, with the test arms blinded, keeps the readout choice from
+depending on the answer.
+
+**Consequences**: calibrated and PASS -> the three (or CGI distance) become candidate scE2G defaults
+pending a CRISPR set in a second cell. Calibrated and FAIL or WORSE -> F-059's gain does not transfer at
+the predicted size; stop adding K562-selected activity features without this check. Not calibrated
+-> eQTLs cannot test activity features; only a second-cell CRISPR set can (TODOLIST P1).
+
+**Tags**: pre-registration, sce2g, eqtl, transfer, calibration, activity, within-gene

@@ -46,7 +46,10 @@ from todo/TODOLIST.md"; the old file is kept as `todo/TODOLIST.pre-standard.md`.
   - eQTL transfer (plan 9, `9.0`-`9.2`, decisions [2026-10-12]): 62 matched immune pairs, the three R1 -0.34 [-1.15, +0.11], R2 +0.11 [-0.18, +0.43]; CGI alone WORSE (R1 -0.56 [-1.14, -0.13]); no gain on K562's own eQTLs either. Not adopted; reopen only with a CRISPR set in a second cell showing a gain
 - [x] P1 Positive control for the eQTL transfer benchmark #sce2g: DONE 2026-10-13 (F-064): scATAC - multiome R1 -2.63 [-3.48, -1.79], R2 -1.72 [-2.27, -1.12] for -0.049 AUPRC on CRISPR; F-063's upper bounds exclude the gain F-059 predicts
   - [x] activity-only control (F-065, 2026-10-13): ARC-E2G -> ABC moves R2 only -0.35 [-0.47, -0.20] (R1 -0.40 [-0.78, +0.01]); the scATAC drop is mostly RNA; F-063 is inconclusive for activity effects of F-059's size, not a refutation
-- [ ] P1 Find a transfer benchmark that weighs element activity: a CRISPR set in a second cell, or an eQTL readout restricted to expressed genes / elements where the activity term decides the ranking (calibrate with the ABC arm, F-065) #sce2g (Maya)
+- [x] P1 Find a transfer benchmark that weighs element activity: a CRISPR set in a second cell, or an eQTL readout restricted to expressed genes / elements where the activity term decides the ranking (calibrate with the ABC arm, F-065) #sce2g: eQTL route CLOSED 2026-10-13, not calibrated (F-066); the second-cell CRISPR route is in Waiting
+  - 2026-10-13 Maya chose the eQTL route: plan 10 pre-registered (decisions [2026-10-13]): expressed genes, non-promoter candidates <= 1 Mb, E1 pooled AUPRC + E2 within-gene AP; calibration on n6_abc with n6_three / n6_cgi blinded (`10.1`, `10.2`)
+  - result (clusters 47687538, gather 47687541, diagnostics `10.3`): ABC swap E1 -0.0002 [-0.0023, +0.0021], E2 +0.0007 [-0.0027, +0.0040]; n6 and ABC rank a gene's candidates alike (within-gene Spearman 0.994); eQTL positives are the proximal top element (median 22 kb). n6_three / n6_cgi stay blinded
+  - reopen only with a readout that a CRISPR-scale activity swap moves before any test arm is read
 - [ ] P2 Plan 9 eQTL rescoring as a cheap screen for K562-CRISPR-selected features: catches harm (CGI alone lowers R1) and RNA-side effects, but cannot confirm activity gains below about 0.05 AUPRC (F-065) #sce2g
   - the GATA term is likely erythroid-specific; a non-erythroid cell tests whether CpG-island distance alone carries over
   - label-free proxy done 2026-10-09 (`8.8`, F-060, Maya's idea): CGI distance tracks p300 beyond ATAC in K562 +0.233 and 3 of 4 other cells (pre-set rule: shared; MCF-7 +0.059 below half); the shared part is the near end (nearest decile under-acetylated relative to ATAC in all five, and depleted for regulated K562 pairs, 0.026 vs 0.031-0.060)
@@ -116,6 +119,7 @@ from todo/TODOLIST.md"; the old file is kept as `todo/TODOLIST.pre-standard.md`.
 <!-- Blocked on a job, a person or data. Say on what. -->
 - [ ] Review of [EngreitzLab/scE2G#118](https://github.com/EngreitzLab/scE2G/pull/118) (`source_path` fix), requested 2026-10-03; run on `local-with-pr118` until merged (on reviewer)
 - [ ] Is there a second CRISPR set (other cell type or held-out K562 screens) to confirm GC / CTCF on? (Maya)
+- [ ] Lift the Settled "K562 CRISPR is the only benchmark" rule? A second-cell CRISPR set is now the only test of activity features in unseen cells (F-065, F-066) (Maya)
 
 ## Inbox
 <!-- Untriaged: questions, ideas, links. One line each, dated. -->
