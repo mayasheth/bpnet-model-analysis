@@ -27,7 +27,7 @@ _ap = argparse.ArgumentParser()
 _ap.add_argument("--arms",
                  choices=("h3k27ac", "p300", "p300all", "accessibility", "dnaseinput",
                           "multitask", "slopefix", "p300fix", "multicell", "oracle",
-                          "rank", "nbr", "nbrx", "ranksweep", "gata", "motifact", "motifact2", "teach", "seeds", "rna", "frag", "k27frag", "noatac", "tissue"),
+                          "rank", "nbr", "nbrx", "ranksweep", "gata", "motifact", "motifact2", "teach", "seeds", "rna", "frag", "k27frag", "noatac", "tissue", "panelmean"),
                  default="h3k27ac",
                  help="Which activity target's arms to benchmark. The p300 set reuses the "
                       "same July floor and observed-H3K27ac ceiling, so the two "
@@ -510,6 +510,14 @@ TISSUE_ARMS = [x for x in SEEDS_ARMS if "twostage" not in x[0] and "oracle" not 
     (f"p300pred_multicell_tissues_holdK562{s_}", TISSUE_D, f"multi-cell + 3 tissues{' ' + s_[1:] if s_ else ''}", "#08519c")
     for s_ in ("", "_seed1", "_seed2")]
 
+# Panel-mean (Corgi idea 1) model (1.42), 3 runs, and the panel mean alone; the MSE-only
+# and assoc_noctcf seed arms ride along for seed-averaged pairs (decisions [2026-10-13]).
+PANELMEAN_D = f"{ABC}/2026_1013_p300_panelmean"
+PANELMEAN_ARMS = [x for x in SEEDS_ARMS if "twostage" not in x[0] and "oracle" not in x[0]] + [
+    (f"p300pred_multicell_panelmean_holdK562{s_}", PANELMEAN_D, f"panel-mean model{' ' + s_[1:] if s_ else ''}", "#7a0177")
+    for s_ in ("", "_seed1", "_seed2")] + [
+    ("p300pred_panelmeanonly_holdK562", PANELMEAN_D, "panel-mean p300 alone (no model)", "#f768a1")]
+
 if _a.arms == "motifact":
     ARMS = MOTIFACT_ARMS
 elif _a.arms == "motifact2":
@@ -528,6 +536,8 @@ elif _a.arms == "noatac":
     ARMS = NOATAC_ARMS
 elif _a.arms == "tissue":
     ARMS = TISSUE_ARMS
+elif _a.arms == "panelmean":
+    ARMS = PANELMEAN_ARMS
 elif _a.arms == "gata":
     ARMS = GATA_ARMS
 elif _a.arms == "ranksweep":
@@ -573,7 +583,8 @@ TAG = {"h3k27ac": "predicted_activity", "p300": "p300_activity",
        "frag": "p300_frag",
        "k27frag": "k27frag_activity",
        "noatac": "noatac_activity",
-       "tissue": "p300_tissue"}[_a.arms]
+       "tissue": "p300_tissue",
+       "panelmean": "p300_panelmean"}[_a.arms]
 RUN = {"h3k27ac": "2026_0904_predicted_activity", "p300": "2026_0905_p300_activity",
        "p300all": "2026_0906_p300_all",
        "accessibility": "2026_0910_accessibility_activity",
@@ -596,7 +607,8 @@ RUN = {"h3k27ac": "2026_0904_predicted_activity", "p300": "2026_0905_p300_activi
        "frag": "2026_0930_p300_frag",
        "k27frag": "2026_0930_k27frag",
        "noatac": "2026_1001_noatac",
-       "tissue": "2026_1002_p300_tissue"}[_a.arms]
+       "tissue": "2026_1002_p300_tissue",
+       "panelmean": "2026_1013_p300_panelmean"}[_a.arms]
 
 BASELINES = [
     ("distToTSS",      "FALSE", "mean", "Inf", "TRUE",  "Distance to TSS",      "#c5cad7"),

@@ -38,7 +38,7 @@ import torch
 
 R = "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/scripts"
 sys.path.insert(0, R)
-from train_multimodal_bpnet import extract_windows, normalize_accessibility
+from train_multimodal_bpnet import extract_windows, normalize_accessibility, panel_mean_tracks
 
 GEN = "/oak/stanford/groups/engreitz/Users/sheth/hg38_resources/hg38.fa"
 FOLDS = "/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/reference/hg38_five_folds.json"
@@ -83,6 +83,12 @@ ap.add_argument("--count-offset-model", default=None,
                      "training_target.json). A residual model predicts observed MINUS this "
                      "model's logcounts, so without it the painted track is a residual and "
                      "not an activity estimate at all. Must be mode 'atac'.")
+ap.add_argument("--panel-mean", choices=["model", "only"], default=None,
+                help="Panel-mean (Corgi) model, train_multimodal_bpnet.py --panel-mean. 'model': "
+                     "build the two panel-mean channels from ALL training cells (the fold's "
+                     "panel_mean_stats.json and training_target.json) and add the panel-mean "
+                     "offset at depth dref. 'only': paint the panel-mean p300 offset itself, no "
+                     "network (descriptive arm); --model-dir still names the panel-mean model.")
 ap.add_argument("--no-rc-average", dest="rc_average", action="store_false", default=True,
                 help="Disable test-time reverse-complement averaging. RC averaging is ON by "
                      "default as of 2026-09-05, matching the 2.15 evaluator: the number we "
@@ -120,6 +126,8 @@ if (a.acc_mean is None) != (a.acc_std is None):
     raise SystemExit("error: pass --acc-mean and --acc-std together or not at all")
 if a.acc_mean is not None and a.mode == "sequence":
     raise SystemExit("error: --acc-mean is meaningless in sequence mode")
+if a.panel_mean and (a.mode != "multimodal" or a.count_offset_model or a.motif_activity_bw):
+    raise SystemExit("error: --panel-mean needs --mode multimodal, no offset model, no motif channel")
 if a.count_offset_model and a.mode == "atac":
     raise SystemExit("error: an accessibility-only model was not residual-trained")
 
@@ -207,6 +215,16 @@ for chrom, g in reg.groupby("chr", sort=True):
         x = normalize_accessibility(accs, mean=nmean, std=nstd)[0]
         if mot is not None:
             x = np.concatenate([x, mot], axis=1).astype(np.float32)
+    pm_off = None
+    if a.panel_mean:
+        pst = json.load(open(f"{md}/panel_mean_stats.json"))
+        rec = json.load(open(f"{md}/training_target.json"))
+        others = {c: rec["panel"][c] for c in pst["training_cells"]}
+        zm, pl, om = panel_mean_tracks(kept, 0, True, others, pst["acc_stats"], pst["p300_depth"],
+                                       pst["dref"], in_w, OUT_W)
+        pl = (pl - pst["p300_channel_mean"]) / pst["p300_channel_std"]
+        x = np.concatenate([x, x - zm, pl], axis=1).astype(np.float32)
+        pm_off = np.log1p(om).astype(np.float32)        # depth = dref, as the stats record says
     X = (np.concatenate([seqs, x], axis=1) if a.mode == "multimodal"
          else seqs if a.mode == "sequence" else x).astype(np.float32)
 
@@ -226,7 +244,7 @@ for chrom, g in reg.groupby("chr", sort=True):
 
     out = []
     with torch.no_grad():
-        for i in range(0, len(X), a.batch):
+        for i in range(0, 0 if a.panel_mean == "only" else len(X), a.batch):
             xb = torch.from_numpy(X[i:i + a.batch]).to(dev)
             _, lc = m(xb)
             if a.rc_average:
@@ -234,6 +252,12 @@ for chrom, g in reg.groupby("chr", sort=True):
                 lc = (lc + lc_rc) / 2
             out.append(lc.squeeze(-1).cpu().numpy())
     lc = np.concatenate(out) if out else np.zeros(0)
+    if a.panel_mean == "only":
+        lc = pm_off.astype(np.float64)
+    elif a.panel_mean:
+        if pm_off.shape != lc.shape:
+            raise SystemExit(f"error: panel-mean offset {pm_off.shape} != prediction {lc.shape}")
+        lc = lc + pm_off
     if a.count_offset_model:
         off = count_offset(a.count_offset_model, fold, accs, dev, a.batch)
         if off.shape != lc.shape:
@@ -252,7 +276,8 @@ for chrom, g in reg.groupby("chr", sort=True):
           f"rc={'on' if a.rc_average else 'off'}"
           + (f" accnorm={nsrc} mean={nmean:.4f} std={nstd:.4f}"
              if a.mode in ("multimodal", "atac") else "")
-          + (" +offset" if a.count_offset_model else ""), flush=True)
+          + (" +offset" if a.count_offset_model else "")
+          + (f" panel-mean={a.panel_mean}" if a.panel_mean else ""), flush=True)
 
 print(f"\npredicted {n_pred:,} regions; {n_drop:,} dropped "
       f"({100.0*n_drop/max(1,n_pred+n_drop):.3f}% -- these read as 0 in ABC)", flush=True)

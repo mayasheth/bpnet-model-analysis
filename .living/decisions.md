@@ -1800,3 +1800,44 @@ the predicted size; stop adding K562-selected activity features without this che
 -> eQTLs cannot test activity features; only a second-cell CRISPR set can (TODOLIST P1).
 
 **Tags**: pre-registration, sce2g, eqtl, transfer, calibration, activity, within-gene
+
+### [2026-10-13] Pre-register Corgi idea 1: multi-cell p300 model that predicts the change from the panel mean
+
+**Context**: Maya (2026-10-13): after plan 10 (F-066), move to Corgi idea 1 (TODOLIST Next; Aksu &
+Vingron 2026, Corgi+). Multi-cell p300 variants have plateaued at ABC 0.483-0.489 (F-034 to F-046).
+Corgi-style models give the network the cross-cell mean as an input and learn the deviation from it.
+Differs from F-023, whose offset was an ATAC-only model of the same cell, not other cells' p300.
+
+**Decision**: `train_multimodal_bpnet.py --panel-mean` (new flag, default path unchanged), submitted
+by `A/scripts/1.42`, K562 held out, every other setting identical to 1.37 WEIGHTING=none (panel
+`config/p300_panel.json`, peaks, negatives, folds, windows, count_loss_weight 10, 100 epochs, early
+stopping 10, 20,000 negatives), 3 runs (no seed, seed 1, seed 2).
+- Panel mean, LEAVE-ONE-OUT in training: for a window of training cell c, the mean over the OTHER
+  training cells, so a cell's own p300 never enters its input or offset. At K562 inference, the
+  mean over all four training cells. K562 data never enter training.
+- Inputs (3 accessibility channels after DNA): target ATAC z-scored per cell exactly as the
+  comparator; target ATAC z minus the mean of the other cells' ATAC z (each with its own per-cell
+  statistics); log1p of the mean depth-normalised p300 5' coverage (strands summed, each cell scaled
+  to the median training depth), standardised over pooled training peaks.
+- Target: the count head is trained through an offset, prediction = output + log1p(mean p300 counts
+  in the output window, scaled to the target cell's depth), so it learns log p300 minus the panel
+  mean; at inference the offset uses the median training depth (ABC keeps ranks only, F-022).
+  The profile head is unchanged (each cell's own stranded p300).
+- Benchmark: predicted K562 p300 -> ABC (geomean with observed ATAC, as F-044/F-046) -> CRISPR, and
+  rE2G; seed-averaged paired bootstrap (4.17 / 4.34 `--group`).
+- **Primary**: Corgi - MSE-only multi-cell (`p300_multicell_holdK562_hw500_clw10{,_seed1,_seed2}`,
+  ABC 0.4828), seed-averaged, ABC. Gain if the interval lies above 0; harm if below. Secondary: the
+  same in rE2G (MSE-only 0.5579). Descriptive: Corgi - ATAC only; the panel mean alone painted as the
+  prediction (no model), to show what the network adds to the mean.
+
+**Alternatives considered**:
+- Inclusive mean (all training cells, own cell included): rejected, the target would sit in its own
+  input with weight 1/4, a leak the deployed model never has.
+- Replace the ATAC channel by the delta: rejected, keeps one change at a time against the comparator,
+  which reads the same z-scored ATAC.
+
+**Consequences**: gain -> Corgi becomes the multi-cell base for the remaining transfer work (and idea
+2's z-score TF list is tested on top of it). Null -> record it next to F-023 and F-046 and close
+idea 1; idea 2 then runs on the MSE-only base.
+
+**Tags**: pre-registration, p300, multi-cell, corgi, transfer, abc, re2g

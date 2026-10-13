@@ -92,7 +92,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument("--results-dir", default="results/2026_0903_predicted_activity")
 ap.add_argument("--arms", choices=("h3k27ac", "p300", "p300transfer", "accessibility",
                                   "dnaseinput", "multitask", "accnorm", "residualtx",
-                                  "p300fix", "multicell", "oracle", "rank", "nbr", "nbrx", "ranksweep", "gata", "motifact", "motifact2", "teach", "seeds", "rna", "frag", "k27frag", "noatac", "tissue"),
+                                  "p300fix", "multicell", "oracle", "rank", "nbr", "nbrx", "ranksweep", "gata", "motifact", "motifact2", "teach", "seeds", "rna", "frag", "k27frag", "noatac", "tissue", "panelmean"),
                 default="h3k27ac",
                 help="Which target's predicted tracks to build arms for. p300 arms go in "
                      "their own results dir and config: re-stamping Peaks inside the "
@@ -327,11 +327,15 @@ RNA = ['multicell_holdK562_motifact_rnafam', 'multicell_holdK562_motifact_rnafam
 FRAG = ['multicell_holdK562_flat5p', 'multicell_holdK562_flat5p_seed1', 'multicell_holdK562_flat5p_seed2', 'multicell_holdK562_frag5p', 'multicell_holdK562_frag5p_seed1', 'multicell_holdK562_frag5p_seed2']
 # Multi-cell MSE-only model trained with the three ENCODE tissues added (1.41), 3 runs.
 TISSUE = ['multicell_tissues_holdK562', 'multicell_tissues_holdK562_seed1', 'multicell_tissues_holdK562_seed2']
+# Panel-mean (Corgi idea 1) model (1.42), 3 runs, and the panel mean alone painted as the
+# prediction (4.1 --panel-mean only), decisions [2026-10-13].
+PANELMEAN = ['multicell_panelmean_holdK562', 'multicell_panelmean_holdK562_seed1', 'multicell_panelmean_holdK562_seed2', 'panelmeanonly_holdK562']
 TEACH = ['multicell_holdK562_motifact_oracle_head', 'multicell_holdK562_motifact_oracle_pair', 'multicell_holdK562_motifact_oracle_headpair']
 
-if a.arms in ("motifact", "motifact2", "teach", "seeds", "rna", "frag", "tissue"):
+if a.arms in ("motifact", "motifact2", "teach", "seeds", "rna", "frag", "tissue", "panelmean"):
     for tag in {"motifact": MOTIFACT, "motifact2": MOTIFACT2, "teach": TEACH,
-                "seeds": SEEDS, "rna": RNA, "frag": FRAG, "tissue": TISSUE}[a.arms]:
+                "seeds": SEEDS, "rna": RNA, "frag": FRAG, "tissue": TISSUE,
+                "panelmean": PANELMEAN}[a.arms]:
         bw = f"{PRED}/predp300mc_{tag}.bw"
         if not os.path.exists(bw):
             missing.append(bw)
@@ -508,7 +512,8 @@ TAG = a.config_tag or {"h3k27ac": "predicted_activity", "p300": "p300_activity",
                        "frag": "p300_frag",
                        "k27frag": "k27frag_activity",
                        "noatac": "noatac_activity",
-                       "tissue": "p300_tissue"}[a.arms]
+                       "tissue": "p300_tissue",
+                       "panelmean": "p300_panelmean"}[a.arms]
 out = f"{ABC}/config/mine/config_biosamples_{TAG}.tsv"
 with open(out, "w") as f:
     f.write("\t".join(COLS) + "\n")

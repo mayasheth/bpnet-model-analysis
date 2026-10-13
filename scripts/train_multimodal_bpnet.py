@@ -174,6 +174,15 @@ def parse_args():
                         "inference is model_output + atac_pred. Requires "
                         "--accessibility-bw even in sequence mode, since the offset "
                         "model reads it. Omit for normal training.")
+    # PANEL-MEAN MODEL (Corgi idea 1, decisions [2026-10-13]). For each training cell, the mean
+    # over the OTHER training cells (leave-one-out) of their ATAC z-score and depth-normalised p300
+    # becomes two extra input channels, and the count head learns observed minus the panel-mean
+    # p300 counts (an offset, as --count-offset-model). See panel_mean_tracks().
+    p.add_argument("--panel-mean", action="store_true",
+                   help="Corgi-style multi-cell model: add (ATAC z - panel mean ATAC z) and the "
+                        "panel-mean p300 as input channels and train the count head as a "
+                        "deviation from the panel-mean p300. Needs --cell-types-json with >= 2 "
+                        "training cell types; the mean is leave-one-out in training.")
     p.add_argument("--max-negatives", type=int, default=None,
                    help="Cap on distinct negative windows held in memory. Default "
                         "None = 10x the training peak count (historical behaviour). "
@@ -382,6 +391,56 @@ def normalize_accessibility(acc, mean=None, std=None):
     if std < 1e-8:
         std = 1.0
     return (acc - mean) / std, mean, std
+
+
+def p300_depth(spec):
+    """Total 5' counts of a cell type's p300 target, both strands (bigWig sumData)."""
+    tot = 0.0
+    for key in ("signal_plus_bw", "signal_minus_bw"):
+        if spec.get(key):
+            bw = pyBigWig.open(spec[key])
+            tot += float(bw.header()["sumData"])
+            bw.close()
+    if tot <= 0:
+        raise SystemExit(f"error: p300 track total is {tot} for {spec.get('signal_plus_bw')}")
+    return tot
+
+
+def panel_mean_tracks(regions, jitter, is_peak, others, acc_stats, depth, dref,
+                      in_window, out_window):
+    """Mean over the cell types in `others` at each region, for the panel-mean model.
+
+    Returns three arrays over the same windows extract_windows gives the target cell:
+      z_mean   (N, 1, L_in)  mean of each cell's ATAC z-score, each with its OWN statistics
+                             (acc_stats[cell]), so library differences cancel as in training
+      p_log    (N, 1, L_in)  log1p of the mean p300 5' coverage, strands summed, each cell scaled
+                             to depth `dref` (counts x dref / depth[cell]); not yet standardised
+      out_mean (N,)          mean p300 counts in the central output window at depth `dref`
+    `regions` must be rows the target cell's extraction kept; every one must be valid here too,
+    or rows would pair with the wrong region.
+    """
+    n = len(regions)
+    L_in = in_window + 2 * jitter
+    z_sum = np.zeros((n, 1, L_in), dtype=np.float64)
+    p_sum = np.zeros((n, 1, L_in), dtype=np.float64)
+    o_sum = np.zeros(n, dtype=np.float64)
+    for cell, spec in others.items():
+        plus, minus = spec["signal_plus_bw"], spec.get("signal_minus_bw")
+        tracks = ",".join([plus] + ([minus] if minus else []) + [spec["accessibility_bw"]])
+        _, sig, acc, valid = extract_windows(regions.reset_index(drop=True), None, plus, minus,
+                                             tracks, in_window, out_window, jitter,
+                                             is_peak=is_peak)
+        if not valid.all():
+            raise SystemExit(f"error: panel mean: {int((~valid).sum())} of {n} windows are not "
+                             f"valid in {cell}'s tracks")
+        w = dref / depth[cell]
+        z_sum += normalize_accessibility(acc[:, -1:], mean=acc_stats[cell]["acc_mean"],
+                                         std=acc_stats[cell]["acc_std"])[0]
+        p_sum += acc[:, :-1].sum(axis=1, keepdims=True) * w
+        o_sum += sig[:, :, jitter:jitter + out_window].sum(axis=(1, 2)) * w
+    k = len(others)
+    return ((z_sum / k).astype(np.float32), np.log1p(p_sum / k).astype(np.float32),
+            o_sum / k)
 
 
 class MultiModalPeakNegativeSampler(torch.utils.data.Dataset):
@@ -613,6 +672,7 @@ def main():
         "pair_batch": args.pair_batch,
         "seed": args.seed,
         "base_model": args.base_model,
+        "panel_mean": args.panel_mean,
     }
     if args.seed is not None:
         torch.manual_seed(args.seed)
@@ -765,11 +825,27 @@ def main():
                          "implemented. The offset model is trained on one cell type's "
                          "accessibility, so pooling would mix offset scales silently.")
 
+    if args.panel_mean:
+        bad = [f for f, on in (("--count-offset-model", args.count_offset_model),
+                               ("--motif-activity-bw", args.motif_activity_bw),
+                               ("--motif-head", args.motif_head), ("--base-model", args.base_model),
+                               ("--pair-loss-weight", args.pair_loss_weight > 0),
+                               ("--rank-loss-weight", args.rank_loss_weight > 0),
+                               ("--profile-target-plus-bw", use_prof_target)) if on]
+        if bad:
+            raise SystemExit(f"error: --panel-mean is not combined with {', '.join(bad)}")
+        if not args.cell_types_json or len(PANEL) < 2 or args.mode != "multimodal":
+            raise SystemExit("error: --panel-mean needs --cell-types-json with >= 2 training "
+                             "cell types and --mode multimodal")
+        if any(_spec(s, "motif_activity_bw", None) for s in PANEL.values()):
+            raise SystemExit("error: --panel-mean with a motif_activity_bw panel entry")
+
     genome = args.genome  # None for atac mode -- extract_windows handles this
     prof_kw = dict(profile_plus_bw=args.profile_target_plus_bw,
                    profile_minus_bw=args.profile_target_minus_bw)
+    pm_regions = {}   # (cell, set) -> the region rows the extraction kept, for --panel-mean
 
-    def _extract(spec, regions, jitter, is_peak, label):
+    def _extract(spec, regions, jitter, is_peak, label, keep_key=None):
         _acc = _spec(spec, "accessibility_bw", args.accessibility_bw)
         _mot = _spec(spec, "motif_activity_bw", args.motif_activity_bw)
         if _mot is not None:
@@ -782,8 +858,10 @@ def main():
             args.in_window, args.out_window, jitter,
             is_peak=is_peak, **prof_kw
         )
-        seqs, sigs, accs, _ = out[:4]
+        seqs, sigs, accs, _valid = out[:4]
         prof = out[4] if use_prof_target else None
+        if keep_key is not None:
+            pm_regions[keep_key] = regions[_valid].reset_index(drop=True)
         print(f"  Extracted {len(accs)} {label}")
         if prof is not None:
             # Both come out of one loop over one `valid` mask, so a mismatch here means
@@ -843,12 +921,13 @@ def main():
                   f"{args.negative_ratio:.0%} of each batch from negatives.")
 
         print(f"{tag}Extracting windows...")
+        pmk = (lambda s: (cell, s)) if args.panel_mean else (lambda s: None)
         a_seqs, a_sigs, a_accs, a_prof = _extract(spec, c_train_peaks, args.max_jitter,
-                                                  True, "training peaks")
+                                                  True, "training peaks", pmk("tr"))
         n_seqs, n_sigs, n_accs, n_prof = _extract(spec, c_negs, 0, False,
-                                                  "training negatives")
+                                                  "training negatives", pmk("neg"))
         v_seqs, v_sigs, v_accs, v_prof = _extract(spec, c_val_peaks, 0, True,
-                                                  "validation peaks")
+                                                  "validation peaks", pmk("val"))
 
         if use_prof_target:
             for nm, a, b in ((f"{tag}training peaks", a_prof, a_sigs),
@@ -901,6 +980,45 @@ def main():
                                  "train_negatives": int(len(n_sigs)),
                                  "val_peaks": int(len(v_sigs))}
 
+    # PANEL-MEAN CHANNELS AND OFFSETS, built after the loop because each cell's leave-one-out
+    # mean needs every other cell's ATAC statistics. Channels after DNA become
+    # [ATAC z, ATAC z - mean of the others' ATAC z, panel-mean p300 (standardised below)].
+    pm_off = {"tr": [], "neg": [], "val": []}
+    if args.panel_mean:
+        depth = {c: p300_depth(s) for c, s in PANEL.items()}
+        dref = float(np.median(list(depth.values())))
+        print(f"\nPanel mean (leave-one-out): p300 depth {', '.join(f'{c} {d:,.0f}' for c, d in depth.items())}; "
+              f"reference depth {dref:,.0f}")
+        for cell_i, cell in enumerate(PANEL):
+            others = {k: s for k, s in PANEL.items() if k != cell}
+            for key, jit, is_pk in (("tr", args.max_jitter, True), ("neg", 0, False), ("val", 0, True)):
+                acc = bins[f"{key}_accs"][cell_i]
+                reg_ = pm_regions[(cell, key)]
+                assert acc.shape[1] == 1 and len(reg_) == len(acc), \
+                    f"{cell} {key}: {len(reg_)} kept regions for {len(acc)} windows"
+                zm, pl, om = panel_mean_tracks(reg_, jit, is_pk, others, acc_stats, depth, dref,
+                                               args.in_window, args.out_window)
+                assert zm.shape == acc.shape, f"{cell} {key}: panel mean {zm.shape} vs {acc.shape}"
+                bins[f"{key}_accs"][cell_i] = np.concatenate([acc, acc - zm, pl], axis=1)
+                pm_off[key].append(np.log1p(om * depth[cell] / dref).astype(np.float32))
+            print(f"  [{cell}] mean over {', '.join(others)}: train offset mean "
+                  f"{pm_off['tr'][-1].mean():.3f}, delta-channel sd "
+                  f"{bins['tr_accs'][cell_i][:, 1].std():.3f}")
+        pooled = np.concatenate([b[:, 2] for b in bins["tr_accs"]])
+        pm_mean, pm_std = float(pooled.mean()), float(max(pooled.std(), 1e-8))
+        del pooled
+        for key in ("tr", "neg", "val"):
+            for b in bins[f"{key}_accs"]:
+                b[:, 2] = (b[:, 2] - pm_mean) / pm_std
+        with open(os.path.join(args.output_dir, "panel_mean_stats.json"), "w") as f:
+            json.dump({"channels": ["atac_z", "atac_z_minus_panel_mean_z", "panel_mean_p300"],
+                       "training_cells": list(PANEL), "p300_depth": depth, "dref": dref,
+                       "p300_channel_mean": pm_mean, "p300_channel_std": pm_std,
+                       "acc_stats": acc_stats,
+                       "offset": "log1p(mean p300 counts in the output window x depth / dref); "
+                                 "inference uses depth = dref"}, f, indent=2)
+        print(f"  panel-mean p300 channel standardised with mean {pm_mean:.4f}, sd {pm_std:.4f}")
+
     def _cat(key):
         vals = [v for v in bins[key] if v is not None]
         if not vals:
@@ -939,6 +1057,13 @@ def main():
               f"val {val_off.shape} mean {val_off.mean():.3f}")
         print("  this run learns the RESIDUAL; final prediction is "
               "model_output + offset")
+    if args.panel_mean:
+        tr_off, neg_off, val_off = (np.concatenate(pm_off[k]) for k in ("tr", "neg", "val"))
+        assert len(tr_off) == len(tr_sigs) and len(neg_off) == len(neg_sigs) \
+            and len(val_off) == len(val_sigs), "panel-mean offsets do not line up with the windows"
+        obs = np.log1p(val_sigs.sum(axis=(1, 2)))
+        print(f"  panel-mean offsets: train mean {tr_off.mean():.3f}, val mean {val_off.mean():.3f}; "
+              f"val Pearson(offset, observed log counts) {np.corrcoef(val_off, obs)[0, 1]:.3f}")
 
     if acc_stats:
         stats_path = os.path.join(args.output_dir, "acc_normalization_stats.json")

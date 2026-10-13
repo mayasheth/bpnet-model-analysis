@@ -116,6 +116,11 @@ DATASETS = [
     ("ATAC_CTCF_powerlaw", ""),
     ("ATAC_GCCTCF_powerlaw", ""),
     ("ATAC_H3K27ac_GCCTCF_powerlaw", H3K27AC_OBS),
+    # panel-mean (Corgi idea 1) model (1.42), 3 runs, and the panel mean alone, added 2026-10-13
+    ("ATAC_p300mcpanelmean_powerlaw", f"{PRED}/predp300mc_multicell_panelmean_holdK562.bw"),
+    ("ATAC_p300mcpanelmeanseed1_powerlaw", f"{PRED}/predp300mc_multicell_panelmean_holdK562_seed1.bw"),
+    ("ATAC_p300mcpanelmeanseed2_powerlaw", f"{PRED}/predp300mc_multicell_panelmean_holdK562_seed2.bw"),
+    ("ATAC_p300panelmeanonly_powerlaw", f"{PRED}/predp300mc_panelmeanonly_holdK562.bw"),
 ]
 # Datasets with features beyond the pipeline's own: name -> (feature table, external features
 # config). The tables and configs are written by 4.61 and 4.62.
