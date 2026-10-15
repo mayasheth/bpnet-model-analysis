@@ -64,7 +64,6 @@ from todo/TODOLIST.md"; the old file is kept as `todo/TODOLIST.pre-standard.md`.
 ## Next
 <!-- Ordered: top item is the next thing to start. -->
 - [ ] P1 Act on the 2026-10-14 review of reports 1-7 (`.living/outputs/reviews/2026-10-14-all-reports.md`, 82 findings, 23 Major) #report (Maya: scope)
-  - urgent: copy the K562 PE ATAC BAMs and baseline scE2G run off $SCRATCH before ~2026-11-20 (review F57)
   - reruns that could change text: upstream on test chromosomes (F8), gene-level bootstrap on other borderline verdicts (F7; option now in 4.17/4.34 `--cluster gene`), depth-matched p300 vs H3K27ac (F10), full-TSS promoter mask (F11)
 - [ ] P1 Corgi idea 2 (on the Corgi base, F-067): RNA TF list weighted by expression z-score across the panel + K562 instead of log TPM (`4.54` -> `4.45`, 3 seeds); after idea 1 is submitted #model
   - Corgi's per-cell TF importance tracks expression z-score (39-68% of variance); the log-TPM list was null (F-041). Same weighting could replace the hand-picked erythroid motif set in scE2G
@@ -124,6 +123,10 @@ from todo/TODOLIST.md"; the old file is kept as `todo/TODOLIST.pre-standard.md`.
 - [ ] Review of [EngreitzLab/scE2G#118](https://github.com/EngreitzLab/scE2G/pull/118) (`source_path` fix), requested 2026-10-03; run on `local-with-pr118` until merged (on reviewer)
 - [ ] Is there a second CRISPR set (other cell type or held-out K562 screens) to confirm GC / CTCF on? (Maya)
 - [ ] Lift the Settled "K562 CRISPR is the only benchmark" rule? A second-cell CRISPR set is now the only test of activity features in unseen cells (F-065, F-066) (Maya)
+- [ ] Decide by 2026-11-14 whether to copy $SCRATCH data to Oak (review F57); Maya 2026-10-14: track only, don't copy yet (Maya)
+  - K562 PE ATAC BAMs `$SCRATCH/atac_pe/ENCFF{077FBI,128WZG,534DCE}.pe.bam` + `.bai`, 24.5 GB, mtime 2026-08-25, purge eligible ~2026-11-23
+  - baseline scE2G run `$SCRATCH/sce2g_runs/2026_1002_k562_xu`, 11 GB, newest file 2026-10-03, purge eligible ~2027-01-01
+  - reopen: if still needed on 2026-11-14, copy; otherwise let purge
 
 ## Inbox
 <!-- Untriaged: questions, ideas, links. One line each, dated. -->
