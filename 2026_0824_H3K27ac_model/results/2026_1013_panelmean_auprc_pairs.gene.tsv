@@ -1,0 +1,6 @@
+arm_a	arm_b	auprc_a	auprc_b	delta	ci_lo	ci_hi	sign_kept_frac	sign_kept_pct	n_pairs	n_regulated	n_boot	cluster
+pm	mse	0.49317	0.482793	0.010377	0.000785	0.020144	0.983	98.3	10342	466	2000	gene
+pm	K562_ATAC_only.ABC.Score	0.49317	0.468009	0.025161	0.008541	0.042501	0.9965	99.65	10342	466	2000	gene
+mse	K562_ATAC_only.ABC.Score	0.482793	0.468009	0.014785	-0.004155	0.033243	0.9465	94.65	10342	466	2000	gene
+pm	p300pred_panelmeanonly_holdK562.ABC.Score	0.49317	0.33297	0.1602	0.12192	0.197965	1.0	100.0	10342	466	2000	gene
+p300pred_panelmeanonly_holdK562.ABC.Score	K562_ATAC_only.ABC.Score	0.33297	0.468009	-0.135039	-0.17171	-0.099108	1.0	100.0	10342	466	2000	gene

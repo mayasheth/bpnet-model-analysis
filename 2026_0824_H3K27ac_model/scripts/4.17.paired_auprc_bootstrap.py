@@ -29,6 +29,11 @@ ap.add_argument("--out-tsv", default=None,
                      "headline numbers are registerable in the numbers manifest instead of "
                      "being read off a log and hand-typed.")
 ap.add_argument("--seed", type=int, default=0)
+ap.add_argument("--cluster", choices=["pair", "gene"], default="pair",
+                help="resampling unit. pair (default, every earlier table): element-gene pairs "
+                     "i.i.d. gene: genes with replacement, all of a drawn gene's pairs together, "
+                     "since pairs of one gene share its expression and locus and are not "
+                     "independent (review 2026-10-14, F7)")
 ap.add_argument("--group", action="append", default=[], metavar="NAME=A,B,...",
                 help="a replicate group: its AUPRC is the mean of its members' AUPRCs, computed "
                      "within each bootstrap draw; NAME can then be used in --pair")
@@ -70,6 +75,17 @@ def auprc(y_true, s):
     return float((prec * yt).sum() / n_pos) if n_pos else np.nan
 
 
+def resampler(rng, unit_codes):
+    """Row indices of one bootstrap draw: rows i.i.d., or whole clusters with replacement."""
+    n = len(unit_codes)
+    if a.cluster == "pair":
+        return lambda: rng.randint(0, n, n)
+    order = np.argsort(unit_codes, kind="mergesort")
+    bounds = np.r_[0, np.cumsum(np.bincount(unit_codes))]
+    rows = [order[bounds[g]:bounds[g + 1]] for g in range(len(bounds) - 1)]
+    return lambda: np.concatenate([rows[g] for g in rng.randint(0, len(rows), len(rows))])
+
+
 X = {c: sub[c].to_numpy(dtype=float) for c in arms}
 obs = {c: auprc(y, X[c]) for c in arms}
 print("observed AUPRC on the shared pair set")
@@ -78,13 +94,19 @@ for c in sorted(arms, key=lambda k: -obs[k]):
 
 rng = np.random.RandomState(a.seed)
 n = len(y)
+# pair = name|gene and element names can contain "|", so the gene is the LAST field
+genes = pd.factorize(sub.index.to_series().str.rsplit("|", n=1).str[-1])[0]
+if a.cluster == "gene" and genes.max() + 1 == n:
+    raise SystemExit("gene clustering found one gene per pair; the pair key was not split correctly")
+draw = resampler(rng, genes)
+print(f"\nresampling unit: {a.cluster} ({n:,} pairs in {genes.max() + 1:,} genes)")
 boot = {c: np.empty(a.n_boot) for c in arms}
 for b in range(a.n_boot):
-    idx = rng.randint(0, n, n)
+    idx = draw()
     yb = y[idx]
     if yb.sum() < 5:                      # degenerate resample, redraw
         while yb.sum() < 5:
-            idx = rng.randint(0, n, n)
+            idx = draw()
             yb = y[idx]
     for c in arms:
         boot[c][b] = auprc(yb, X[c][idx])
@@ -96,7 +118,7 @@ for g_, mem in GROUPS.items():
     print(f"group {g_}: " + ", ".join(f"{obs[m_]:.4f}" for m_ in mem)
           + f"  -> mean {obs[g_]:.4f}, sd {np.std([obs[m_] for m_ in mem], ddof=1):.4f}")
 
-print(f"\npaired bootstrap, {a.n_boot:,} resamples of the pair set (same resample for every arm)")
+print(f"\npaired bootstrap, {a.n_boot:,} resamples of the {a.cluster} set (same resample for every arm)")
 print(f"{'comparison':<62}{'delta':>9}{'95% CI':>22}{'sign kept':>11}")
 for A, B in a.pair:
     dl = boot[A] - boot[B]
@@ -119,6 +141,6 @@ if a.out_tsv:
                      "delta": obs[A] - obs[B], "ci_lo": lo, "ci_hi": hi,
                      "sign_kept_frac": frac, "sign_kept_pct": 100.0 * frac,
                      "n_pairs": len(sub), "n_regulated": int(y.sum()),
-                     "n_boot": a.n_boot})
+                     "n_boot": a.n_boot, "cluster": a.cluster})
     pd.DataFrame(rows).round(6).to_csv(a.out_tsv, sep="\t", index=False)
     print(f"\nwrote {a.out_tsv}")

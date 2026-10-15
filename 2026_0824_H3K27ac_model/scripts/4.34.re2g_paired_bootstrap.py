@@ -36,6 +36,11 @@ ap.add_argument("--pair", nargs=2, action="append", required=True, metavar=("A",
 ap.add_argument("--n-boot", type=int, default=2000)
 ap.add_argument("--seed", type=int, default=0)
 ap.add_argument("--out-tsv", default=None)
+ap.add_argument("--cluster", choices=["pair", "gene"], default="pair",
+                help="resampling unit. pair (default, every earlier table): element-gene pairs "
+                     "i.i.d. gene: genes with replacement, all of a drawn gene's pairs together, "
+                     "since pairs of one gene share its expression and locus and are not "
+                     "independent (review 2026-10-14, F7)")
 ap.add_argument("--group", action="append", default=[], metavar="NAME=A,B,...",
                 help="a replicate group: its AUPRC is the mean of its members' AUPRCs, computed "
                      "within each bootstrap draw; NAME can then be used in --pair")
@@ -89,11 +94,27 @@ obs = {m: aupr(y, w[m].values) for m in models}
 for m in sorted(models, key=lambda k: -obs[k]):
     print(f"  {m:<36} {obs[m]:.4f}")
 
+def resampler(rng, unit_codes):
+    """Row indices of one bootstrap draw: rows i.i.d., or whole clusters with replacement."""
+    n = len(unit_codes)
+    if a.cluster == "pair":
+        return lambda: rng.integers(0, n, n)
+    order = np.argsort(unit_codes, kind="mergesort")
+    bounds = np.r_[0, np.cumsum(np.bincount(unit_codes))]
+    rows = [order[bounds[g]:bounds[g + 1]] for g in range(len(bounds) - 1)]
+    return lambda: np.concatenate([rows[g] for g in rng.integers(0, len(rows), len(rows))])
+
+
 rng = np.random.default_rng(a.seed)
 n = len(w)
+genes = pd.factorize(w["TargetGene"])[0]
+if a.cluster == "gene" and genes.max() + 1 == n:
+    raise SystemExit("gene clustering found one gene per pair; check the TargetGene column")
+draw = resampler(rng, genes)
+print(f"\nresampling unit: {a.cluster} ({n:,} pairs in {genes.max() + 1:,} genes)")
 boot = {m: np.empty(a.n_boot) for m in models}
 for b in range(a.n_boot):
-    idx = rng.integers(0, n, n)
+    idx = draw()
     yb = y[idx]
     for m in models:
         boot[m][b] = aupr(yb, w[m].values[idx])
@@ -115,7 +136,7 @@ for A, B in a.pair:
     print(f"  {A} - {B}\n      {delta:+.4f}  [{lo:+.4f}, {hi:+.4f}]  sign kept {100 * kept:.1f}%")
     rows.append(dict(model_a=A, model_b=B, auprc_a=obs[A], auprc_b=obs[B], delta=delta,
                      ci_lo=lo, ci_hi=hi, sign_kept_pct=100 * kept, n_pairs=n,
-                     n_regulated=int(y.sum()), n_boot=a.n_boot))
+                     n_regulated=int(y.sum()), n_boot=a.n_boot, cluster=a.cluster))
 if a.out_tsv:
     pd.DataFrame(rows).to_csv(a.out_tsv, sep="\t", index=False)
     print("wrote", a.out_tsv)
