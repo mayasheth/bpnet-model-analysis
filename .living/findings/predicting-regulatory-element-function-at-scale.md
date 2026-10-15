@@ -2,7 +2,7 @@
 topic: predicting-regulatory-element-function-at-scale
 description: Building and benchmarking models that predict regulatory element function, enhancer-gene links, and variant effects genome-wide (the question behind consortium-scale efforts such as IGVF).
 created: 2026-07-21
-last_updated: 2026-09-05
+last_updated: 2026-10-14
 status: active
 ---
 
@@ -1425,7 +1425,7 @@ them. FIMO calls shared by truth and estimates.
 |------|-------------|---------|---------|--------|-----------|
 | 2026-09-28 | `4.47` job 45613770; `4.48` job 45709699 | five p300-panel cell types, ATAC + p300 + FIMO | 2026_0824_H3K27ac_model | learned 0.66 mean Spearman but K562 contrast +0.10; raw association +0.45 | use ATAC association minus CTCF |
 
-## F-035: Telling the transferred model which TFs matter (oracle weights) matches the ranking loss in rE2G, barely moves ABC, and shrinks the GATA error by a third
+## F-035: Telling the transferred model which TFs matter (oracle weights) matches the ranking loss in rE2G, barely moves ABC, and cuts the GATA error from +5.65 to +3.15 points
 **Status:** supported (one training run)
 **Claim:** The multi-cell p300 model (K562 held out) retrained with one extra input channel, a
 TF-activity track: at each base, the sum over genome-wide FIMO hits of that motif's truth weight in
@@ -1455,7 +1455,8 @@ matched ATAC:
 The channel model's transfer-specific pattern correlates 0.87 with the MSE-only model's across
 motifs; mean |coefficient| rises slightly (0.77 -> 0.82).
 **Implications:** **Even with the true answer the model uses TF information only partly.** It
-removes about a third of the GATA under-ranking and half the CEBP/ESR over-ranking, and adds
+cuts the GATA under-ranking from +5.65 to +3.15 points (the in-cell model sits at -2.65) and
+about halves the CEBP/ESR over-ranking, and adds
 small errors elsewhere; the ABC gain is a sixth of what directly re-ranking the GATA elements
 gave (F-032, +0.022). In rE2G it equals the ranking loss, and the two were combined
 (rank10_motifact_oracle) to test whether they add. The upstream metric improved more than any
@@ -2515,8 +2516,8 @@ should keep CGI distance as is; G need not be carried.
 |------|-------------|---------|---------|--------|-----------|
 | 2026-10-09 | 8.10 job 47156133 | K562 CRISPR pairs (2026_1007 run tables), GENCODE v43 TSSs, UCSC cpgIslandExt | 2026_1002_sce2g_tf_activity | CGI distance on top of G +0.013 [+0.005, +0.022] (57%) | survives gene density |
 
-## F-063: The F-059 features do not transfer to eQTLs in unseen immune cell types: pre-registered test FAILS (the three) and is WORSE (CGI distance alone), and neither helps even on K562's own eQTLs
-**Status:** supported (pre-registered, decisions [2026-10-12] with its IKZF2 amendment; one eQTL resource)
+## F-063: Pre-registered eQTL transfer test of the F-059 features FAILS (the three) and is WORSE on R1 (CGI distance alone), but is inconclusive for activity effects of this size; see F-065/F-066
+**Status:** pre-registered verdict FAIL / WORSE stands; the "K562-specific" reading is WITHDRAWN 2026-10-13 (F-065: the benchmark is underpowered for activity changes; F-066: within-gene readouts cannot calibrate them). Pre-registered, decisions [2026-10-12] with its IKZF2 amendment; one eQTL resource
 **Claim:** Plan 9 (`2026_1002_sce2g_tf_activity/scripts/9.0`-`9.2`; prep 47583089, clusters 47583844, gather 47583918;
 `results/2026_1012_eqtl_transfer.readouts.tsv`, `.primary_curves.tsv`). eQTL Catalogue v7 fine-mapped
 eQTLs (PIP >= 0.5, distal noncoding, gene universe) in the eQTLEnrichment fine-grained matching: 32
@@ -2557,8 +2558,8 @@ name, several coarse (blood, T).
 |------|-------------|---------|---------|--------|-----------|
 | 2026-10-12 | prep 47583089; clusters 47583844; gather 47583918 | eQTL Catalogue v7 fine-mapped, scE2G 2025_0318_all_clusters (32), K562 CRISPR (training) | 2026_1002_sce2g_tf_activity | three: R1 -0.34 [-1.15, +0.11], R2 +0.11 [-0.18, +0.43]; CGI: R1 -0.56 [-1.14, -0.13] | pre-registered FAIL / WORSE |
 
-## F-064: The eQTL benchmark resolves a CRISPR-scale change: scATAC-only scE2G loses -2.6 enrichment at recall 0.10 against multiome, so F-063's null rules out the gain F-059 predicts
-**Status:** supported (positive control for F-063; one comparison; RNA differs between the arms)
+## F-064: The eQTL benchmark resolves scATAC-only vs multiome scE2G (-2.6 enrichment at recall 0.10), but most of that drop is the RNA side, so it does not show F-063 rules out the F-059 gain; inconclusive, see F-065/F-066
+**Status:** the measured drop is supported (one comparison; RNA differs between the arms); its use as a positive control for F-063 is WITHDRAWN 2026-10-13 (F-065)
 **Claim:** `2026_1002_sce2g_tf_activity/scripts/9.3` (array 47663675) adds the published scE2G scATAC predictions
 (`scATAC_powerlaw_v3`, the files eQTLEnrichment used) as an arm; their E2G.Score on the quantile scale
 reproduces their qnorm with no TPM rule (Spearman 1.0). `9.2 --extra-arms scatac_published` (job 47664774;
@@ -2590,7 +2591,7 @@ the K562 multiome one, which may explain its opposite sign. Linear scaling is an
 ### Evidence Ledger
 | Date | Run/Session | Dataset | Project | Result | Direction |
 |------|-------------|---------|---------|--------|-----------|
-| 2026-10-13 | 9.3 array 47663675; gather 47664774 | eQTL Catalogue v7 fine-mapped, scE2G scATAC and multiome cluster predictions (32) | 2026_1002_sce2g_tf_activity | scATAC - multiome R1 -2.63 [-3.48, -1.79], R2 -1.72 [-2.27, -1.12] | benchmark sensitive; supports F-063 |
+| 2026-10-13 | 9.3 array 47663675; gather 47664774 | eQTL Catalogue v7 fine-mapped, scE2G scATAC and multiome cluster predictions (32) | 2026_1002_sce2g_tf_activity | scATAC - multiome R1 -2.63 [-3.48, -1.79], R2 -1.72 [-2.27, -1.12] | benchmark sensitive to RNA + activity; support for F-063 withdrawn 2026-10-13 (F-065) |
 
 ## F-065: eQTL enrichment barely registers an activity-term change: replacing ARC-E2G with ABC (-0.050 AUPRC on K562 CRISPR) costs -1.7% of mean enrichment, a fifth of what dropping RNA costs, so the eQTL benchmark cannot test activity features of F-059's size
 **Status:** supported (activity-only positive control; one eQTL resource; one activity swap)

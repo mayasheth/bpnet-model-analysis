@@ -128,14 +128,14 @@ Sequence-only falls 0.360 -> 0.146 with no such denominator to explain the drop.
 <details>
 <summary>Figure 1 legend</summary>
 
-**Figure 1 | Accessibility-H3K27ac coupling weakens outside K562.** **a-c**, log1p summed ATAC against log1p summed H3K27ac over +/-500 bp element-centred windows, no model; colour is element density (log scale). Top-quintile Pearson **0.512 (K562), 0.409 (GM12878), 0.371 (TeloHAEC)**, n = 150,519 / 154,215 / 151,399 elements. The x-range differs in **c** because TeloHAEC's ATAC library is shallower; correlation is unaffected. **d, e**, Coupling in all six cell types and conditions measured, on all elements (**d**) and the top quintile (**e**). On all elements TeloHAEC is highest (0.73) and all lie within 0.06, because that stratum is dominated by the inactive-versus-active contrast every accessible-element set shares. On the top quintile the range triples. TeloHAEC targets use read 1 only. Sources: `results/atac_vs_h3k27ac_by_celltype.tsv`, `results/coupling_panel_recomputed.tsv`.
+**Figure 1 | Accessibility-H3K27ac coupling weakens outside K562.** **a-c**, log1p summed ATAC against log1p summed H3K27ac over +/-500 bp element-centred windows, no model; colour is element density (log scale). Top-quintile Pearson **0.512 (K562), 0.409 (GM12878), 0.371 (TeloHAEC)**, n = 150,519 / 154,215 / 151,399 elements. The x-range differs in **c** because TeloHAEC's ATAC library is shallower; correlation is unaffected. **d, e**, Coupling in all six cell types and conditions measured, on all elements (**d**) and the top quintile (**e**). On all elements TeloHAEC is highest (0.73) and all lie within 0.06, because that stratum is dominated by the inactive-versus-active contrast every accessible-element set shares. On the top quintile the range triples. Bar shades: dark grey, K562 and GM12878; mid grey, untreated TeloHAEC; light grey, the three other TeloHAEC conditions (+IL1b and +TNFa, treated with that cytokine; −VEGF, cultured without VEGF; `reference/DATA_INVENTORY.md`). TeloHAEC targets use read 1 only. Sources: `results/atac_vs_h3k27ac_by_celltype.tsv`, `results/coupling_panel_recomputed.tsv`.
 </details>
 
 <details>
 <summary>Full methods &amp; code</summary>
 
 ```bash
-pixi run python scripts/0.12.atac_vs_h3k27ac.py --label K562 \
+pixi run -e multimodal python scripts/0.12.atac_vs_h3k27ac.py --label K562 \
     --elements reference/K562_DNase_candidate_elements.narrowPeak \
     --atac-bw .../atac.bw \
     --h3k27ac-bw data/h3k27ac_5p_plus.bw,data/h3k27ac_5p_minus.bw \
@@ -162,7 +162,7 @@ ATAC peaks on the element centre (offset −12 bp, no central dip). H3K27ac has 
 Window centring and signal reading are in Methods.
 
 ```bash
-pixi run python scripts/0.6.compare_profiles.py \
+pixi run -e multimodal python scripts/0.6.compare_profiles.py \
     --elements reference/K562_DNase_candidate_elements.narrowPeak \
     --track "ATAC:.../atac.bw" \
     --track "H3K27ac (5-prime):data/h3k27ac_5p_plus.bw,data/h3k27ac_5p_minus.bw" \
@@ -196,12 +196,12 @@ Converting raw *r* to a bound on model performance is described in Methods.
 Excluding the nucleosome-free centre lowers the top-quintile ceiling (excluding +/-125/+/-250/+/-375 bp: 0.760 -> 0.747 -> 0.729 -> 0.717), because the centre still carries ~94% of peak signal. Flanking-only counts correlate 0.93-0.99 with full-window counts, so the full window is kept (`results/flanking_vs_full_window.tsv`).
 
 ```bash
-pixi run python scripts/0.3.replicate_ceiling_by_window.py \
+pixi run -e multimodal python scripts/0.3.replicate_ceiling_by_window.py \
     --elements reference/K562_DNase_candidate_elements.narrowPeak \
     --rep1-bw data/h3k27ac_rep1_5p_plus.bw,data/h3k27ac_rep1_5p_minus.bw \
     --rep2-bw data/h3k27ac_rep2_5p_plus.bw,data/h3k27ac_rep2_5p_minus.bw \
     --outdir results --figdir figures --label fiveprime_
-pixi run python scripts/0.4.flanking_vs_full.py --outer 500 1000 --inner 0 125 250 375
+pixi run -e multimodal python scripts/0.4.flanking_vs_full.py --outer 500 1000 --inner 0 125 250 375
 ```
 Source: `scripts/0.3.replicate_ceiling_by_window.py`, `scripts/0.4.flanking_vs_full.py`
 </details>
@@ -215,7 +215,7 @@ At 1 bp a perfect model caps at *r* = 0.21 in K562 and 0.18 in GM12878 on the to
 <details>
 <summary>Figure 4 legend</summary>
 
-**Figure 4 | The reproducible part of the H3K27ac profile appears only after coarse binning.** Replicate-versus-replicate correlation across positions *within* each element, so only shape counts; 16,148 K562 and 15,589 GM12878 elements, +/-500 bp windows, strands summed. **a**, Raw agreement: 0.023 and 0.016 at 1 bp, top quintile. **b**, Ceiling on the pooled track the model is scored against, `sqrt(2r/(1+r))` (Methods). Solid, top quintile; dashed, all elements; dark, K562; light, GM12878. The curve is close to log-linear in bin size and still rising at 250 bp, so no bin size is preferred. There is no step near the ~180 bp nucleosome repeat, which indicates a broad envelope rather than sharply phased peaks. Source: `results/profile_ceiling_binsize_{k562,gm12878}.tsv`.
+**Figure 4 | The reproducible part of the H3K27ac profile appears only after coarse binning.** Replicate-versus-replicate correlation across positions *within* each element, so only shape counts; 16,148 K562 and 15,589 GM12878 elements, +/-500 bp windows, strands summed. **a**, Raw agreement: 0.023 and 0.016 at 1 bp, top quintile. **b**, Ceiling on the pooled track the model is scored against, `sqrt(2r/(1+r))` (Methods). Solid, top quintile; dashed, all elements; dark, K562; light, GM12878. The blue (K562) and light-teal (GM12878) solid lines are DNase 5' cut sites scored the same way, drawn for the top quintile only, each stratified by its own summed DNase counts (`results/profile_ceiling_binsize_{k562,gm12878}_dnase.tsv`; values in the DNase section below). The H3K27ac curve is close to log-linear in bin size and still rising at 250 bp, so no bin size is preferred. There is no step near the ~180 bp nucleosome repeat, which indicates a broad envelope rather than sharply phased peaks. Source: `results/profile_ceiling_binsize_{k562,gm12878}.tsv`.
 </details>
 
 **Method.**
@@ -234,14 +234,14 @@ Source: `scripts/0.25.profile_ceiling_by_binsize.py`
 
 ## The ATAC library supports fragment-size stratification
 
-K562 ATAC fragments form a clean nucleosomal ladder, but the two channels built so far capture only 50% of fragments. A four-channel input of [all fragments, sub, mono, di] would contain the current flat-accessibility input, so it cannot regress, and would add the higher-order peaks.
+K562 ATAC fragments form a clean nucleosomal ladder, but the two channels built so far capture only 50% of fragments up to 800 bp. A four-channel input of [all fragments, sub, mono, di] would contain the current flat-accessibility input, so it cannot regress, and would add the higher-order peaks.
 
 ![](figures/atac_fragment_lengths.png)
 
 <details>
 <summary>Figure 5 legend</summary>
 
-**Figure 5 | K562 ATAC fragment lengths show clear nucleosomal laddering.** Fragment-length density from TLEN of properly-paired reads, chr1, ~1.4 million fragments per replicate; the three ENCSR868FGK replicates (ENCFF077FBI, ENCFF128WZG, ENCFF534DCE) superimpose. Modes at 42 bp (sub-nucleosomal), ~205 bp (mono-), ~400 bp (di-) and ~600 bp (tri-); median 201 bp. Shaded: sub-nucleosomal channel 1-99 bp (30.3% of fragments) and mono-nucleosomal channel 180-247 bp (19.7%). **50.0% of fragments are in neither** (100-180 bp and above 247 bp, including both higher-order peaks). Source: `results/atac_fragment_length_summary.tsv`.
+**Figure 5 | K562 ATAC fragment lengths show clear nucleosomal laddering.** Fragment-length density from TLEN of properly-paired reads, chr1, ~1.4 million fragments per replicate; the three ENCSR868FGK replicates (ENCFF077FBI, ENCFF128WZG, ENCFF534DCE) superimpose. Modes at 42 bp (sub-nucleosomal), ~205 bp (mono-), ~400 bp (di-) and ~600 bp (tri-); median 201 bp. Shaded: sub-nucleosomal channel 1-99 bp (30.3% of fragments) and mono-nucleosomal channel 180-247 bp (19.7%). **50.0% of fragments are in neither** (100-180 bp and above 247 bp, including both higher-order peaks). All fractions are of fragments up to 800 bp, the plotting cap (`--max-len 800` in `scripts/0.10`); longer fragments are not counted. Source: `results/atac_fragment_length_summary.tsv`.
 </details>
 
 **Method.**
@@ -253,7 +253,7 @@ K562 ATAC fragments form a clean nucleosomal ladder, but the two channels built 
 <summary>Full methods &amp; code</summary>
 
 ```bash
-pixi run python scripts/0.10.plot_fragment_lengths.py \
+pixi run -e multimodal python scripts/0.10.plot_fragment_lengths.py \
     --bams $SCRATCH/atac_pe/ENCFF077FBI.pe.bam $SCRATCH/atac_pe/ENCFF128WZG.pe.bam \
            $SCRATCH/atac_pe/ENCFF534DCE.pe.bam \
     --outdir results --figdir figures
@@ -271,6 +271,8 @@ By the method of Fig. 4, the 1 bp top-quintile ceiling is about four times highe
 | GM12878 | 0.686 | 0.18 |
 
 K562 DNase reaches 0.921 at 5 bp and 0.946 at 10 bp, so predicting it at 5-10 bp loses almost nothing.
+
+The leading explanation for this base-level reproducibility is DNase I cleavage bias. Where the enzyme cuts is dominated by its sequence preference, which both replicates share, and no bias model is fitted here, so the high 1 bp ceiling may mostly reflect shared enzyme bias rather than reproducible regulatory structure.
 
 The downstream model reads accessibility as a base-resolution 5' insertion track, so an ATAC-to-DNase converter that predicted only per-element counts would strip the structure it uses. With a reproducible DNase profile to predict, the profile head becomes the decisive component of a converter, having been near-useless everywhere else in this project.
 
@@ -319,6 +321,12 @@ Nothing needs re-running. For new models, matched sets are `data/gc_negatives_{k
 
 Separately, most candidate elements carry no H3K27ac, since the set spans active and inactive elements. That is why every evaluation is stratified.
 
+## Open questions / next steps
+
+- Should the profile head be dropped, kept at 1 bp or binned to about 50 bp, given the ceilings in Fig. 4? Listed under Later in the project TODOLIST, to be decided jointly with a powered `count_loss_weight` sweep.
+- Does the element-derivation confound matter? Training on the ATAC-derived K562 element set would test it (Later in the project TODOLIST).
+- How well does a model transfer into TeloHAEC, the cell type with the lowest top-quintile coupling in Fig. 1? Training TeloHAEC and scoring transfer is under Later in the project TODOLIST.
+
 ## Methods
 
 All ChIP-seq targets are counted as **5' read ends** at single-base resolution
@@ -351,18 +359,18 @@ Environment: pixi env `multimodal`, pixi.lock sha256:069960d36312
 sbatch scripts/0.5.make_5prime_bigwigs.sh            # K562 H3K27ac 5' ends, merged + per-replicate
 sbatch scripts/0.7.make_gm12878_5prime.sh            # GM12878 H3K27ac 5' ends
 pixi run bash scripts/0.20.make_atac_5prime_bigwigs.sh
-pixi run python scripts/0.21.validate_atac_5prime.py   # ratio == mean read length
+pixi run -e multimodal python scripts/0.21.validate_atac_5prime.py   # ratio == mean read length
 sbatch scripts/0.22.calibrate_tn5_shift.sh
 PLUS_DELTA=4 MINUS_DELTA=-5 sbatch scripts/0.23.make_atac_fragment_5p_channels.sh
-pixi run python scripts/0.24.validate_atac_fragment_channels.py
+pixi run -e multimodal python scripts/0.24.validate_atac_fragment_channels.py
 
 # Characterisation
-pixi run python scripts/0.6.compare_profiles.py   ...           # Fig 2
-pixi run python scripts/0.3.replicate_ceiling_by_window.py ...  # Fig 3
-pixi run python scripts/0.4.flanking_vs_full.py --outer 500 1000 --inner 0 125 250 375
+pixi run -e multimodal python scripts/0.6.compare_profiles.py   ...           # Fig 2
+pixi run -e multimodal python scripts/0.3.replicate_ceiling_by_window.py ...  # Fig 3
+pixi run -e multimodal python scripts/0.4.flanking_vs_full.py --outer 500 1000 --inner 0 125 250 375
 sbatch scripts/0.25.submit.sh                                   # Fig 4
-pixi run python scripts/0.10.plot_fragment_lengths.py ...       # Fig 5
-pixi run python scripts/0.12.atac_vs_h3k27ac.py --label K562 ...  # Fig 1
+pixi run -e multimodal python scripts/0.10.plot_fragment_lengths.py ...       # Fig 5
+pixi run -e multimodal python scripts/0.12.atac_vs_h3k27ac.py --label K562 ...  # Fig 1
 
 # This report
 python render_report.py report1_data_characterisation.qmd

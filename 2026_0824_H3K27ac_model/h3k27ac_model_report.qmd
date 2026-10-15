@@ -137,7 +137,7 @@ All ChIP-seq targets are counted as **5′ read ends** at single-base resolution
 Windows are centred on the candidate-element midpoint. The `summit` column of `K562_DNase_candidate_elements.narrowPeak` equals `width/2`, so element-centred windows require no change to the extraction code. Elements within `flank` of a contig end are dropped. Signal is read with pyBigWig and `nan` treated as zero.
 
 ```bash
-pixi run python scripts/0.6.compare_profiles.py \
+pixi run -e multimodal python scripts/0.6.compare_profiles.py \
     --elements reference/K562_DNase_candidate_elements.narrowPeak \
     --track "ATAC:.../atac.bw" \
     --track "H3K27ac (5-prime):data/h3k27ac_5p_plus.bw,data/h3k27ac_5p_minus.bw" \
@@ -173,12 +173,12 @@ Ceilings are reported as the raw inter-replicate *r*. Converting to a bound on m
 A separate test asked whether excluding the nucleosome-free centre sharpens the target, on the reasoning that H3K27ac is deposited on the flanks. It does not: excluding ±125/±250/±375 bp lowers the top-quintile ceiling monotonically (0.760 → 0.747 → 0.729 → 0.717) because the shallow central dip means the centre still carries ~94% of peak signal, so excluding it discards real reads. The flanking-only count also correlates 0.93–0.99 with the full-window count, so the two targets are barely different. Full symmetric window retained (`results/flanking_vs_full_window.tsv`).
 
 ```bash
-pixi run python scripts/0.3.replicate_ceiling_by_window.py \
+pixi run -e multimodal python scripts/0.3.replicate_ceiling_by_window.py \
     --elements reference/K562_DNase_candidate_elements.narrowPeak \
     --rep1-bw data/h3k27ac_rep1_5p_plus.bw,data/h3k27ac_rep1_5p_minus.bw \
     --rep2-bw data/h3k27ac_rep2_5p_plus.bw,data/h3k27ac_rep2_5p_minus.bw \
     --outdir results --figdir figures --label fiveprime_
-pixi run python scripts/0.4.flanking_vs_full.py --outer 500 1000 --inner 0 125 250 375
+pixi run -e multimodal python scripts/0.4.flanking_vs_full.py --outer 500 1000 --inner 0 125 250 375
 ```
 Source: `scripts/0.3.replicate_ceiling_by_window.py`, `scripts/0.4.flanking_vs_full.py`
 </details>
@@ -194,7 +194,7 @@ Source: `scripts/0.3.replicate_ceiling_by_window.py`, `scripts/0.4.flanking_vs_f
 <details>
 <summary>Figure 4 legend</summary>
 
-**Figure 4 | H3K27ac is the easier target but the weaker substrate for sequence.** Top quintile of elements by observed signal. **a**, ATAC-only (blue) and sequence + ATAC (purple) for each target; bars are the mean across five chromosome-holdout folds, whiskers the 95% CI, points the individual folds. p300 (ENCSR000EGE, stranded 5′ ends): ATAC only 0.304 [0.280, 0.329], sequence + ATAC 0.608 [0.566, 0.651]. H3K27ac (ENCSR000AKP): ATAC only 0.542 [0.489, 0.596], sequence + ATAC 0.669 [0.654, 0.684]. **b**, The sequence margin — sequence + ATAC minus ATAC-only — computed **within each fold and then averaged**, a paired comparison: both models see the same held-out chromosomes in a given fold, so differencing within a fold removes the between-fold variation that dominates the absolute values in **a**. p300 **+0.304**, H3K27ac **+0.127**; the intervals do not overlap. Sequence-only is deliberately absent: there is no p300 sequence-only model in this format (the p300 sequence models are bpnet-refactor/TensorFlow checkpoints), and the margin is defined without it. Both targets are evaluated on the same K562 DNase candidate elements with element-centred ±500 bp windows, so the comparison isolates the target. Caveat: the p300 models were *trained* on ENCSR000EGE peak summits and *evaluated* here on element centres, matching this repository's existing p300 prediction pipeline; a matched element-centred p300 model would likely raise p300 further and widen the gap. Source: `results/p300_vs_h3k27ac_stratified_per_fold.tsv`.
+**Figure 4 | H3K27ac is the easier target but the weaker substrate for sequence.** Top quintile of elements by observed signal. **a**, ATAC-only (blue) and sequence + ATAC (purple) for each target; bars are the mean across five chromosome-holdout folds, whiskers the 95% CI, points the individual folds. p300 (ENCSR000EGE, stranded 5′ ends): ATAC only 0.304 [0.280, 0.329], sequence + ATAC 0.608 [0.566, 0.651]. H3K27ac (ENCSR000AKP): ATAC only 0.542 [0.489, 0.596], sequence + ATAC 0.669 [0.654, 0.684]. **b**, The sequence margin — sequence + ATAC minus ATAC-only — computed **within each fold and then averaged**, a paired comparison: both models see the same held-out chromosomes in a given fold, so differencing within a fold removes the between-fold variation that dominates the absolute values in **a**. p300 **+0.304**, H3K27ac **+0.127**; the intervals do not overlap. Sequence-only is deliberately absent: there is no p300 sequence-only model in this format (the p300 sequence models are bpnet-refactor/TensorFlow checkpoints), and the margin is defined without it. Both targets are evaluated on the same K562 DNase candidate elements with element-centred ±500 bp windows, so the comparison isolates the target. Caveat: the p300 models were *trained* on ENCSR000EGE peak summits and *evaluated* here on element centres, matching this repository's existing p300 prediction pipeline; a matched element-centred p300 model would likely raise p300 further and widen the gap. The H3K27ac models here are the first-generation models trained on full-interval ENCSR000AKP coverage (`models/{atac,multimodal}_hw500_clw1000`, `scripts/1.1.submit_training.sh`), not the 5′-end models of Fig. 1, which is why the H3K27ac margin here (+0.127) differs from Fig. 1b's (+0.137). Source: `results/p300_vs_h3k27ac_stratified_per_fold.tsv`.
 </details>
 
 **Method.**
@@ -208,7 +208,7 @@ Source: `scripts/0.3.replicate_ceiling_by_window.py`, `scripts/0.4.flanking_vs_f
 The accessibility-only control is what makes this comparison interpretable. Without it, p300 and H3K27ac would be compared on joint-model correlation alone, which ranks them in the opposite order. p300 model directories are `2026_0529_multimodal_p300_model/models/atac` (sequence + ATAC) and `models/atac_only` (ATAC only) — note `atac` there names the multimodal model whose accessibility input is ATAC; the ATAC-only mode lives in `atac_only`.
 
 ```bash
-pixi run python scripts/2.2.evaluate_stratified.py \
+pixi run -e multimodal python scripts/2.2.evaluate_stratified.py \
     --config-json config/compare_configs.json --out-prefix p300_vs_h3k27ac_ \
     --elements reference/K562_DNase_candidate_elements.narrowPeak \
     --fold-json reference/hg38_five_folds.json --outdir results --figdir figures
@@ -262,8 +262,8 @@ The evaluator refuses to run when the baseline and comparison models use differe
 
 ```bash
 # semantics check, then the pooled evaluation
-pixi run python scripts/2.7.diagnose_residual_offset.py
-pixi run python scripts/2.4.evaluate_residual.py \
+pixi run -e multimodal python scripts/2.7.diagnose_residual_offset.py
+pixi run -e multimodal python scripts/2.4.evaluate_residual.py \
     --config-json config/residual5p_eval_configs.json --out-prefix residual5p_ \
     --elements reference/K562_DNase_candidate_elements.narrowPeak \
     --genome $GEN --signal-bw data/h3k27ac_5p_plus.bw \
@@ -271,11 +271,11 @@ pixi run python scripts/2.4.evaluate_residual.py \
     --outdir results --figdir figures
 
 # the full grid: 3 standard + 3 residual-objective models
-pixi run python scripts/2.4.evaluate_residual.py \\
+pixi run -e multimodal python scripts/2.4.evaluate_residual.py \\
     --config-json config/residual_grid_eval_configs.json --out-prefix residual_grid_ ...
 # per-fold CIs + artifact controls, then the figure
-pixi run python scripts/2.8.residual_perfold_and_artifact.py residual_grid_
-pixi run python scripts/3.3.plot_residual_figure.py
+pixi run -e multimodal python scripts/2.8.residual_perfold_and_artifact.py residual_grid_
+pixi run -e multimodal python scripts/3.3.plot_residual_figure.py
 ```
 Source: `scripts/2.4.evaluate_residual.py`, `scripts/2.7.diagnose_residual_offset.py`, `scripts/2.8.residual_perfold_and_artifact.py`, `scripts/3.3.plot_residual_figure.py`
 </details>
@@ -291,7 +291,7 @@ Source: `scripts/2.4.evaluate_residual.py`, `scripts/2.7.diagnose_residual_offse
 <details>
 <summary>Figure 6 legend</summary>
 
-**Figure 6 | Sharpening the accessibility input helps only a model with no other input.** Every ATAC-input model was retrained on `bedtools genomecov -bg -5` single-base insertion counts and paired within fold against its counterpart on full-interval coverage. The training scripts are byte-identical copies apart from the accessibility path and the output directory, and both arms are scored in one run with each reading its own input and its own saved normalisation statistics, so the only difference is the input definition. **a**, Top signal quintile. ATAC-only: K562 **+0.032** [0.012, 0.053] *p*=0.011; GM12878 **+0.023** [0.006, 0.039] *p*=0.019; p300 +0.019 [−0.054, 0.092] *p*=0.51. Sequence + ATAC: +0.003, −0.001, +0.009, none significant. **b**, All elements — the same split, ATAC-only +0.016 (*p*=0.001) and +0.015 (*p*<0.001), multimodal +0.001 in both. p300 is underpowered: 11,412 elements pooled against 57,144 for H3K27ac, giving intervals roughly 5× wider, with point estimates trending the same way. Source: `results/accs5p_{k562,gm12878,p300}_stratified_per_fold.tsv`.
+**Figure 6 | Sharpening the accessibility input helps only a model with no other input.** Every ATAC-input model was retrained on `bedtools genomecov -bg -5` single-base insertion counts and paired within fold against its counterpart on full-interval coverage. The training scripts are byte-identical copies apart from the accessibility path and the output directory, and both arms are scored in one run with each reading its own input and its own saved normalisation statistics, so the only difference is the input definition. **a**, Top signal quintile. ATAC-only: K562 **+0.032** [0.012, 0.053] *p*=0.011; GM12878 **+0.023** [0.006, 0.039] *p*=0.019; p300 +0.019 [−0.054, 0.092] *p*=0.51. Sequence + ATAC: +0.003, −0.001, +0.009, none significant. **b**, All elements — the same split, ATAC-only +0.016 (*p*=0.001) and +0.015 (*p*<0.001), multimodal +0.001 in both. p300 is underpowered: 11,412 elements pooled against 57,144 for H3K27ac, giving intervals roughly 5× wider. Source: `results/accs5p_{k562,gm12878,p300}_stratified_per_fold.tsv`.
 </details>
 
 **Method.**
@@ -315,9 +315,9 @@ Nothing in the rest of this report uses the 5′ input. Switching would require 
 
 ```bash
 pixi run bash scripts/0.20.make_atac_5prime_bigwigs.sh    # build *_atac_5p.bw
-pixi run python scripts/0.21.validate_atac_5prime.py      # ratio == mean read length
+pixi run -e multimodal python scripts/0.21.validate_atac_5prime.py      # ratio == mean read length
 pixi run bash scripts/2.10.submit_accs5p_comparison.sh    # paired evaluation
-pixi run python scripts/3.5.plot_accs5p_figure.py         # Fig 6
+pixi run -e multimodal python scripts/3.5.plot_accs5p_figure.py         # Fig 6
 ```
 Source: `scripts/0.20`, `0.21`, `2.10`, `3.5`; training scripts `1.11`, `1.12` (H3K27ac) and `1.1b`, `1.3b` (p300), generated by `scripts/make_accs5p_scripts.py`.
 </details>
@@ -347,7 +347,7 @@ Source: `scripts/0.20`, `0.21`, `2.10`, `3.5`; training scripts `1.11`, `1.12` (
 Transfer numbers need the target ceiling in *both* cell types: a raw cross-cell-type correlation cannot distinguish a model that fails to generalise from a target that is simply harder. The GM12878 ceiling agrees across both processings of the target (top quintile 0.832 on 5′ ends, 0.834 otherwise), so the normalisation holds either way.
 
 ```bash
-pixi run python scripts/2.2.evaluate_stratified.py \
+pixi run -e multimodal python scripts/2.2.evaluate_stratified.py \
     --config-json config/gm_transfer_configs.json --out-prefix gm12878_transfer_ \
     --elements 2026_0606_GM12878_transferability/reference/GM12878_candidate_elements.narrowPeak \
     --fold-json reference/hg38_five_folds.json --outdir results --figdir figures
@@ -428,7 +428,7 @@ The ATAC-only model does not degrade across cell types — it exceeds the raw co
 This is the model-free reference for the ATAC-only baseline: it separates how much accessibility can explain in principle from how well a network learns it. Both are needed to read a cross-cell-type comparison, because the coupling is the denominator that makes accessibility-based numbers comparable between cell types. Results accumulate one row-set per label into a single TSV, so the panel extends by one invocation per cell type.
 
 ```bash
-pixi run python scripts/0.12.atac_vs_h3k27ac.py --label K562 \
+pixi run -e multimodal python scripts/0.12.atac_vs_h3k27ac.py --label K562 \
     --elements reference/K562_DNase_candidate_elements.narrowPeak \
     --atac-bw .../atac.bw \
     --h3k27ac-bw data/h3k27ac_5p_plus.bw,data/h3k27ac_5p_minus.bw \
@@ -460,7 +460,7 @@ Source: `scripts/0.12.atac_vs_h3k27ac.py`
 <summary>Full methods &amp; code</summary>
 
 ```bash
-pixi run python scripts/0.10.plot_fragment_lengths.py \
+pixi run -e multimodal python scripts/0.10.plot_fragment_lengths.py \
     --bams $SCRATCH/atac_pe/ENCFF077FBI.pe.bam $SCRATCH/atac_pe/ENCFF128WZG.pe.bam \
            $SCRATCH/atac_pe/ENCFF534DCE.pe.bam \
     --outdir results --figdir figures
@@ -491,7 +491,7 @@ Source: `scripts/0.10.plot_fragment_lengths.py`, `scripts/0.9.make_atac_fragment
 <summary>Full methods &amp; code</summary>
 
 ```bash
-pixi run python scripts/make_wide_scripts.py
+pixi run -e multimodal python scripts/make_wide_scripts.py
 for M in sequence multimodal atac; do for F in 0 1 2 3 4; do
     sbatch scripts/1.13.submit_training_5prime_wide.sh $M $F
     sbatch scripts/1.14.submit_training_gm12878_wide.sh $M $F
@@ -555,8 +555,8 @@ Source: `scripts/0.25.profile_ceiling_by_binsize.py`
 ```bash
 sbatch scripts/0.22.calibrate_tn5_shift.sh
 PLUS_DELTA=4 MINUS_DELTA=-5 sbatch scripts/0.23.make_atac_fragment_5p_channels.sh
-pixi run python scripts/0.24.validate_atac_fragment_channels.py
-pixi run python scripts/make_fragchan_scripts.py
+pixi run -e multimodal python scripts/0.24.validate_atac_fragment_channels.py
+pixi run -e multimodal python scripts/make_fragchan_scripts.py
 for F in 0 1 2 3 4; do sbatch scripts/1.15.submit_training_fragchan.sh multimodal $F; done
 sbatch scripts/2.17.submit_regression_and_wide.sh fragchan
 ```
@@ -588,7 +588,7 @@ Source: `scripts/0.23`, `scripts/0.24`, `scripts/1.15`, `scripts/3.9`
 
 ```bash
 sbatch scripts/2.19.submit_profile_and_rc.sh
-pixi run python scripts/3.10.plot_rc_averaging.py
+pixi run -e multimodal python scripts/3.10.plot_rc_averaging.py
 ```
 Source: `scripts/2.15.perfold_from_config.py` (`--rc-average`), `scripts/2.20.paired_delta_between_runs.py`
 </details>
@@ -646,9 +646,9 @@ sbatch scripts/0.7.make_gm12878_5prime.sh                   # GM12878 H3K27ac 5'
 sbatch scripts/0.9.make_atac_fragment_channels.sh           # fragment-size ATAC channels
 
 # Characterisation (Figs 2, 3, 9)
-pixi run python scripts/0.6.compare_profiles.py   ...       # Fig 2
-pixi run python scripts/0.3.replicate_ceiling_by_window.py ...   # Fig 3
-pixi run python scripts/0.10.plot_fragment_lengths.py ...   # Fig 9
+pixi run -e multimodal python scripts/0.6.compare_profiles.py   ...       # Fig 2
+pixi run -e multimodal python scripts/0.3.replicate_ceiling_by_window.py ...   # Fig 3
+pixi run -e multimodal python scripts/0.10.plot_fragment_lengths.py ...   # Fig 9
 
 # Models: 3 modes x 5 folds on the 5' target
 for MODE in atac multimodal sequence; do for F in 0 1 2 3 4; do
@@ -660,12 +660,12 @@ done; done
 
 # Evaluation (Figs 1, 4, 5, 7)
 sbatch scripts/2.2.submit_evaluate.sh                       # Fig 1
-pixi run python scripts/2.2.evaluate_stratified.py --config-json config/compare_configs.json ...      # Fig 4
-pixi run python scripts/2.7.diagnose_residual_offset.py     # offset semantics check
+pixi run -e multimodal python scripts/2.2.evaluate_stratified.py --config-json config/compare_configs.json ...      # Fig 4
+pixi run -e multimodal python scripts/2.7.diagnose_residual_offset.py     # offset semantics check
 sbatch scripts/2.9.submit_residual_grid_eval.sh             # K562 residual grid
 sbatch scripts/2.12.submit_gm12878_residual_grid.sh         # GM12878 residual grid
-pixi run python scripts/3.4.plot_residual_grid_both.py      # Fig 5
-pixi run python scripts/2.2.evaluate_stratified.py --config-json config/gm_transfer_configs.json ...  # Fig 7
+pixi run -e multimodal python scripts/3.4.plot_residual_grid_both.py      # Fig 5
+pixi run -e multimodal python scripts/2.2.evaluate_stratified.py --config-json config/gm_transfer_configs.json ...  # Fig 7
 sbatch scripts/2.14.submit_deployment_transfer.sh           # deployment transfer
 sbatch scripts/2.16.submit_transfer_perfold.sh              # per-fold CIs + paired tests
 

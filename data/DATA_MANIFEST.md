@@ -279,3 +279,65 @@ identical to the merged target so the ceiling is comparable. Results in
 `results/replicate_ceiling_by_window.tsv`. Note the raw `r(rep1, rep2)` there is
 single-replicate reliability, not a model ceiling — see `.living/learnings.md` for the
 two corrections needed.
+
+---
+
+## Inputs that live only on $SCRATCH (purgeable)
+
+Sherlock purges `$SCRATCH` files not modified for 90 days. These inputs have no Oak copy.
+Maya, 2026-10-14: track them, don't copy yet; decide by 2026-11-14 (TODOLIST Waiting, review
+F55). If a copy is made, update `raw_path` here.
+
+### k562-pe-atac-bams
+
+```yaml
+name: k562-pe-atac-bams
+type: genomic
+source: ENCODE K562 ATAC-seq, paired-end BAMs ENCFF077FBI, ENCFF128WZG, ENCFF534DCE
+format: BAM + BAI
+size: 24.5 GB (7.5, 7.1, 10.0 GB)
+raw_path: $SCRATCH/atac_pe/ENCFF{077FBI,128WZG,534DCE}.pe.bam
+status: raw
+known_issues:
+  - Scratch only. mtime 2026-08-25, purge-eligible about 2026-11-23. Re-fetchable from ENCODE by accession.
+access_restrictions: none
+tags: [atac, k562, paired-end, fragment-length, scratch-only]
+```
+
+Read by `2026_0824_H3K27ac_model/scripts/0.9.make_atac_fragment_channels.sh` (`BAM_DIR`) for
+the fragment-size input channels.
+
+### sce2g-k562-xu-runs
+
+```yaml
+name: sce2g-k562-xu-runs
+type: other
+source: scE2G training workflow on the Xu K562 multiome (baseline 2026_1002_k562_xu plus nine feature runs, 2026-10-03 to 2026-10-07)
+format: scE2G run directories (predictions, model coefficients, performance tables)
+size: 106 GB total; baseline 11 GB
+raw_path: $SCRATCH/sce2g_runs/
+status: processed
+known_issues:
+  - Scratch only. Baseline newest file 2026-10-03, purge-eligible about 2027-01-01; feature runs are about 90 days after their dates.
+  - Report 7's figure script 5.5 rebuilds model_coefficients tables from here on every run (review F54).
+access_restrictions: none
+tags: [sce2g, k562, multiome, crispr-benchmark, scratch-only]
+```
+
+Report 7 Parts B and C. Setup in `2026_1002_sce2g_tf_activity/scripts/4.0.setup_featB.sh`.
+
+### sce2g-external-pairs
+
+```yaml
+name: sce2g-external-pairs
+type: other
+source: Element-gene pair feature tables built by 2026_1002_sce2g_tf_activity scripts (4.9 and others)
+format: TSV.gz
+size: 1.1 GB
+raw_path: $SCRATCH/sce2g_external/
+status: processed
+known_issues:
+  - Scratch only; A2 scripts read os.environ["SCRATCH"] with no fallback.
+access_restrictions: none
+tags: [sce2g, features, pairs, scratch-only]
+```

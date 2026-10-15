@@ -5,7 +5,7 @@
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="dcterms.date" content="2026-09-24" />
-  <title>An ATAC-to-DNase converter recovers 95% of the DNase profile in K562 but does not improve ABC or H3K27ac prediction</title>
+  <title>An ATAC-to-DNase converter recovers 95% of the DNase profile in K562 but makes a worse H3K27ac model input than ATAC, and its ABC gain is not resolved</title>
   <style>
     code{white-space: pre-wrap;}
     span.smallcaps{font-variant: small-caps;}
@@ -80,10 +80,31 @@
   <!--[if lt IE 9]>
     <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
   <![endif]-->
+
+<style>
+details.report-collapse, details {
+  margin: 0.4em 0 1.1em 0;
+  border-left: 2px solid #d0d7de;
+  padding: 0.1em 0 0.1em 0.9em;
+}
+details > summary {
+  cursor: pointer;
+  color: #57606a;
+  font-size: 0.9em;
+  font-weight: 600;
+  list-style: none;
+  user-select: none;
+}
+details > summary::before { content: "\25B8  "; color: #8c959f; }
+details[open] > summary::before { content: "\25BE  "; }
+details > summary:hover { color: #0969da; }
+details[open] > summary { margin-bottom: 0.5em; }
+</style>
 </head>
 <body>
+<div style="background:#fff3cd;color:#664d03;padding:8px 14px;border-radius:4px;margin:0 0 16px 0;font-weight:600;font-family:system-ui,sans-serif;">Status: Draft — work in progress</div>
 <header id="title-block-header">
-<h1 class="title">An ATAC-to-DNase converter recovers 95% of the DNase profile in K562 but does not improve ABC or H3K27ac prediction</h1>
+<h1 class="title">An ATAC-to-DNase converter recovers 95% of the DNase profile in K562 but makes a worse H3K27ac model input than ATAC, and its ABC gain is not resolved</h1>
 <p class="date">2026-09-24</p>
 </header>
 <nav id="TOC" role="doc-toc">
@@ -92,9 +113,10 @@
 <li><a href="#summary">Summary</a></li>
 <li><a href="#goals">Goals</a></li>
 <li><a href="#the-converter-reaches-95-of-the-dnase-profile-ceiling-in-k562">The converter reaches 95% of the DNase profile ceiling in K562</a></li>
-<li><a href="#sequence-adds-0.229-over-an-atac-only-model-so-the-converter-does-more-than-rescale-atac">Sequence adds +0.229 over an ATAC-only model, so the converter does more than rescale ATAC</a></li>
+<li><a href="#sequence-adds-0.229-over-an-atac-only-model-consistent-with-learned-dnase-i-cleavage-bias">Sequence adds +0.229 over an ATAC-only model, consistent with learned DNase I cleavage bias</a></li>
 <li><a href="#in-gm12878-the-converter-keeps-its-margin-over-atac-but-reaches-only-72-of-the-ceiling">In GM12878 the converter keeps its margin over ATAC but reaches only 72% of the ceiling</a></li>
 <li><a href="#limits">Limits</a></li>
+<li><a href="#open-questions-next-steps">Open questions / next steps</a></li>
 <li><a href="#methods">Methods</a>
 <ul>
 <li><a href="#regenerate">Regenerate</a></li>
@@ -167,12 +189,15 @@ Full legend
 <h2 id="summary">Summary</h2>
 <ul>
 <li>In K562 the converter predicts the 1 bp DNase profile at <strong>0.792</strong>, where two DNase replicates agree at 0.834: <strong>95% of the ceiling</strong>. Observed ATAC reaches 0.292.</li>
-<li>Sequence adds <strong>+0.229</strong>: the same model without its sequence branch reaches 0.563.</li>
+<li>Sequence adds <strong>+0.229</strong>: the same model without its sequence branch reaches 0.563. The leading explanation is DNase I cleavage bias, which the sequence branch can learn because no bias model is used.</li>
 <li>In GM12878, without retraining, the converter reaches <strong>72%</strong> of the ceiling (0.490 against 0.684) and still beats that cell type’s ATAC track by <strong>+0.284</strong>. A new cell type is where a converter would be used, so 72% is the number that counts.</li>
-<li><strong>Current status: the converter does not help downstream.</strong> As the ABC activity term, real DNase beats real ATAC by +0.0709 and the converted track’s +0.0208 [-0.0049, +0.0441] does not resolve (F-012); as the H3K27ac model’s input it is worse than ATAC in every direction tested, which closed it as a model input (F-013, F-014).</li>
+<li><strong>Current status: the converter has not been shown to help downstream.</strong> As the ABC activity term, real DNase beats real ATAC by +0.0709, and the converted track’s +0.0208 [-0.0049, +0.0441] is not resolved; the interval includes no change (F-012); as the H3K27ac model’s input it is worse than ATAC in every direction tested, which closed it as a model input (F-013, F-014).</li>
 </ul>
 <h2 id="goals">Goals</h2>
 <p>The converter takes sequence + ATAC and predicts DNase; it is trained in K562 and applied unchanged to GM12878. It was built because Report 3 found DNase the better accessibility input, with the advantage surviving transfer, while most cell types have only ATAC.</p>
+<blockquote>
+<p><strong>Superseded (F-016, 2026-09-14):</strong> the “advantage surviving transfer” premise was withdrawn; scored against the target’s own DNase-only floor, no sequence + DNase H3K27ac model beats it on transfer in any of six directions over three cell types.</p>
+</blockquote>
 <h2 id="the-converter-reaches-95-of-the-dnase-profile-ceiling-in-k562">The converter reaches 95% of the DNase profile ceiling in K562</h2>
 <p>At 1 bp the converter scores <strong>0.792</strong> against a ceiling of <strong>0.834</strong>; the observed ATAC track scores 0.292. The metric is shape correlation: the Pearson correlation of predicted and observed per-base signal within each element, averaged over the top fifth of elements by signal. The ceiling is the same correlation between two DNase replicates.</p>
 <table>
@@ -258,7 +283,7 @@ Full legend
 <li>Elements are <strong>ATAC-derived</strong>, unlike every other K562 model here, because at deployment only ATAC exists to call them. Element derivation made no difference on the H3K27ac task (<em>p</em>=0.83).</li>
 <li>The target is <code>0.34</code>’s pooled stranded DNase (merged BAMs, <code>genomecov</code> once per strand). The strands sum exactly to the main-chromosome read count (301,112,388 in K562) and match <code>0.32</code>’s independently built unstranded track to the read.</li>
 </ul>
-<h2 id="sequence-adds-0.229-over-an-atac-only-model-so-the-converter-does-more-than-rescale-atac">Sequence adds +0.229 over an ATAC-only model, so the converter does more than rescale ATAC</h2>
+<h2 id="sequence-adds-0.229-over-an-atac-only-model-consistent-with-learned-dnase-i-cleavage-bias">Sequence adds +0.229 over an ATAC-only model, consistent with learned DNase I cleavage bias</h2>
 <p>Removing the sequence branch, with target and elements unchanged, drops the K562 score from 0.792 to 0.563; transferred, sequence adds <strong>+0.172</strong>. The ATAC-only model beats raw ATAC by +0.271, which is normalisation needing no sequence, and the converter roughly doubles that. The counts head (predicted total reads per element) shows the same ordering:</p>
 <table>
 <thead>
@@ -284,6 +309,7 @@ Full legend
 </tr>
 </tbody>
 </table>
+<p>The leading explanation for the sequence gain is DNase I cleavage bias. Base-level DNase I cuts are dominated by the enzyme’s sequence preference, the target is not bias-corrected, and a sequence branch can learn that preference directly. It is also the likely reason the converted track made a worse H3K27ac model input than ATAC (F-014): if most of the per-base gain is enzyme bias, the track matches DNase better without carrying more information about H3K27ac. If the converter is reopened, train it on a bias-factorised target, with a DNase I bias model fitted first as ChromBPNet does, so that it predicts accessibility without the enzyme’s preference.</p>
 <p><strong>Method.</strong> The ATAC-only arm is <code>1.24</code> with <code>MODE=atac</code>, which drops the genome input. <code>2.15</code> scores it as the config baseline, so <code>incremental_r2</code> and <code>residual_pearson</code> are measured against it.</p>
 <h2 id="in-gm12878-the-converter-keeps-its-margin-over-atac-but-reaches-only-72-of-the-ceiling">In GM12878 the converter keeps its margin over ATAC but reaches only 72% of the ceiling</h2>
 <p>Transferred, the converter reaches 0.490 against GM12878’s ceiling of 0.684 (<strong>72%</strong>, against 95% in K562). It beats GM12878’s ATAC track by <strong>+0.284 [+0.279, +0.289]</strong>, and its sequence margin keeps <strong>91%</strong> of the in-cell size (25.1 against 27.5 percentage points of ceiling). Most other in-cell gains in this project were null or negative on transfer (Report 3).</p>
@@ -300,6 +326,8 @@ Full legend
 <p><strong>Every “% of ceiling” is optimistic.</strong> The ceiling comes from the two ENCSR000EOT replicates (142M reads), projected to their pooled depth with the Spearman-Brown formula. The training target is the 3-BAM pool at 301M reads, which is less noisy and has a higher true ceiling.</p>
 <p><strong>The confidence intervals only measure stability across chromosome holdouts.</strong> Fold-to-fold variation in a mean over roughly 10,000 elements is small, so they are narrow. They say nothing about a third cell type, the larger uncertainty.</p>
 <p><strong>GM12878’s DNase is the weaker library</strong>: 53.8M usable reads against K562’s 301.1M, hence the lower ceiling. Compare the cell types by fraction of ceiling; their raw correlations are not comparable.</p>
+<h2 id="open-questions-next-steps">Open questions / next steps</h2>
+<p>None open: the converter is closed as a model input (F-014; Settled in the project TODOLIST). If it is reopened, the first steps are a bias-factorised target (above) and a transfer test on a third cell type, which F-016 and F-017 ran for H3K27ac models but not for the converter.</p>
 <h2 id="methods">Methods</h2>
 <p>Architecture, training schedule and cross-validation are as in Report 3: <code>MultiModalBPNet</code>, <code>n_layers = 8</code>, +/-500 bp counting window with a 2,114 bp input window, <code>w = 10</code>, reverse-complement augmentation, chromosome-holdout 5-fold cross-validation, negatives at 10% of each batch and never evaluated on. The only changes are the target and the element set.</p>
 <p><strong>The profile metric here is not the project’s usual one, and the two are not comparable.</strong> <code>2.15</code>’s <code>profile_pearson</code> comes from bpnetlite’s <code>calculate_performance_measures</code> with <code>kernel_sigma = 7, kernel_width = 81</code>, so both profiles are Gaussian-smoothed before correlating. The DNase ceiling in Report 1 is a raw within-element correlation at 1 bp from <code>0.25</code>. Reading one against the other would compare different estimators on different scales: on the same fold-0 model the smoothed metric reads 0.774 where the raw 1 bp value is 0.799 and the ceiling is 0.831. <code>2.31</code> therefore scores the model with <code>0.25</code>’s <code>shape_corr</code> unchanged and computes the ceiling on the same held-out windows in the same run, leaving no estimator or element-set difference between the model number and the ceiling beside it.</p>
@@ -325,11 +353,10 @@ Full legend
 <span id="cb2-14"><a href="#cb2-14" aria-hidden="true"></a><span class="ex">sbatch</span> scripts/0.35.atac_vs_dnase_profile_baseline.sh</span>
 <span id="cb2-15"><a href="#cb2-15" aria-hidden="true"></a></span>
 <span id="cb2-16"><a href="#cb2-16" aria-hidden="true"></a><span class="co"># Paired delta against that comparator, and the figure</span></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true"></a><span class="ex">python</span> scripts/2.35.converter_vs_atac_paired.py --label converter5f --label ataconly5f</span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true"></a><span class="ex">python</span> scripts/3.13.plot_converter.py</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true"></a><span class="ex">pixi</span> run -e multimodal python scripts/2.35.converter_vs_atac_paired.py --label converter5f --label ataconly5f</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true"></a><span class="ex">pixi</span> run -e multimodal python scripts/3.13.plot_converter.py</span>
 <span id="cb2-19"><a href="#cb2-19" aria-hidden="true"></a></span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true"></a><span class="co"># Rebuild this report</span></span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true"></a><span class="ex">python</span> build_reports.py h3k27ac_model_report.qmd .</span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true"></a><span class="ex">python</span> render_report.py report4_atac_to_dnase_converter.qmd</span></code></pre></div>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true"></a><span class="co"># Render this report</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true"></a><span class="ex">pixi</span> run -e multimodal python render_report.py report4_atac_to_dnase_converter.qmd</span></code></pre></div>
 </body>
 </html>

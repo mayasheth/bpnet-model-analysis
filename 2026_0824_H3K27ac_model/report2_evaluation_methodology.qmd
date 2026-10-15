@@ -70,7 +70,7 @@ blockquote { border-left: 3px solid #ddd; margin-left: 0; padding-left: 1rem;
 
 ![](figures/fig1_three_mode_comparison.png)
 
-**Figure 1 | The same five models give different effect sizes on all elements and on the top quintile.** **Headline figure.**
+**Figure 1 | The same three models give different effect sizes on all elements and on the top quintile.** **Headline figure.**
 
 <details>
 <summary>Full legend</summary>
@@ -79,8 +79,8 @@ blockquote { border-left: 3px solid #ddd; margin-left: 0; padding-left: 1rem;
 between predicted and observed log counts. **a**, All elements. **b**, Top quintile by
 observed H3K27ac. Colour encodes input modality in all three reports: **red sequence only,
 blue ATAC only, purple sequence + ATAC**. Dashed line: achievable ceiling, 0.957 in **a** and 0.929 in **b**. Sequence-only
-falls from 0.494 to 0.380 and ATAC-only from 0.831 to 0.548, so the gap between modalities is
-0.34 in **a** and 0.17 in **b**. The multimodal model's fold sd (0.015) is a third of either
+falls from 0.494 to 0.380 and ATAC-only from 0.814 to 0.548, so the gap between modalities is
+0.32 in **a** and 0.17 in **b**. The multimodal model's fold sd (0.015) is a third of either
 single-input model's (0.041-0.046). Source: `results/fiveprime_stratified_fold_summary.tsv`.
 </details>
 
@@ -89,7 +89,7 @@ single-input model's (0.041-0.046). Source: `results/fiveprime_stratified_fold_s
 - Lead with the top signal quintile, and wait for the input mode the change targets.
 - Compare two models by pairing: within fold upstream, within bootstrap resample downstream.
 - Score a transfer in both directions, against the target's ceiling, its model-free coupling and a floor on the same assay as the model.
-- Judge a predicted activity track by CRISPR-benchmark AUPRC between the floor and ceiling, not by correlation; screen it first by partial correlation with observed signal given ATAC, over all candidate regions.
+- Judge a predicted activity track by CRISPR-benchmark AUPRC between the floor and ceiling, not by correlation. Partial correlation with observed signal given ATAC is for exploration only; it has disagreed with the benchmark in both directions (F-031).
 - Before reading a result, confirm the metric, control or test could have failed, and test an enrichment by removing the elements carrying the proposed cause.
 
 ## Goals
@@ -117,7 +117,7 @@ When a change is tested in several input modes, wait for the mode it targets. Th
 receptive-field question was closed on the sequence-only models and reopened when the
 sequence + ATAC models showed a significant gain.
 
-> **Update (F-027):** Top-quintile gains do not predict the CRISPR benchmark (r = -0.12 over n = 5 interventions, Report 5); F-027's +0.0508 top-quintile gain was -0.0020 AUPRC.
+> **Update (F-027):** Report 5 shows no relationship between top-quintile gains and the CRISPR benchmark (r = -0.12, n = 5; 4 of 5 interventions share a sign), so a top-quintile gain does not stand in for AUPRC; F-027's +0.0508 top-quintile gain was -0.0020 AUPRC. The 100-epoch row in that comparison is a second training run whose cause is unresolved (F-019, F-020).
 
 ## Pair every comparison within fold
 
@@ -173,6 +173,8 @@ prediction knows about p300 that ATAC does not already supply. It is a candidate
 orders models with large differences correctly, and it missed the one small gain it has been
 tested on prospectively (below).
 
+> **Update (F-031, 2026-09-25):** Use this screen for exploration only, not to choose which models to benchmark. Neighbour re-ranking raised partial rho by +0.06 to +0.22 with no AUPRC change (F-031), and the 'pair' loss raised it by +0.125 with no resolvable ABC change (Report 6, Fig. 1). With the ranking-loss case below, the screen has now disagreed with the benchmark in both directions.
+
 ![](figures/fig25_partial_corr_explainer.png)
 
 **Figure 2 | Partial correlation given ATAC separates what a prediction knows beyond ATAC from ATAC re-encoded.**
@@ -222,14 +224,17 @@ transferred ones on both. It does not explain everything. The in-cell model's pa
 and the other +0.083 (F-029). It controls for ATAC at the element only, not for neighbourhood
 sums, contact or distance.
 
-**First prospective test: the screen missed a real gain.** The ranking-loss models (`1.36`)
-were scored before their benchmark result: partial rho 0.271 (weight 2) and 0.265 (weight 10)
-against the MSE-only multi-cell model's 0.281, so the screen predicted no gain. Both gained.
-In ABC, weight 10 beat the MSE-only model by +0.0087 [+0.0006, +0.0179]; in ENCODE-rE2G,
+**First prospective test: the screen missed a gain (single run, provisional).** The
+ranking-loss models (`1.36`) were scored before their benchmark result: partial rho 0.271
+(weight 2) and 0.265 (weight 10) against the MSE-only multi-cell model's 0.281, so the screen
+predicted no gain. Both scored above the MSE-only model. In ABC, weight 10 beat the MSE-only model by +0.0087 [+0.0006, +0.0179]; in ENCODE-rE2G,
 weights 2 and 10 beat it by +0.0143 [+0.0048, +0.0250] and +0.0173 [+0.0072, +0.0294]. The gain
 sits at the tested elements, where weight 10's partial rho rose from 0.266 to 0.295, and not
-over the candidate set as a whole. **A flat screen score does not rule out a downstream
-gain**; treat the screen as a way to rank large differences, not as a gate.
+over the candidate set as a whole. Each arm is one training run: weight 10 is the best of five
+weights in two frameworks, compared with the lowest-scoring of the MSE-only model's three runs,
+so the gain is provisional until it holds over three runs against that model's three-run mean.
+**A flat screen score may not rule out a downstream gain** (provisional, resting on this result);
+treat the screen as a way to rank large differences, not as a gate.
 
 ## Design a transfer evaluation to separate model failure from target difficulty
 
@@ -261,6 +266,8 @@ The terminal metric is CRISPR-benchmark AUPRC, not a correlation, because the go
 predicted activity track usable in ABC.
 
 > **Update (F-029):** Screen tracks first by partial correlation given ATAC over all candidate regions (see the section above); it costs minutes and never touches the benchmark.
+
+> **Update (F-031, 2026-09-25):** Use that screen for exploration only; it has raised partial rho without moving AUPRC (see the screen section above).
 
 ABC's `activity_base = sqrt(normalized_h3k27ac * normalized_atac)`. Predictions are painted
 into a bigwig as `predicted_counts / width` over the ABC candidate regions and replace the
@@ -329,7 +336,8 @@ interval overlaps every other; pairing removes the shared pair-sampling variance
 
 The H3K27ac benchmark was read from those intervals as "no arm clears the floor". In the p300
 run a +0.055 difference inside two overlapping intervals resolved at 100% sign retention, and a
-+0.009 difference as a clean null. The H3K27ac conclusion awaits a paired re-test.
++0.009 difference was not resolved; its interval, [-0.004, +0.022], includes both no change and a
+gain of +0.02. The H3K27ac conclusion awaits a paired re-test.
 
 > **Superseded (F-004, 2026-09-15):** Paired, predicted H3K27ac from the ATAC-input model still does not clear the floor (+0.0121 [-0.0053, +0.0285]); the same architecture with DNase input does (+0.0403 [+0.0230, +0.0563], F-018).
 
@@ -376,6 +384,11 @@ Pearson is unstratified, and one early gain from it vanished on the top quintile
 - Report the change, the stratum and the *p* together.
 - Non-GPU work goes to the lab's `engreitz` partition; see the repository `CLAUDE.md`.
 
+## Open questions / next steps
+
+- Does the ranking loss at weight 10 still beat the MSE-only model over three runs against that model's three-run mean? This decides whether the screen missed a gain (F-030). Listed in the project TODOLIST under the 2026-10-14 review item.
+- Does a qnorm-off ABC arm change how predicted tracks score, given that the qnorm reference is built from observed K562 signal? Listed under Later in the project TODOLIST ("Test removing qnorm in ABC as its own arm").
+
 ## Methods
 
 All correlations are on log counts, over element-centred windows of the half-width recorded
@@ -396,16 +409,16 @@ Environment: pixi env `multimodal`, pixi.lock sha256:069960d36312
 
 ```bash
 # the one scoring path, driven by a config JSON
-pixi run python scripts/2.15.perfold_from_config.py config/<name>_configs.json \
+pixi run -e multimodal python scripts/2.15.perfold_from_config.py config/<name>_configs.json \
     <prefix>_ <elements.narrowPeak> --pair A B
 
 # regression gates
-pixi run python scripts/2.18.compare_perfold_tables.py results/old_per_fold.tsv \
+pixi run -e multimodal python scripts/2.18.compare_perfold_tables.py results/old_per_fold.tsv \
     results/new_per_fold.tsv --tol 1e-3
-pixi run python scripts/test_asymmetric_loss.py
+pixi run -e multimodal python ../scripts/test_asymmetric_loss.py
 
 # residual-metric semantics check, before any residual scoring
-pixi run python scripts/2.7.diagnose_residual_offset.py
+pixi run -e multimodal python scripts/2.7.diagnose_residual_offset.py
 
 # this report
 python render_report.py report2_evaluation_methodology.qmd

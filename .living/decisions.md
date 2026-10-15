@@ -266,6 +266,8 @@ comparability, transfer, telohaec
 
 ### [2026-09-03] Test-time reverse-complement averaging stays opt-in
 
+> **Superseded the same day (recorded 2026-10-14):** RC averaging became the default in `a18fb84`. See "[2026-09-03] Test-time reverse-complement averaging becomes the default" at the end of this log.
+
 **Context**: Averaging each prediction with its reverse complement at inference costs one extra forward pass and no retraining, and it improves every model: +0.0162 sequence only, +0.0081 multimodal, +0.0016 for ATAC only, which is the negative control and the only non-significant row.
 
 **Decision**: Ship it behind `--rc-average`, off by default.
@@ -1350,6 +1352,8 @@ auxiliary task, or an annotation. Ordered so the cheap prerequisite gates the ex
       ATAC, +0.0016 and non-significant for ATAC only, which is the control (report Fig. 13).
       Currently opt-in via `2.15 --rc-average` so existing numbers stay comparable. Adopting
       it means re-scoring the report's tables as a set.
+      **Adopted 2026-09-03 (`a18fb84`):** on by default, `--no-rc-average` opts out; see the
+      default-on entry at the end of this log.
 - (done) **Do the wider receptive field and the fragment channels combine? ANSWERED, they are
       SUB-ADDITIVE, and it does not matter for deployment.** Closed 2026-09-14; the model
       (`multimodal5p_fragchan_wide_hw500_clw10`) was trained and scored earlier and the answer
@@ -1841,3 +1845,22 @@ stopping 10, 20,000 negatives), 3 runs (no seed, seed 1, seed 2).
 idea 1; idea 2 then runs on the MSE-only base.
 
 **Tags**: pre-registration, p300, multi-cell, corgi, transfer, abc, re2g
+
+---
+
+### [2026-09-03] Test-time reverse-complement averaging becomes the default
+
+*Recorded 2026-10-14 from commit `a18fb84`; the switch was made in code on 2026-09-03 but never logged here (review F30).*
+
+**Context**: The opt-in entry of the same date kept RC averaging off so old and new tables stayed comparable until they could be re-scored together. The re-score batch (`2.22.submit_rc_rescore.sh`) was written in the same commit.
+
+**Decision**: `2.15.perfold_from_config.py` averages each prediction with its reverse complement by default. `--no-rc-average` reproduces a single-pass number.
+
+**Alternatives considered**:
+- Keep it opt-in, rejected: the same commit added `2.22`, which re-scores every model table with RC in one batch, the condition the opt-in entry set for adopting it.
+
+**Rationale**: It is free at inference and positive for every model (+0.0162 sequence only, +0.0081 multimodal, +0.0016 ATAC only, the control).
+
+**Consequences**: Every upstream table written before 2026-09-03 is single-pass; tables from 2.15 after that date are RC-averaged unless `--no-rc-average` was passed. Do not mix the two in one comparison. The regression gates pass `--no-rc-average` explicitly because their reference tables are single-pass. Supersedes the opt-in entry above.
+
+**Tags**: inference, reverse-complement, adoption, comparability, supersedes

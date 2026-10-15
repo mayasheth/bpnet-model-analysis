@@ -1,5 +1,5 @@
 ---
-title: "An ATAC-to-DNase converter recovers 95% of the DNase profile in K562 but does not improve ABC or H3K27ac prediction"
+title: "An ATAC-to-DNase converter recovers 95% of the DNase profile in K562 but makes a worse H3K27ac model input than ATAC, and its ABC gain is not resolved"
 date: "2026-09-24"
 status: "draft"
 format:
@@ -88,15 +88,17 @@ folds (see Limits). Source: `results/converter_profile_{converter5f,ataconly5f}_
 ## Summary
 
 - In K562 the converter predicts the 1 bp DNase profile at **0.792**, where two DNase replicates agree at 0.834: **95% of the ceiling**. Observed ATAC reaches 0.292.
-- Sequence adds **+0.229**: the same model without its sequence branch reaches 0.563.
+- Sequence adds **+0.229**: the same model without its sequence branch reaches 0.563. The leading explanation is DNase I cleavage bias, which the sequence branch can learn because no bias model is used.
 - In GM12878, without retraining, the converter reaches **72%** of the ceiling (0.490 against 0.684) and still beats that cell type's ATAC track by **+0.284**. A new cell type is where a converter would be used, so 72% is the number that counts.
-- **Current status: the converter does not help downstream.** As the ABC activity term, real DNase beats real ATAC by +0.0709 and the converted track's +0.0208 [-0.0049, +0.0441] does not resolve (F-012); as the H3K27ac model's input it is worse than ATAC in every direction tested, which closed it as a model input (F-013, F-014).
+- **Current status: the converter has not been shown to help downstream.** As the ABC activity term, real DNase beats real ATAC by +0.0709, and the converted track's +0.0208 [-0.0049, +0.0441] is not resolved; the interval includes no change (F-012); as the H3K27ac model's input it is worse than ATAC in every direction tested, which closed it as a model input (F-013, F-014).
 
 ## Goals
 
 The converter takes sequence + ATAC and predicts DNase; it is trained in K562 and applied
 unchanged to GM12878. It was built because Report 3 found DNase the better accessibility input,
 with the advantage surviving transfer, while most cell types have only ATAC.
+
+> **Superseded (F-016, 2026-09-14):** the "advantage surviving transfer" premise was withdrawn; scored against the target's own DNase-only floor, no sequence + DNase H3K27ac model beats it on transfer in any of six directions over three cell types.
 
 ## The converter reaches 95% of the DNase profile ceiling in K562
 
@@ -139,7 +141,7 @@ tracks approach the ceiling (Fig. 1a).
   strands sum exactly to the main-chromosome read count (301,112,388 in K562) and match `0.32`'s
   independently built unstranded track to the read.
 
-## Sequence adds +0.229 over an ATAC-only model, so the converter does more than rescale ATAC
+## Sequence adds +0.229 over an ATAC-only model, consistent with learned DNase I cleavage bias
 
 Removing the sequence branch, with target and elements unchanged, drops the K562 score from 0.792
 to 0.563; transferred, sequence adds **+0.172**. The ATAC-only model beats raw ATAC by +0.271,
@@ -150,6 +152,14 @@ head (predicted total reads per element) shows the same ordering:
 |---|---|---|---|
 | top-quintile Pearson, converter - ATAC-only | +0.064 | [+0.047, +0.082] | 0.0005 |
 | all elements, converter - ATAC-only | +0.025 | [+0.016, +0.034] | 0.0016 |
+
+The leading explanation for the sequence gain is DNase I cleavage bias. Base-level DNase I cuts
+are dominated by the enzyme's sequence preference, the target is not bias-corrected, and a
+sequence branch can learn that preference directly. It is also the likely reason the converted
+track made a worse H3K27ac model input than ATAC (F-014): if most of the per-base gain is enzyme
+bias, the track matches DNase better without carrying more information about H3K27ac. If the
+converter is reopened, train it on a bias-factorised target, with a DNase I bias model fitted
+first as ChromBPNet does, so that it predicts accessibility without the enzyme's preference.
 
 **Method.** The ATAC-only arm is `1.24` with `MODE=atac`, which drops the genome input. `2.15`
 scores it as the config baseline, so `incremental_r2` and `residual_pearson` are measured against
@@ -190,6 +200,12 @@ about a third cell type, the larger uncertainty.
 
 **GM12878's DNase is the weaker library**: 53.8M usable reads against K562's 301.1M, hence the
 lower ceiling. Compare the cell types by fraction of ceiling; their raw correlations are not comparable.
+
+## Open questions / next steps
+
+None open: the converter is closed as a model input (F-014; Settled in the project TODOLIST). If it
+is reopened, the first steps are a bias-factorised target (above) and a transfer test on a third
+cell type, which F-016 and F-017 ran for H3K27ac models but not for the converter.
 
 ## Methods
 
@@ -249,10 +265,9 @@ sbatch scripts/2.34.submit_converter_full.sh
 sbatch scripts/0.35.atac_vs_dnase_profile_baseline.sh
 
 # Paired delta against that comparator, and the figure
-python scripts/2.35.converter_vs_atac_paired.py --label converter5f --label ataconly5f
-python scripts/3.13.plot_converter.py
+pixi run -e multimodal python scripts/2.35.converter_vs_atac_paired.py --label converter5f --label ataconly5f
+pixi run -e multimodal python scripts/3.13.plot_converter.py
 
-# Rebuild this report
-python build_reports.py h3k27ac_model_report.qmd .
-python render_report.py report4_atac_to_dnase_converter.qmd
+# Render this report
+pixi run -e multimodal python render_report.py report4_atac_to_dnase_converter.qmd
 ```

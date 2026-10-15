@@ -63,8 +63,14 @@ from todo/TODOLIST.md"; the old file is kept as `todo/TODOLIST.pre-standard.md`.
 
 ## Next
 <!-- Ordered: top item is the next thing to start. -->
-- [ ] P1 Act on the 2026-10-14 review of reports 1-7 (`.living/outputs/reviews/2026-10-14-all-reports.md`, 82 findings, 23 Major) #report (Maya: scope)
-  - reruns that could change text: upstream on test chromosomes (F8), gene-level bootstrap on other borderline verdicts (F7; option now in 4.17/4.34 `--cluster gene`), depth-matched p300 vs H3K27ac (F10), full-TSS promoter mask (F11)
+- [ ] P1 Act on the 2026-10-14 review of reports 1-7 (`.living/outputs/reviews/2026-10-14-all-reports.md`, 82 findings, 23 Major) #report
+  - order (Maya 2026-10-14): text fixes, then figure fixes, holding text that reruns could change
+  - [x] text pass 2026-10-14: prose, headings, captions, Regenerate commands and missing sections in all eight reports, plus decisions (F30), findings titles (F36, F27), ANALYSIS_MANIFEST (F37), DATA_MANIFEST (F55), env docs (F62); figure parts of F10, F17, F44, F65, F68, F69, F71, F75 left for the figure pass
+  - next: figure pass (F64-F82, plus the figure parts above; F78 style is the largest)
+  - reruns that could change text: upstream on test chromosomes vs relabel as validation numbers (F13, Maya to decide), gene-level bootstrap on other borderline verdicts (F7; option now in 4.17/4.34 `--cluster gene`), seeds-1-2-only contrast for the ATAC TF list (F3), depth-matched p300 vs H3K27ac (F19), full-TSS promoter mask (F20), strand-shifted H3K27ac meta-profile (F21)
+  - rank-loss weight 10 over 3 seeds against the 3-run MSE-only mean (F4, F-030); report 2 marks the "screen missed a gain" result provisional until then
+  - code: shared bootstrap module with explicit estimator (F42), pin `statistic_aupr` (F43), 5.5 reads committed coefficients by default (F54), launchers out of gitignored `log/` (F56), srun-patch guard in 4.5/4.7/scE2G driver (F59), retire or guard `build_reports.py`, which would overwrite reports 1-4 from `report_text.py`
+  - Maya: register an EngreitzLabVault pointer note (F63)?
 - [ ] P1 Corgi idea 2 (on the Corgi base, F-067): RNA TF list weighted by expression z-score across the panel + K562 instead of log TPM (`4.54` -> `4.45`, 3 seeds); after idea 1 is submitted #model
   - Corgi's per-cell TF importance tracks expression z-score (39-68% of variance); the log-TPM list was null (F-041). Same weighting could replace the hand-picked erythroid motif set in scE2G
 - [ ] P2 Train H3K4me1 models (in-cell K562, GM12878 -> K562, multi-cell holding out K562) if the beyond-ATAC check shows signal #h3k4me1
@@ -87,7 +93,7 @@ from todo/TODOLIST.md"; the old file is kept as `todo/TODOLIST.pre-standard.md`.
   - done already: `scripts/plot_individual_motif_insertions.py`, `scripts/plot_motif_pair_heatmaps.py`
 - [ ] P3 Add an accessibility-stratified metric (Pearson and predicted/observed by ATAC decile) to the `2.x` eval #benchmark (F-021)
 - [ ] P3 Measure counts accuracy on CRISPR-tested elements per arm, not only genome-wide #benchmark (F-021)
-- [ ] P3 Use partial rho given ATAC (`4.35`) as the upstream screen, over all candidates, never tested elements #benchmark (F-029)
+- [ ] P3 Use partial rho given ATAC (`4.35`) for exploration only, over all candidates, never tested elements; not as a screen for what to benchmark, since it disagreed with the benchmark in both directions (F-031, report 2) #benchmark (F-029)
 - [ ] P3 Test removing qnorm in ABC as its own arm (`use_qnorm: False`) #benchmark
 - [ ] P3 Decide whether to make test-time RC averaging the default and re-score the tables as a set #benchmark
 - [ ] P3 Re-measure the dynamic range of the DNase-input H3K27ac prediction (`4.9`/`4.10` on `predk27ac_k562_dnase.bw`) #h3k27ac (F-018)

@@ -230,19 +230,27 @@ name: h3k27ac-k562-models
 path: 2026_0824_H3K27ac_model/
 status: active
 created: 2026-08-24
-last_updated: 2026-08-24
+last_updated: 2026-10-14
 datasets: [k562-h3k27ac-chipseq, k562-dnase-candidate-elements, k562-atac-bigwig]
 algorithms: [multimodal-bpnet, motif-exp-utils]
 parent_analysis: multimodal-p300-model
 key_findings:
-  - Accessibility dominates. Top-quintile Pearson, 5 folds, +/-500 bp on the 5-prime target - sequence 0.380 [0.323, 0.437], ATAC-only 0.548 [0.497, 0.599], sequence+ATAC 0.685 [0.667, 0.704]; corrected ceiling 0.929.
-  - Sequence adds ~2.4x less for H3K27ac than for p300 (+0.127 vs +0.304, difference 0.177 +/- 0.027). H3K27ac scores higher overall but is the poorer substrate for sequence interpretation. See F-001.
-  - Stratification is essential - ATAC-only reaches 0.813 over all elements but 0.548 on the top signal quintile. Reading the unstratified number has produced a wrong conclusion three times.
-  - The residual objective helps only a sequence-blind input - sequence-only 0.149 -> 0.459, while a multimodal model LOSES 0.037. Replicated in GM12878 (0.133 -> 0.372; -0.035), so it is a property of the objective. An ATAC-input negative control scores ~0, and joint training remains the best predictor. See F-002.
-  - Transfer is asymmetric and mostly reflects cell-type difficulty. GM12878-trained models score higher on K562 than in GM12878 for every modality; the ATAC-only gap is fully explained by weaker ATAC-H3K27ac coupling there (0.409 vs 0.510). See F-003.
-  - For deployment into a cell type with ATAC but no H3K27ac, transfer the MULTIMODAL model - residual and multimodal are indistinguishable on the top quintile and multimodal ships without an offset model. Sequence adds 0.04-0.06 over transferred ATAC-only; sequence-only transfer is useless.
-  - Accessibility input convention matters only where accessibility is the sole input. ChromBPNet-style 5-prime insertion counts gain the ATAC-only model +0.032 (K562) and +0.023 (GM12878) on the top quintile and leave multimodal unchanged.
-report: 2026_0824_H3K27ac_model/h3k27ac_model_report.html
+  - Accessibility dominates H3K27ac prediction. Top-quintile Pearson, 5 folds, +/-500 bp, 5-prime target - sequence 0.380 [0.323, 0.437], ATAC-only 0.548 [0.497, 0.599], sequence+ATAC 0.685 [0.667, 0.704]. These are validation-chromosome numbers (review F13). See F-001.
+  - Sequence adds less for H3K27ac than for p300, so p300 is the better substrate for sequence interpretation. See F-001.
+  - The residual objective helps only a sequence-blind input; joint training remains the best predictor. See F-002.
+  - No H3K27ac model transfers across cell types once the floor uses the same assay as the model (six directions, three cell types). This withdraws the earlier DNase-input transfer claim and the "transfer the multimodal model" deployment recommendation. See F-010, F-016.
+  - Observed p300 beats observed H3K27ac as the ABC activity term, +0.038 [+0.019, +0.058], and p300 became the project's target (libraries not depth-matched, review F19). See F-024.
+  - Transferred multi-cell p300 (K562 held out) keeps about a quarter of the in-cell gain; changes to the transfer model mostly do not resolve on K562 CRISPR. See reports 5-6.
+  - Corgi (deviation from a leave-one-out panel mean) beats the MSE-only multi-cell model in ABC, +0.0104 [+0.0010, +0.0204] (pre-registered PASS, holds gene-level), and is now the multi-cell base. See F-067.
+report: 2026_0824_H3K27ac_model/report3_design_decisions.html
+reports:   # numbered reports 1-7; h3k27ac_model_report.html is the superseded single report
+  - 2026_0824_H3K27ac_model/report1_data_characterisation.html
+  - 2026_0824_H3K27ac_model/report2_evaluation_methodology.html
+  - 2026_0824_H3K27ac_model/report3_design_decisions.html
+  - 2026_0824_H3K27ac_model/report4_atac_to_dnase_converter.html
+  - 2026_0824_H3K27ac_model/report5_multicell_p300_transfer.html
+  - 2026_0824_H3K27ac_model/report6_improving_transfer.html
+  - 2026_0824_H3K27ac_model/report7_tf_evidence_multiome.html
 tags: [h3k27ac, k562, multimodal, atac, counts-only, window-selection, chromatin]
 ```
 
@@ -269,7 +277,7 @@ Unstranded support landed in the shared `scripts/train_multimodal_bpnet.py` on
 bit-identical to before the change. `--max-negatives` was added in the same pass because
 the old `10 x n_peaks` rule implies ~55 GB at 120k elements.
 
-**Report (draft, 2026-08-27):** `2026_0824_H3K27ac_model/h3k27ac_model_report.html`, source `h3k27ac_model_report.qmd`. Covers window selection, ATAC-vs-H3K27ac spatial
+**Reports:** the single report was split into numbered reports starting 2026-09-03 (three at first, seven now, listed in `reports:` above); `h3k27ac_model_report.html` is superseded and carries a banner. **Original report (draft, 2026-08-27):** `2026_0824_H3K27ac_model/h3k27ac_model_report.html`, source `h3k27ac_model_report.qmd`. Covers window selection, ATAC-vs-H3K27ac spatial
 comparison, inter-replicate ceilings in both cell types, the three-mode model
 comparison, the residual-beyond-accessibility metric, the p300 comparison, and
 GM12878 transfer. Scope stops before residual-model results. Rendered with the

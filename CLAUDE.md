@@ -420,7 +420,15 @@ in that case rather than producing nine incomparable answers.
 
 ## Environment and dependencies
 
-Primary conda environments:
+Current work (`2026_0824_H3K27ac_model/`, `2026_1002_sce2g_tf_activity/`) runs in **pixi**;
+full table in `ENVIRONMENTS_INSTALLATIONS.md`.
+- `pixi run -e multimodal ...` (root `pixi.toml`) for training, prediction and scoring. Plain
+  `pixi run` uses the default env, which has no bpnetlite.
+- `tobias`, `scprinter` (`2026_1002_sce2g_tf_activity/pixi.toml`) for footprinting.
+- Snakemake drivers use the Oak wrapper envs above, and `run_snakemake` needs the SLURM 25.11
+  srun patch (`.living/learnings.md`, 2026-09-22).
+
+Legacy conda environments (p300 v1 pipeline only):
 - `bpnet_37` - For BPNet training, prediction, and SHAP (requires `module load cuda/11.1.1 cudnn/8.1.1.33`)
 - `tfmodisco` - For FIMO, MoDISCo, and model inference
 - `analysis` - For FiNeMo formatting and downstream analysis
