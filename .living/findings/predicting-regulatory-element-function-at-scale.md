@@ -2654,3 +2654,24 @@ more, but would be a new, unregistered readout.
 | Date | Run/Session | Dataset | Project | Result | Direction |
 |------|-------------|---------|---------|--------|-----------|
 | 2026-10-13 | clusters 47687538 (+test 47687097); gather 47687541; diag 47689219 | eQTL Catalogue v7 fine-mapped, scE2G cluster predictions (32) | 2026_1002_sce2g_tf_activity | ABC swap E1 -0.0002 [-0.0023, +0.0021], E2 +0.0007 [-0.0027, +0.0040] | eQTLs cannot calibrate activity; second-cell CRISPR needed |
+
+## F-067: Corgi idea 1, a multi-cell p300 model trained as the deviation from a leave-one-out panel mean, beats the MSE-only multi-cell model in ABC (+0.010, pre-registered PASS, holds under a gene-level bootstrap); the rE2G gain does not survive gene-level resampling
+**Status:** supported (3 runs per arm; pre-registered primary passes under both resampling units; secondary rE2G not resolved at gene level)
+**Claim:** `train_multimodal_bpnet.py --panel-mean` (`A/scripts/1.42`, decisions [2026-10-13]): K562 held out; for each training cell, the mean over the OTHER training cells of ATAC z and depth-normalised p300 enters as two input channels, and the count head learns observed minus log1p(panel-mean p300 counts). At K562 the mean is over all four cells. Everything else as 1.37 WEIGHTING=none. Paired bootstrap, seed-averaged (`4.17` / `4.34 --group`), 10,342 pairs / 466 regulated (ABC), 10,356 / 471 (rE2G):
+
+| contrast | AUPRC | pairs i.i.d. | gene-level (`--cluster gene`) |
+|---|---|---|---|
+| Corgi - MSE-only, ABC (primary) | 0.4932 vs 0.4828 | +0.0104 [+0.0010, +0.0204] | +0.0104 [+0.0008, +0.0201] |
+| Corgi - MSE-only, rE2G (secondary) | 0.5696 vs 0.5579 | +0.0117 [+0.0002, +0.0235] | +0.0117 [-0.0050, +0.0275] |
+| Corgi - ATAC only, ABC | vs 0.4680 | +0.0252 [+0.0091, +0.0394] | +0.0252 [+0.0085, +0.0425] |
+| panel mean alone - ATAC only, ABC | 0.3330 | -0.1350 [-0.1679, -0.1042] | -0.1350 [-0.1717, -0.0991] |
+
+Runs: Corgi 0.4925, 0.4894, 0.4975 (sd 0.0041); MSE-only 0.4810, 0.4832, 0.4842. Training: 26-28 epochs to early stopping; smoke val r(offset, observed log counts) 0.21.
+**Implications:** By the pre-registered rule this is a gain: Corgi becomes the multi-cell base, and Corgi idea 2 (z-score TF list) is tested on top of it. It is the first multi-cell variant to clear the MSE-only model seed-averaged in ABC; the earlier plateau (0.483-0.489, F-034 to F-046) sits below it. The panel mean alone is far worse than ATAC alone, so the gain comes from the network learning the deviation, not from copying other cells' p300. The rE2G gain is not resolved once genes are resampled, so call rE2G consistent but unconfirmed.
+**Caveats:** Lower bounds are close to zero (+0.0008 ABC at gene level). K562 CRISPR is both selection and evaluation set (review 2026-10-14, F5/F9); one benchmark, one held-out cell. Gene-level resampling was added after the pre-registration (review F7), so it is reported beside, not instead of, the pre-registered pair bootstrap. rE2G AUPRC comes from the live rE2G checkout (review F45).
+**Tags:** p300, multi-cell, corgi, panel-mean, transfer, abc, re2g, crispr-benchmark, k562, gene-bootstrap
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-10-13/14 | train 47702638, 47702640, 47702641; preds 47723118-47723129; ABC 47723131; CRISPR 47723133; boot 47723135; rE2G via 47723138; gene boot srun 47854193, 47855069 | K562 CRISPR benchmark; ENCODE p300/ATAC panel (A549, GM12878, HepG2, MCF-7) | 2026_0824_H3K27ac_model | ABC +0.0104 [+0.0008, +0.0201] gene-level; rE2G +0.0117 [-0.0050, +0.0275] gene-level | supports Corgi as the multi-cell base |

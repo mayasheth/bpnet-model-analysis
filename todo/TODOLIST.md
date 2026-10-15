@@ -50,9 +50,9 @@ from todo/TODOLIST.md"; the old file is kept as `todo/TODOLIST.pre-standard.md`.
   - 2026-10-13 Maya chose the eQTL route: plan 10 pre-registered (decisions [2026-10-13]): expressed genes, non-promoter candidates <= 1 Mb, E1 pooled AUPRC + E2 within-gene AP; calibration on n6_abc with n6_three / n6_cgi blinded (`10.1`, `10.2`)
   - result (clusters 47687538, gather 47687541, diagnostics `10.3`): ABC swap E1 -0.0002 [-0.0023, +0.0021], E2 +0.0007 [-0.0027, +0.0040]; n6 and ABC rank a gene's candidates alike (within-gene Spearman 0.994); eQTL positives are the proximal top element (median 22 kb). n6_three / n6_cgi stay blinded
   - reopen only with a readout that a CRISPR-scale activity swap moves before any test arm is read
-- [ ] P1 Corgi idea 1: multi-cell p300 model that predicts the change from the panel mean (`train_multimodal_bpnet.py --panel-mean`, `A/scripts/1.42`; pre-registered decisions [2026-10-13]) #model
-  - leave-one-out panel mean in training (all four cells at K562); inputs ATAC z, ATAC z - panel mean z, panel-mean p300; count head through a log1p panel-mean offset. Judge: seed-averaged ABC vs MSE-only (0.4828), rE2G secondary (0.5579); panel mean alone as a descriptive arm
-  - 2026-10-13: helper verified against direct recomputation + invalid-window guard; smoke 47696615 submitted; downstream family `panelmean` wired into 4.1/4.3/4.4/4.6/4.32; scoring chain `A/log/panelmean_score_launch.sh`
+- [x] P1 Corgi idea 1: panel-mean multi-cell p300 model (`--panel-mean`, `A/scripts/1.42`; decisions [2026-10-13]) #model: DONE 2026-10-14, pre-registered PASS (F-067)
+  - ABC Corgi - MSE-only +0.0104 [+0.0010, +0.0204] (pairs), [+0.0008, +0.0201] (gene-level); rE2G +0.0117 [+0.0002, +0.0235] pairs but [-0.0050, +0.0275] gene-level; panel mean alone 0.333 (far below ATAC 0.468)
+  - consequence: Corgi is the multi-cell base; idea 2 runs on top of it (`models/p300_multicell_panelmean_holdK562_hw500_clw10{,_seed1,_seed2}`)
 - [ ] P2 Plan 9 eQTL rescoring as a cheap screen for K562-CRISPR-selected features: catches harm (CGI alone lowers R1) and RNA-side effects, but cannot confirm activity gains below about 0.05 AUPRC (F-065) #sce2g
   - the GATA term is likely erythroid-specific; a non-erythroid cell tests whether CpG-island distance alone carries over
   - label-free proxy done 2026-10-09 (`8.8`, F-060, Maya's idea): CGI distance tracks p300 beyond ATAC in K562 +0.233 and 3 of 4 other cells (pre-set rule: shared; MCF-7 +0.059 below half); the shared part is the near end (nearest decile under-acetylated relative to ATAC in all five, and depleted for regulated K562 pairs, 0.026 vs 0.031-0.060)
@@ -63,7 +63,10 @@ from todo/TODOLIST.md"; the old file is kept as `todo/TODOLIST.pre-standard.md`.
 
 ## Next
 <!-- Ordered: top item is the next thing to start. -->
-- [ ] P1 Corgi idea 2: RNA TF list weighted by expression z-score across the panel + K562 instead of log TPM (`4.54` -> `4.45`, 3 seeds); after idea 1 is submitted #model
+- [ ] P1 Act on the 2026-10-14 review of reports 1-7 (`.living/outputs/reviews/2026-10-14-all-reports.md`, 82 findings, 23 Major) #report (Maya: scope)
+  - urgent: copy the K562 PE ATAC BAMs and baseline scE2G run off $SCRATCH before ~2026-11-20 (review F57)
+  - reruns that could change text: upstream on test chromosomes (F8), gene-level bootstrap on other borderline verdicts (F7; option now in 4.17/4.34 `--cluster gene`), depth-matched p300 vs H3K27ac (F10), full-TSS promoter mask (F11)
+- [ ] P1 Corgi idea 2 (on the Corgi base, F-067): RNA TF list weighted by expression z-score across the panel + K562 instead of log TPM (`4.54` -> `4.45`, 3 seeds); after idea 1 is submitted #model
   - Corgi's per-cell TF importance tracks expression z-score (39-68% of variance); the log-TPM list was null (F-041). Same weighting could replace the hand-picked erythroid motif set in scE2G
 - [ ] P2 Train H3K4me1 models (in-cell K562, GM12878 -> K562, multi-cell holding out K562) if the beyond-ATAC check shows signal #h3k4me1
   - bar is high: observed K562 H3K4me1 in ABC is no better than ATAC alone and 0.060 below observed H3K27ac (F-044)
