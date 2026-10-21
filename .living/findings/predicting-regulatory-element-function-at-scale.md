@@ -2676,3 +2676,28 @@ Runs: Corgi 0.4925, 0.4894, 0.4975 (sd 0.0041); MSE-only 0.4810, 0.4832, 0.4842.
 | Date | Run/Session | Dataset | Project | Result | Direction |
 |------|-------------|---------|---------|--------|-----------|
 | 2026-10-13/14 | train 47702638, 47702640, 47702641; preds 47723118-47723129; ABC 47723131; CRISPR 47723133; boot 47723135; rE2G via 47723138; gene boot srun 47854193, 47855069 | K562 CRISPR benchmark; ENCODE p300/ATAC panel (A549, GM12878, HepG2, MCF-7) | 2026_0824_H3K27ac_model | ABC +0.0104 [+0.0008, +0.0201] gene-level; rE2G +0.0117 [-0.0050, +0.0275] gene-level | supports Corgi as the multi-cell base |
+
+## F-068: The Corgi model's motif-pair syntax does not depend on cell context: the same pairs and spacings lead in all five ATAC contexts, and the GATA1-E-box composite is learned only faintly
+**Status:** preliminary (one base model, seed 0, 5 folds averaged; consensus-sequence insertion; seam and parity artefacts not yet controlled)
+**Claim:** Insertion assay on Corgi (`A/scripts/6.1`, Bolero idea 3): anchor motif at the centre of 500 dinucleotide-shuffled K562 ABC candidate windows (middle tercile of K562 ATAC, label-free), partner at signed edge-to-edge spacing d = -40..+40 in both orientations, each window keeping its real accessibility channels for the context cell (K562, A549, GM12878, HepG2, MCF-7; panel mean leave-one-out as in training, all four cells for K562 as at deployment). Cooperativity = pair - anchor alone - partner alone + neither, in predicted log counts, mean over backgrounds. Anchors AP-1 (FOS::JUN), GATA1 (MA0035.5), GATA1 WGATAA (MA0140.3 core) and GATA1::TAL1; 12 partners.
+
+| quantity (K562 context) | value |
+|---|---|
+| AP1-IRF4, - orientation, d = -2 | +0.0528 (HepG2 +0.0532) |
+| AP1-ETS1, +, d = 0 | +0.050 (HepG2 +0.047) |
+| AP1-CEBPB, every spacing to +/-40 | +0.023 to +0.026 at d = 6-19, zigzag between odd and even d |
+| GATA1 WGATAA - E-box (TAL1::TCF3), +, d = 6 | +0.0012 (SE 0.0002) |
+| GATA1 WGATAA - E-box, -, d = 5 | +0.0016 (SE 0.0004) |
+| AP-1 alone, for scale | +0.030 |
+| largest K562 - HepG2 difference over 8,424 spacing x orientation cells | 0.0041 (GATA1::TAL1-SPI1, -, d = 0) |
+
+The leading pairs agree within 0.005 in all five contexts; 121 of 8,424 K562-HepG2 cells differ at FDR < 0.05, median difference 15% of the K562 cooperativity.
+**Implications:** In Corgi, the target cell's accessibility changes the level of predicted p300, not how motif pairs are read. That is what an unconditioned model should do: it has no input that tells it which TFs are present beyond ATAC, which is the gap FiLM conditioning (Bolero idea 2) is meant to close. Rerunning this assay on the conditioned model is a direct mechanistic readout: K562-specific syntax (a larger GATA-E-box term in the K562 context than in HepG2) would show the conditioning is used as intended. The tiny GATA-E-box term is consistent with the transferred model under-ranking GATA elements (F-032).
+**Caveats:** Effects at |d| <= 2 can be new k-mers formed at the junction of two abutting consensus sequences, not syntax; a scrambled-spacer control is needed before reading them. The odd/even zigzag of AP1-CEBPB is not helical (10.5 bp) and may be a parity artefact of the dilated convolutions. The CEBPB consensus is palindromic, so its two orientations are the same test. CTCF, meant as a quiet partner, reaches 0.020 at seam spacings. With n = 500 and SE about 2e-4, 25,347 of 42,120 rows pass FDR < 0.05, so rank by effect size, not FDR. The JASPAR MA0035.5 consensus is CTAATCT rather than the canonical GATA site, which is why the WGATAA anchor was added.
+**Tags:** motif-syntax, insertion, cooperativity, corgi, cell-context, ap-1, gata1, bolero
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-10-20 | prep 48698248; GPU array 48702671 (20 x 25 backgrounds, ~10.4 GPU-h); combine 48702673; smoke 48696038/48698172 | K562 ABC candidates (backgrounds), panel ATAC (contexts), JASPAR 2024 | 2026_0824_H3K27ac_model | max K562 - HepG2 difference 0.0041 vs pair effects to 0.053; GATA-E-box +0.0012 | syntax context-independent; GATA composite faint |
+

@@ -11,6 +11,8 @@ from todo/TODOLIST.md"; the old file is kept as `todo/TODOLIST.pre-standard.md`.
   - panel: adding SK-N-SH + 5 tissues (p300 + ATAC, `config/p300_panel_14.json`) so FiLM learns from 13 training cells, not 7
   - next: recompute 4.63/4.64 on the 14-cell panel, pre-register in decisions.md (primary FiLM - Corgi on the same panel, ABC, 3 runs, gene-level bootstrap; descriptive: K562 run with its nearest training cell's row), then train
 - [ ] P2 Bolero idea 3: motif-pair syntax of the Corgi model, signed spacing and orientation, by cell context (`6.1`, torch insertion assay; anchors AP-1, GATA1, GATA1::TAL1) #motif
+  - [x] Corgi run 2026-10-20 (F-068, preliminary): syntax is the same in all five contexts (max K562 - HepG2 difference 0.0041 vs pair effects to 0.053); GATA1-E-box +0.0012 only
+  - next: scrambled-spacer control for the |d| <= 2 seam hits; then rerun `6.1` on the FiLM model (idea 2) as its mechanistic readout
 - [x] P1 Baseline scE2G training run on Xu K562 multiome #sce2g
   - driver 46428971 (2026-10-03): CRISPR AUPRC multiome_powerlaw_n6 0.628 [0.575, 0.672], scATAC_powerlaw 0.579 [0.524, 0.623], distance 0.414 [0.363, 0.461]; 10.4% of CRISPR elements missing; `$SCRATCH/sce2g_runs/2026_1002_k562_xu/performance_across_models.tsv`
   - needed: #118 `source_path` fix (local branch `local-with-pr118`), `--rerun-triggers mtime`, and no empty `external_features_config` column (R NA bug)

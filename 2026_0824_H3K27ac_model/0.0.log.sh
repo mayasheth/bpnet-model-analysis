@@ -92,3 +92,15 @@ COUNT_LOSS_WEIGHT=1000  sbatch --job-name=k27_clw1000  --export=ALL,COUNT_LOSS_W
 COUNT_LOSS_WEIGHT=10000 sbatch --job-name=k27_clw10000 --export=ALL,COUNT_LOSS_WEIGHT=10000 scripts/1.1.submit_training.sh sequence 0 500  # job 40707587
 # Compare validation Count Pearson against the 0.604 ceiling, then set the default and
 # run bash scripts/1.2.submit_all.sh.
+
+### 2026-10-20 — Bolero ideas 2 and 3 (preprint doi:10.64898/2026.10.19.760026) ###
+# Idea 2 groundwork: bulk chromVAR per cell from ATAC only, then PC conditioning table.
+sbatch scripts/4.63.submit_bulk_chromvar_panel.sh            # 48696300 (rerun from cache; 48692652, 48693643 failed, fixed)
+python scripts/4.64.make_cell_cond_table.py --z-wide results/2026_1020_bulk_chromvar_panel_z_wide.tsv \
+    --holdout K562 --panel-json config/p300_panel.json --out config/cell_cond_<tag>.tsv
+# FiLM in train_multimodal_bpnet.py --cell-cond-tsv; tests: scripts/test_cell_conditioning.py (srun 48704304), gate test_asymmetric_loss.py (48703690)
+SMOKE=1 COND_TAG=smoke8 sbatch --array=0 scripts/1.43.submit_multicell_p300_film.sh   # 48711221 (48705331 failed: MCF-7 vs MCF_7, fixed in 4.64)
+# Idea 3: motif-pair spacing on Corgi -> F-068
+STAGE=prep sbatch scripts/6.1.submit_motif_pair_spacing.sh   # 48698248
+STAGE=run  sbatch scripts/6.1.submit_motif_pair_spacing.sh   # 48702671 (array 0-19)
+STAGE=combine sbatch scripts/6.1.submit_motif_pair_spacing.sh  # 48702673

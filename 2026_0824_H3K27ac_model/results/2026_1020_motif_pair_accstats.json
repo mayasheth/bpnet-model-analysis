@@ -1,0 +1,37 @@
+{
+  "acc_stats_prediction_regions": {
+    "K562": {
+      "acc_mean": 3.7231562665327607,
+      "acc_std": 1.1428324203100628,
+      "n_windows": 20000
+    },
+    "A549": {
+      "acc_mean": 3.5802600664606157,
+      "acc_std": 1.3613299773220096,
+      "n_windows": 20000
+    },
+    "GM12878": {
+      "acc_mean": 3.124745062756155,
+      "acc_std": 1.3243894962878355,
+      "n_windows": 20000
+    },
+    "HepG2": {
+      "acc_mean": 3.2186338298475508,
+      "acc_std": 1.4244822730208306,
+      "n_windows": 20000
+    },
+    "MCF-7": {
+      "acc_mean": 1.5509093189733483,
+      "acc_std": 1.3633961234770888,
+      "n_windows": 20000
+    }
+  },
+  "rule": "middle tercile of window-mean log1p K562 ATAC over a 20000-region sample of the ABC candidate set (seed 0); label-free, no reference to p300",
+  "tercile_bounds": [
+    3.2905776500701904,
+    3.9089527130126953
+  ],
+  "n_backgrounds": 500,
+  "stat_sample": 20000,
+  "regions": "/oak/stanford/groups/engreitz/Users/sheth/ABC_working/ABC-Enhancer-Gene-Prediction/results/2026_0721_h3k27ac_counting_comparison/K562_ATAC_only/Peaks/macs2_peaks.narrowPeak.sorted.candidateRegions.bed"
+}
