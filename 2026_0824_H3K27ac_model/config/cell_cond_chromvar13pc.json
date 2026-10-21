@@ -1,0 +1,30 @@
+{
+  "z_wide": "results/2026_1021_bulk_chromvar_panel13_z_wide.tsv",
+  "holdout": "K562",
+  "training_cells": [
+    "GM12878",
+    "A549",
+    "HepG2",
+    "MCF-7",
+    "stomach",
+    "transverse_colon",
+    "ovary",
+    "SK-N-SH_RA",
+    "esophagus_muscularis_mucosa",
+    "gastroesophageal_sphincter",
+    "sigmoid_colon",
+    "tibial_nerve"
+  ],
+  "k": 8,
+  "explained_variance_training": [
+    0.277,
+    0.2258,
+    0.1987,
+    0.1027,
+    0.0657,
+    0.0555,
+    0.0278,
+    0.0187
+  ],
+  "n_motifs": 782
+}

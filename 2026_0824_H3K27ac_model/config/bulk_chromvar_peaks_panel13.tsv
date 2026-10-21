@@ -1,0 +1,14 @@
+cell	assay	output_type	accession	experiment
+K562	ATAC-seq	IDR thresholded peaks	ENCFF135AEX	ENCSR868FGK
+GM12878	ATAC-seq	IDR thresholded peaks	ENCFF620WFJ	ENCSR637XSC
+A549	ATAC-seq	IDR thresholded peaks	ENCFF429FOV	ENCSR032RGS
+HepG2	ATAC-seq	IDR thresholded peaks	ENCFF915FZC	ENCSR291GJU
+MCF-7	ATAC-seq	IDR thresholded peaks	ENCFF882OVP	ENCSR422SUG
+stomach	ATAC-seq	IDR thresholded peaks	ENCFF430VEQ	ENCSR851SBY
+transverse_colon	ATAC-seq	IDR thresholded peaks	ENCFF251CFX	ENCSR668VCT
+ovary	ATAC-seq	IDR thresholded peaks	ENCFF646EYO	ENCSR490MSG
+SK-N-SH_RA	ATAC-seq	IDR thresholded peaks	ENCFF855CQR	ENCSR587TRP
+esophagus_muscularis_mucosa	ATAC-seq	IDR thresholded peaks	ENCFF272UWG	ENCSR609GST
+gastroesophageal_sphincter	ATAC-seq	IDR thresholded peaks	ENCFF456JOB	ENCSR670REK
+sigmoid_colon	ATAC-seq	IDR thresholded peaks	ENCFF207QOW	ENCSR548QCP
+tibial_nerve	ATAC-seq	IDR thresholded peaks	ENCFF623GOH	ENCSR831KAH

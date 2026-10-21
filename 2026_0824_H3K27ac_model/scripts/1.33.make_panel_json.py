@@ -62,24 +62,46 @@ for cell in ("A549", "HepG2", "MCF-7"):
 # ENCODE tissues added 2026-10-01 (reference/p300_tissue_manifest.tsv; tracks from 0.45 with
 # DATA_ROOT=$SCRATCH/p300_tissues). Opt-in, so config/p300_panel.json keeps its five cells.
 TISSUES = ("stomach", "transverse_colon", "ovary")
+# Six biosamples added 2026-10-20 (reference/p300_panel14_manifest.tsv; same 0.45 build).
+# SK-N-SH_RA is retinoic-acid treated for both assays: ENCODE has no untreated SK-N-SH ATAC.
+PANEL14 = ("SK-N-SH_RA", "esophagus_muscularis_mucosa", "gastroesophageal_sphincter",
+           "sigmoid_colon", "tibial_nerve", "upper_lobe_of_left_lung")
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--out", default=f"{D}/2026_0824_H3K27ac_model/config/p300_panel.json")
 ap.add_argument("--with-tissues", action="store_true",
                 help="add the three ENCODE tissues; use with --out config/p300_panel_tissues.json")
+ap.add_argument("--with-panel14", action="store_true",
+                help="add the three tissues and the six 2026-10-20 biosamples; use with "
+                     "--out config/p300_panel_14.json")
+ap.add_argument("--exclude", default="",
+                help="comma list of cell names to drop after the panel is assembled, e.g. "
+                     "upper_lobe_of_left_lung (ATAC fails ENCODE FRiP; Maya 2026-10-21) for "
+                     "config/p300_panel_13.json")
 ap.add_argument("--allow-missing", action="store_true",
                 help="write the file even if tracks are absent, for a dry run")
 a = ap.parse_args()
-if a.with_tissues:
-    for t in TISSUES:
-        PANEL[t] = {
-            "peaks": f"{PANEL_DIR}/{t}_ep300_peaks.narrowPeak",
-            "signal_plus_bw": f"{PANEL_DIR}/{t}_ep300_5p_plus.bw",
-            "signal_minus_bw": f"{PANEL_DIR}/{t}_ep300_5p_minus.bw",
-            "accessibility_bw": f"{PANEL_DIR}/{t}_atac.bw",
-            "negatives": NEG,
-        }
+extra = []
+if a.with_tissues or a.with_panel14:
+    extra += TISSUES
+if a.with_panel14:
+    extra += PANEL14
+for t in extra:
+    safe = t.replace("-", "_")
+    PANEL[t] = {
+        "peaks": f"{PANEL_DIR}/{safe}_ep300_peaks.narrowPeak",
+        "signal_plus_bw": f"{PANEL_DIR}/{safe}_ep300_5p_plus.bw",
+        "signal_minus_bw": f"{PANEL_DIR}/{safe}_ep300_5p_minus.bw",
+        "accessibility_bw": f"{PANEL_DIR}/{safe}_atac.bw",
+        "negatives": NEG,
+    }
 
+drop = [c for c in a.exclude.split(",") if c]
+unknown = [c for c in drop if c not in PANEL]
+if unknown:
+    raise SystemExit(f"error: --exclude names not in the panel: {unknown}")
+for c in drop:
+    del PANEL[c]
 missing = [(c, k, v) for c, spec in PANEL.items() for k, v in spec.items()
            if not os.path.exists(v)]
 for c, k, v in missing:

@@ -31,14 +31,40 @@
 set -euo pipefail
 D=/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet
 P=$D/2026_0824_H3K27ac_model
-DATA=/oak/stanford/groups/engreitz/Users/sheth/Data/ENCODE
+# CELLS=a,b (with DATA_ROOT for a $SCRATCH download) APPENDS rows for just those cells to the
+# existing table, replacing any earlier rows for them, instead of rebuilding it; the 2026-10-20
+# panel_14 biosamples were added this way. AUDIT_OUT redirects the table, for testing.
+DATA=${DATA_ROOT:-/oak/stanford/groups/engreitz/Users/sheth/Data/ENCODE}
 export PATH="$D/.pixi/envs/multimodal/bin:$PATH"
 cd "$P"; mkdir -p log results
-OUT=results/panel_depth_audit.tsv
-echo -e "cell\tassay\tsource\tfile\treads" > "$OUT"
+OUT=${AUDIT_OUT:-results/panel_depth_audit.tsv}
 
 count_bam () { samtools view -c -@ 4 "$1" 2>/dev/null || echo 0; }
 count_ta ()  { zcat "$1" 2>/dev/null | wc -l || echo 0; }
+
+if [[ -n "${CELLS:-}" ]]; then
+  [[ -s "$OUT" ]] || { echo "ERROR: CELLS appends to $OUT, which is missing" >&2; exit 1; }
+  IFS=',' read -ra ADD <<< "$CELLS"
+  NEW="$OUT.new.$$"; : > "$NEW"
+  for cell in "${ADD[@]}"; do
+    for assay in ATAC EP300; do
+      nf=0
+      for f in "$DATA/$cell/$assay"/*.bam; do
+        [[ -e "$f" ]] || continue
+        n=$(count_bam "$f"); nf=$((nf + 1))
+        # count_bam reports 0 for an unreadable BAM; an appended 0 would read as a real depth
+        [[ "$n" -gt 0 ]] || { echo "ERROR: no reads counted in $f" >&2; rm -f "$NEW"; exit 1; }
+        echo -e "${cell}\t${assay}\tbam\t$(basename "$f")\t${n}" >> "$NEW"
+        echo "  $cell $assay $(basename "$f") = $n"
+      done
+      [[ $nf -gt 0 ]] || { echo "ERROR: no $assay bams for $cell in $DATA" >&2; rm -f "$NEW"; exit 1; }
+    done
+  done
+  awk -F'\t' -v cs="$CELLS" 'BEGIN{n=split(cs,a,","); for(i=1;i<=n;i++) d[a[i]]=1}
+                             !($1 in d)' "$OUT" > "$OUT.keep.$$"
+  cat "$OUT.keep.$$" "$NEW" > "$OUT"; rm -f "$OUT.keep.$$" "$NEW"
+else
+echo -e "cell\tassay\tsource\tfile\treads" > "$OUT"
 
 # --- new cell types, downloaded 2026-09-18 -------------------------------------------
 for cell in A549 HepG2 MCF-7; do
@@ -70,6 +96,7 @@ for f in "$DATA/K562/ENCFF466WKF.filtered.sorted.bam" "$DATA/K562/ENCFF163FSR.fi
   echo -e "${cell}\tEP300\tbam\t$(basename "$f")\t${n}" >> "$OUT"
   echo "  $cell EP300 $(basename "$f") = $n"
 done
+fi
 
 python3 - "$OUT" <<'PYIN'
 import sys, collections

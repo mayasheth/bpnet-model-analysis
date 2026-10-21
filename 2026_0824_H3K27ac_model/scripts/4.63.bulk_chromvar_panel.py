@@ -41,6 +41,7 @@ per-cell Spearman of z between seeds in ..._seed_stability.tsv. Counts, GC and a
 cached in --cache so reruns skip the bigwig pass.
 """
 import argparse
+import json
 import os
 import time
 from multiprocessing import Pool
@@ -196,20 +197,33 @@ def main():
     ap.add_argument("--n-bg", type=int, default=50)
     ap.add_argument("--n-bins", type=int, default=20)
     ap.add_argument("--procs", type=int, default=8)
+    ap.add_argument("--panel-json", default=None,
+                    help="take the cells from a panel JSON (keys) instead of the built-in eight; "
+                         "the manifest's cell column must then use the JSON names. K562 keeps "
+                         "its own 5' track; others are data/p300_panel/<safe name>_atac_5p.bw")
     a = ap.parse_args()
+    bigwigs, mcell, cells = dict(BIGWIGS), dict(MANIFEST_CELL), list(CELLS)
+    if a.panel_json:
+        keys = list(json.load(open(a.panel_json)))
+        if "K562" not in keys:
+            raise SystemExit("panel JSON has no K562 entry")
+        mcell = {k: k.replace("-", "_").replace(" ", "_") for k in keys}
+        cells = ["K562"] + [mcell[k] for k in keys if k != "K562"]
+        bigwigs = {mcell[k]: f"{A}/data/p300_panel/{mcell[k]}_atac_5p.bw" for k in keys if k != "K562"}
+        bigwigs["K562"] = BIGWIGS["K562"]
     os.makedirs(os.path.dirname(a.cache), exist_ok=True)
     os.makedirs(os.path.dirname(a.elements), exist_ok=True)
 
     man = pd.read_csv(a.manifest, sep="\t")
-    man = man[man["cell"].isin(MANIFEST_CELL)].copy()
-    check_inputs(BIGWIGS, man)
-    if sorted(MANIFEST_CELL[c] for c in man["cell"]) != sorted(CELLS):
-        raise SystemExit(f"manifest cells {list(man['cell'])} do not match {CELLS}")
+    man = man[man["cell"].isin(mcell)].copy()
+    check_inputs(bigwigs, man)
+    if sorted(mcell[c] for c in man["cell"]) != sorted(cells):
+        raise SystemExit(f"manifest cells {list(man['cell'])} do not match {cells}")
     t0 = time.time()
 
     if os.path.exists(a.cache):
         z = np.load(a.cache, allow_pickle=True)
-        if list(z["cells"]) != CELLS:
+        if list(z["cells"]) != cells:
             raise SystemExit("cache built for other cells")
         el = pd.read_csv(a.elements, sep="\t", header=None, names=["chrom", "start", "end"])
         X, gc, names = z["X"], z["gc"], list(z["names"])
@@ -219,8 +233,8 @@ def main():
         print("building element set", flush=True)
         el = build_elements(man, a.peak_dir)
         print(f"{len(el):,} elements", flush=True)
-        with Pool(min(a.procs, len(CELLS))) as p:
-            cols = p.map(count_cell, [(c, BIGWIGS[c], el) for c in CELLS])
+        with Pool(min(a.procs, len(cells))) as p:
+            cols = p.map(count_cell, [(c, bigwigs[c], el) for c in cells])
         X = np.column_stack(cols)
         keep = X.sum(1) > 0
         print(f"dropping {(~keep).sum():,} zero-count elements", flush=True)
@@ -232,13 +246,13 @@ def main():
         el.to_csv(a.elements, sep="\t", header=False, index=False, compression="gzip")
         tmp = a.cache[:-4] + ".tmp.npz"
         np.savez_compressed(tmp, X=X, gc=gc, names=np.array(names, dtype=object),
-                            cells=np.array(CELLS, dtype=object), a_data=Ann.data,
+                            cells=np.array(cells, dtype=object), a_data=Ann.data,
                             a_ind=Ann.indices, a_ptr=Ann.indptr, a_shape=np.array(Ann.shape))
         os.replace(tmp, a.cache)
         print(f"wrote {a.elements} and {a.cache}", flush=True)
 
     print(f"elements {X.shape[0]:,}; motifs {len(names)}; column totals in elements: "
-          + ", ".join(f"{c} {t:,.0f}" for c, t in zip(CELLS, X.sum(0))), flush=True)
+          + ", ".join(f"{c} {t:,.0f}" for c, t in zip(cells, X.sum(0))), flush=True)
     np.seterr(invalid="ignore")
     E = X.sum(1, keepdims=True) / X.sum() * X.sum(0, keepdims=True)
     logmean = np.log10(X.mean(1) + 1e-3)
@@ -251,15 +265,15 @@ def main():
         bg = background(gc, logmean, a.n_bg, a.n_bins, s)
         dev, zz = deviations(X, E, Ann, bg)
         zs[s] = zz
-        wide = pd.DataFrame(zz, columns=CELLS)
+        wide = pd.DataFrame(zz, columns=cells)
         wide.insert(0, "motif_name", tf)
         wide.insert(0, "motif", ids)
         if s == a.seeds[0]:
-            long = pd.DataFrame({"motif": np.repeat(ids, len(CELLS)),
-                                 "motif_name": np.repeat(tf, len(CELLS)),
-                                 "cell": np.tile(CELLS, len(ids)),
+            long = pd.DataFrame({"motif": np.repeat(ids, len(cells)),
+                                 "motif_name": np.repeat(tf, len(cells)),
+                                 "cell": np.tile(cells, len(ids)),
                                  "deviation": dev.ravel(), "z": zz.ravel(),
-                                 "n_elements": np.repeat(n_el, len(CELLS))})
+                                 "n_elements": np.repeat(n_el, len(cells))})
             long.to_csv(f"{a.out_prefix}.tsv", sep="\t", index=False, float_format="%.5g")
             wide.to_csv(f"{a.out_prefix}_z_wide.tsv", sep="\t", index=False, float_format="%.5g")
             main_z = wide
@@ -270,8 +284,8 @@ def main():
 
     if len(a.seeds) > 1:
         s0, s1 = a.seeds[:2]
-        stab = pd.DataFrame({"cell": CELLS, "spearman_z": [
-            spearmanr(zs[s0][:, k], zs[s1][:, k], nan_policy="omit")[0] for k in range(len(CELLS))]})
+        stab = pd.DataFrame({"cell": cells, "spearman_z": [
+            spearmanr(zs[s0][:, k], zs[s1][:, k], nan_policy="omit")[0] for k in range(len(cells))]})
         stab.to_csv(f"{a.out_prefix}_seed_stability.tsv", sep="\t", index=False)
         print(f"\nseed stability (Spearman z, seed {s0} vs {s1}):\n{stab.to_string(index=False)}")
 
@@ -279,7 +293,7 @@ def main():
           + ", ".join(np.array(tf)[n_el == 0]))
     print(f"motifs with < 100 annotated elements: {(n_el < 100).sum()}; "
           f"median n_elements {int(np.median(n_el)):,}")
-    for c in CELLS:
+    for c in cells:
         top = main_z.sort_values(c, ascending=False).head(10)
         print(f"\ntop 10 {c}: " + ", ".join(f"{n} {v:.1f}" for n, v in zip(top["motif_name"], top[c])))
 

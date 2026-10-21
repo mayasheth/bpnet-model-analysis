@@ -2042,3 +2042,16 @@ line as protection.
   assert the mapped CGI percentile equals `candidates.tsv.gz`'s value for every pair.
 - **`$SCRATCH/crispr_discovery/candidates.tsv.gz` stores every feature as 1 + percentile** over all Xu
   elements, not raw values; raw distances are in `$SCRATCH/feature_screen/library.elements.tsv.gz`.
+
+## 2026-10-20: per-cell conditioning vectors
+
+- **Do not whiten PCs when k = n_train - 1.** Scaling each component to unit sd puts every training
+  cell at the same distance from every other (a regular simplex), so the vector becomes an identity
+  code with no similarity, which is the cell-lookup failure FiLM conditioning must avoid. `4.64` divides
+  all components by one scale (pc1 sd). Check pairwise distances before training.
+- **Panel names and file-safe names differ** (`MCF-7` vs `MCF_7`, `SK-N-SH_RA` vs `SK_N_SH_RA`). Every
+  table keyed by cell must be written with the panel JSON keys; the trainer refuses a table missing a
+  training cell (first smoke 48705331 failed on exactly this).
+- **chromVAR on a few bulk samples is relative to the panel**: expected counts pool the panel, so adding
+  a cell changes every vector. Freeze the panel before pre-registering, and keep the element set from the
+  same ATAC experiments as the tracks (`config/bulk_chromvar_peaks_panel13.tsv`).

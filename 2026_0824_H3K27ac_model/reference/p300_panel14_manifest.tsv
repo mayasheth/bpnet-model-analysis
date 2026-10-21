@@ -1,0 +1,45 @@
+# ENCODE EP300 ChIP-seq + ATAC-seq for the six biosamples added for p300_panel_14, selected 2026-10-20.
+# Same columns as p300_tissue_manifest.tsv plus donor and read_length (bp + SE/PE; review F23).
+# Conventions as there: unfiltered ChIP BAM (filtered locally by 0.45), filtered ATAC BAM, the most
+# recent reprocessing of each replicate, IDR thresholded peaks (ENCODE's optimal set).
+# SK-N-SH: ENCODE has NO released untreated SK-N-SH ATAC; the only released one (ENCSR587TRP) is
+#   treated with 6 uM all-trans retinoic acid for 48 h. The EP300 is taken from the RA-treated
+#   ChIP (ENCSR000BMA, HAIB) so target and input share one condition, hence the name SK-N-SH_RA.
+#   Untreated EP300 exists (ENCSR000EHV Snyder 36 bp, 35,757 IDR peaks; ENCSR000BUA HAIB 50 bp)
+#   if the untreated-target/RA-input pairing is preferred.
+# Donor matching (ENTEx donors): sigmoid colon and tibial nerve are donor-matched. Not possible
+#   for esophagus muscularis mucosa (EP300 only ENCDO845WKR, ATAC only ENCDO451RUA),
+#   gastroesophageal sphincter (EP300 ENCDO451RUA/ENCDO845WKR, ATAC ENCDO793LXB/ENCDO271OUW) or
+#   upper lobe of left lung (ATAC only from non-ENTEx donors ENCDO186XRB/ENCDO520EJG). There the
+#   EP300 with more IDR peaks and the compliant/larger ATAC were taken: GES EP300 ENCSR551MLB
+#   (12,968 peaks vs 1,831), GES ATAC ENCSR670REK; lung EP300 ENCSR000MMZ (26,266 peaks), lung
+#   ATAC ENCSR895SEG (137,602 peaks; NOT_COMPLIANT low FRiP, as is the alternative ENCSR242QRV).
+#   Sigmoid colon: ENCDO845WKR, the transverse colon donor.
+cell	assay	experiment	kind	accession	bio_replicate	size_gb	donor	read_length
+SK-N-SH_RA	EP300	ENCSR000BMA	bam	ENCFF570RPQ	[1]	1.07	ENCDO000ABD	36SE
+SK-N-SH_RA	EP300	ENCSR000BMA	bam	ENCFF830WTU	[2]	0.69	ENCDO000ABD	36SE
+SK-N-SH_RA	EP300	ENCSR000BMA	peak	ENCFF466LLO	[1, 2]	0.001	ENCDO000ABD	
+esophagus_muscularis_mucosa	EP300	ENCSR360BLQ	bam	ENCFF885EUL	[1]	5.93	ENCDO845WKR	76PE
+esophagus_muscularis_mucosa	EP300	ENCSR360BLQ	peak	ENCFF801RXA	[1]	0.000	ENCDO845WKR	
+gastroesophageal_sphincter	EP300	ENCSR551MLB	bam	ENCFF745UHV	[1]	3.39	ENCDO845WKR	76PE
+gastroesophageal_sphincter	EP300	ENCSR551MLB	peak	ENCFF645JET	[1]	0.000	ENCDO845WKR	
+sigmoid_colon	EP300	ENCSR906UPC	bam	ENCFF010SUK	[1]	7.37	ENCDO845WKR	76PE
+sigmoid_colon	EP300	ENCSR906UPC	peak	ENCFF740VFC	[1]	0.000	ENCDO845WKR	
+tibial_nerve	EP300	ENCSR569SZK	bam	ENCFF441RXG	[1]	4.38	ENCDO271OUW	76PE
+tibial_nerve	EP300	ENCSR569SZK	peak	ENCFF052QED	[1]	0.000	ENCDO271OUW	
+upper_lobe_of_left_lung	EP300	ENCSR000MMZ	bam	ENCFF653BMR	[1]	7.55	ENCDO271OUW	76PE
+upper_lobe_of_left_lung	EP300	ENCSR000MMZ	peak	ENCFF833AES	[1]	0.000	ENCDO271OUW	
+SK-N-SH_RA	ATAC	ENCSR587TRP	bam	ENCFF049RWL	[1]	6.08	ENCDO000ABD	101PE
+SK-N-SH_RA	ATAC	ENCSR587TRP	bam	ENCFF270AGJ	[2]	6.02	ENCDO000ABD	101PE
+SK-N-SH_RA	ATAC	ENCSR587TRP	bam	ENCFF502IYP	[3]	6.75	ENCDO000ABD	101PE
+SK-N-SH_RA	ATAC	ENCSR587TRP	peak	ENCFF855CQR	[1, 2, 3]	0.005	ENCDO000ABD	
+esophagus_muscularis_mucosa	ATAC	ENCSR609GST	bam	ENCFF210KJO	[1]	4.98	ENCDO451RUA	101PE
+esophagus_muscularis_mucosa	ATAC	ENCSR609GST	peak	ENCFF272UWG	[1]	0.000	ENCDO451RUA	
+gastroesophageal_sphincter	ATAC	ENCSR670REK	bam	ENCFF350ZHN	[1]	7.02	ENCDO793LXB	101PE
+gastroesophageal_sphincter	ATAC	ENCSR670REK	peak	ENCFF456JOB	[1]	0.002	ENCDO793LXB	
+sigmoid_colon	ATAC	ENCSR548QCP	bam	ENCFF824KWB	[1]	7.02	ENCDO845WKR	101PE
+sigmoid_colon	ATAC	ENCSR548QCP	peak	ENCFF207QOW	[1]	0.002	ENCDO845WKR	
+tibial_nerve	ATAC	ENCSR831KAH	bam	ENCFF397GZQ	[1]	4.26	ENCDO271OUW	101PE
+tibial_nerve	ATAC	ENCSR831KAH	peak	ENCFF623GOH	[1]	0.001	ENCDO271OUW	
+upper_lobe_of_left_lung	ATAC	ENCSR895SEG	bam	ENCFF346URV	[1]	22.82	ENCDO520EJG	101PE
+upper_lobe_of_left_lung	ATAC	ENCSR895SEG	peak	ENCFF656MIU	[1]	0.003	ENCDO520EJG	
