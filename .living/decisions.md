@@ -1864,3 +1864,49 @@ idea 1; idea 2 then runs on the MSE-only base.
 **Consequences**: Every upstream table written before 2026-09-03 is single-pass; tables from 2.15 after that date are RC-averaged unless `--no-rc-average` was passed. Do not mix the two in one comparison. The regression gates pass `--no-rc-average` explicitly because their reference tables are single-pass. Supersedes the opt-in entry above.
 
 **Tags**: inference, reverse-complement, adoption, comparability, supersedes
+
+---
+
+### [2026-10-21] Pre-register Bolero idea 2: Corgi FiLM-conditioned on each cell's own ATAC chromVAR
+
+**Context**: Maya (2026-10-20) asked to implement the three ideas taken from the Bolero preprint
+(doi:10.64898/2026.10.19.760026). Bolero conditions every layer of a sequence model on a cell-state
+embedding. Corgi (F-067) has no input saying which TFs are active in the target cell beyond ATAC, and
+its motif-pair syntax is the same in every ATAC context (F-068). Panel expanded to 12 training cells
+(`config/p300_panel_13.json`, Maya 2026-10-21: SK-N-SH_RA in, lung out) so the conditioning is learned
+from more than 7 points. Written after the conditioning table was built and before any idea-2 model
+was trained or scored.
+
+**Decision**: Two arms, both `--panel-mean` on panel 13 with K562 held out, every other setting as
+1.42 (peaks, negatives, folds, windows, count_loss_weight 10, 100 epochs, early stopping 10, 20,000
+negatives), 3 runs each (no seed, seed 1, seed 2), submitted by `A/scripts/1.43`:
+- FILM: `COND_TAG=chromvar13pc PANEL_TAG=13`: FiLM on every dilated layer from
+  `config/cell_cond_chromvar13pc.tsv` (4.63 bulk chromVAR of each cell's own ATAC over a
+  track-matched ATAC IDR element set, 4.64 PCA on the 12 training cells, k = 8, one shared scale; K562
+  projected, never used to fit), hidden 32, conditioning dropout 0.1, zero-initialised.
+- BASE: `COND_TAG= PANEL_TAG=13`: Corgi on the same panel, no conditioning (matched comparator).
+- Inference: 4.4 with K562 ATAC standardised on the ABC candidates (4.26), `PANEL_MEAN=model`;
+  FILM with `COND_CELL=K562`.
+- Benchmark: predicted K562 p300 -> ABC (as F-067) -> K562 CRISPR (10,342 pairs) and rE2G;
+  seed-averaged paired bootstrap (4.17 / 4.34 `--group`), pairs and `--cluster gene`.
+- **Primary**: FILM - BASE, ABC, seed-averaged, gene-level bootstrap. Gain if the 95% interval lies
+  above 0; harm if below. Secondary: the same in rE2G.
+- Descriptive, no verdict: (1) CLOSEST = FILM predicted with GM12878's row (K562's nearest training
+  cell in the table, distance 1.69): does K562's own vector matter beyond its neighbour's? (2) BASE -
+  Corgi on the 5-cell panel (F-067 models): what the panel expansion alone does. (3) `6.1` motif-pair
+  assay on FILM: GATA1 WGATAA - E-box cooperativity in the K562 context minus the HepG2 context, against
+  Corgi's (F-068, both about +0.0012).
+
+**Alternatives considered**:
+- Raw 782-motif vector as the condition: rejected, 12 training points against 782 inputs.
+- Unit-variance PCs: rejected, with k = n - 1 they make every training cell equidistant (identity
+  code; learnings 2026-10-20).
+- Compare FILM with the 5-cell Corgi: rejected as the primary, it would confound conditioning with
+  the panel change; kept as descriptive (2).
+
+**Consequences**: Gain -> FiLM becomes the multi-cell base, and the H3K27ac atlas fetch for idea 1
+goes ahead (Maya 2026-10-20 made the fetch wait on this readout). Gain with FILM - CLOSEST near 0 ->
+the gain is not K562-specific; report it that way. Null or harm -> record next to F-046 (adding cells)
+and F-041 (TF lists); idea 1 goes back to Maya with the result.
+
+**Tags**: pre-registration, p300, multi-cell, film, chromvar, bolero, conditioning, transfer, abc, re2g
