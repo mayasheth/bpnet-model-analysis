@@ -83,6 +83,10 @@ ap.add_argument("--count-offset-model", default=None,
                      "training_target.json). A residual model predicts observed MINUS this "
                      "model's logcounts, so without it the painted track is a residual and "
                      "not an activity estimate at all. Must be mode 'atac'.")
+ap.add_argument("--cond-cell", default=None,
+                help="For a cell-state-conditioned model (train_multimodal_bpnet.py --cell-cond-tsv): the "
+                     "row of its conditioning table to use, normally the target cell (K562). Naming "
+                     "another row gives the 'closest training cell' control.")
 ap.add_argument("--panel-mean", choices=["model", "only"], default=None,
                 help="Panel-mean (Corgi) model, train_multimodal_bpnet.py --panel-mean. 'model': "
                      "build the two panel-mean channels from ALL training cells (the fold's "
@@ -227,6 +231,14 @@ for chrom, g in reg.groupby("chr", sort=True):
         pm_off = np.log1p(om).astype(np.float32)        # depth = dref, as the stats record says
     X = (np.concatenate([seqs, x], axis=1) if a.mode == "multimodal"
          else seqs if a.mode == "sequence" else x).astype(np.float32)
+    if getattr(m, "use_cell_cond", False) != (a.cond_cell is not None):
+        raise SystemExit("error: --cond-cell must be given exactly when the model is cell-state "
+                         f"conditioned (model: {getattr(m, 'use_cell_cond', False)})")
+    if a.cond_cell is not None:
+        if a.cond_cell not in m.cond_cells:
+            raise SystemExit(f"error: --cond-cell {a.cond_cell} not in the model's table {m.cond_cells}")
+        X = np.concatenate([X, np.full((X.shape[0], 1, X.shape[2]),
+                                       float(m.cond_cells.index(a.cond_cell)), dtype=np.float32)], axis=1)
 
     # Reverse complement: one-hot channels are ACGT, so flipping the channel axis maps
     # A<->T and C<->G, and flipping the length axis completes it. Accessibility channels are

@@ -43,7 +43,8 @@ import pyBigWig
 import torch
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from multimodal_bpnet import MultiModalBPNet, PairedCellWindows, TwoStageChannelModel
+from multimodal_bpnet import (MultiModalBPNet, PairedCellWindows, TwoStageChannelModel,
+                              attach_cell_conditioning)
 
 NARROWPEAK_COLS = ["chr", "start", "end", "name", "score", "strand",
                    "signalValue", "pValue", "qValue", "summit"]
@@ -183,6 +184,18 @@ def parse_args():
                         "panel-mean p300 as input channels and train the count head as a "
                         "deviation from the panel-mean p300. Needs --cell-types-json with >= 2 "
                         "training cell types; the mean is leave-one-out in training.")
+    # CELL-STATE CONDITIONING (Bolero idea 2, 2026-10-20). Each training cell's row of a per-cell
+    # table (e.g. bulk chromVAR z of its own ATAC, 4.63 -> 4.64) FiLM-modulates every dilated
+    # layer; see attach_cell_conditioning(). The table must also hold the target cell's row,
+    # computed from its ATAC alone, for inference.
+    p.add_argument("--cell-cond-tsv", default=None,
+                   help="TSV with a 'cell' column and one numeric column per conditioning feature; "
+                        "one row per cell type in --cell-types-json (the holdout row is kept for "
+                        "inference). Off by default.")
+    p.add_argument("--cell-cond-dropout", type=float, default=0.1,
+                   help="Per-window probability of replacing the conditioning vector by zeros "
+                        "during training.")
+    p.add_argument("--cell-cond-hidden", type=int, default=32)
     p.add_argument("--max-negatives", type=int, default=None,
                    help="Cap on distinct negative windows held in memory. Default "
                         "None = 10x the training peak count (historical behaviour). "
@@ -840,6 +853,25 @@ def main():
         if any(_spec(s, "motif_activity_bw", None) for s in PANEL.values()):
             raise SystemExit("error: --panel-mean with a motif_activity_bw panel entry")
 
+    # Conditioning table validated before any window is extracted (applied after the loop).
+    cond_cells = cond_table = None
+    if args.cell_cond_tsv:
+        bad = [f for f, on in (("--motif-head", args.motif_head), ("--base-model", args.base_model),
+                               ("--pair-loss-weight", args.pair_loss_weight > 0),
+                               ("--count-offset-model", args.count_offset_model)) if on]
+        if bad:
+            raise SystemExit(f"error: --cell-cond-tsv is not combined with {', '.join(bad)}")
+        if not args.cell_types_json or args.mode != "multimodal":
+            raise SystemExit("error: --cell-cond-tsv needs --cell-types-json and --mode multimodal")
+        ct = pd.read_csv(args.cell_cond_tsv, sep="\t").set_index("cell")
+        missing = [c for c in PANEL if c not in ct.index]
+        if missing:
+            raise SystemExit(f"error: --cell-cond-tsv has no row for {', '.join(missing)}")
+        if not np.isfinite(ct.to_numpy(float)).all():
+            raise SystemExit("error: --cell-cond-tsv has non-finite values")
+        cond_cells = list(ct.index)
+        cond_table = ct.to_numpy(np.float32)
+
     genome = args.genome  # None for atac mode -- extract_windows handles this
     prof_kw = dict(profile_plus_bw=args.profile_target_plus_bw,
                    profile_minus_bw=args.profile_target_minus_bw)
@@ -1019,6 +1051,18 @@ def main():
                                  "inference uses depth = dref"}, f, indent=2)
         print(f"  panel-mean p300 channel standardised with mean {pm_mean:.4f}, sd {pm_std:.4f}")
 
+    # CELL-STATE CONDITIONING: one constant channel per window holding its cell's row in the
+    # conditioning table, appended LAST so forward() can split it off before anything else.
+    if cond_table is not None:
+        for cell_i, cell in enumerate(PANEL):
+            row = float(cond_cells.index(cell))
+            for key in ("tr", "neg", "val"):
+                a = bins[f"{key}_accs"][cell_i]
+                bins[f"{key}_accs"][cell_i] = np.concatenate(
+                    [a, np.full((a.shape[0], 1, a.shape[2]), row, dtype=np.float32)], axis=1)
+        print(f"\nCell-state conditioning: {cond_table.shape[1]} features from {args.cell_cond_tsv}; "
+              f"rows {', '.join(cond_cells)}; training rows {', '.join(PANEL)}")
+
     def _cat(key):
         vals = [v for v in bins[key] if v is not None]
         if not vals:
@@ -1175,6 +1219,8 @@ def main():
         n_acc_channels -= 1                     # the activity channel bypasses the trunk
         print("motif head: TF-activity channel routed to an additive counts term, "
               f"trunk sees {n_acc_channels} accessibility channel(s)")
+    if cond_table is not None:
+        n_acc_channels -= 1                     # the row-index channel is not accessibility
 
     # Model
     if args.base_model:
@@ -1223,6 +1269,17 @@ def main():
         model.use_motif_head = True
         model.motif_head = torch.nn.Linear(4, 1, bias=False)
         torch.nn.init.zeros_(model.motif_head.weight)   # starts as the no-channel model
+    if cond_table is not None:
+        attach_cell_conditioning(model, cond_table, cond_cells, hidden=args.cell_cond_hidden,
+                                 dropout=args.cell_cond_dropout)
+        n_f = sum(p_.numel() for p_ in model.film.parameters())
+        print(f"FiLM: {n_f:,} parameters, hidden {args.cell_cond_hidden}, "
+              f"dropout {args.cell_cond_dropout}, output layer zero-initialised")
+        with open(os.path.join(args.output_dir, "cell_cond.json"), "w") as f:
+            json.dump({"tsv": args.cell_cond_tsv, "cells": cond_cells,
+                       "features": list(ct.columns), "table": cond_table.tolist(),
+                       "dropout": args.cell_cond_dropout, "hidden": args.cell_cond_hidden},
+                      f, indent=2)
     if args.rank_loss_weight > 0:
         print(f"ranking loss: weight {args.rank_loss_weight}, min gap {args.rank_min_gap}, "
               f"pairs within {len(PANEL)} cell type(s)")

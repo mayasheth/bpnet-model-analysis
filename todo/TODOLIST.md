@@ -6,6 +6,11 @@ from todo/TODOLIST.md"; the old file is kept as `todo/TODOLIST.pre-standard.md`.
 
 ## Now
 <!-- At most 5 items actually being worked on this week. -->
+- [ ] P1 Bolero idea 2: FiLM-condition Corgi on each cell's own ATAC chromVAR (label-free) #model (Bolero preprint doi:10.64898/2026.10.19.760026; Maya 2026-10-20)
+  - built 2026-10-20: `4.63` bulk chromVAR (lineage controls rank 1 in all five lines, seed Spearman >= 0.996), `4.64` PC table (PCA on training cells only, one shared scale), FiLM in `train_multimodal_bpnet.py --cell-cond-tsv` (zero-init, cond dropout; tests `scripts/test_cell_conditioning.py` pass both ways; regression gate passes), `4.1 --cond-cell`, `1.43` submit
+  - panel: adding SK-N-SH + 5 tissues (p300 + ATAC, `config/p300_panel_14.json`) so FiLM learns from 13 training cells, not 7
+  - next: recompute 4.63/4.64 on the 14-cell panel, pre-register in decisions.md (primary FiLM - Corgi on the same panel, ABC, 3 runs, gene-level bootstrap; descriptive: K562 run with its nearest training cell's row), then train
+- [ ] P2 Bolero idea 3: motif-pair syntax of the Corgi model, signed spacing and orientation, by cell context (`6.1`, torch insertion assay; anchors AP-1, GATA1, GATA1::TAL1) #motif
 - [x] P1 Baseline scE2G training run on Xu K562 multiome #sce2g
   - driver 46428971 (2026-10-03): CRISPR AUPRC multiome_powerlaw_n6 0.628 [0.575, 0.672], scATAC_powerlaw 0.579 [0.524, 0.623], distance 0.414 [0.363, 0.461]; 10.4% of CRISPR elements missing; `$SCRATCH/sce2g_runs/2026_1002_k562_xu/performance_across_models.tsv`
   - needed: #118 `source_path` fix (local branch `local-with-pr118`), `--rerun-triggers mtime`, and no empty `external_features_config` column (R NA bug)
@@ -76,6 +81,9 @@ from todo/TODOLIST.md"; the old file is kept as `todo/TODOLIST.pre-standard.md`.
 - [ ] P2 Train H3K4me1 models (in-cell K562, GM12878 -> K562, multi-cell holding out K562) if the beyond-ATAC check shows signal #h3k4me1
   - bar is high: observed K562 H3K4me1 in ABC is no better than ATAC alone and 0.060 below observed H3K27ac (F-044)
   - beyond-ATAC gate passed (F-045), but observed H3K4me1 as separate rE2G features adds only +0.020 [+0.006, +0.031] over ATAC (F-044): Maya to decide
+- [ ] P1 Bolero idea 1: one model conditioned on a per-cell embedding, trained on ENCODE H3K27ac across ~59 biosamples with ATAC + RNA, plus a p300 head where p300 exists (14 biosamples); score both heads as ABC activity on K562 CRISPR #model (Maya 2026-10-20: H3K27ac + p300 head)
+  - gated: fetch the H3K27ac data (~0.9 TB transient on $SCRATCH, ~30 GB kept) only after idea 2's pre-registered test reads out (Maya 2026-10-20)
+  - replaces the P3 two-target item below; needs a per-window head mask in the trainer (p300 loss only where p300 exists)
 - [ ] P3 Build a two-target model (p300 + H3K27ac heads) only if an H3K27ac head would transfer beyond ATAC #model (F-043)
 - [ ] P3 Run the rE2G promoter-feature ablation (drop `normalizedH3K27ac_prom`, `combinedActivity_prom`) #benchmark (F-029)
 

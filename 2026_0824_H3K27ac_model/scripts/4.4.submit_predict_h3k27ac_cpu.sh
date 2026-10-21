@@ -91,6 +91,10 @@ MOT=()
 # PANEL_MEAN: model | only, for panel-mean models (1.42, train_multimodal_bpnet.py --panel-mean).
 PM=()
 [[ -n "${PANEL_MEAN:-}" ]] && PM=(--panel-mean "$PANEL_MEAN")
+# COND_CELL: row of a cell-state-conditioned model's table (1.43, --cell-cond-tsv), normally
+# K562; another training cell's name gives the closest-cell control. Unset for other models.
+COND=()
+[[ -n "${COND_CELL:-}" ]] && COND=(--cond-cell "$COND_CELL")
 CH=()
 [[ -n "$CHROMS" ]] && CH=(--chroms "$CHROMS")
 
@@ -99,7 +103,7 @@ echo "accnorm=${ACC_MEAN:-model}/${ACC_STD:-model} offset=${OFFSET_MODEL:-none} 
 $PY scripts/4.1.predict_h3k27ac_for_abc.py \
     --regions "$REG" --model-dir "$MODEL_PATH" --mode "$MODE" \
     ${ACC[@]+"${ACC[@]}"} ${CH[@]+"${CH[@]}"} ${SIG[@]+"${SIG[@]}"} \
-    ${NRM[@]+"${NRM[@]}"} ${OFF[@]+"${OFF[@]}"} ${MOT[@]+"${MOT[@]}"} ${PM[@]+"${PM[@]}"} \
+    ${NRM[@]+"${NRM[@]}"} ${OFF[@]+"${OFF[@]}"} ${MOT[@]+"${MOT[@]}"} ${PM[@]+"${PM[@]}"} ${COND[@]+"${COND[@]}"} \
     --chrom-sizes "$SIZES" --out-bw "$OUTDIR/${OUT_PREFIX}_${ARM}.bw"
 
 echo "Done: $OUTDIR/${OUT_PREFIX}_${ARM}.bw"

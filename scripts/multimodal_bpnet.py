@@ -217,6 +217,29 @@ class PairedCellWindows:
         return torch.stack(terms).mean().to(device)
 
 
+def attach_cell_conditioning(model, table, cells, hidden=32, dropout=0.1):
+    """FiLM conditioning of every dilated residual layer on a per-cell vector.
+
+    table: (n_cells, D) array, one row per name in `cells`; the input's last channel holds the
+    row index. The output layer is zero-initialised, so the attached model starts identical to
+    the unconditioned one (as the zero-initialised LoRA factor in Bolero,
+    doi:10.64898/2026.10.19.760026). With probability `dropout` per window during training the
+    vector is replaced by zeros, i.e. the panel average when the table is centred.
+    """
+    t = torch.as_tensor(numpy.asarray(table), dtype=torch.float32)
+    width = model.rconvs[0].out_channels
+    model.film = torch.nn.Sequential(
+        torch.nn.Linear(t.shape[1], hidden), torch.nn.ReLU(),
+        torch.nn.Linear(hidden, model.n_layers * 2 * width))
+    torch.nn.init.zeros_(model.film[2].weight)
+    torch.nn.init.zeros_(model.film[2].bias)
+    model.register_buffer("cond_table", t)
+    model.cond_cells = list(cells)
+    model.cond_dropout = float(dropout)
+    model.use_cell_cond = True
+    return model
+
+
 class MultiModalBPNet(torch.nn.Module):
     """BPNet model with DNA sequence and base-pair accessibility inputs.
 
@@ -349,6 +372,16 @@ class MultiModalBPNet(torch.nn.Module):
         y_counts:  torch.Tensor, shape (N, 1)
         """
         start, end = self.trimming, X.shape[2] - self.trimming
+        # Cell-state conditioning (attach_cell_conditioning): the LAST input channel is a constant
+        # row index into cond_table; it is split off before anything else reads X.
+        film = None
+        if getattr(self, "use_cell_cond", False):
+            idx, X = X[:, -1, 0].round().long(), X[:, :-1, :]
+            c = self.cond_table[idx]
+            if self.training and self.cond_dropout > 0:
+                keep = (torch.rand(c.shape[0], 1, device=c.device) >= self.cond_dropout)
+                c = c * keep.to(c.dtype)
+            film = self.film(c).reshape(c.shape[0], self.n_layers, 2, -1, 1)
         # Additive motif head: the TF-activity channel (last input channel) is taken OUT of the
         # trunk and enters only through a 4-weight linear term on the counts, so a cell type's
         # motif weights act the same way in every cell type. getattr keeps old checkpoints
@@ -370,7 +403,10 @@ class MultiModalBPNet(torch.nn.Module):
             X_merged = self.acc_relu(self.acc_conv(X))
 
         for i in range(self.n_layers):
-            X_conv = self.rrelus[i](self.rconvs[i](X_merged))
+            h = self.rconvs[i](X_merged)
+            if film is not None:
+                h = h * (1 + film[:, i, 0]) + film[:, i, 1]
+            X_conv = self.rrelus[i](h)
             X_merged = torch.add(X_merged, X_conv)
 
         y_profile = self.fconv(X_merged)[:, :, start:end]
