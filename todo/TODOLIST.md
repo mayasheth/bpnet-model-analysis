@@ -9,7 +9,9 @@ from todo/TODOLIST.md"; the old file is kept as `todo/TODOLIST.pre-standard.md`.
 - [ ] P1 Bolero idea 2: FiLM-condition Corgi on each cell's own ATAC chromVAR (label-free) #model (Bolero preprint doi:10.64898/2026.10.19.760026; Maya 2026-10-20)
   - built 2026-10-20: `4.63` bulk chromVAR (lineage controls rank 1 in all five lines, seed Spearman >= 0.996), `4.64` PC table (PCA on training cells only, one shared scale), FiLM in `train_multimodal_bpnet.py --cell-cond-tsv` (zero-init, cond dropout; tests `scripts/test_cell_conditioning.py` pass both ways; regression gate passes), `4.1 --cond-cell`, `1.43` submit
   - panel: adding SK-N-SH + 5 tissues (p300 + ATAC, `config/p300_panel_14.json`) so FiLM learns from 13 training cells, not 7
-  - next: recompute 4.63/4.64 on the 14-cell panel, pre-register in decisions.md (primary FiLM - Corgi on the same panel, ABC, 3 runs, gene-level bootstrap; descriptive: K562 run with its nearest training cell's row), then train
+  - panel 13 built 2026-10-21 (Maya: SK-N-SH_RA in, lung out; 12 training cells); 4.63/4.64 rebuilt (`config/cell_cond_chromvar13pc.tsv`, k = 8; K562 nearest GM12878); pre-registered decisions [2026-10-21]
+  - running: training FILM 48843057-59, BASE 48843060-62 (192 GB); scoring `log/film13_score_launch.sh` job 48844639 (afterok) -> `results/2026_1021_film13_{auprc,re2g}_pairs{,.gene}.tsv`
+  - after training: rerun `6.1` on FILM (pre-registered descriptive 3: GATA-E-box, K562 minus HepG2 context)
 - [ ] P2 Bolero idea 3: motif-pair syntax of the Corgi model, signed spacing and orientation, by cell context (`6.1`, torch insertion assay; anchors AP-1, GATA1, GATA1::TAL1) #motif
   - [x] Corgi run 2026-10-20 (F-068, preliminary): syntax is the same in all five contexts (max K562 - HepG2 difference 0.0041 vs pair effects to 0.053); GATA1-E-box +0.0012 only
   - next: scrambled-spacer control for the |d| <= 2 seam hits; then rerun `6.1` on the FiLM model (idea 2) as its mechanistic readout
@@ -87,6 +89,7 @@ from todo/TODOLIST.md"; the old file is kept as `todo/TODOLIST.pre-standard.md`.
   - gated: fetch the H3K27ac data (~0.9 TB transient on $SCRATCH, ~30 GB kept) only after idea 2's pre-registered test reads out (Maya 2026-10-20)
   - replaces the P3 two-target item below; needs a per-window head mask in the trainer (p300 loss only where p300 exists)
 - [ ] P3 Build a two-target model (p300 + H3K27ac heads) only if an H3K27ac head would transfer beyond ATAC #model (F-043)
+- [ ] P3 Fix `4.6 --arms dnaseinput` / `--arms multitask`: `assert len(K27FRAG_ARMS) == 22` fails (21), already in HEAD (found 2026-10-21) #benchmark
 - [ ] P3 Run the rE2G promoter-feature ablation (drop `normalizedH3K27ac_prom`, `combinedActivity_prom`) #benchmark (F-029)
 
 ## Later

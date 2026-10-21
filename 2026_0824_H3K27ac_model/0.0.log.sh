@@ -104,3 +104,15 @@ SMOKE=1 COND_TAG=smoke8 sbatch --array=0 scripts/1.43.submit_multicell_p300_film
 STAGE=prep sbatch scripts/6.1.submit_motif_pair_spacing.sh   # 48698248
 STAGE=run  sbatch scripts/6.1.submit_motif_pair_spacing.sh   # 48702671 (array 0-19)
 STAGE=combine sbatch scripts/6.1.submit_motif_pair_spacing.sh  # 48702673
+
+### 2026-10-21 — Panel 13 and Bolero idea 2 training (pre-registered decisions [2026-10-21]) ###
+python scripts/1.33.make_panel_json.py --with-panel14 --exclude upper_lobe_of_left_lung --out config/p300_panel_13.json
+sbatch log/chromvar13_launch.sh        # 48823453: 4.63 default path reproduces (max dz 0); panel-13 chromVAR; 4.64 -> config/cell_cond_chromvar13pc.tsv
+SMOKE=1 COND_TAG=chromvar13pc PANEL_TAG=13 sbatch --array=0 --mem=128G scripts/1.43.submit_multicell_p300_film.sh   # 48824689, MaxRSS 43 GB at 2,000 negatives/cell
+# FILM (COND_TAG=chromvar13pc) and BASE (COND_TAG=) x SEED "" 1 2, PANEL_TAG=13, --mem=192G:
+#   FILM 48843057 48843058 48843059; BASE 48843060 48843061 48843062
+
+### 2026-10-21 — Bolero idea 2 scoring chain (family film13; pre-registered decisions [2026-10-21]) ###
+# 4.3/4.6/4.32 gained family film13; dry checks: every existing family output unchanged, film13 refuses with inputs missing
+sbatch -p engreitz,normal -c 1 --mem 4G -t 2:00:00 -J film13_score_launch -o log/film13_score_launch.%j.txt --kill-on-invalid-dep=yes --dependency=afterok:48843057:48843058:48843059:48843060:48843061:48843062 log/film13_score_launch.sh main   # 48844639
+#   -> 9 x 4.4, 4.5 (ABC 2026_1021_p300_film13), crispr, abcboot, re2g -> 4.33 -> re2gboot; child IDs in log/film13_score_launch.48844639.txt

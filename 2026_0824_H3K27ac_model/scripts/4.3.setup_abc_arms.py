@@ -92,7 +92,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument("--results-dir", default="results/2026_0903_predicted_activity")
 ap.add_argument("--arms", choices=("h3k27ac", "p300", "p300transfer", "accessibility",
                                   "dnaseinput", "multitask", "accnorm", "residualtx",
-                                  "p300fix", "multicell", "oracle", "rank", "nbr", "nbrx", "ranksweep", "gata", "motifact", "motifact2", "teach", "seeds", "rna", "frag", "k27frag", "noatac", "tissue", "panelmean"),
+                                  "p300fix", "multicell", "oracle", "rank", "nbr", "nbrx", "ranksweep", "gata", "motifact", "motifact2", "teach", "seeds", "rna", "frag", "k27frag", "noatac", "tissue", "panelmean", "film13"),
                 default="h3k27ac",
                 help="Which target's predicted tracks to build arms for. p300 arms go in "
                      "their own results dir and config: re-stamping Peaks inside the "
@@ -330,12 +330,18 @@ TISSUE = ['multicell_tissues_holdK562', 'multicell_tissues_holdK562_seed1', 'mul
 # Panel-mean (Corgi idea 1) model (1.42), 3 runs, and the panel mean alone painted as the
 # prediction (4.1 --panel-mean only), decisions [2026-10-13].
 PANELMEAN = ['multicell_panelmean_holdK562', 'multicell_panelmean_holdK562_seed1', 'multicell_panelmean_holdK562_seed2', 'panelmeanonly_holdK562']
+# Bolero idea 2 (1.43, decisions [2026-10-21]): FiLM on the panel-13 Corgi predicted with K562's
+# row and with GM12878's (CLOSEST), and the matched unconditioned BASE, 3 runs each. Corgi 5-cell
+# (F-067) is not re-run: 4.6 reads its ABC outputs from 2026_1013_p300_panelmean.
+FILM13 = [f"multicell_panelmean_film_chromvar13pc_panel13_holdK562_row{r}{s}"
+          for r in ("K562", "GM12878") for s in ("", "_seed1", "_seed2")] + [
+          f"multicell_panelmean_panel13_holdK562{s}" for s in ("", "_seed1", "_seed2")]
 TEACH = ['multicell_holdK562_motifact_oracle_head', 'multicell_holdK562_motifact_oracle_pair', 'multicell_holdK562_motifact_oracle_headpair']
 
-if a.arms in ("motifact", "motifact2", "teach", "seeds", "rna", "frag", "tissue", "panelmean"):
+if a.arms in ("motifact", "motifact2", "teach", "seeds", "rna", "frag", "tissue", "panelmean", "film13"):
     for tag in {"motifact": MOTIFACT, "motifact2": MOTIFACT2, "teach": TEACH,
                 "seeds": SEEDS, "rna": RNA, "frag": FRAG, "tissue": TISSUE,
-                "panelmean": PANELMEAN}[a.arms]:
+                "panelmean": PANELMEAN, "film13": FILM13}[a.arms]:
         bw = f"{PRED}/predp300mc_{tag}.bw"
         if not os.path.exists(bw):
             missing.append(bw)
@@ -513,7 +519,8 @@ TAG = a.config_tag or {"h3k27ac": "predicted_activity", "p300": "p300_activity",
                        "k27frag": "k27frag_activity",
                        "noatac": "noatac_activity",
                        "tissue": "p300_tissue",
-                       "panelmean": "p300_panelmean"}[a.arms]
+                       "panelmean": "p300_panelmean",
+                       "film13": "p300_film13"}[a.arms]
 out = f"{ABC}/config/mine/config_biosamples_{TAG}.tsv"
 with open(out, "w") as f:
     f.write("\t".join(COLS) + "\n")

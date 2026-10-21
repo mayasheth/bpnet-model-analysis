@@ -122,6 +122,20 @@ DATASETS = [
     ("ATAC_p300mcpanelmeanseed2_powerlaw", f"{PRED}/predp300mc_multicell_panelmean_holdK562_seed2.bw"),
     ("ATAC_p300panelmeanonly_powerlaw", f"{PRED}/predp300mc_panelmeanonly_holdK562.bw"),
 ]
+# Bolero idea 2 (1.43, decisions [2026-10-21]): FILM (K562 row) and the matched BASE on panel 13,
+# 3 runs each. Added only once all six bigwigs exist, so running this script before they are
+# painted leaves every other dataset's config exactly as it was.
+F13 = PRED
+FILM13_DATASETS = [
+    (f"ATAC_p300mc{t}{s.replace('_', '')}_powerlaw", f"{F13}/predp300mc_{arm}{s}.bw")
+    for t, arm in (("film13", "multicell_panelmean_film_chromvar13pc_panel13_holdK562_rowK562"),
+                   ("pm13", "multicell_panelmean_panel13_holdK562"))
+    for s in ("", "_seed1", "_seed2")]
+if all(os.path.exists(bw) for _, bw in FILM13_DATASETS):
+    DATASETS += FILM13_DATASETS
+    print(f"film13: {len(FILM13_DATASETS)} datasets added")
+else:
+    print("film13: bigwigs not all painted yet, datasets not added")
 # Datasets with features beyond the pipeline's own: name -> (feature table, external features
 # config). The tables and configs are written by 4.61 and 4.62.
 EXTERNAL = {"ATAC_H3K4me1sep_powerlaw": (

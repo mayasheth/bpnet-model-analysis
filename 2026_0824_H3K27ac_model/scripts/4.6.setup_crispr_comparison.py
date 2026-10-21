@@ -27,7 +27,7 @@ _ap = argparse.ArgumentParser()
 _ap.add_argument("--arms",
                  choices=("h3k27ac", "p300", "p300all", "accessibility", "dnaseinput",
                           "multitask", "slopefix", "p300fix", "multicell", "oracle",
-                          "rank", "nbr", "nbrx", "ranksweep", "gata", "motifact", "motifact2", "teach", "seeds", "rna", "frag", "k27frag", "noatac", "tissue", "panelmean"),
+                          "rank", "nbr", "nbrx", "ranksweep", "gata", "motifact", "motifact2", "teach", "seeds", "rna", "frag", "k27frag", "noatac", "tissue", "panelmean", "film13"),
                  default="h3k27ac",
                  help="Which activity target's arms to benchmark. The p300 set reuses the "
                       "same July floor and observed-H3K27ac ceiling, so the two "
@@ -518,6 +518,22 @@ PANELMEAN_ARMS = [x for x in SEEDS_ARMS if "twostage" not in x[0] and "oracle" n
     for s_ in ("", "_seed1", "_seed2")] + [
     ("p300pred_panelmeanonly_holdK562", PANELMEAN_D, "panel-mean p300 alone (no model)", "#f768a1")]
 
+# Bolero idea 2 (1.43, decisions [2026-10-21]): FILM (K562 row), CLOSEST (GM12878 row) and the
+# matched BASE on panel 13, 3 runs each; Corgi 5-cell (F-067) read from its own ABC run, so
+# BASE - Corgi5 is paired on this pair set.
+FILM13_D = f"{ABC}/2026_1021_p300_film13"
+_F13 = "p300pred_multicell_panelmean_film_chromvar13pc_panel13_holdK562"
+FILM13_ARMS = P300_ARMS[:2] + [
+    x for x in PANELMEAN_ARMS if x[0].startswith("p300pred_multicell_panelmean_holdK562")] + [
+    (f"{_F13}_row{r}{s_}", FILM13_D, f"{lab}{' ' + s_[1:] if s_ else ''}", col)
+    for r, lab, col in (("K562", "FiLM panel 13, K562 row", "#006eae"),
+                        ("GM12878", "FiLM panel 13, GM12878 row (closest)", "#9bcae9"))
+    for s_ in ("", "_seed1", "_seed2")] + [
+    (f"p300pred_multicell_panelmean_panel13_holdK562{s_}", FILM13_D,
+     f"Corgi panel 13, no conditioning{' ' + s_[1:] if s_ else ''}", "#c5373d")
+    for s_ in ("", "_seed1", "_seed2")]
+assert len(FILM13_ARMS) == 14, len(FILM13_ARMS)
+
 if _a.arms == "motifact":
     ARMS = MOTIFACT_ARMS
 elif _a.arms == "motifact2":
@@ -538,6 +554,8 @@ elif _a.arms == "tissue":
     ARMS = TISSUE_ARMS
 elif _a.arms == "panelmean":
     ARMS = PANELMEAN_ARMS
+elif _a.arms == "film13":
+    ARMS = FILM13_ARMS
 elif _a.arms == "gata":
     ARMS = GATA_ARMS
 elif _a.arms == "ranksweep":
@@ -584,7 +602,8 @@ TAG = {"h3k27ac": "predicted_activity", "p300": "p300_activity",
        "k27frag": "k27frag_activity",
        "noatac": "noatac_activity",
        "tissue": "p300_tissue",
-       "panelmean": "p300_panelmean"}[_a.arms]
+       "panelmean": "p300_panelmean",
+       "film13": "p300_film13"}[_a.arms]
 RUN = {"h3k27ac": "2026_0904_predicted_activity", "p300": "2026_0905_p300_activity",
        "p300all": "2026_0906_p300_all",
        "accessibility": "2026_0910_accessibility_activity",
@@ -608,7 +627,8 @@ RUN = {"h3k27ac": "2026_0904_predicted_activity", "p300": "2026_0905_p300_activi
        "k27frag": "2026_0930_k27frag",
        "noatac": "2026_1001_noatac",
        "tissue": "2026_1002_p300_tissue",
-       "panelmean": "2026_1013_p300_panelmean"}[_a.arms]
+       "panelmean": "2026_1013_p300_panelmean",
+       "film13": "2026_1021_p300_film13"}[_a.arms]
 
 BASELINES = [
     ("distToTSS",      "FALSE", "mean", "Inf", "TRUE",  "Distance to TSS",      "#c5cad7"),
