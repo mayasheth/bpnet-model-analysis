@@ -14,7 +14,8 @@ from todo/TODOLIST.md"; the old file is kept as `todo/TODOLIST.pre-standard.md`.
   - after training: rerun `6.1` on FILM (pre-registered descriptive 3: GATA-E-box, K562 minus HepG2 context)
 - [ ] P2 Bolero idea 3: motif-pair syntax of the Corgi model, signed spacing and orientation, by cell context (`6.1`, torch insertion assay; anchors AP-1, GATA1, GATA1::TAL1) #motif
   - [x] Corgi run 2026-10-20 (F-068, preliminary): syntax is the same in all five contexts (max K562 - HepG2 difference 0.0041 vs pair effects to 0.053); GATA1-E-box +0.0012 only
-  - next: scrambled-spacer control for the |d| <= 2 seam hits; then rerun `6.1` on the FiLM model (idea 2) as its mechanistic readout
+  - [x] seam control 2026-10-21 (`A/scripts/6.2`, decisions [2026-10-21] "Seam control for F-068", Maya chose both arms; F-068 restated): 21/31 seam rows syntax, 9 junction k-mers (both AP1-CTCF seams, AP1-CEBPB d = 0), 1 not partner-specific; identical in K562 and HepG2. The three leading pairs pass, but keep only 0.33-0.47 of the spike where a junction base changed (descriptive)
+  - next: rerun `6.1` and `6.2` on the FiLM model (idea 2) as its mechanistic readout; 6.1 now exposes `load_models(model_dir=)` / `build_acc`, but FiLM inference needs the conditioning vector passed in
 - [x] P1 Baseline scE2G training run on Xu K562 multiome #sce2g
   - driver 46428971 (2026-10-03): CRISPR AUPRC multiome_powerlaw_n6 0.628 [0.575, 0.672], scATAC_powerlaw 0.579 [0.524, 0.623], distance 0.414 [0.363, 0.461]; 10.4% of CRISPR elements missing; `$SCRATCH/sce2g_runs/2026_1002_k562_xu/performance_across_models.tsv`
   - needed: #118 `source_path` fix (local branch `local-with-pr118`), `--rerun-triggers mtime`, and no empty `external_features_config` column (R NA bug)

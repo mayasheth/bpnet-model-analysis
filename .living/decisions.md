@@ -1910,3 +1910,51 @@ the gain is not K562-specific; report it that way. Null or harm -> record next t
 and F-041 (TF lists); idea 1 goes back to Maya with the result.
 
 **Tags**: pre-registration, p300, multi-cell, film, chromvar, bolero, conditioning, transfer, abc, re2g
+
+---
+
+### [2026-10-21] Seam control for F-068: are the |d| <= 2 motif-pair spikes syntax or junction k-mers?
+
+**Context**: F-068's three leading pairs (AP1-IRF4 - d = -2 +0.053, AP1-ETS1 + d = 0 +0.050,
+AP1-IRF4 + d = +2 +0.041) are all seam spikes, about ten times the same curve's median at d = 3-8
+(0.002-0.006). 31 of 104 anchor x partner x orientation curves have a seam spike above 0.01. Two
+abutting consensus sequences can form a new k-mer at the junction. Both AP-1-IRF (AICE) and ETS-AP-1
+are known abutting composites, so a real result is plausible either way. Design chosen by Maya
+2026-10-21 (both arms); thresholds set here, before any control output exists.
+
+**Decision**: `A/scripts/6.2` on Corgi seed 0 (the F-068 model), 5 folds, the same 500 backgrounds and
+shuffles, contexts K562 (verdict) and HepG2 (reported).
+- Selection: per curve, the |d| <= 2 row with the largest |coop| in K562; kept if spike = coop -
+  median(coop, 3 <= |d| <= 8) has |spike| > 0.01. 31 rows; the script stops if the count differs.
+- Arm 1 (scramble): partner replaced by a mononucleotide permutation of itself at the same position,
+  5 fresh per background (never the partner or its reverse complement). d1 = real coop - scrambled
+  coop, paired over backgrounds. Pass: the 95% t-interval of d1 excludes 0 on the spike's side AND
+  |d1| >= 0.5 |spike|.
+- Arm 2 (jitter): the 2 junction-side bases of anchor and partner redrawn per background from their
+  PWM columns, in the pair and in each motif's alone term. Retention = (jitter coop - flank median) /
+  spike. Pass: retention >= 0.5. Informative only if >= 25% of backgrounds change at least one of the
+  4 bases.
+- Verdict per row: arm 1 fails -> not_partner_specific; arm 2 informative and fails -> junction_kmer;
+  both pass, arm 2 informative -> syntax; otherwise undetermined.
+- Gate: each 25-background block's real coop must match 6.1's partial for the same block within 1e-4
+  (tested failing against the wrong block in the smoke job).
+
+**Alternatives considered**:
+- Partner scramble only: rejected, it cannot separate a real composite from a junction k-mer.
+- JASPAR scan of the junction: rejected as the test, it misses k-mers the model learned outside
+  JASPAR; usable as a follow-up description of junction_kmer rows.
+- Wait for the FiLM model: rejected, F-068 needs the control on its own model; the same script
+  reruns on FiLM with the 6.1 rerun.
+
+**Amendment (2026-10-21, after the 25-background smoke, before the full run)**: (1) the arm-1 rule as
+first coded passed a negative spike whenever the lower bound was negative; fixed to require both
+bounds on the spike's side, as written above. (2) QC: CEBPB is palindromic, so its + and - rows are
+replicate draws of the same test; in the full run their arm-1 d1 and arm-2 retention must agree
+within 0.15 retention and within each other's interval, or arm 2 is too noisy at n = 500 and its
+verdicts are reported as undetermined. In the smoke (n = 25) retention was 0.83 vs 0.23.
+
+**Consequences**: F-068's ranking is restated from the rows that are syntax; not_partner_specific and
+junction_kmer rows are reported as assay artefacts and excluded from any syntax claim, including the
+FiLM rerun. F-068 stays preliminary until this lands.
+
+**Tags**: pre-registration, motif-syntax, insertion, control, seam, corgi, bolero

@@ -348,8 +348,53 @@ def stage_prep(a):
 
 # --------------------------------------------------------------------------- run
 
+def load_models(folds, dev, model_dir=MODEL):
+    models, pstats = {}, {}
+    for f in folds:
+        md = f"{model_dir}/fold{f}"
+        if not os.path.exists(f"{md}/training_complete.json"):
+            raise SystemExit(f"error: {md} has no training_complete.json")
+        m = torch.load(f"{md}/multimodal_bpnet.torch", map_location="cpu", weights_only=False)
+        if m.mode != "multimodal" or m.n_acc_channels != 3:
+            raise SystemExit(f"error: fold{f} is mode {m.mode}, {m.n_acc_channels} acc channels")
+        if m.trimming * 2 + OUT_W != IN_W:
+            raise SystemExit(f"error: fold{f} trimming {m.trimming} does not give {IN_W}")
+        models[f] = m.to(dev).eval()
+        pstats[f] = json.load(open(f"{md}/panel_mean_stats.json"))
+    return models, pstats
+
+
+def build_acc(chunk, contexts, folds, pstats, panel_full, accstats):
+    """Accessibility input per (context, fold), shaped (n_windows, 3, IN_W).
+
+    Channel 0 is fold-independent, but channel 1's subtrahend and channel 2's standardisation
+    come from each fold's own panel_mean_stats, exactly as 4.1 reads them per fold.
+    """
+    training_cells = pstats[folds[0]]["training_cells"]
+    acc = {}
+    for ctx in contexts:
+        _, _, raw, valid = extract_windows(chunk, None, SIGNAL_BOUNDS, None,
+                                           panel_full[ctx]["accessibility_bw"],
+                                           IN_W, OUT_W, 0, is_peak=True)
+        if not valid.all():
+            raise SystemExit(f"error: {int((~valid).sum())} windows invalid in {ctx}'s ATAC")
+        x0 = normalize_accessibility(raw, mean=accstats[ctx]["acc_mean"],
+                                     std=accstats[ctx]["acc_std"])[0]
+        others = {c: panel_full[c] for c in training_cells if c != ctx}
+        for f in folds:
+            pst = pstats[f]
+            zm, pl, om = panel_mean_tracks(chunk, 0, True, others, pst["acc_stats"],
+                                           pst["p300_depth"], pst["dref"], IN_W, OUT_W)
+            pl = (pl - pst["p300_channel_mean"]) / pst["p300_channel_std"]
+            acc[(ctx, f)] = np.concatenate([x0, x0 - zm, pl], axis=1).astype(np.float32)
+        print(f"  {ctx:8s} panel mean over {', '.join(others)}; fold{folds[-1]} channel sds "
+              f"{np.round(acc[(ctx, folds[-1])].std(axis=(0, 2)), 3)}; "
+              f"offset mean {np.log1p(om).mean():.3f}", flush=True)
+    return acc
+
+
 def stage_run(a):
-    dev = "cuda" if torch.cuda.is_available() else "cpu"
+    dev ="cuda" if torch.cuda.is_available() else "cpu"
     torch.backends.cudnn.benchmark = True
     if not a.tf32:
         # TF32 keeps ~10 mantissa bits, so a log count near 4.5 carries ~5e-3 of rounding --
@@ -384,43 +429,9 @@ def stage_run(a):
         raise SystemExit(f"error: empty chunk at {start} of {len(bg)} backgrounds")
     print(f"backgrounds {start}..{stop - 1} of {len(bg)}", flush=True)
 
-    models, pstats = {}, {}
-    for f in folds:
-        md = f"{MODEL}/fold{f}"
-        if not os.path.exists(f"{md}/training_complete.json"):
-            raise SystemExit(f"error: {md} has no training_complete.json")
-        m = torch.load(f"{md}/multimodal_bpnet.torch", map_location="cpu", weights_only=False)
-        if m.mode != "multimodal" or m.n_acc_channels != 3:
-            raise SystemExit(f"error: fold{f} is mode {m.mode}, {m.n_acc_channels} acc channels")
-        if m.trimming * 2 + OUT_W != IN_W:
-            raise SystemExit(f"error: fold{f} trimming {m.trimming} does not give {IN_W}")
-        models[f] = m.to(dev).eval()
-        pstats[f] = json.load(open(f"{md}/panel_mean_stats.json"))
+    models, pstats = load_models(folds, dev)
     nf = len(models)
-    training_cells = pstats[folds[0]]["training_cells"]
-
-    # Accessibility per (context, fold): channel 0 is fold-independent, but channel 1's
-    # subtrahend and channel 2's standardisation come from each fold's own panel_mean_stats,
-    # exactly as 4.1 reads them per fold.
-    acc = {}
-    for ctx in contexts:
-        _, _, raw, valid = extract_windows(chunk, None, SIGNAL_BOUNDS, None,
-                                           panel_full[ctx]["accessibility_bw"],
-                                           IN_W, OUT_W, 0, is_peak=True)
-        if not valid.all():
-            raise SystemExit(f"error: {int((~valid).sum())} windows invalid in {ctx}'s ATAC")
-        x0 = normalize_accessibility(raw, mean=accstats[ctx]["acc_mean"],
-                                     std=accstats[ctx]["acc_std"])[0]
-        others = {c: panel_full[c] for c in training_cells if c != ctx}
-        for f in folds:
-            pst = pstats[f]
-            zm, pl, om = panel_mean_tracks(chunk, 0, True, others, pst["acc_stats"],
-                                           pst["p300_depth"], pst["dref"], IN_W, OUT_W)
-            pl = (pl - pst["p300_channel_mean"]) / pst["p300_channel_std"]
-            acc[(ctx, f)] = np.concatenate([x0, x0 - zm, pl], axis=1).astype(np.float32)
-        print(f"  {ctx:8s} panel mean over {', '.join(others)}; fold{folds[-1]} channel sds "
-              f"{np.round(acc[(ctx, folds[-1])].std(axis=(0, 2)), 3)}; "
-              f"offset mean {np.log1p(om).mean():.3f}", flush=True)
+    acc = build_acc(chunk, contexts, folds, pstats, panel_full, accstats)
 
     genome = pyfaidx.Fasta(GEN)
     half = IN_W // 2
