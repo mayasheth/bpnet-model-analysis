@@ -121,9 +121,19 @@ def jitter(seq, cols, idx, rng):
     return s, sum(a != b for a, b in zip(s, seq))
 
 
-def ref_block(ref_parts, bi, contexts, sel):
+def ref_block(ref_parts, bi, contexts, sel, model_dir, cond_desc):
     """6.1's mean real coop for the selected rows over one 25-background block."""
     z = np.load(f"{ref_parts}/part_{bi:03d}.npz", allow_pickle=False)
+    # Partials written before 6.1 recorded its model are from the default (Corgi seed 0) run.
+    ref_model = str(z["model"][0]) if "model" in z.files else os.path.realpath(mp.MODEL)
+    if ref_model != os.path.realpath(model_dir):
+        raise SystemExit(f"error: 6.1 block {bi} is from {ref_model}, this run uses {model_dir}")
+    if "cond" in z.files:
+        rc = dict(str(x).split(":") for x in z["cond"])
+        if any(rc.get(c) != cond_desc[c] for c in contexts):
+            raise SystemExit(f"error: 6.1 block {bi} conditioning {rc} != this run's {cond_desc}")
+    elif any(v != "none" for v in cond_desc.values()):
+        raise SystemExit(f"error: 6.1 block {bi} records no conditioning, this run is conditioned")
     anchors = [str(x) for x in z["anchors"]]
     partners = [str(x) for x in z["partners"]]
     spacings = [int(x) for x in z["spacings"]]
@@ -149,10 +159,12 @@ def stage_run(a):
     nr, nc = len(sel), len(contexts)
     print(f"device {dev}; {nr} seam rows; contexts {contexts}; K = {a.k}", flush=True)
 
-    panel_full = mp.json.load(open(mp.PANEL_CFG))
-    accstats = mp.json.load(open(a.stats_json))["acc_stats_prediction_regions"]
-    models, pstats = mp.load_models(folds, dev)
+    models, pstats = mp.load_models(folds, dev, a.model_dir)
     nf = len(models)
+    panel_full = mp.json.load(open(mp.model_panel_cfg(a.model_dir, folds, a.panel_cfg)))
+    accstats = mp.json.load(open(a.stats_json))["acc_stats_prediction_regions"]
+    cond = mp.cond_rows(models, contexts, a.cond_cell)
+    cond_desc = {c: (a.cond_cell or c) if cond else "none" for c in contexts}
     bg = pd.read_csv(a.bg_tsv, sep="\t")
     genome = pyfaidx.Fasta(mp.GEN)
     half = mp.IN_W // 2
@@ -167,7 +179,8 @@ def stage_run(a):
             print(f"already done: {part}", flush=True)
             continue
         chunk = bg.iloc[b0:b0 + BLOCK].reset_index(drop=True)
-        acc = mp.build_acc(chunk, contexts, folds, pstats, panel_full, accstats)
+        acc = mp.add_cond_channel(
+            mp.build_acc(chunk, contexts, folds, pstats, panel_full, accstats), cond)
         acc_s = {k: np.zeros((nc, nr)) for k in
                  ("S_real", "SS_real", "S_scr", "SS_scr", "S_d1", "SS_d1", "S_jit", "SS_jit")}
         nchg = np.zeros(nr)
@@ -234,7 +247,8 @@ def stage_run(a):
                     acc_s[f"SS_{nm}"][:, ri] += v ** 2
         n = len(chunk)
 
-        ref, nref = ref_block(a.ref_parts, bi_ref + a.gate_shift, contexts, sel)
+        ref, nref = ref_block(a.ref_parts, bi_ref + a.gate_shift, contexts, sel,
+                              a.model_dir, cond_desc)
         if nref != n:
             raise SystemExit(f"error: 6.1 block {bi_ref + a.gate_shift} has {nref} "
                              f"backgrounds, this block {n}")
@@ -246,6 +260,7 @@ def stage_run(a):
             raise SystemExit(f"GATE FAILED: block {bi_ref} real coop differs from 6.1 block "
                              f"{bi_ref + a.gate_shift} by {diff:.3e} > {a.gate_tol}")
         np.savez_compressed(part, n=np.array([n]), nchg=nchg, anychg=anychg,
+                            model=np.array([os.path.realpath(a.model_dir)]),
                             contexts=np.array(contexts),
                             rows=np.array([f"{r.anchor}|{r.partner}|{r.orient}|{r.d}"
                                            for r in sel.itertuples(index=False)]),
@@ -326,6 +341,10 @@ def parse_args():
     ap.add_argument("--stop", type=int, default=500)
     ap.add_argument("--contexts", default="K562,HepG2")
     ap.add_argument("--folds", default="0,1,2,3,4")
+    ap.add_argument("--model-dir", default=mp.MODEL)
+    ap.add_argument("--panel-cfg", default=None)
+    ap.add_argument("--cond-cell", default=None,
+                    help="FiLM models: this cell's row in every context (default: each its own)")
     ap.add_argument("--min-spike", type=float, default=0.01)
     ap.add_argument("--expect-n", type=int, default=31, help="0 skips the check")
     ap.add_argument("--k", type=int, default=5, help="scrambles per background")

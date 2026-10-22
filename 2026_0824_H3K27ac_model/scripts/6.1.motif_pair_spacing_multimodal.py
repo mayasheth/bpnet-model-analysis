@@ -42,6 +42,12 @@ NO REVERSE-COMPLEMENT AVERAGING. 4.1 averages the two strands, but the reverse c
 designed window maps both motifs to the other orientation and flips the sign of d, so averaging
 it in would mix design cells that this assay is built to separate.
 
+CELL-STATE CONDITIONING. A FiLM model (train_multimodal_bpnet.py --cell-cond-tsv) reads a row
+index into its conditioning table as one extra, constant input channel, which 4.1 appends with
+--cond-cell. Here, by default, each context gets its own row, so the K562 context is K562's ATAC
+AND K562's vector; --cond-cell X uses X's row in every context instead (to separate the two
+routes). --model-dir picks the model; the panel config defaults to the one it was trained on.
+
 Stages:
   prep     choose backgrounds, compute per-cell accessibility normalisation (CPU)
   run      predict one chunk of backgrounds, write partial sums (GPU)
@@ -364,6 +370,50 @@ def load_models(folds, dev, model_dir=MODEL):
     return models, pstats
 
 
+def model_panel_cfg(model_dir, folds, override=None):
+    """The panel config the model was trained on, unless one is given."""
+    if override:
+        return override
+    cfgs = {json.load(open(f"{model_dir}/fold{f}/training_target.json")).get("cell_types_json")
+            for f in folds}
+    if len(cfgs) != 1:
+        raise SystemExit(f"error: folds of {model_dir} disagree on the panel config: {cfgs}")
+    return cfgs.pop() or PANEL_CFG
+
+
+def cond_rows(models, contexts, cond_cell=None):
+    """{(context, fold): conditioning-table row} for a FiLM model, None for an unconditioned one.
+
+    Default: each context uses its own row. cond_cell: that cell's row in every context.
+    """
+    conditioned = {f: getattr(m, "use_cell_cond", False) for f, m in models.items()}
+    if len(set(conditioned.values())) != 1:
+        raise SystemExit(f"error: folds disagree on cell conditioning: {conditioned}")
+    if not any(conditioned.values()):
+        if cond_cell is not None:
+            raise SystemExit("error: --cond-cell given but the model is not cell-state conditioned")
+        return None
+    rows = {}
+    for f, m in models.items():
+        for ctx in contexts:
+            cell = cond_cell or ctx
+            if cell not in m.cond_cells:
+                raise SystemExit(f"error: {cell} not in fold{f}'s conditioning table {m.cond_cells}")
+            rows[(ctx, f)] = m.cond_cells.index(cell)
+    print("conditioning rows: " + ", ".join(
+        f"{ctx} -> {cond_cell or ctx}" for ctx in contexts), flush=True)
+    return rows
+
+
+def add_cond_channel(acc, cond):
+    """Append the constant row-index channel a FiLM model splits off its input (as 4.1 does)."""
+    if cond is None:
+        return acc
+    return {k: np.concatenate([v, np.full((v.shape[0], 1, v.shape[2]), float(cond[k]),
+                                          dtype=np.float32)], axis=1)
+            for k, v in acc.items()}
+
+
 def build_acc(chunk, contexts, folds, pstats, panel_full, accstats):
     """Accessibility input per (context, fold), shaped (n_windows, 3, IN_W).
 
@@ -403,16 +453,19 @@ def stage_run(a):
         torch.backends.cuda.matmul.allow_tf32 = False
     print(f"device {dev}, tf32 {a.tf32}", flush=True)
 
-    panel_full = json.load(open(PANEL_CFG))
-    accstats = json.load(open(a.stats_json))["acc_stats_prediction_regions"]
     contexts = a.contexts.split(",")
     anchors = a.anchors.split(",")
     partners = a.partners.split(",")
     folds = a.folds.split(",")
     spacings = list(range(a.dmin, a.dmax + 1))
+    models, pstats = load_models(folds, dev, a.model_dir)
+    nf = len(models)
+    panel_full = json.load(open(model_panel_cfg(a.model_dir, folds, a.panel_cfg)))
+    accstats = json.load(open(a.stats_json))["acc_stats_prediction_regions"]
     for c in contexts:
         if c not in panel_full:
             raise SystemExit(f"error: unknown context {c}")
+    cond = cond_rows(models, contexts, a.cond_cell)
 
     mats = read_meme_consensus()
     specs, rows, meta = build_design(anchors, partners, spacings, mats)
@@ -429,9 +482,7 @@ def stage_run(a):
         raise SystemExit(f"error: empty chunk at {start} of {len(bg)} backgrounds")
     print(f"backgrounds {start}..{stop - 1} of {len(bg)}", flush=True)
 
-    models, pstats = load_models(folds, dev)
-    nf = len(models)
-    acc = build_acc(chunk, contexts, folds, pstats, panel_full, accstats)
+    acc = add_cond_channel(build_acc(chunk, contexts, folds, pstats, panel_full, accstats), cond)
 
     genome = pyfaidx.Fasta(GEN)
     half = IN_W // 2
@@ -500,7 +551,10 @@ def stage_run(a):
     os.makedirs(os.path.dirname(a.part), exist_ok=True)
     out = dict(S=S, SS=SS, MA=MA, MP=MP, n=np.array([NB]),
                contexts=np.array(contexts), anchors=np.array(anchors),
-               partners=np.array(partners), spacings=np.array(spacings))
+               partners=np.array(partners), spacings=np.array(spacings),
+               model=np.array([os.path.realpath(a.model_dir)]),
+               cond=np.array([f"{c}:{a.cond_cell or c}" if cond else f"{c}:none"
+                              for c in contexts]))
     if dp_ix:
         out.update(SD=SD, SSD=SSD)
     np.savez_compressed(a.part, **out)
@@ -543,8 +597,10 @@ def stage_combine(a):
             for k in ("S", "SS", "MA", "MP", "n", "SD", "SSD"):
                 if k in z.files:
                     acc[k] = acc[k] + z[k]
-            for k in ("contexts", "anchors", "partners", "spacings"):
-                if not np.array_equal(acc[k], z[k]):
+            for k in ("contexts", "anchors", "partners", "spacings", "model", "cond"):
+                if (k in acc) != (k in z.files):
+                    raise SystemExit(f"error: {f} and the first partial differ in recording {k}")
+                if k in acc and not np.array_equal(acc[k], z[k]):
                     raise SystemExit(f"error: {f} disagrees with the first partial on {k}")
         print(f"  {f}: n={int(z['n'][0])}", flush=True)
     n = int(acc["n"][0])
@@ -627,6 +683,12 @@ def parse_args():
     ap.add_argument("--anchors", default=",".join(ANCHORS))
     ap.add_argument("--partners", default=",".join(PARTNERS))
     ap.add_argument("--folds", default="0,1,2,3,4")
+    ap.add_argument("--model-dir", default=MODEL)
+    ap.add_argument("--panel-cfg", default=None,
+                    help="default: the panel config recorded in the model's training_target.json")
+    ap.add_argument("--cond-cell", default=None,
+                    help="FiLM models: use this cell's conditioning row in every context "
+                         "(default: each context's own row)")
     ap.add_argument("--dmin", type=int, default=-40)
     ap.add_argument("--dmax", type=int, default=40)
     ap.add_argument("--batch", type=int, default=512)

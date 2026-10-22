@@ -14,6 +14,9 @@
 #   STAGE=combine  CPU:
 #                  sbatch -p engreitz,normal,owners -t 0:20:00 --export=ALL,STAGE=combine \
 #                      scripts/6.2.submit_motif_pair_seam_control.sh
+#   MODEL_DIR / COND_CELL as in 6.1's submit script: controls that model's own 6.1 run, gated
+#                  against its partials; its seam rows are selected by the same rule from its own
+#                  table, so the count is not fixed at 31.
 #   STAGE=smoke    GPU, block 0 into $SCRATCH: the gate must pass against 6.1 block 0 and
 #                  must FAIL against block 1; the job exits non-zero otherwise.
 set -euo pipefail
@@ -29,16 +32,25 @@ export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK:-4}
 export MKL_NUM_THREADS=${SLURM_CPUS_PER_TASK:-4}
 
 TAG=2026_1021_motif_pair_seam_control_corgi_k5_cs1
+ARGS=()
+if [[ -n "${MODEL_DIR:-}" ]]; then
+    M=$(basename "$MODEL_DIR")_cond${COND_CELL:-context}
+    REF=2026_1022_motif_pair_spacing_$M
+    [[ -f "$P/results/$REF.tsv" ]] || { echo "ERROR: run 6.1 on this model first ($REF.tsv)" >&2; exit 1; }
+    TAG=2026_1022_motif_pair_seam_control_${M}_k5_cs1
+    ARGS=(--model-dir "$MODEL_DIR" ${COND_CELL:+--cond-cell "$COND_CELL"} --expect-n 0
+          --ref-tsv "$P/results/$REF.tsv" --ref-parts "$P/results/parts_$REF")
+fi
 PARTS=$P/results/parts_$TAG
 OUT=$P/results/$TAG.tsv
 
 case "$STAGE" in
 run)
     T=${SLURM_ARRAY_TASK_ID:-0}
-    $PY "$S" --stage run --part-dir "$PARTS" --start $(( T * PER )) --stop $(( (T + 1) * PER ))
+    $PY "$S" --stage run "${ARGS[@]+"${ARGS[@]}"}" --part-dir "$PARTS" --start $(( T * PER )) --stop $(( (T + 1) * PER ))
     ;;
 combine)
-    $PY "$S" --stage combine --part-dir "$PARTS" --out "$OUT"
+    $PY "$S" --stage combine "${ARGS[@]+"${ARGS[@]}"}" --part-dir "$PARTS" --out "$OUT"
     ;;
 smoke)
     SP=$SCRATCH/seamctl_smoke

@@ -25,6 +25,11 @@
 #   sbatch -p engreitz,normal,owners -t 0:30:00 --export=ALL,STAGE=combine \
 #       scripts/6.1.submit_motif_pair_spacing.sh
 #
+# MODEL_DIR=<model> runs another model (e.g. the FiLM model) on the same backgrounds and
+# accessibility statistics; COND_CELL=<cell> fixes a FiLM model's conditioning row for every context
+# (default: each context's own row). Both are in the output names; unset, the paths are the original
+# Corgi ones.
+#
 # SMOKE=1 runs 20 backgrounds with 2 pairs (anchor GATA1 x partners EBOX_TAL1_TCF3, CTCF) into
 # $SCRATCH, which is what to run before the full array.
 set -euo pipefail
@@ -44,13 +49,24 @@ OUT=$P/results/2026_1020_motif_pair_spacing.tsv
 BG=$P/results/2026_1020_motif_pair_backgrounds.tsv
 ST=$P/results/2026_1020_motif_pair_accstats.json
 PARTS=$P/results/parts_2026_1020_motif_pair_spacing
+MODEL_ARGS=()
+if [[ -n "${MODEL_DIR:-}" ]]; then
+    [[ "$STAGE" != prep ]] || { echo "ERROR: prep is model-independent; run it without MODEL_DIR" >&2; exit 1; }
+    [[ -d "$MODEL_DIR" ]] || { echo "ERROR: no model $MODEL_DIR" >&2; exit 1; }
+    MTAG=2026_1022_motif_pair_spacing_$(basename "$MODEL_DIR")_cond${COND_CELL:-context}
+    OUT=$P/results/$MTAG.tsv
+    PARTS=$P/results/parts_$MTAG
+    MODEL_ARGS=(--model-dir "$MODEL_DIR" ${COND_CELL:+--cond-cell "$COND_CELL"})
+elif [[ -n "${COND_CELL:-}" ]]; then
+    echo "ERROR: COND_CELL needs MODEL_DIR" >&2; exit 1
+fi
 SMOKE_ARGS=()
 if [[ "${SMOKE:-0}" == 1 ]]; then
     NBG=20
     OUT=$SCRATCH/motif_pair_smoke/2026_1020_motif_pair_spacing.tsv
     BG=$SCRATCH/motif_pair_smoke/backgrounds.tsv
     ST=$SCRATCH/motif_pair_smoke/accstats.json
-    PARTS=$SCRATCH/motif_pair_smoke/parts
+    PARTS=$SCRATCH/motif_pair_smoke/parts${MTAG:+_$MTAG}
     SMOKE_ARGS=(--anchors GATA1 --partners EBOX_TAL1_TCF3,CTCF --stat-sample 3000)
     mkdir -p "$SCRATCH/motif_pair_smoke"
 fi
@@ -70,7 +86,7 @@ run)
     [[ -f "$BG" ]] || { echo "ERROR: run STAGE=prep first ($BG missing)" >&2; exit 1; }
     mkdir -p "$PARTS"
     $PY scripts/6.1.motif_pair_spacing_multimodal.py --stage run \
-        "${COMMON[@]}" ${SMOKE_ARGS[@]+"${SMOKE_ARGS[@]}"} \
+        "${COMMON[@]}" ${SMOKE_ARGS[@]+"${SMOKE_ARGS[@]}"} ${MODEL_ARGS[@]+"${MODEL_ARGS[@]}"} \
         --chunk-start $(( T * CHUNK )) --chunk-size "$CHUNK" --part "$PART"
     ;;
 combine)
