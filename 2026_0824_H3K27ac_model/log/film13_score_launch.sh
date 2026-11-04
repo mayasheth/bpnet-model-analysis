@@ -112,8 +112,16 @@ abcboot)
     FLR="--pair film K562_ATAC_only.ABC.Score --pair base K562_ATAC_only.ABC.Score"
     $PY scripts/4.17.paired_auprc_bootstrap.py "$MERGED" $GR $PRE --out-tsv ${OUT}_auprc_pairs.tsv
     $PY scripts/4.17.paired_auprc_bootstrap.py "$MERGED" $GR $PRE --cluster gene --out-tsv ${OUT}_auprc_pairs.gene.tsv
-    $PY scripts/4.17.paired_auprc_bootstrap.py "$MERGED" $GR $FLR --out-tsv ${OUT}_auprc_floor.tsv
-    $PY scripts/4.17.paired_auprc_bootstrap.py "$MERGED" $GR $FLR --cluster gene --out-tsv ${OUT}_auprc_floor.gene.tsv
+    ;;
+abcfloor)
+    # split from abcboot: 4.17 loads only the arms its pairs name, so the floor call must not pass
+    # the closest / corgi5 groups (KeyError in job 49229384)
+    MERGED=$CC/workflow/results/$ABCRUN/expt_pred_merged_annot.txt.gz
+    g() { echo "--group $1=$2.ABC.Score,$2_seed1.ABC.Score,$2_seed2.ABC.Score"; }
+    GRF="$(g film p300pred_${FILMA}_rowK562) $(g base p300pred_${BASEA})"
+    FLR="--pair film K562_ATAC_only.ABC.Score --pair base K562_ATAC_only.ABC.Score"
+    $PY scripts/4.17.paired_auprc_bootstrap.py "$MERGED" $GRF $FLR --out-tsv ${OUT}_auprc_floor.tsv
+    $PY scripts/4.17.paired_auprc_bootstrap.py "$MERGED" $GRF $FLR --cluster gene --out-tsv ${OUT}_auprc_floor.gene.tsv
     ;;
 
 re2g)
