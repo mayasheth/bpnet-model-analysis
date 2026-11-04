@@ -2704,3 +2704,38 @@ The leading pairs agree within 0.005 in all five contexts; 121 of 8,424 K562-Hep
 | 2026-10-20 | prep 48698248; GPU array 48702671 (20 x 25 backgrounds, ~10.4 GPU-h); combine 48702673; smoke 48696038/48698172 | K562 ABC candidates (backgrounds), panel ATAC (contexts), JASPAR 2024 | 2026_0824_H3K27ac_model | max K562 - HepG2 difference 0.0041 vs pair effects to 0.053; GATA-E-box +0.0012 | syntax context-independent; GATA composite faint |
 | 2026-10-21 | seam control `6.2`: smoke 48896361 (gate pass + fail direction), array 48899901 (4 x 125 backgrounds, ~0.5 GPU-h), combine 48904583 | same backgrounds; K562 and HepG2 contexts | 2026_0824_H3K27ac_model | 21/31 seam rows syntax, 9 junction k-mers, 1 not partner-specific; leading three pass | leading pairs survive; CTCF and AP1-CEBPB d = 0 seams are artefacts |
 
+
+## F-069: Bolero idea 2, FiLM-conditioning Corgi on each cell's own ATAC chromVAR, does not improve the transferred p300 track in ABC (pre-registered null), although the conditioned model's motif-pair syntax becomes context-dependent
+**Status:** supported (null; 3 runs per arm; pre-registered primary interval spans 0 under both resampling units)
+**Claim:** Pre-registered in decisions [2026-10-21]. FILM = Corgi + FiLM on every dilated layer from `config/cell_cond_chromvar13pc.tsv` (bulk chromVAR -> 8 PCs, fitted on the 12 training cells); BASE = Corgi on the same panel 13, no conditioning. K562 held out; FILM predicted with K562's own row. Seed-averaged paired bootstrap (`4.17` / `4.34 --group`), 10,342 pairs / 466 regulated (ABC), 10,356 / 471 (rE2G):
+
+| contrast | AUPRC | pairs i.i.d. | gene-level (decides) |
+|---|---|---|---|
+| FILM - BASE, ABC (primary) | 0.5015 vs 0.5071 | -0.0056 [-0.0180, +0.0087] | -0.0056 [-0.0197, +0.0098] |
+| FILM - BASE, rE2G (secondary) | 0.5844 vs 0.5729 | +0.0115 [-0.0032, +0.0269] | +0.0115 [-0.0045, +0.0283] |
+| FILM - CLOSEST (GM12878's row), ABC | vs 0.4902 | +0.0113 [+0.0070, +0.0160] | +0.0113 [+0.0069, +0.0170] |
+| BASE - Corgi5 (panel 13 vs the 5-cell panel), ABC | vs 0.4932 | +0.0139 [-0.0005, +0.0274] | +0.0139 [-0.0004, +0.0294] |
+
+Runs: FILM 0.5038, 0.5006, 0.5002 (sd 0.0019); BASE 0.5042, 0.5117, 0.5054; ATAC only 0.4680.
+
+Descriptive 3, `6.1` on FILM seed 0 (same 500 backgrounds as F-068, each context read with its own ATAC and its own conditioning row), K562 minus HepG2 cooperativity:
+
+| quantity | Corgi (F-068) | FILM |
+|---|---|---|
+| GATA1 WGATAA - E-box, +, d = 6 | +0.0000 (SE 0.0002) | +0.0035 (SE 0.0004) |
+| GATA1 WGATAA - E-box, -, d = 5 | -0.0000 (SE 0.0002) | +0.0040 (SE 0.0005) |
+| GATA1 WGATAA - E-box, largest difference | +0.0006 | +0.0259 (SE 0.0009) at +, d = -5 (K562 +0.0258, HepG2 -0.0001) |
+| largest |K562 - HepG2| over 8,424 cells | 0.0041 | 0.0285 (GATA1 - E-box, +, d = -1) |
+| median |K562 - HepG2| | 0.00008 | 0.0013 |
+| cells at FDR < 0.05 | 121 | 6,779 |
+
+The five largest FILM differences are all GATA-anchor pairs (with E-box, GATA1, CEBPB). The FILM seam control (`6.2`, 32 rows by the same rule) gives 25 syntax and 7 junction k-mers in K562; seam rows that are not syntax are excluded from the table above.
+**Implications:** By the pre-registered rule this is neither a gain nor a harm, so FiLM does not become the multi-cell base and the H3K27ac fetch for idea 1 goes back to Maya. The conditioning is used: K562's own vector beats GM12878's by +0.011 (interval clear of 0), and in the insertion assay the GATA-E-box term becomes K562-specific, which is what F-068 said Corgi lacked. Learning the right syntax did not move CRISPR AUPRC, which matches F-057 (predicted p300 adds little) and F-046 / F-041 (more cells and TF lists did not help): the limit is not the model's knowledge of which TFs are active. The panel expansion alone (BASE - Corgi5) is the largest point estimate here and nearly clears 0.
+**Caveats:** The context effect is not cleanly lineage-specific: most anchor-partner pairs are more cooperative in K562 than HepG2 (AP1-CEBPB +0.0074 averaged over |d| >= 3), MCF-7 shows a GATA-E-box term too (0.0033 vs K562 0.0044, plausibly GATA3), and FOXA1 pairs are not stronger in HepG2. Part of the difference may be an overall gain change under the K562 vector rather than syntax. The assay ran on one seed. Accessibility and conditioning change together in each context; a run with K562's ATAC and HepG2's vector (`--cond-cell`) would separate them and has not been done. The rE2G point estimate is positive (+0.0115) but unresolved. K562 CRISPR is both selection and evaluation set.
+**Tags:** p300, multi-cell, film, chromvar, conditioning, bolero, transfer, abc, re2g, crispr-benchmark, motif-syntax, null
+
+### Evidence Ledger
+| Date | Run/Session | Dataset | Project | Result | Direction |
+|------|-------------|---------|---------|--------|-----------|
+| 2026-10-21/23 | train FILM 48843057-59, BASE 48843060-62 (+ 49069727_1 after a node failure); launcher 49069738 -> preds 4.4, ABC 49229379, CRISPR 49229381, boot 49229384 (pre-registered tables written; floor call failed, rerun as 51095622), rE2G 49229386 | K562 CRISPR benchmark; panel 13 p300/ATAC | 2026_0824_H3K27ac_model | ABC FILM - BASE -0.0056 [-0.0197, +0.0098] gene-level; rE2G +0.0115 [-0.0045, +0.0283] | null: FiLM not adopted |
+| 2026-10-22/23 | `6.1` on FILM seed 0: array 49071854, combine 49071856; `6.2` array 49071860, combine 49071863 | same 500 backgrounds as F-068 | 2026_0824_H3K27ac_model | GATA WGATAA - E-box K562 - HepG2 up to +0.0259; max context difference 0.0285 vs Corgi 0.0041 | conditioning makes syntax context-dependent |

@@ -1,0 +1,4 @@
+arm_a	arm_b	auprc_a	auprc_b	delta	ci_lo	ci_hi	sign_kept_frac	sign_kept_pct	n_pairs	n_regulated	n_boot	cluster
+film	base	0.501528	0.507107	-0.00558	-0.019694	0.009774	0.779	77.9	10342	466	2000	gene
+film	closest	0.501528	0.490218	0.011309	0.006938	0.01699	1.0	100.0	10342	466	2000	gene
+base	corgi5	0.507107	0.49317	0.013937	-0.000443	0.029435	0.968	96.8	10342	466	2000	gene
