@@ -2055,3 +2055,10 @@ line as protection.
 - **chromVAR on a few bulk samples is relative to the panel**: expected counts pool the panel, so adding
   a cell changes every vector. Freeze the panel before pre-registering, and keep the element set from the
   same ATAC experiments as the tracks (`config/bulk_chromvar_peaks_panel13.tsv`).
+
+## 2026-10-23: bootstrap calls
+
+- **4.17 loads only the arms its `--pair` flags name**, so every `--group` passed must be built from those
+  arms; a group naming an arm the call does not load raises KeyError after earlier calls have already
+  written their tables (job 49229384: pre-registered tables written, floor call failed). Give each call
+  only the groups it compares (launcher stage `abcfloor`).
