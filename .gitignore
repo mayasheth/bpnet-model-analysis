@@ -133,3 +133,15 @@ FIMO/elements_v1/analysis_v1/plot6.1*.png
 dashboard.html
 # per-task partial outputs, combined into the tracked table
 2026_0824_H3K27ac_model/results/parts_*/
+
+# Offboarding 2026-11: derived data kept on Oak only (regenerable; data/ is untracked by convention)
+.mycelium/locks/
+2026_0824_H3K27ac_model/data/abc_predicted/
+2026_0824_H3K27ac_model/data/h3k4me1_panel/
+2026_0824_H3K27ac_model/data/re2g_external/
+2026_0824_H3K27ac_model/data/tf_activity_recovery/
+2026_0824_H3K27ac_model/results/2026_0925_p300_error_anatomy.regions.tsv.gz
+2026_0824_H3K27ac_model/results/2026_0928_p300_error_anatomy_motifact.regions.tsv.gz
+2026_0824_H3K27ac_model/results/2026_0928_p300_error_anatomy_teach.regions.tsv.gz
+2026_0824_H3K27ac_model/results/2026_0930_k27frag.k562_scores.tsv.gz
+2026_0824_H3K27ac_model/results/2026_0930_nucleosome_vs_h3k27ac.residuals.tsv.gz

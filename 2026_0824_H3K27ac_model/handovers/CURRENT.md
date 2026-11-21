@@ -3,7 +3,7 @@
 **Goal:** improve the transferred (multi-cell, K562 held out) p300 activity track for ABC/rE2G on K562 CRISPR. Current line: Bolero preprint ideas (doi:10.64898/2026.10.19.760026), started 2026-10-20 at Maya's request.
 
 ## State (verified 2026-11-04)
-- Repo `$OAK/Users/sheth/EP300_BPNet`, main at `0c3d0bb` (F-069 `7732d64`, `abcfloor` launcher stage), tree clean; 45 commits UNPUSHED (never push unasked).
+- Repo `$OAK/Users/sheth/EP300_BPNet`, main at `aaa2542` (F-069 `7732d64`, `abcfloor` launcher stage `0c3d0bb`), tree clean; 46 commits UNPUSHED (never push unasked).
 - **Idea 2 done, pre-registered NULL (F-069):** ABC FILM - BASE -0.0056 [-0.0197, +0.0098] gene-level. rE2G +0.0115 [-0.0045, +0.0283]. FILM - CLOSEST +0.0113 [+0.0069, +0.0170] (K562's own vector beats GM12878's). BASE - Corgi5 +0.0139 [-0.0004, +0.0294] (panel expansion alone). Tables `A/results/2026_1021_film13_{auprc,re2g}_pairs{,.gene}.tsv`.
 - **Floor context** (each arm vs ATAC only, not pre-registered): the original call failed (4.17 KeyError, it was passed groups it does not load); split into stage `abcfloor`, job 51095622 (queued, Priority) -> `A/results/2026_1021_film13_auprc_floor{,.gene}.tsv`. Add to F-069 when it lands.
 - **Idea 3 / descriptive 3:** `6.1` + `6.2` on FILM seed 0 done. GATA1 WGATAA - E-box K562 - HepG2 up to +0.0259 (Corgi +0.0006); max context difference 0.0285 vs Corgi 0.0041; but most pairs are more cooperative in K562 than HepG2, MCF-7 also has the GATA term, FOXA1 not HepG2-favored. Tables `A/results/2026_1022_motif_pair_{spacing,seam_control}_p300_multicell_panelmean_film_..._condcontext*`.

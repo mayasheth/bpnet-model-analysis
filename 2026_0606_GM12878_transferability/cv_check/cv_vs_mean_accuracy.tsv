@@ -1,0 +1,25 @@
+figure	eval_cell	model	subset	n_cv	r_cv	n_mean	r_mean	check
+C.2	K562	K562 BPNet (sequence only, in-cell-type)	all	150519	0.651	150519	0.6878	derived from chromosome
+C.2	K562	K562 BPNet (sequence only, in-cell-type)	p300+	27176	0.5207	27176	0.6492	derived from chromosome
+C.2	K562	K562 BPNet (ATAC only, in-cell-type)	all	150519	0.6013	150519	0.6056	fold column vs JSON mismatches: 0
+C.2	K562	K562 BPNet (ATAC only, in-cell-type)	p300+	27177	0.4282	27177	0.4354	fold column vs JSON mismatches: 0
+C.2	K562	K562 BPNet (sequence + ATAC, in-cell-type)	all	150519	0.7847	150519	0.7976	fold column vs JSON mismatches: 0
+C.2	K562	K562 BPNet (sequence + ATAC, in-cell-type)	p300+	27177	0.6627	27177	0.6986	fold column vs JSON mismatches: 0
+C.2	K562	GM12878 BPNet (sequence only, cross-cell-type)	all	150519	0.5313	150519	0.5352	derived from chromosome
+C.2	K562	GM12878 BPNet (sequence only, cross-cell-type)	p300+	27176	0.3333	27176	0.3374	derived from chromosome
+C.2	K562	GM12878 BPNet (ATAC only, cross-cell-type)	all	150519	0.5893	150519	0.5969	fold column vs JSON mismatches: 0
+C.2	K562	GM12878 BPNet (ATAC only, cross-cell-type)	p300+	27177	0.3704	27177	0.3783	fold column vs JSON mismatches: 0
+C.2	K562	GM12878 BPNet (sequence + ATAC, cross-cell-type)	all	150519	0.6656	150519	0.6838	fold column vs JSON mismatches: 0
+C.2	K562	GM12878 BPNet (sequence + ATAC, cross-cell-type)	p300+	27177	0.4415	27177	0.4507	fold column vs JSON mismatches: 0
+4.4c,d	GM12878	GM12878 BPNet (sequence only)	all	154215	0.4217	154215	0.4323	derived from chromosome
+4.4c,d	GM12878	GM12878 BPNet (sequence only)	p300+	20392	0.2892	20392	0.3276	derived from chromosome
+4.4c,d	GM12878	GM12878 BPNet (ATAC only)	all	154215	0.6775	154215	0.6828	fold column vs JSON mismatches: 0
+4.4c,d	GM12878	GM12878 BPNet (ATAC only)	p300+	20396	0.5678	20396	0.5791	fold column vs JSON mismatches: 0
+4.4c,d	GM12878	GM12878 BPNet (sequence + ATAC)	all	154215	0.8065	154215	0.821	fold column vs JSON mismatches: 0
+4.4c,d	GM12878	GM12878 BPNet (sequence + ATAC)	p300+	20396	0.7361	20396	0.7599	fold column vs JSON mismatches: 0
+4.4c,d	GM12878	K562 BPNet (sequence only)	all	154215	0.266	154215	0.2769	derived from chromosome
+4.4c,d	GM12878	K562 BPNet (sequence only)	p300+	20392	0.1065	20392	0.114	derived from chromosome
+4.4c,d	GM12878	K562 BPNet (ATAC only)	all	154215	0.7141	154215	0.7169	fold column vs JSON mismatches: 0
+4.4c,d	GM12878	K562 BPNet (ATAC only)	p300+	20396	0.4502	20396	0.4673	fold column vs JSON mismatches: 0
+4.4c,d	GM12878	K562 BPNet (sequence + ATAC)	all	154215	0.7835	154215	0.7925	fold column vs JSON mismatches: 0
+4.4c,d	GM12878	K562 BPNet (sequence + ATAC)	p300+	20396	0.5984	20396	0.6284	fold column vs JSON mismatches: 0

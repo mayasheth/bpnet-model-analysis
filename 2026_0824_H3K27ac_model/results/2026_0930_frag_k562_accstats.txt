@@ -1,0 +1,2 @@
+flat5p K562 input stats: --acc-mean 0.3540 --acc-std 0.6460
+frag5p K562 input stats: --acc-mean 0.1667 --acc-std 0.4419
