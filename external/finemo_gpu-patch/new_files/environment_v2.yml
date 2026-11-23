@@ -1,0 +1,18 @@
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - bioconda
+  - nodefaults
+dependencies:
+  - python=3.11
+  - numpy=2.2.0
+  - scipy=1.14.1
+  - polars=1.17.1
+  - matplotlib-base=3.10.0
+  - h5py=3.12.1
+  - hdf5plugin=5.0.0
+  - tqdm=4.67.1
+  - jinja2=3.1.4
+  - pybigwig=0.3.23
+  - pyfaidx=0.8.1.3

@@ -1,0 +1,110 @@
+diff --git a/src/finemo/data_io.py b/src/finemo/data_io.py
+index d5b119a..5ba9ff6 100644
+--- a/src/finemo/data_io.py
++++ b/src/finemo/data_io.py
+@@ -348,6 +348,33 @@ def load_modisco_motifs(modisco_h5_path, trim_threshold, motif_type, motifs_incl
+     return motifs_df, cwms, trim_masks, names
+ 
+ 
++def load_curated_modisco_motifs(motif_data_prefix: str):
++    """
++    Loads the saved bundle and performs basic shape sanity checks.
++
++    Returns: (motifs_df, cwms, trim_masks, names)
++    """
++    parquet_path = f"{motif_data_prefix}.motifs.parquet"
++    npz_path     = f"{motif_data_prefix}.motifs.npz"
++
++    motifs_df = pl.read_parquet(parquet_path)
++
++    with np.load(npz_path, allow_pickle=False) as z:
++        cwms       = z["cwms"]
++        trim_masks = z["trim_masks"]
++
++    names = motifs_df.filter(pl.col("strand") == "+").get_column("motif_name").to_numpy()
++
++    # Basic checks
++    if cwms.ndim != 3:
++        raise ValueError(f"cwms must be [N, 4, L]; got shape {cwms.shape}")
++    if trim_masks.ndim != 2:
++        raise ValueError(f"trim_masks must be [N, L]; got shape {trim_masks.shape}")
++    if cwms.shape[0] != trim_masks.shape[0] or cwms.shape[2] != trim_masks.shape[1]:
++        raise ValueError("cwms and trim_masks shapes are incompatible")
++
++    return motifs_df, cwms, trim_masks, names
++
+ def load_modisco_seqlets(modisco_h5_path, peaks_df, motifs_df, half_width, modisco_half_width, lazy=False):
+     
+     start_lst = []
+diff --git a/src/finemo/evaluation.py b/src/finemo/evaluation.py
+index 821aef2..ac1d53f 100644
+--- a/src/finemo/evaluation.py
++++ b/src/finemo/evaluation.py
+@@ -387,7 +387,8 @@ def plot_cwms(cwms, trim_bounds, out_dir, alphabet=LOGO_ALPHABET, colors=LOGO_CO
+         motif_dir = os.path.join(out_dir, m)
+         os.makedirs(motif_dir, exist_ok=True)
+         for cwm_type, cwm in v.items():
+-            output_path = os.path.join(motif_dir, f"{cwm_type}.png")
++            output_path_svg = os.path.join(motif_dir, f"{cwm_type}.svg")
++            output_path_png = os.path.join(motif_dir, f"{cwm_type}.png")
+ 
+             fig, ax = plt.subplots(figsize=(10,2))
+ 
+@@ -396,7 +397,8 @@ def plot_cwms(cwms, trim_bounds, out_dir, alphabet=LOGO_ALPHABET, colors=LOGO_CO
+             for name, spine in ax.spines.items():
+                 spine.set_visible(False)
+             
+-            plt.savefig(output_path, dpi=100)
++            plt.savefig(output_path_svg, dpi=100)
++            plt.savefig(output_path_png, dpi=100)
+             plt.close(fig)
+ 
+ 
+diff --git a/src/finemo/main.py b/src/finemo/main.py
+index 77ce256..8d76460 100644
+--- a/src/finemo/main.py
++++ b/src/finemo/main.py
+@@ -108,8 +108,12 @@ def call_hits(regions_path, peaks_path, modisco_h5_path, chrom_order_path, motif
+     else:
+         motif_lambdas = None
+     
+-    motifs_df, cwms, trim_masks, motif_names = data_io.load_modisco_motifs(modisco_h5_path, cwm_trim_threshold, motif_type, motifs_include, 
++    if modisco_h5_path.lower().endswith((".h5", ".hdf5")):
++        motifs_df, cwms, trim_masks, motif_names = data_io.load_modisco_motifs(modisco_h5_path, cwm_trim_threshold, motif_type, motifs_include, 
+                                                                            motif_name_map, motif_lambdas, lambda_default, True)
++    else:
++        motifs_df, cwms, trim_masks, motif_names = data_io.load_curated_modisco_motifs(modisco_h5_path)
++    
+     num_motifs = cwms.shape[0]
+     motif_width = cwms.shape[2]
+     lambdas = motifs_df.get_column("lambda").to_numpy(writable=True)
+@@ -173,8 +177,12 @@ def report(regions_path, hits_dir, modisco_h5_path, peaks_path, motifs_include_p
+         else:
+             motif_name_map = None
+ 
+-        motifs_df, cwms_modisco, trim_masks, motif_names = data_io.load_modisco_motifs(modisco_h5_path, cwm_trim_threshold, "cwm", 
++        if modisco_h5_path.lower().endswith((".h5", ".hdf5")):
++            motifs_df, cwms_modisco, trim_masks, motif_names = data_io.load_modisco_motifs(modisco_h5_path, cwm_trim_threshold, "cwm", 
+                                                                                     motifs_include, motif_name_map, None, None, True)
++        else:
++            motifs_df, cwms, trim_masks, motif_names = data_io.load_curated_modisco_motifs(modisco_h5_path)
++        
+ 
+     else:
+         hits_df_path = os.path.join(hits_dir, "hits.tsv")
+@@ -193,7 +201,7 @@ def report(regions_path, hits_dir, modisco_h5_path, peaks_path, motifs_include_p
+     if not use_seqlets:
+         warnings.warn("Usage of the `--no-seqlets` flag is deprecated and will be removed in a future version. Please omit the `--modisco-h5` argument instead.")
+         seqlets_df = None
+-    elif modisco_h5_path is None:
++    elif not modisco_h5_path.lower().endswith((".h5", ".hdf5")):
+         compute_recall = False
+         seqlets_df = None
+     else:
+@@ -457,4 +465,4 @@ def cli():
+         
+         report(args.regions, args.hits, args.modisco_h5, args.peaks, args.motifs_include, 
+                args.motif_names, args.out_dir, args.modisco_region_width, args.cwm_trim_threshold, 
+-               not args.no_recall, not args.no_seqlets)
++               not args.no_recall, not args.no_seqlets)
+\ No newline at end of file
