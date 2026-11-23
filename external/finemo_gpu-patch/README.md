@@ -22,4 +22,4 @@ conda env create -n finemo_gpu -f ../EP300_BPNet/external/finemo_gpu-patch/new_f
 conda activate finemo_gpu && pip install -e .
 ```
 
-The original working copy was at `/oak/stanford/groups/engreitz/Users/sheth/finemo_gpu` and was removed during offboarding (2026-11).
+The working copy is `/oak/stanford/groups/engreitz/Users/sheth/finemo_gpu`; the `finemo_gpu` conda env installs it editable, so the env breaks if that folder is removed.
