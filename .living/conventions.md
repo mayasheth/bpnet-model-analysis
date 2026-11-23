@@ -144,8 +144,9 @@ while the sources held 28 / 6, which defeats its purpose as the first thing a fr
 reads. Regenerate it after adding entries:
 
 ```bash
+# one-time: git clone https://github.com/arjunrajlaboratory/mycelium.git <dir> && git -C <dir> checkout 736e8c5
 module load python/3.12.1
-MYC=/oak/stanford/groups/engreitz/Users/sheth/EngreitzLabAgents/mycelium-upstream
+MYC=<dir>   # mycelium checkout at 736e8c5
 python3 $MYC/skills/core/scripts/generate_index.py \
     --living-dir /oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/.living \
     --summary-heuristic
@@ -156,9 +157,10 @@ was built with, so the format stays consistent. Requires Python 3.11+, hence the
 `module load`; over a non-login `ssh host cmd` this must be wrapped in `bash -lc`.
 
 Do NOT hand-write INDEX.md or reimplement the generator. A stand-in was written once during
-a session where a `find` for the upstream copy timed out before reaching the
-EngreitzLabAgents checkout; it produced a subtly different tag-cluster format. The canonical
-script is on Oak at the path above.
+a session where a `find` for the upstream copy timed out before reaching it; it produced a
+subtly different tag-cluster format. The canonical script is `skills/core/scripts/generate_index.py`
+in arjunrajlaboratory/mycelium at commit 736e8c5 (the copy that lived in
+`Users/sheth/EngreitzLabAgents/mycelium-upstream` was removed during offboarding, 2026-11).
 
 
 ## Never end a sentence with a p-value in the report
