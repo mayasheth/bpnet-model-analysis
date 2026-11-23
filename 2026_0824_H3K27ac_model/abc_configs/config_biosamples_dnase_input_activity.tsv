@@ -1,0 +1,4 @@
+biosample	DHS	ATAC	H3K27ac	default_accessibility_feature	HiC_file	HiC_type	HiC_resolution	alt_TSS	alt_genes
+pred_dnase_atacacc		/oak/stanford/groups/engreitz/Users/sheth/Data/ENCODE/K562/ENCFF077FBI.tn5.sorted.tagAlign.gz,/oak/stanford/groups/engreitz/Users/sheth/Data/ENCODE/K562/ENCFF128WZG.tn5.sorted.tagAlign.gz,/oak/stanford/groups/engreitz/Users/sheth/Data/ENCODE/K562/ENCFF534DCE.tn5.sorted.tagAlign.gz	/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/abc_predicted/predk27ac_k562_dnase.bw	ATAC					
+k27only_dnase		/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/abc_predicted/predk27ac_k562_dnase.bw		ATAC					
+pred_dnase_dhsacc		/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/k562_dnase_5p.bw	/oak/stanford/groups/engreitz/Users/sheth/EP300_BPNet/2026_0824_H3K27ac_model/data/abc_predicted/predk27ac_k562_dnase.bw	ATAC					
