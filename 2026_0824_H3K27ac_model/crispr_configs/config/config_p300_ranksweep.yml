@@ -1,0 +1,32 @@
+# ABC activity term benchmarked against CRISPR data.
+# All 8 arms score the identical candidate-region set (md5 7d5995ce).
+
+comparisons:
+  2026_0925_p300_ranksweep:
+    pred:
+      K562_ATAC_only: /oak/stanford/groups/engreitz/Users/sheth/ABC_working/ABC-Enhancer-Gene-Prediction/results/2026_0721_h3k27ac_counting_comparison/K562_ATAC_only/Predictions/EnhancerPredictionsAllPutative.tsv.gz
+      p300obs_k562: /oak/stanford/groups/engreitz/Users/sheth/ABC_working/ABC-Enhancer-Gene-Prediction/results/2026_0905_p300_activity/p300obs_k562/Predictions/EnhancerPredictionsAllPutative.tsv.gz
+      p300pred_multicell_holdK562: /oak/stanford/groups/engreitz/Users/sheth/ABC_working/ABC-Enhancer-Gene-Prediction/results/2026_0922_p300_multicell/p300pred_multicell_holdK562/Predictions/EnhancerPredictionsAllPutative.tsv.gz
+      p300pred_multicell_holdK562_rank2: /oak/stanford/groups/engreitz/Users/sheth/ABC_working/ABC-Enhancer-Gene-Prediction/results/2026_0924_p300_rank/p300pred_multicell_holdK562_rank2/Predictions/EnhancerPredictionsAllPutative.tsv.gz
+      p300pred_multicell_holdK562_rank10: /oak/stanford/groups/engreitz/Users/sheth/ABC_working/ABC-Enhancer-Gene-Prediction/results/2026_0924_p300_rank/p300pred_multicell_holdK562_rank10/Predictions/EnhancerPredictionsAllPutative.tsv.gz
+      p300pred_multicell_holdK562_rank20: /oak/stanford/groups/engreitz/Users/sheth/ABC_working/ABC-Enhancer-Gene-Prediction/results/2026_0925_p300_ranksweep/p300pred_multicell_holdK562_rank20/Predictions/EnhancerPredictionsAllPutative.tsv.gz
+      p300pred_multicell_holdK562_rank50: /oak/stanford/groups/engreitz/Users/sheth/ABC_working/ABC-Enhancer-Gene-Prediction/results/2026_0925_p300_ranksweep/p300pred_multicell_holdK562_rank50/Predictions/EnhancerPredictionsAllPutative.tsv.gz
+      p300pred_multicell_holdK562_rank100: /oak/stanford/groups/engreitz/Users/sheth/ABC_working/ABC-Enhancer-Gene-Prediction/results/2026_0925_p300_ranksweep/p300pred_multicell_holdK562_rank100/Predictions/EnhancerPredictionsAllPutative.tsv.gz
+    expt: /oak/stanford/groups/engreitz/Users/sheth/CRISPR_comparison_v3/CRISPR_comparison/resources/crispr_data/EPCrisprBenchmark_ensemble_data_GRCh38.tsv.gz
+    gene_universe: "/oak/stanford/groups/engreitz/Users/sheth/scE2G_temp/scE2G/resources/genome_annotations/CollapsedGeneBounds.hg38.intGENCODEv43.bed6"
+    tss_universe:  "/oak/stanford/groups/engreitz/Users/sheth/scE2G_temp/scE2G/resources/genome_annotations/CollapsedGeneBounds.hg38.intGENCODEv43.TSS500bp.bed6"
+    pred_config: "/oak/stanford/groups/engreitz/Users/sheth/CRISPR_comparison_v3/CRISPR_comparison/resources/pred_config/pred_config_p300_ranksweep.tsv"
+    cell_type_mapping:
+      K562_ATAC_only: /oak/stanford/groups/engreitz/Users/sheth/CRISPR_comparison_v3/CRISPR_comparison/resources/cell_type_mapping/K562_ATAC_only.txt
+      p300obs_k562: /oak/stanford/groups/engreitz/Users/sheth/CRISPR_comparison_v3/CRISPR_comparison/resources/cell_type_mapping/p300obs_k562.txt
+      p300pred_multicell_holdK562: /oak/stanford/groups/engreitz/Users/sheth/CRISPR_comparison_v3/CRISPR_comparison/resources/cell_type_mapping/p300pred_multicell_holdK562.txt
+      p300pred_multicell_holdK562_rank2: /oak/stanford/groups/engreitz/Users/sheth/CRISPR_comparison_v3/CRISPR_comparison/resources/cell_type_mapping/p300pred_multicell_holdK562_rank2.txt
+      p300pred_multicell_holdK562_rank10: /oak/stanford/groups/engreitz/Users/sheth/CRISPR_comparison_v3/CRISPR_comparison/resources/cell_type_mapping/p300pred_multicell_holdK562_rank10.txt
+      p300pred_multicell_holdK562_rank20: /oak/stanford/groups/engreitz/Users/sheth/CRISPR_comparison_v3/CRISPR_comparison/resources/cell_type_mapping/p300pred_multicell_holdK562_rank20.txt
+      p300pred_multicell_holdK562_rank50: /oak/stanford/groups/engreitz/Users/sheth/CRISPR_comparison_v3/CRISPR_comparison/resources/cell_type_mapping/p300pred_multicell_holdK562_rank50.txt
+      p300pred_multicell_holdK562_rank100: /oak/stanford/groups/engreitz/Users/sheth/CRISPR_comparison_v3/CRISPR_comparison/resources/cell_type_mapping/p300pred_multicell_holdK562_rank100.txt
+    dist_bins_kb: [0, 10, 100, 2500]
+    include_col: Null
+    gene_features: Null
+    enh_features: Null
+    enh_assays: Null

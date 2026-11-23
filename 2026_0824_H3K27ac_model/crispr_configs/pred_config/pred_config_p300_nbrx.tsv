@@ -1,0 +1,17 @@
+pred_id	pred_col	boolean	alpha	aggregate_function	fill_value	inverse_predictor	pred_name_long	color
+baseline	distToTSS	FALSE		mean	Inf	TRUE	Distance to TSS	#c5cad7
+baseline	nearestTSS	TRUE		max	0	FALSE	Nearest TSS	#6e788d
+baseline	nearestGene	TRUE		max	0	FALSE	Nearest gene	#435369
+baseline	within100kbTSS	TRUE		max	0	FALSE	Within 100kb of TSS	#1c2a43
+K562_ATAC_only	ABC.Score	FALSE		max	0	FALSE	ATAC only (floor)	#bdbdbd
+p300obs_k562	ABC.Score	FALSE		max	0	FALSE	ATAC x observed p300 (ceiling)	#54278f
+p300pred_k562_multimodal	ABC.Score	FALSE		max	0	FALSE	ATAC x predicted p300 (K562 in-cell)	#807dba
+p300pred_nbr_incell_boostnonbr	ABC.Score	FALSE		max	0	FALSE	in-cell, boosting refit without neighbours	#bcbddc
+p300pred_nbr_incell_boostnbr	ABC.Score	FALSE		max	0	FALSE	in-cell, boosting refit with neighbours	#3f007d
+p300pred_multicell_holdK562	ABC.Score	FALSE		max	0	FALSE	ATAC x predicted p300 (multi-cell, MSE only)	#238b45
+p300pred_nbr_multicell_boostnonbr	ABC.Score	FALSE		max	0	FALSE	multi-cell, boosting refit without neighbours	#a1d99b
+p300pred_nbr_multicell_boostnbr	ABC.Score	FALSE		max	0	FALSE	multi-cell, boosting refit with neighbours	#00441b
+p300pred_multicell_holdK562_rank10	ABC.Score	FALSE		max	0	FALSE	multi-cell, ranking loss w=10 (reference)	#08519c
+p300pred_nbrx_multicell_boostnbr	ABC.Score	FALSE		max	0	FALSE	multi-cell, boosting with cross-class neighbours	#006d2c
+p300pred_nbrx_incell_boostnbr	ABC.Score	FALSE		max	0	FALSE	in-cell, boosting with cross-class neighbours	#54278f
+p300pred_nbrx_atac_boostnbr	ABC.Score	FALSE		max	0	FALSE	no p300 model: ATAC + neighbour ATAC, boosting	#737373

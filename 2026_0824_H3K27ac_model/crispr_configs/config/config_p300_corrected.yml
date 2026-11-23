@@ -1,0 +1,32 @@
+# ABC activity term benchmarked against CRISPR data.
+# All 8 arms score the identical candidate-region set (md5 7d5995ce).
+
+comparisons:
+  2026_0919_p300_corrected:
+    pred:
+      K562_ATAC_only: /oak/stanford/groups/engreitz/Users/sheth/ABC_working/ABC-Enhancer-Gene-Prediction/results/2026_0721_h3k27ac_counting_comparison/K562_ATAC_only/Predictions/EnhancerPredictionsAllPutative.tsv.gz
+      K562_ATAC_H3K27ac_element: /oak/stanford/groups/engreitz/Users/sheth/ABC_working/ABC-Enhancer-Gene-Prediction/results/2026_0721_h3k27ac_counting_comparison/K562_ATAC_H3K27ac_element/Predictions/EnhancerPredictionsAllPutative.tsv.gz
+      p300obs_k562: /oak/stanford/groups/engreitz/Users/sheth/ABC_working/ABC-Enhancer-Gene-Prediction/results/2026_0905_p300_activity/p300obs_k562/Predictions/EnhancerPredictionsAllPutative.tsv.gz
+      p300pred_k562_multimodal: /oak/stanford/groups/engreitz/Users/sheth/ABC_working/ABC-Enhancer-Gene-Prediction/results/2026_0905_p300_activity/p300pred_k562_multimodal/Predictions/EnhancerPredictionsAllPutative.tsv.gz
+      p300pred_gm12878_multimodal: /oak/stanford/groups/engreitz/Users/sheth/ABC_working/ABC-Enhancer-Gene-Prediction/results/2026_0906_p300_transfer/p300pred_gm12878_multimodal/Predictions/EnhancerPredictionsAllPutative.tsv.gz
+      p300pred_gm12878_corrected: /oak/stanford/groups/engreitz/Users/sheth/ABC_working/ABC-Enhancer-Gene-Prediction/results/2026_0919_p300_corrected/p300pred_gm12878_corrected/Predictions/EnhancerPredictionsAllPutative.tsv.gz
+      p300only_gm12878_multimodal: /oak/stanford/groups/engreitz/Users/sheth/ABC_working/ABC-Enhancer-Gene-Prediction/results/2026_0906_p300_transfer/p300only_gm12878_multimodal/Predictions/EnhancerPredictionsAllPutative.tsv.gz
+      p300only_gm12878_corrected: /oak/stanford/groups/engreitz/Users/sheth/ABC_working/ABC-Enhancer-Gene-Prediction/results/2026_0919_p300_corrected/p300only_gm12878_corrected/Predictions/EnhancerPredictionsAllPutative.tsv.gz
+    expt: /oak/stanford/groups/engreitz/Users/sheth/CRISPR_comparison_v3/CRISPR_comparison/resources/crispr_data/EPCrisprBenchmark_ensemble_data_GRCh38.tsv.gz
+    gene_universe: "/oak/stanford/groups/engreitz/Users/sheth/scE2G_temp/scE2G/resources/genome_annotations/CollapsedGeneBounds.hg38.intGENCODEv43.bed6"
+    tss_universe:  "/oak/stanford/groups/engreitz/Users/sheth/scE2G_temp/scE2G/resources/genome_annotations/CollapsedGeneBounds.hg38.intGENCODEv43.TSS500bp.bed6"
+    pred_config: "/oak/stanford/groups/engreitz/Users/sheth/CRISPR_comparison_v3/CRISPR_comparison/resources/pred_config/pred_config_p300_corrected.tsv"
+    cell_type_mapping:
+      K562_ATAC_only: /oak/stanford/groups/engreitz/Users/sheth/CRISPR_comparison_v3/CRISPR_comparison/resources/cell_type_mapping/K562_ATAC_only.txt
+      K562_ATAC_H3K27ac_element: /oak/stanford/groups/engreitz/Users/sheth/CRISPR_comparison_v3/CRISPR_comparison/resources/cell_type_mapping/K562_ATAC_H3K27ac_element.txt
+      p300obs_k562: /oak/stanford/groups/engreitz/Users/sheth/CRISPR_comparison_v3/CRISPR_comparison/resources/cell_type_mapping/p300obs_k562.txt
+      p300pred_k562_multimodal: /oak/stanford/groups/engreitz/Users/sheth/CRISPR_comparison_v3/CRISPR_comparison/resources/cell_type_mapping/p300pred_k562_multimodal.txt
+      p300pred_gm12878_multimodal: /oak/stanford/groups/engreitz/Users/sheth/CRISPR_comparison_v3/CRISPR_comparison/resources/cell_type_mapping/p300pred_gm12878_multimodal.txt
+      p300pred_gm12878_corrected: /oak/stanford/groups/engreitz/Users/sheth/CRISPR_comparison_v3/CRISPR_comparison/resources/cell_type_mapping/p300pred_gm12878_corrected.txt
+      p300only_gm12878_multimodal: /oak/stanford/groups/engreitz/Users/sheth/CRISPR_comparison_v3/CRISPR_comparison/resources/cell_type_mapping/p300only_gm12878_multimodal.txt
+      p300only_gm12878_corrected: /oak/stanford/groups/engreitz/Users/sheth/CRISPR_comparison_v3/CRISPR_comparison/resources/cell_type_mapping/p300only_gm12878_corrected.txt
+    dist_bins_kb: [0, 10, 100, 2500]
+    include_col: Null
+    gene_features: Null
+    enh_features: Null
+    enh_assays: Null

@@ -1,0 +1,20 @@
+pred_id	pred_col	boolean	alpha	aggregate_function	fill_value	inverse_predictor	pred_name_long	color
+baseline	distToTSS	FALSE		mean	Inf	TRUE	Distance to TSS	#c5cad7
+baseline	nearestTSS	TRUE		max	0	FALSE	Nearest TSS	#6e788d
+baseline	nearestGene	TRUE		max	0	FALSE	Nearest gene	#435369
+baseline	within100kbTSS	TRUE		max	0	FALSE	Within 100kb of TSS	#1c2a43
+K562_ATAC_only	ABC.Score	FALSE		max	0	FALSE	ATAC only (floor)	#bdbdbd
+p300obs_k562	ABC.Score	FALSE		max	0	FALSE	ATAC x observed p300 (ceiling)	#54278f
+p300pred_k562_multimodal	ABC.Score	FALSE		max	0	FALSE	in-cell model	#807dba
+p300pred_multicell_holdK562	ABC.Score	FALSE		max	0	FALSE	multi-cell, MSE only	#238b45
+p300pred_multicell_holdK562_rank10	ABC.Score	FALSE		max	0	FALSE	multi-cell, ranking loss w=10	#08519c
+p300pred_multicell_holdK562_motifact_oracle	ABC.Score	FALSE		max	0	FALSE	multi-cell + TF-activity channel (oracle weights)	#d94801
+p300pred_multicell_holdK562_motifact_assoc_noctcf	ABC.Score	FALSE		max	0	FALSE	multi-cell + TF-activity channel (ATAC association, CTCF removed)	#fd8d3c
+p300pred_multicell_holdK562_seed1	ABC.Score	FALSE		max	0	FALSE	multi-cell, MSE only, seed 1	#238b45
+p300pred_multicell_holdK562_seed2	ABC.Score	FALSE		max	0	FALSE	multi-cell, MSE only, seed 2	#238b45
+p300pred_multicell_holdK562_motifact_oracle_seed1	ABC.Score	FALSE		max	0	FALSE	oracle channel, seed 1	#d94801
+p300pred_multicell_holdK562_motifact_oracle_seed2	ABC.Score	FALSE		max	0	FALSE	oracle channel, seed 2	#d94801
+p300pred_multicell_holdK562_motifact_assoc_noctcf_seed1	ABC.Score	FALSE		max	0	FALSE	assoc_noctcf channel, seed 1	#fd8d3c
+p300pred_multicell_holdK562_motifact_assoc_noctcf_seed2	ABC.Score	FALSE		max	0	FALSE	assoc_noctcf channel, seed 2	#fd8d3c
+p300pred_multicell_holdK562_motifact_oracle_twostage	ABC.Score	FALSE		max	0	FALSE	two-stage: frozen DNA+ATAC, oracle channel correction	#6a51a3
+p300pred_multicell_holdK562_motifact_assoc_noctcf_twostage	ABC.Score	FALSE		max	0	FALSE	two-stage: frozen DNA+ATAC, assoc_noctcf channel correction	#9e9ac8

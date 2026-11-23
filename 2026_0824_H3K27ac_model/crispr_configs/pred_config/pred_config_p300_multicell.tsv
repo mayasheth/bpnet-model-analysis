@@ -1,0 +1,14 @@
+pred_id	pred_col	boolean	alpha	aggregate_function	fill_value	inverse_predictor	pred_name_long	color
+baseline	distToTSS	FALSE		mean	Inf	TRUE	Distance to TSS	#c5cad7
+baseline	nearestTSS	TRUE		max	0	FALSE	Nearest TSS	#6e788d
+baseline	nearestGene	TRUE		max	0	FALSE	Nearest gene	#435369
+baseline	within100kbTSS	TRUE		max	0	FALSE	Within 100kb of TSS	#1c2a43
+K562_ATAC_only	ABC.Score	FALSE		max	0	FALSE	ATAC only (floor, reference)	#bdbdbd
+K562_ATAC_H3K27ac_element	ABC.Score	FALSE		max	0	FALSE	ATAC x observed H3K27ac (ceiling, reference)	#404040
+p300obs_k562	ABC.Score	FALSE		max	0	FALSE	ATAC x observed p300 (ceiling)	#54278f
+p300pred_k562_multimodal	ABC.Score	FALSE		max	0	FALSE	ATAC x predicted p300 (K562 in-cell)	#807dba
+p300pred_gm12878_corrected	ABC.Score	FALSE		max	0	FALSE	ATAC x predicted p300 (GM12878 -> K562, own-stats norm)	#cb181d
+p300pred_gm12878_corrected_tgtnorm	ABC.Score	FALSE		max	0	FALSE	ATAC x predicted p300 (GM12878 -> K562, target-derived norm)	#fd8d3c
+p300pred_multicell_holdK562	ABC.Score	FALSE		max	0	FALSE	ATAC x predicted p300 (4 cell types, K562 held out)	#238b45
+p300only_gm12878_corrected_tgtnorm	ABC.Score	FALSE		max	0	FALSE	Predicted p300 alone (GM12878 -> K562, target-derived norm)	#fdd0a2
+p300only_multicell_holdK562	ABC.Score	FALSE		max	0	FALSE	Predicted p300 alone (4 cell types, K562 held out)	#74c476

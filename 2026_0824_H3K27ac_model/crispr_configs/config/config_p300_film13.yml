@@ -1,0 +1,44 @@
+# ABC activity term benchmarked against CRISPR data.
+# All 14 arms score the identical candidate-region set (md5 7d5995ce).
+
+comparisons:
+  2026_1021_p300_film13:
+    pred:
+      K562_ATAC_only: /oak/stanford/groups/engreitz/Users/sheth/ABC_working/ABC-Enhancer-Gene-Prediction/results/2026_0721_h3k27ac_counting_comparison/K562_ATAC_only/Predictions/EnhancerPredictionsAllPutative.tsv.gz
+      K562_ATAC_H3K27ac_element: /oak/stanford/groups/engreitz/Users/sheth/ABC_working/ABC-Enhancer-Gene-Prediction/results/2026_0721_h3k27ac_counting_comparison/K562_ATAC_H3K27ac_element/Predictions/EnhancerPredictionsAllPutative.tsv.gz
+      p300pred_multicell_panelmean_holdK562: /oak/stanford/groups/engreitz/Users/sheth/ABC_working/ABC-Enhancer-Gene-Prediction/results/2026_1013_p300_panelmean/p300pred_multicell_panelmean_holdK562/Predictions/EnhancerPredictionsAllPutative.tsv.gz
+      p300pred_multicell_panelmean_holdK562_seed1: /oak/stanford/groups/engreitz/Users/sheth/ABC_working/ABC-Enhancer-Gene-Prediction/results/2026_1013_p300_panelmean/p300pred_multicell_panelmean_holdK562_seed1/Predictions/EnhancerPredictionsAllPutative.tsv.gz
+      p300pred_multicell_panelmean_holdK562_seed2: /oak/stanford/groups/engreitz/Users/sheth/ABC_working/ABC-Enhancer-Gene-Prediction/results/2026_1013_p300_panelmean/p300pred_multicell_panelmean_holdK562_seed2/Predictions/EnhancerPredictionsAllPutative.tsv.gz
+      p300pred_multicell_panelmean_film_chromvar13pc_panel13_holdK562_rowK562: /oak/stanford/groups/engreitz/Users/sheth/ABC_working/ABC-Enhancer-Gene-Prediction/results/2026_1021_p300_film13/p300pred_multicell_panelmean_film_chromvar13pc_panel13_holdK562_rowK562/Predictions/EnhancerPredictionsAllPutative.tsv.gz
+      p300pred_multicell_panelmean_film_chromvar13pc_panel13_holdK562_rowK562_seed1: /oak/stanford/groups/engreitz/Users/sheth/ABC_working/ABC-Enhancer-Gene-Prediction/results/2026_1021_p300_film13/p300pred_multicell_panelmean_film_chromvar13pc_panel13_holdK562_rowK562_seed1/Predictions/EnhancerPredictionsAllPutative.tsv.gz
+      p300pred_multicell_panelmean_film_chromvar13pc_panel13_holdK562_rowK562_seed2: /oak/stanford/groups/engreitz/Users/sheth/ABC_working/ABC-Enhancer-Gene-Prediction/results/2026_1021_p300_film13/p300pred_multicell_panelmean_film_chromvar13pc_panel13_holdK562_rowK562_seed2/Predictions/EnhancerPredictionsAllPutative.tsv.gz
+      p300pred_multicell_panelmean_film_chromvar13pc_panel13_holdK562_rowGM12878: /oak/stanford/groups/engreitz/Users/sheth/ABC_working/ABC-Enhancer-Gene-Prediction/results/2026_1021_p300_film13/p300pred_multicell_panelmean_film_chromvar13pc_panel13_holdK562_rowGM12878/Predictions/EnhancerPredictionsAllPutative.tsv.gz
+      p300pred_multicell_panelmean_film_chromvar13pc_panel13_holdK562_rowGM12878_seed1: /oak/stanford/groups/engreitz/Users/sheth/ABC_working/ABC-Enhancer-Gene-Prediction/results/2026_1021_p300_film13/p300pred_multicell_panelmean_film_chromvar13pc_panel13_holdK562_rowGM12878_seed1/Predictions/EnhancerPredictionsAllPutative.tsv.gz
+      p300pred_multicell_panelmean_film_chromvar13pc_panel13_holdK562_rowGM12878_seed2: /oak/stanford/groups/engreitz/Users/sheth/ABC_working/ABC-Enhancer-Gene-Prediction/results/2026_1021_p300_film13/p300pred_multicell_panelmean_film_chromvar13pc_panel13_holdK562_rowGM12878_seed2/Predictions/EnhancerPredictionsAllPutative.tsv.gz
+      p300pred_multicell_panelmean_panel13_holdK562: /oak/stanford/groups/engreitz/Users/sheth/ABC_working/ABC-Enhancer-Gene-Prediction/results/2026_1021_p300_film13/p300pred_multicell_panelmean_panel13_holdK562/Predictions/EnhancerPredictionsAllPutative.tsv.gz
+      p300pred_multicell_panelmean_panel13_holdK562_seed1: /oak/stanford/groups/engreitz/Users/sheth/ABC_working/ABC-Enhancer-Gene-Prediction/results/2026_1021_p300_film13/p300pred_multicell_panelmean_panel13_holdK562_seed1/Predictions/EnhancerPredictionsAllPutative.tsv.gz
+      p300pred_multicell_panelmean_panel13_holdK562_seed2: /oak/stanford/groups/engreitz/Users/sheth/ABC_working/ABC-Enhancer-Gene-Prediction/results/2026_1021_p300_film13/p300pred_multicell_panelmean_panel13_holdK562_seed2/Predictions/EnhancerPredictionsAllPutative.tsv.gz
+    expt: /oak/stanford/groups/engreitz/Users/sheth/CRISPR_comparison_v3/CRISPR_comparison/resources/crispr_data/EPCrisprBenchmark_ensemble_data_GRCh38.tsv.gz
+    gene_universe: "/oak/stanford/groups/engreitz/Users/sheth/scE2G_temp/scE2G/resources/genome_annotations/CollapsedGeneBounds.hg38.intGENCODEv43.bed6"
+    tss_universe:  "/oak/stanford/groups/engreitz/Users/sheth/scE2G_temp/scE2G/resources/genome_annotations/CollapsedGeneBounds.hg38.intGENCODEv43.TSS500bp.bed6"
+    pred_config: "/oak/stanford/groups/engreitz/Users/sheth/CRISPR_comparison_v3/CRISPR_comparison/resources/pred_config/pred_config_p300_film13.tsv"
+    cell_type_mapping:
+      K562_ATAC_only: /oak/stanford/groups/engreitz/Users/sheth/CRISPR_comparison_v3/CRISPR_comparison/resources/cell_type_mapping/K562_ATAC_only.txt
+      K562_ATAC_H3K27ac_element: /oak/stanford/groups/engreitz/Users/sheth/CRISPR_comparison_v3/CRISPR_comparison/resources/cell_type_mapping/K562_ATAC_H3K27ac_element.txt
+      p300pred_multicell_panelmean_holdK562: /oak/stanford/groups/engreitz/Users/sheth/CRISPR_comparison_v3/CRISPR_comparison/resources/cell_type_mapping/p300pred_multicell_panelmean_holdK562.txt
+      p300pred_multicell_panelmean_holdK562_seed1: /oak/stanford/groups/engreitz/Users/sheth/CRISPR_comparison_v3/CRISPR_comparison/resources/cell_type_mapping/p300pred_multicell_panelmean_holdK562_seed1.txt
+      p300pred_multicell_panelmean_holdK562_seed2: /oak/stanford/groups/engreitz/Users/sheth/CRISPR_comparison_v3/CRISPR_comparison/resources/cell_type_mapping/p300pred_multicell_panelmean_holdK562_seed2.txt
+      p300pred_multicell_panelmean_film_chromvar13pc_panel13_holdK562_rowK562: /oak/stanford/groups/engreitz/Users/sheth/CRISPR_comparison_v3/CRISPR_comparison/resources/cell_type_mapping/p300pred_multicell_panelmean_film_chromvar13pc_panel13_holdK562_rowK562.txt
+      p300pred_multicell_panelmean_film_chromvar13pc_panel13_holdK562_rowK562_seed1: /oak/stanford/groups/engreitz/Users/sheth/CRISPR_comparison_v3/CRISPR_comparison/resources/cell_type_mapping/p300pred_multicell_panelmean_film_chromvar13pc_panel13_holdK562_rowK562_seed1.txt
+      p300pred_multicell_panelmean_film_chromvar13pc_panel13_holdK562_rowK562_seed2: /oak/stanford/groups/engreitz/Users/sheth/CRISPR_comparison_v3/CRISPR_comparison/resources/cell_type_mapping/p300pred_multicell_panelmean_film_chromvar13pc_panel13_holdK562_rowK562_seed2.txt
+      p300pred_multicell_panelmean_film_chromvar13pc_panel13_holdK562_rowGM12878: /oak/stanford/groups/engreitz/Users/sheth/CRISPR_comparison_v3/CRISPR_comparison/resources/cell_type_mapping/p300pred_multicell_panelmean_film_chromvar13pc_panel13_holdK562_rowGM12878.txt
+      p300pred_multicell_panelmean_film_chromvar13pc_panel13_holdK562_rowGM12878_seed1: /oak/stanford/groups/engreitz/Users/sheth/CRISPR_comparison_v3/CRISPR_comparison/resources/cell_type_mapping/p300pred_multicell_panelmean_film_chromvar13pc_panel13_holdK562_rowGM12878_seed1.txt
+      p300pred_multicell_panelmean_film_chromvar13pc_panel13_holdK562_rowGM12878_seed2: /oak/stanford/groups/engreitz/Users/sheth/CRISPR_comparison_v3/CRISPR_comparison/resources/cell_type_mapping/p300pred_multicell_panelmean_film_chromvar13pc_panel13_holdK562_rowGM12878_seed2.txt
+      p300pred_multicell_panelmean_panel13_holdK562: /oak/stanford/groups/engreitz/Users/sheth/CRISPR_comparison_v3/CRISPR_comparison/resources/cell_type_mapping/p300pred_multicell_panelmean_panel13_holdK562.txt
+      p300pred_multicell_panelmean_panel13_holdK562_seed1: /oak/stanford/groups/engreitz/Users/sheth/CRISPR_comparison_v3/CRISPR_comparison/resources/cell_type_mapping/p300pred_multicell_panelmean_panel13_holdK562_seed1.txt
+      p300pred_multicell_panelmean_panel13_holdK562_seed2: /oak/stanford/groups/engreitz/Users/sheth/CRISPR_comparison_v3/CRISPR_comparison/resources/cell_type_mapping/p300pred_multicell_panelmean_panel13_holdK562_seed2.txt
+    dist_bins_kb: [0, 10, 100, 2500]
+    include_col: Null
+    gene_features: Null
+    enh_features: Null
+    enh_assays: Null

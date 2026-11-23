@@ -1,0 +1,19 @@
+pred_id	pred_col	boolean	alpha	aggregate_function	fill_value	inverse_predictor	pred_name_long	color
+baseline	distToTSS	FALSE		mean	Inf	TRUE	Distance to TSS	#c5cad7
+baseline	nearestTSS	TRUE		max	0	FALSE	Nearest TSS	#6e788d
+baseline	nearestGene	TRUE		max	0	FALSE	Nearest gene	#435369
+baseline	within100kbTSS	TRUE		max	0	FALSE	Within 100kb of TSS	#1c2a43
+K562_ATAC_only	ABC.Score	FALSE		max	0	FALSE	ATAC only (floor)	#bdbdbd
+K562_ATAC_H3K27ac_element	ABC.Score	FALSE		max	0	FALSE	ATAC x observed H3K27ac	#404040
+p300pred_multicell_panelmean_holdK562	ABC.Score	FALSE		max	0	FALSE	panel-mean model	#7a0177
+p300pred_multicell_panelmean_holdK562_seed1	ABC.Score	FALSE		max	0	FALSE	panel-mean model seed1	#7a0177
+p300pred_multicell_panelmean_holdK562_seed2	ABC.Score	FALSE		max	0	FALSE	panel-mean model seed2	#7a0177
+p300pred_multicell_panelmean_film_chromvar13pc_panel13_holdK562_rowK562	ABC.Score	FALSE		max	0	FALSE	FiLM panel 13, K562 row	#006eae
+p300pred_multicell_panelmean_film_chromvar13pc_panel13_holdK562_rowK562_seed1	ABC.Score	FALSE		max	0	FALSE	FiLM panel 13, K562 row seed1	#006eae
+p300pred_multicell_panelmean_film_chromvar13pc_panel13_holdK562_rowK562_seed2	ABC.Score	FALSE		max	0	FALSE	FiLM panel 13, K562 row seed2	#006eae
+p300pred_multicell_panelmean_film_chromvar13pc_panel13_holdK562_rowGM12878	ABC.Score	FALSE		max	0	FALSE	FiLM panel 13, GM12878 row (closest)	#9bcae9
+p300pred_multicell_panelmean_film_chromvar13pc_panel13_holdK562_rowGM12878_seed1	ABC.Score	FALSE		max	0	FALSE	FiLM panel 13, GM12878 row (closest) seed1	#9bcae9
+p300pred_multicell_panelmean_film_chromvar13pc_panel13_holdK562_rowGM12878_seed2	ABC.Score	FALSE		max	0	FALSE	FiLM panel 13, GM12878 row (closest) seed2	#9bcae9
+p300pred_multicell_panelmean_panel13_holdK562	ABC.Score	FALSE		max	0	FALSE	Corgi panel 13, no conditioning	#c5373d
+p300pred_multicell_panelmean_panel13_holdK562_seed1	ABC.Score	FALSE		max	0	FALSE	Corgi panel 13, no conditioning seed1	#c5373d
+p300pred_multicell_panelmean_panel13_holdK562_seed2	ABC.Score	FALSE		max	0	FALSE	Corgi panel 13, no conditioning seed2	#c5373d
